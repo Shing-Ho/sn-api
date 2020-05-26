@@ -1,0 +1,20 @@
+# SimpleNight API
+
+## Building
+
+### Prerequisites
+- python3.7 (preferred with [pyenv](docs/pyenv.md))
+
+## Getting Started
+After pre-requisites are satisfied, from root of directory, run:
+```bash
+python3.7 -m venv .venv
+. .venv/bin/activate
+pip install --upgrade pip
+
+pip install -e ".[dev]"
+
+pre-commit install
+```  
+
+Alternatively, `source ./bin/build-env.sh`
