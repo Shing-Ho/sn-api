@@ -12,9 +12,7 @@ python3.7 -m venv .venv
 . .venv/bin/activate
 pip install --upgrade pip
 
-pip install -e ".[dev]"
+pip install -r requirements-dev.txt
 
 pre-commit install
 ```  
-
-Alternatively, `source ./bin/build-env.sh`
