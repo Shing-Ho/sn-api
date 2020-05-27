@@ -3,23 +3,26 @@ import decimal
 from django.test import TestCase
 
 from api.management.commands import geonames
+from api.management.commands.geonames import GeonameSettings
 from api.models.models import Geoname, GeonameAlternateName
 from api.tests.utils import get_test_resource_path
 
 
 class TestGeonamesCommand(TestCase):
     def test_download_and_parse(self):
-        cities_sample_resource = get_test_resource_path("cities-sample.zip")
-        alt_names_sample_resource = get_test_resource_path("US-alternate-names-sample.zip")
+        class GeonameTestSettings(GeonameSettings):
+            @property
+            def geonames_cities_url(self):
+                return f"file://{get_test_resource_path('cities-sample.zip')}"
+
+            @classmethod
+            def get_alternate_names_url(cls, country_code):
+                return f"file://{get_test_resource_path('US-alternate-names-sample.zip')}"
 
         self.assertEqual(0, Geoname.objects.count())
 
-        geonames_cmd = geonames.Command()
-        geonames_cmd._get_geonames_url = lambda: f"file://{cities_sample_resource}"
-        geonames_cmd._get_geonames_filename = lambda: "cities-sample.txt"
-        geonames_cmd._get_alternate_names_url = lambda x: f"file://{alt_names_sample_resource}"
-        geonames_cmd._get_alternate_names_filename = lambda x: f"US-alternate-names-sample.txt"
-        geonames_cmd.handle()
+        geonames_cmd = geonames.GeonamesParser(GeonameTestSettings())
+        geonames_cmd.download_and_parse()
 
         self.assertEqual(4, Geoname.objects.count())
         self.assertEqual(32, GeonameAlternateName.objects.count())
