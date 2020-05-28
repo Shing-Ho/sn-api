@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "api",
+    'rest_framework',
     "api.models",
 ]
 
@@ -71,14 +72,30 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "api.wsgi.application"
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ]
+}
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": os.path.join(BASE_DIR, "db.sqlite3"),},
+# }
 DATABASES = {
-    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": os.path.join(BASE_DIR, "db.sqlite3"),},
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dagbjrr2fhns0i',
+        'USER': 'ckojhjnocvghmq',
+        'PASSWORD': '3e47baa681880344d35e3884e7d9691126a5b20f7a5a3e1b33129b8c93fb6804',
+        'HOST': 'ec2-54-243-128-95.compute-1.amazonaws.com',
+        'PORT': '5432',
+    }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

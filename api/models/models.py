@@ -21,3 +21,11 @@ class GeonameAlternateName(models.Model):
     name = models.TextField()
     is_colloquial = models.BooleanField()
     geoname_id = models.IntegerField()
+
+
+class Hotels(models.Model):
+    class Meta:
+        app_label = "api"
+    name = models.CharField(max_length=30)
+    city = models.CharField(max_length=30)
+    stars = models.IntegerField(default=1)
