@@ -24,7 +24,7 @@ SECRET_KEY = "sh%sqjnk#g0_3n@(uo%&023&s6@-@-fxc277y(7+ytn)kuurq^"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["simplenight-api-278418.ue.r.appspot.com"]
+ALLOWED_HOSTS = ["simplenight-api-278418.ue.r.appspot.com", "127.0.0.1"]
 
 # Application definition
 
@@ -36,9 +36,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "api",
+
+    # Third-party
     "rest_framework",
-    "api.models",
+    "rest_framework.authtoken"
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -73,6 +76,9 @@ WSGI_APPLICATION = "api.wsgi.application"
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer", ],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser", ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
 }
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases

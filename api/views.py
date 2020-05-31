@@ -1,8 +1,10 @@
-from django.db.models import QuerySet, Prefetch
+from django.db.models import Prefetch
 from django.http import HttpResponse
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
 from api.models.models import Hotels, Geoname, GeonameAlternateName
+from .permissions import TokenAuthSupportQueryString
 from .serializers import (
     HotelsSerializer,
     LocationsSerializer,
@@ -36,6 +38,8 @@ class HotelsViewset(viewsets.ModelViewSet):
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Geoname.objects.all()
     serializer_class = LocationsSerializer
+    authentication_classes = (TokenAuthSupportQueryString, )
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         queryset = self.queryset
