@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+LABEL="local"
+POSITIONAL=()
+
+__usage__="Usage:
+./bin/manage-local
+
+Options:
+-l --label {default,test,local*} Run manage.py commands with a particular database config
+-h --help This usage message
+"
+
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+
+    case $key in
+        -h|--help)
+            echo "$__usage__"
+            exit 1
+            ;;
+        -l|--label)
+            LABEL="$2"
+            shift  # past flag
+            shift  # past arg
+            ;;
+        *)
+        POSITIONAL+=("$1")
+        shift  # past argument
+        ;;
+esac
+done
+set -- "${POSITIONAL[@]}"
+
+source $REPO_ROOT/.venv/bin/activate
+DJANGO_DATABASE="$LABEL" ./manage.py $*

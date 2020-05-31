@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "api",
-    'rest_framework',
+    "rest_framework",
     "api.models",
 ]
 
@@ -73,12 +73,8 @@ TEMPLATES = [
 WSGI_APPLICATION = "api.wsgi.application"
 
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-    ],
-    'DEFAULT_PARSER_CLASSES': [
-        'rest_framework.parsers.JSONParser',
-    ]
+    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer",],
+    "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser",],
 }
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
@@ -86,16 +82,47 @@ REST_FRAMEWORK = {
 # DATABASES = {
 #     "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": os.path.join(BASE_DIR, "db.sqlite3"),},
 # }
+
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dagbjrr2fhns0i',
-        'USER': 'ckojhjnocvghmq',
-        'PASSWORD': '3e47baa681880344d35e3884e7d9691126a5b20f7a5a3e1b33129b8c93fb6804',
-        'HOST': 'ec2-54-243-128-95.compute-1.amazonaws.com',
-        'PORT': '5432',
-    }
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "dagbjrr2fhns0i",
+        "USER": "ckojhjnocvghmq",
+        "PASSWORD": "3e47baa681880344d35e3884e7d9691126a5b20f7a5a3e1b33129b8c93fb6804",
+        "HOST": "ec2-54-243-128-95.compute-1.amazonaws.com",
+        "PORT": "5432",
+    },
+    "local": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "simplenight",
+        "USER": "simplenight",
+        "PASSWORD": "simplenight",
+        "HOST": "localhost",
+        "PORT": "5432",
+    },
+    "gcloud": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "simplenight-api-db",
+        "USER": "simplenight",
+        "PASSWORD": "daux!bauc7nooc7YIP",
+        "HOST": "35.231.161.65",
+        "PORT": "5432",
+        "OPTIONS": {
+            "sslmode": "require",
+            "sslrootcert": "api/secrets/server-ca.crt",
+            "sslcert": "api/secrets/client-cert.pem",
+            "sslkey": "api/secrets/client-key.pem",
+        },
+    },
+    "test": {"ENGINE": "django.db.backends.sqlite3", "NAME": os.path.join(BASE_DIR, "db.sqlite3")},
 }
+
+active_database_label = os.environ.get("DJANGO_DATABASE")
+if active_database_label:
+    DATABASES["default"] = DATABASES[active_database_label]
+elif DEBUG:
+    DATABASES["default"] = DATABASES["test"]
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -135,15 +162,8 @@ GEONAMES_SUPPORTED_LANGUAGES = {"en", "es", "fr", "de", "ja", "zh", "ko", "th"}
 
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'WARNING',
-    },
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler",},},
+    "root": {"handlers": ["console"], "level": "WARNING",},
 }
