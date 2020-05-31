@@ -8,6 +8,7 @@ from zipfile import ZipFile
 from django.conf import settings
 from django.core.management import BaseCommand
 
+from common import utils
 from api import logger
 from api.models.models import Geoname, GeonameAlternateName
 
@@ -44,23 +45,34 @@ class GeonamesParser:
         logger.info("Removing old Geoname entries")
         Geoname.objects.all().delete()
 
-        cities = {}
+        cities = set()
+        countries = set()
         logger.info("Parsing main cities DB")
-        for row in self._download_parse_main_db():
-            geoname = self._create_geoname_model(row)
-            geoname.save()
-            cities[geoname.geoname_id] = geoname
 
-        countries = Geoname.objects.order_by().values_list("iso_country_code", flat=True).distinct()
-        for country in countries:
+        for chunk in utils.chunks(self._download_parse_main_db(), 100):
+            models = [self._create_geoname_model(x) for x in chunk]
+            Geoname.objects.bulk_create(models)
+
+            for model in models:
+                cities.add(model.geoname_id)
+                countries.add(model.iso_country_code)
+
+        for country in sorted(countries):
             logger.info("Loading Geoname alternate names for " + country)
 
             alternate_names_rows = self._download_and_parse_languages(country)
             alternate_names = map(self._create_alternate_name_model, alternate_names_rows)
 
+            models_to_save = []
             for alternate_name_model in filter(self._filter_alternate_names, alternate_names):
                 if alternate_name_model.geoname_id in cities:
-                    alternate_name_model.save()
+                    models_to_save.append(alternate_name_model)
+
+                if len(models_to_save) > 100:
+                    GeonameAlternateName.objects.bulk_create(models_to_save)
+                    models_to_save.clear()
+
+            GeonameAlternateName.objects.bulk_create(models_to_save)
 
     def _download_parse_main_db(self):
         return self._download_and_parse(self.config.geonames_cities_url, self.config.geonames_cities_filename)
