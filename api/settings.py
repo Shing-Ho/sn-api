@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -23,10 +22,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = "sh%sqjnk#g0_3n@(uo%&023&s6@-@-fxc277y(7+ytn)kuurq^"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["simplenight-api-278418.ue.r.appspot.com"]
 
 # Application definition
 
@@ -73,8 +71,8 @@ TEMPLATES = [
 WSGI_APPLICATION = "api.wsgi.application"
 
 REST_FRAMEWORK = {
-    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer",],
-    "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser",],
+    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer", ],
+    "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser", ],
 }
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
@@ -85,7 +83,15 @@ REST_FRAMEWORK = {
 
 
 DATABASES = {
-    "default": {
+    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": os.path.join(BASE_DIR, "db.sqlite3")},
+    "appengine": {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USERNAME'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST')
+    },
+    "heroku": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "dagbjrr2fhns0i",
         "USER": "ckojhjnocvghmq",
@@ -115,25 +121,20 @@ DATABASES = {
             "sslkey": "api/secrets/client-key.pem",
         },
     },
-    "test": {"ENGINE": "django.db.backends.sqlite3", "NAME": os.path.join(BASE_DIR, "db.sqlite3")},
 }
 
-active_database_label = os.environ.get("DJANGO_DATABASE")
-if active_database_label:
-    DATABASES["default"] = DATABASES[active_database_label]
-elif DEBUG:
-    DATABASES["default"] = DATABASES["test"]
+active_database_label = os.environ.get("DJANGO_DATABASE", "default")
+DATABASES["default"] = DATABASES[active_database_label]
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator", },
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", },
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator", },
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator", },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
@@ -148,22 +149,19 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = "/static/"
-
 
 GEONAMES_CITIES_URL = "https://download.geonames.org/export/dump/cities15000.zip"
 GEONAMES_CITIES_FILENAME = "cities15000.txt"
 GEONAMES_ALT_NAMES_BASE_URL = "https://download.geonames.org/export/dump/alternatenames/"
 GEONAMES_SUPPORTED_LANGUAGES = {"en", "es", "fr", "de", "ja", "zh", "ko", "th"}
 
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler",},},
-    "root": {"handlers": ["console"], "level": "WARNING",},
+    "handlers": {"console": {"class": "logging.StreamHandler", }, },
+    "root": {"handlers": ["console"], "level": "WARNING", },
 }

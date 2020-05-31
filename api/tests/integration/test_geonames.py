@@ -33,7 +33,6 @@ class TestGeonamesCommand(TestCase):
         self.assertEqual(decimal.Decimal("-122.419420"), model.longitude)
 
         model = Geoname.objects.prefetch_related("lang").filter(geoname_id=5391959).first()
-        print(model.lang.values()[0])
 
         localization = GeonameAlternateName.objects.filter(
             geoname__iso_country_code="US", iso_language_code="ja", geoname_id="5391959"
