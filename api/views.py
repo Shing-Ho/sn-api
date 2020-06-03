@@ -1,13 +1,19 @@
 from django.db.models import Prefetch
 from django.http import HttpResponse
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from api.models.models import Hotels, Geoname, GeonameAlternateName
+from . import serializers
+from .hotel.hotels import HotelSearchRequest
+from .hotel.travelport import TravelportHotelAdapter
 from .permissions import TokenAuthSupportQueryString
 from .serializers import (
     HotelsSerializer,
     LocationsSerializer,
+    HotelAdapterHotelSerializer,
 )
 
 
@@ -35,10 +41,25 @@ class HotelsViewset(viewsets.ModelViewSet):
         return queryset
 
 
+class HotelSupplierViewset(viewsets.ViewSet):
+    authentication_classes = (TokenAuthSupportQueryString,)
+    permission_classes = (IsAuthenticated,)
+    serializer_class = (HotelAdapterHotelSerializer,)
+    hotel_adapter = TravelportHotelAdapter()
+
+    @action(detail=False, methods=["GET"], name="Search Hotels")
+    def search(self, request):
+        location = request.GET.get("location")
+        hotels = self.hotel_adapter.search(HotelSearchRequest(location, 1))
+        serializer = serializers.HotelAdapterHotelSerializer(instance=hotels, many=True)
+
+        return Response(serializer.data)
+
+
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Geoname.objects.all()
     serializer_class = LocationsSerializer
-    authentication_classes = (TokenAuthSupportQueryString, )
+    authentication_classes = (TokenAuthSupportQueryString,)
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
