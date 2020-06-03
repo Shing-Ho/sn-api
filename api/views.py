@@ -1,7 +1,10 @@
+import rest_framework
 from django.db.models import Prefetch
 from django.http import HttpResponse
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from api.models.models import Hotels, Geoname, GeonameAlternateName
 from .permissions import TokenAuthSupportQueryString
@@ -35,13 +38,14 @@ class HotelsViewset(viewsets.ModelViewSet):
         return queryset
 
 
-class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
+class LocationsViewSet(viewsets.ViewSet):
     queryset = Geoname.objects.all()
     serializer_class = LocationsSerializer
     authentication_classes = (TokenAuthSupportQueryString, )
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
+    @action(methods=["GET"], detail=False, url_path="cities")
+    def cities(self, request):
         queryset = self.queryset
         lang_code = self.request.GET.get("lang_code", "en")
         country = self.request.GET.get("country")
@@ -56,4 +60,6 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
         if country:
             queryset = queryset.filter(iso_country_code=country)
 
-        return queryset
+        serializer = LocationsSerializer(queryset, many=True)
+
+        return Response(serializer.data)

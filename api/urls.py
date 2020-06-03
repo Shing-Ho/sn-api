@@ -22,12 +22,11 @@ from .views import HotelsViewset, LocationsViewSet
 
 router = routers.SimpleRouter()
 
-router.register(r"Hotels", HotelsViewset)
-router.register(r"Locations", LocationsViewSet)
+router.register(r"hotels", HotelsViewset)
+router.register(r"locations", LocationsViewSet)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.index, name="index"),
-    path("Hotels", views.detail, name="Hotels"),
     path("api/v1/", include(router.urls)),
 ]

@@ -1,0 +1,219 @@
+openapi: 3.0.0
+
+servers:
+# Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/LPBS7/Cities/1.0.0
+  - description: API
+    url: https://simplenight-api-278418.ue.r.appspot.com/api/v1/
+info:
+  description: Hotel API
+  version: "1.0.0"
+  title: Hotel API
+tags:
+  - name: Locations
+    description: Location-related data (cities, regions, airports, etc)
+
+security:
+  - bearerAuth: []
+
+paths:
+  /locations/cities:
+    get:
+      tags:
+        - Locations
+      summary: Returns a list of all cities
+      operationId: getAllCities
+      description: |
+        Returns a list of all available cities.  Because the response
+        size is large, this endpoint implements pagination
+      parameters:
+        - in: query
+          name: country
+          description: |
+            ISO-format two character country code.  Optional.
+            Omitting this parameter returns all available cities
+          schema:
+            type: string
+            minimum: 2
+            maximum: 2
+            example: US
+        - in: query
+          name: lang_code
+          description: |
+            ISO-format two character language code.  Returns location name
+            localization for the provided lang_code.  Optional.
+          schema:
+            type: string
+            minimum: 2
+            maximum: 2
+            example: en
+      responses:
+        '200':
+          description: List of matching locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/City'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No locations found for input
+  /locations/airports:
+    get:
+      tags:
+        - Locations
+      summary: Returns a list of all airports
+      operationId: getAllAirports
+      description: |
+        Returns a list of all support airports
+      parameters:
+        - in: query
+          name: country
+          description: |
+            ISO-format two character country code.  Optional.
+            Omitting this parameter returns all available airports
+          schema:
+            type: string
+            minimum: 2
+            maximum: 2
+            example: US
+        - in: query
+          name: lang_code
+          description: |
+            ISO-format two character language code.  Returns airport name
+            localization for the provided lang_code.  Optional.
+          schema:
+            type: string
+            minimum: 2
+            maximum: 2
+            example: en
+      responses:
+        '200':
+          description: List of matching airports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Airport'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No airports found for input
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token <token>
+  schemas:
+    Airport:
+      properties:
+        airport_code:
+          type: string
+          example: "SFO"
+          minLength: 3
+          maxLength: 3
+        iso_country_code:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: en
+        localization:
+          type: object
+          properties:
+            language_code:
+              type: string
+              minLength: 2
+              maxLength: 2
+              example: ja
+            name:
+              type: string
+              example: サンフランシスコ
+        latitude:
+          type: number
+          example: 49.057980
+        longitude:
+          type: number
+          example: -122.252570
+    City:
+      properties:
+        id:
+          type: string
+          example: "123"
+        iso_country_code:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: en
+        primary_name:
+          type: string
+          example: San Francisco
+        admin_district:
+          type: string
+          example: California
+        localization:
+          type: object
+          properties:
+            language_code:
+              type: string
+              minLength: 2
+              maxLength: 2
+              example: ja
+            name:
+              type: string
+              example: サンフランシスコ
+        latitude:
+          type: number
+          example: 49.057980
+        longitude:
+          type: number
+          example: -122.252570
+    HotelSearchResponse:
+      type: object
+      required:
+        - hotel_Id
+        - checkin_date
+        - checkout_date
+        - occupancy
+        - rooms
+        -
+    HotelSearchRequest:
+      type: object
+      required:
+        - hotel_id
+        - checkin_date
+        - checkout_date
+        - occupancy
+      properties:
+        hotel_id:
+          type: integer
+          example: 123
+          description: Simplenight Hotel ID
+        checkin_date:
+          type: string
+          format: date
+          example: 2021-06-01
+          description: The checkin date
+        checkout_date:
+          type: string
+          format: date
+          example: 2020-06-07
+          description: The checkout date
+        occupancy:
+          $ref: '#/components/schemas/Occupancy'
+        language:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: en
+          description: Optional. ISO-formatted 2-character language code for hotel details
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: USD
+          description: Optional.  ISO-format 3-character currency code

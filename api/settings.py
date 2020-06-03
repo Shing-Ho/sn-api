@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from rest_framework.authentication import TokenAuthentication
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
@@ -24,7 +26,7 @@ SECRET_KEY = "sh%sqjnk#g0_3n@(uo%&023&s6@-@-fxc277y(7+ytn)kuurq^"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["simplenight-api-278418.ue.r.appspot.com", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "simplenight-api-278418.ue.r.appspot.com", "127.0.0.1"]
 
 # Application definition
 
@@ -141,6 +143,8 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator", },
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator", },
 ]
+
+TokenAuthentication.keyword = "Bearer"
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
