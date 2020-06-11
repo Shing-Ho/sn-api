@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .hotel.hotels import HotelAdapterHotel, HotelAddress, HotelRate
-from .models.models import Hotels, Geoname, GeonameAlternateName
+from .models.models import Hotels, Geoname
 
 
 class HotelsSerializer(serializers.ModelSerializer):
@@ -35,7 +35,7 @@ class HotelAdapterHotelAddressSerializer(serializers.Serializer):
     city = serializers.CharField()
     region = serializers.CharField()
     country = serializers.CharField()
-    address_lines = serializers.StringRelatedField()
+    address_lines = StringListField()
 
     def update(self, instance, validated_data):
         pass

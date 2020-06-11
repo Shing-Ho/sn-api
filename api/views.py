@@ -50,7 +50,11 @@ class HotelSupplierViewset(viewsets.ViewSet):
     @action(detail=False, methods=["GET"], name="Search Hotels")
     def search(self, request):
         location = request.GET.get("location")
-        hotels = self.hotel_adapter.search(HotelSearchRequest(location, 1))
+        checkin = request.GET.get("checkin")
+        checkout = request.GET.get("checkout")
+        num_adults = request.GET.get("num_adults")
+
+        hotels = self.hotel_adapter.search(HotelSearchRequest(location, checkin, checkout, num_adults=num_adults))
         serializer = serializers.HotelAdapterHotelSerializer(instance=hotels, many=True)
 
         return Response(serializer.data)

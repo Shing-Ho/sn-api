@@ -26,8 +26,6 @@ router.register(r"Hotels", HotelsViewset)
 router.register(r"Locations", LocationsViewSet)
 router.register(r"Suppliers", HotelSupplierViewset, basename="suppliers")
 
-print(router.urls)
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.index, name="index"),

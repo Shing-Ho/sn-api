@@ -1,6 +1,7 @@
 import json
 import warnings
-from typing import List
+from datetime import date
+from typing import List, Dict, Optional, Any, Union
 
 from requests import Session
 from requests.auth import HTTPBasicAuth
@@ -13,56 +14,66 @@ from api.hotel.hotels import HotelAdapter, HotelSearchRequest, HotelAdapterHotel
 class TravelportHotelAdapter(HotelAdapter):
     def __init__(self):
         secrets = self._get_secrets()
-        hotel_service_url = secrets["url"]
-        username = secrets["username"]
-        password = secrets["password"]
-
-        session = Session()
-        session.auth = HTTPBasicAuth(username, password)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", UserWarning, 338)
-            wsdl_path = self._get_wsdl_path()
-            client = Client(wsdl_path, transport=Transport(session=session))
-
-        target_namespace = "http://www.travelport.com/service/hotel_v50_0"
-        my_binding = "HotelSuperShopperServiceBinding"
-        service_binding = f"{{{target_namespace}}}{my_binding}"
-        self.service = client.create_service(service_binding, hotel_service_url)
+        self.session = self._create_wsdl_session(secrets)
+        self.service = self._create_wsdl_service(secrets["url"], self.session)
 
     def search(self, search_request: HotelSearchRequest) -> List[HotelAdapterHotel]:
-        request = {
-            "TargetBranch": self._get_target_branch(),
-            "BillingPointOfSaleInfo": {"OriginApplication": "uAPI"},
-            "HotelSearchModifiers": {"NumberOfAdults": 1, "PermittedProviders": {"Provider": "1V"}, },
-            "HotelSearchLocation": {"HotelLocation": search_request.location_name},
-            "HotelStay": {"CheckinDate": "2020-12-15", "CheckoutDate": "2020-12-28"},
-        }
-
+        request = TravelportHotelSearchBuilder().build_from_search_request(search_request)
         response = self.service.service(**request)
+
         hotel_response = response["HotelSuperShopperResults"]
         hotels_with_rates = filter(lambda x: x["HotelRateDetail"], hotel_response)
         return list(map(self._hotel_from_response, hotels_with_rates))
 
-    @staticmethod
-    def _hotel_from_response(hotel):
+    @classmethod
+    def _hotel_from_response(cls, hotel):
         hotel_property = hotel["HotelProperty"]
-        rate = hotel["HotelRateDetail"]
+        tax, total = cls._parse_hotel_min_max_rate(hotel)
 
+        address, city, state, postal_code, country = hotel_property["PropertyAddress"]["Address"]
+        address = HotelAddress(city, state, postal_code, country, [address])
+
+        chain = hotel_property["HotelChain"]
+        name = hotel_property["Name"]
+
+        hotel_rate = HotelRate(total, tax)
+        star_rating = cls._parse_hotel_star_rating(hotel_property)
+
+        return HotelAdapterHotel(name, chain, address, hotel_rate, star_rating)
+
+    @staticmethod
+    def _parse_hotel_star_rating(hotel) -> Optional[int]:
+        return next(map(lambda x: x.Rating, hotel["HotelRating"]), None)
+
+    @staticmethod
+    def _parse_hotel_min_max_rate(hotel):
+        rate = hotel["HotelRateDetail"]
         rate = rate[0]
         total = rate["Total"][3:]
         if rate["Tax"]:
             tax = rate["Tax"][3:]
         else:
             tax = 0.00
+        return tax, total
 
-        address = hotel_property["PropertyAddress"]["Address"]
-        chain = hotel_property["HotelChain"]
-        name = hotel_property["Name"]
+    @classmethod
+    def _create_wsdl_session(cls, secrets):
+        session = Session()
+        session.auth = HTTPBasicAuth(secrets["username"], secrets["password"])
 
-        address = HotelAddress("Foo", "Bar", "US", address[0])
-        rate = HotelRate(total, tax)
+        return session
 
-        return HotelAdapterHotel(name, chain, address, rate)
+    @classmethod
+    def _create_wsdl_service(cls, hotel_service_url, session):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning, 338)
+            wsdl_path = cls._get_wsdl_path()
+            client = Client(wsdl_path, transport=Transport(session=session))
+        target_namespace = "http://www.travelport.com/service/hotel_v50_0"
+        my_binding = "HotelSuperShopperServiceBinding"
+        service_binding = f"{{{target_namespace}}}{my_binding}"
+
+        return client.create_service(service_binding, hotel_service_url)
 
     @staticmethod
     def _get_wsdl_path():
@@ -73,6 +84,65 @@ class TravelportHotelAdapter(HotelAdapter):
         with open(f"{settings.SITE_ROOT}/secrets/travelport.json") as f:
             return json.load(f)
 
-    @staticmethod
-    def _get_target_branch():
-        return "P3081850"
+
+class TravelportHotelSearchBuilder:
+    def __init__(self):
+        self._search_object: Dict[Any, Any] = {
+            "TargetBranch": "P3081850",
+            "BillingPointOfSaleInfo": {"OriginApplication": "uAPI"},
+            "HotelSearchModifiers": {"PermittedProviders": {"Provider": "1V"}},
+            "HotelSearchLocation": {},
+            "HotelStay": {},
+        }
+
+    def build_from_search_request(self, search_request: HotelSearchRequest):
+        self.hotel_location = search_request.location_name
+        self.num_adults = search_request.num_adults
+        self.checkin = search_request.checkin_date
+        self.checkout = search_request.checkout_date
+
+        return self.search_object
+
+    @property
+    def search_object(self):
+        return self._search_object
+
+    @property
+    def num_adults(self) -> Optional[int]:
+        return self.search_object["HotelSearchModifiers"].get("NumberOfAdults")
+
+    @num_adults.setter
+    def num_adults(self, num_adults: int):
+        self._search_object["HotelSearchModifiers"]["NumberOfAdults"] = num_adults
+
+    @property
+    def hotel_location(self) -> Optional[str]:
+        return self._search_object["HotelSearchLocation"].get("HotelLocation")
+
+    @hotel_location.setter
+    def hotel_location(self, location: str):
+        self._search_object["HotelSearchLocation"]["HotelLocation"] = location
+
+    @property
+    def checkin(self) -> Optional[date]:
+        checkin_date = self._search_object["HotelStay"].get("CheckinDate")
+        return date.fromisoformat(checkin_date)
+
+    @checkin.setter
+    def checkin(self, checkin: Union[date, str]):
+        if isinstance(checkin, date):
+            checkin = str(checkin)
+
+        self._search_object["HotelStay"]["CheckinDate"] = checkin
+
+    @property
+    def checkout(self) -> Optional[date]:
+        checkout_date = self._search_object["HotelStay"].get("CheckoutDate")
+        return date.fromisoformat(checkout_date)
+
+    @checkout.setter
+    def checkout(self, checkout: Union[date, str]):
+        if isinstance(checkout, date):
+            checkout = str(checkout)
+
+        self._search_object["HotelStay"]["CheckoutDate"] = checkout
