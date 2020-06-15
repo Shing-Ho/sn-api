@@ -18,12 +18,13 @@ from django.urls import path, include
 from rest_framework import routers
 
 from api import views
-from .views import HotelsViewset, LocationsViewSet
+from .views import HotelsViewset, LocationsViewSet, HotelSupplierViewset
 
 router = routers.SimpleRouter()
 
 router.register(r"Hotels", HotelsViewset)
 router.register(r"Locations", LocationsViewSet)
+router.register(r"Suppliers", HotelSupplierViewset, basename="suppliers")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
