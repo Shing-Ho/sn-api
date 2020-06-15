@@ -9,7 +9,11 @@ from zeep import Client, Transport
 
 from api import settings
 from api.hotel.hotels import HotelAdapter, HotelSearchRequest, HotelAdapterHotel, HotelAddress, HotelRate
-
+secrets = {
+  "url": "https://americas.universal-api.travelport.com/B2BGateway/connect/uAPI/HotelService",
+  "username": "Universal API/uAPI9027118295-d926ccdb",
+  "password": "qP?34fQ%mC"
+}
 
 class TravelportHotelAdapter(HotelAdapter):
     def __init__(self):
@@ -100,8 +104,13 @@ class TravelportHotelSearchBuilder:
         self.num_adults = search_request.num_adults
         self.checkin = search_request.checkin_date
         self.checkout = search_request.checkout_date
-
+        self.ratetype = search_request.ratetype
+        self.language = search_request.language
+        self.snpropertyid = search_request.snpropertyid
         return self.search_object
+
+
+
 
     @property
     def search_object(self):
@@ -110,6 +119,18 @@ class TravelportHotelSearchBuilder:
     @property
     def num_adults(self) -> Optional[int]:
         return self.search_object["HotelSearchModifiers"].get("NumberOfAdults")
+
+    @property
+    def ratetype(self):
+        return self._search_object
+    @property
+    def language(self):
+        return self._search_object
+    @property
+    def snpropertyid(self):
+        return self._search_object
+
+
 
     @num_adults.setter
     def num_adults(self, num_adults: int):

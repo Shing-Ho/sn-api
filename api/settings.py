@@ -22,9 +22,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = "sh%sqjnk#g0_3n@(uo%&023&s6@-@-fxc277y(7+ytn)kuurq^"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["simplenight-api-278418.ue.r.appspot.com", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["*","simplenight-api-278418.ue.r.appspot.com", "127.0.0.1"]
 
 # Application definition
 
@@ -89,7 +89,6 @@ REST_FRAMEWORK = {
 
 
 DATABASES = {
-    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": os.path.join(BASE_DIR, "db.sqlite3")},
     "appengine": {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.getenv('DB_NAME'),
@@ -97,7 +96,7 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST')
     },
-    "heroku": {
+    "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "dagbjrr2fhns0i",
         "USER": "ckojhjnocvghmq",
@@ -171,6 +170,5 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler", }, },
     "root": {"handlers": ["console"], "level": "WARNING", },
 }
-
 
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
