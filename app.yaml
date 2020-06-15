@@ -14,5 +14,5 @@ env_variables:
   DB_HOST: '/cloudsql/simplenight-api-278418:us-east1:simplenight-api-instance'
 
 runtime_config:
-  python_version: 3
+  python_version: 3.7
 # [END runtime]

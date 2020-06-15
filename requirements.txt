@@ -3,3 +3,7 @@ requests==2.23.0
 djangorestframework==3.11.0
 psycopg2~=2.8.5
 gunicorn==20.0.4
+zeep==3.4.0
+lxml==4.5.1
+google-cloud-secret-manager==1.0.0
+grpcio==1.27.2
