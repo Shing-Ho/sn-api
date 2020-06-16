@@ -121,13 +121,13 @@ class TravelportHotelSearchBuilder:
         return self.search_object["HotelSearchModifiers"].get("NumberOfAdults")
 
     @property
-    def ratetype(self):
+    def ratetype(self) -> Optional[str]:
         return self._search_object
     @property
-    def language(self):
+    def language(self) -> Optional[str]:
         return self._search_object
     @property
-    def snpropertyid(self):
+    def snpropertyid(self) -> Optional[str]:
         return self._search_object
     @ratetype.setter
     def rate(self, num_adults: str):

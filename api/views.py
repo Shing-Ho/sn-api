@@ -33,8 +33,12 @@ class HotelSupplierViewset(viewsets.ViewSet):
         checkin = request.GET.get("checkin")
         checkout = request.GET.get("checkout")
         num_adults = request.GET.get("num_adults")
+        ratetype = request.GET.get("ratetype")
+        snpropertyid = request.GET.get("snpropertyid")
+        language = request.GET.get("language")
 
-        hotels = self.hotel_adapter.search(HotelSearchRequest(location, checkin, checkout,ratetype=None,language=None,snpropertyid=None, num_adults=num_adults))
+
+        hotels = self.hotel_adapter.search(HotelSearchRequest(location, checkin, checkout,ratetype,language,snpropertyid, num_adults=num_adults))
         serializer = serializers.HotelAdapterHotelSerializer(instance=hotels, many=True)
 
         return Response(serializer.data)
