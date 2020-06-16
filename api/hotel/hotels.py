@@ -42,3 +42,7 @@ class HotelAdapter(abc.ABC):
     @abc.abstractmethod
     def search(self, search_request: HotelSearchRequest) -> List[HotelAdapterHotel]:
         pass
+
+    @abc.abstractmethod
+    def details(self, *args):
+        pass
