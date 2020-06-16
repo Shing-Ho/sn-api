@@ -1,13 +1,8 @@
 from rest_framework import serializers
 
 from .hotel.hotels import HotelAdapterHotel, HotelAddress, HotelRate
-from .models.models import Hotels, Geoname
+from .models.models import Geoname
 
-
-class HotelsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Hotels
-        fields = "__all__"
 
 
 class LocationAlternateNameSerializer(serializers.StringRelatedField):

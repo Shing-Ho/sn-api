@@ -129,6 +129,16 @@ class TravelportHotelSearchBuilder:
     @property
     def snpropertyid(self):
         return self._search_object
+    @ratetype.setter
+    def rate(self, num_adults: str):
+        self._search_object["HotelSearchModifiers"]["rateType"] = ratetype
+    @language.setter
+    def language(self, language: str):
+        self._search_object["HotelSearchModifiers"]["Language"] = language
+    @snpropertyid.setter
+    def snpropertyid(self,snpropertyid: str):
+        self._search_object["HotelSearchModifiers"]['SnPropertyID'] = snpropertyid
+
 
 
 

@@ -20,15 +20,9 @@ class GeonameAlternateName(models.Model):
     iso_language_code = models.CharField(max_length=2)
     name = models.TextField()
     is_colloquial = models.BooleanField()
+    iatacode = models.CharField(max_length=3)
+
+
     geoname = models.ForeignKey(
         Geoname, to_field="geoname_id", on_delete=models.CASCADE, null=True, related_name="lang"
     )
-
-
-class Hotels(models.Model):
-    class Meta:
-        app_label = "api"
-
-    name = models.CharField(max_length=30)
-    city = models.CharField(max_length=30)
-    stars = models.IntegerField(default=1)

@@ -9,9 +9,13 @@ class HotelSearchRequest:
     location_name: str
     checkin_date: Union[date, str]
     checkout_date: Union[date, str]
+    ratetype: str
+    language: str
+    snpropertyid: str
     num_rooms: int = 1
     num_adults: int = 1
     num_children: int = 0
+
 
 
 @dataclass
