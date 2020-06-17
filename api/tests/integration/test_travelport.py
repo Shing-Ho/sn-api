@@ -20,8 +20,8 @@ class TestTravelport(unittest.TestCase):
     def test_hotel_details(self):
         travelport = TravelportHotelAdapter()
         hotel_details = HotelDetailsSearchRequest(
-            chain_code="LQ",
-            hotel_code="17352",
+            chain_code="HY",
+            hotel_code="09974",
             checkin_date=datetime.now().date() + timedelta(days=30),
             checkout_date=datetime.now().date() + timedelta(days=37),
 

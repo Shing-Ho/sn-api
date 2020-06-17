@@ -13,6 +13,11 @@ def load_test_resource(filename):
         return f.read()
 
 
+def load_test_json_resource(filename):
+    with open(get_test_resource_path(filename)) as f:
+        return json.load(f)
+
+
 handlers: List[Callable] = []
 
 

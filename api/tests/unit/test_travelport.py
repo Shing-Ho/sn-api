@@ -1,7 +1,9 @@
 import unittest
 
 from api.hotel.hotels import HotelSearchRequest
-from api.hotel.travelport.travelport import TravelportHotelSearchBuilder
+from api.hotel.travelport.hotel_details import TravelportHotelDetailsBuilder
+from api.hotel.travelport.travelport import TravelportHotelSearchBuilder, TravelportHotelAdapter
+from api.tests.utils import load_test_json_resource
 
 
 class TestTravelport(unittest.TestCase):
@@ -15,7 +17,7 @@ class TestTravelport(unittest.TestCase):
         results = search.request
 
         self.assertEqual("P3081850", results["TargetBranch"])
-        self.assertEqual("uAPI", results["BillingPointOfSaleInfo"]["OriginApplication"])
+        self.assertEqual("Simplenight", results["BillingPointOfSaleInfo"]["OriginApplication"])
         self.assertEqual("1V", results["HotelSearchModifiers"]["PermittedProviders"]["Provider"])
         self.assertEqual(1, results["HotelSearchModifiers"]["NumberOfAdults"])
         self.assertEqual("SFO", results["HotelSearchLocation"]["HotelLocation"])
@@ -30,9 +32,70 @@ class TestTravelport(unittest.TestCase):
         results = TravelportHotelSearchBuilder.build(search_request)
 
         self.assertEqual("P3081850", results["TargetBranch"])
-        self.assertEqual("uAPI", results["BillingPointOfSaleInfo"]["OriginApplication"])
+        self.assertEqual("Simplenight", results["BillingPointOfSaleInfo"]["OriginApplication"])
         self.assertEqual("1V", results["HotelSearchModifiers"]["PermittedProviders"]["Provider"])
         self.assertEqual(1, results["HotelSearchModifiers"]["NumberOfAdults"])
         self.assertEqual("SFO", results["HotelSearchLocation"]["HotelLocation"])
         self.assertEqual("2020-12-01", results["HotelStay"]["CheckinDate"])
         self.assertEqual("2020-12-07", results["HotelStay"]["CheckoutDate"])
+
+    def test_hotel_details_request_builder(self):
+        request_builder = TravelportHotelDetailsBuilder()
+        request_builder.chain_code = "HY"
+        request_builder.hotel_code = "123"
+        request_builder.currency = "USD"
+        request_builder.num_rooms = 2
+        request_builder.checkin = "2020-01-01"
+        request_builder.checkout = "2020-01-07"
+
+        request = request_builder.request
+        self.assertEqual("P3081850", request["TargetBranch"])
+        self.assertEqual("Simplenight", request["BillingPointOfSaleInfo"]["OriginApplication"])
+        self.assertEqual(2, request["HotelDetailsModifiers"]["NumberOfRooms"])
+        self.assertEqual("USD", request["HotelDetailsModifiers"]["PreferredCurrency"])
+        self.assertEqual("HY", request["HotelProperty"]["HotelChain"])
+        self.assertEqual("123", request["HotelProperty"]["HotelCode"])
+
+        self.assertEqual("2020-01-01", request["HotelDetailsModifiers"]["HotelStay"]["CheckinDate"])
+        self.assertEqual("2020-01-07", request["HotelDetailsModifiers"]["HotelStay"]["CheckoutDate"])
+
+    def test_hotel_details_parse_response(self):
+        hotel_details_test_resource = load_test_json_resource("travelport/hotel_details_response.json")
+        travelport = TravelportHotelAdapter()
+        hotel_details = travelport._parse_details(hotel_details_test_resource)
+
+        self.assertIsNotNone(hotel_details)
+        self.assertEqual("LQ", hotel_details.chain_code)
+        self.assertEqual("LA QUINTA INN STE AIRPORT NORTH", hotel_details.name)
+        self.assertEqual("17352", hotel_details.hotel_code)
+        self.assertEqual("3PM", hotel_details.checkin_time)
+        self.assertEqual("12N", hotel_details.checkout_time)
+
+        self.assertEqual(4, len(hotel_details.hotel_rates))
+        self.assertEqual(7, len(hotel_details.hotel_rates[0].rate_detail))
+
+        self.assertEqual("C1DA01", hotel_details.hotel_rates[0].rate_plan_type)
+        self.assertEqual("2 Queen Nsmk With Free Wifi Free Breakfast", hotel_details.hotel_rates[0].description)
+        self.assertEqual("Pay Now  Save Non-cancelable", hotel_details.hotel_rates[0].additional_detail[0])
+
+        self.assertEqual(802.75, hotel_details.hotel_rates[0].total_base_rate.amount)
+        self.assertEqual("USD", hotel_details.hotel_rates[0].total_base_rate.currency)
+
+        self.assertEqual("2020-07-16", str(hotel_details.hotel_rates[0].rate_detail[0].rate_date))
+        self.assertEqual("2020-07-17", str(hotel_details.hotel_rates[0].rate_detail[1].rate_date))
+        self.assertEqual("2020-07-18", str(hotel_details.hotel_rates[0].rate_detail[2].rate_date))
+        self.assertEqual("2020-07-19", str(hotel_details.hotel_rates[0].rate_detail[3].rate_date))
+        self.assertEqual("2020-07-20", str(hotel_details.hotel_rates[0].rate_detail[4].rate_date))
+        self.assertEqual("2020-07-21", str(hotel_details.hotel_rates[0].rate_detail[5].rate_date))
+        self.assertEqual("2020-07-22", str(hotel_details.hotel_rates[0].rate_detail[6].rate_date))
+
+        self.assertEqual(118.75, hotel_details.hotel_rates[0].rate_detail[0].base_rate.amount)
+        self.assertEqual(109.25, hotel_details.hotel_rates[0].rate_detail[1].base_rate.amount)
+        self.assertEqual(109.25, hotel_details.hotel_rates[0].rate_detail[2].base_rate.amount)
+        self.assertEqual(109.25, hotel_details.hotel_rates[0].rate_detail[3].base_rate.amount)
+        self.assertEqual(118.75, hotel_details.hotel_rates[0].rate_detail[4].base_rate.amount)
+        self.assertEqual(118.75, hotel_details.hotel_rates[0].rate_detail[5].base_rate.amount)
+        self.assertEqual(118.75, hotel_details.hotel_rates[0].rate_detail[6].base_rate.amount)
+
+        print(hotel_details.hotel_rates)
+

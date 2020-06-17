@@ -9,7 +9,7 @@ class TravelportHotelSearchBuilder:
     def __init__(self):
         self._request: Dict[Any, Any] = {
             "TargetBranch": TARGET_BRANCH,
-            "BillingPointOfSaleInfo": {"OriginApplication": "uAPI"},
+            "BillingPointOfSaleInfo": {"OriginApplication": "Simplenight"},
             "HotelSearchModifiers": {"PermittedProviders": {"Provider": "1V"}},
             "HotelSearchLocation": {},
             "HotelStay": {},

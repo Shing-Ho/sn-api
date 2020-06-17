@@ -12,6 +12,8 @@ class HotelSearchRequest:
     num_rooms: int = 1
     num_adults: int = 1
     num_children: int = 0
+    checkin_time: str = None
+    checkout_time: str = None
 
 
 @dataclass
@@ -40,12 +42,66 @@ class HotelRate:
 
 
 @dataclass
+class Phone:
+    type: str
+    number: str
+    extension: str
+
+
+@dataclass
 class HotelAdapterHotel:
     name: str
     chain_code: str
     address: HotelAddress
     rate: HotelRate
     star_rating: Optional[int] = None
+
+
+@dataclass
+class HotelCommission:
+    has_commission: bool
+    percent: int
+    amount: int = 0
+
+
+@dataclass
+class RateCancelInfo:
+    refundable: bool
+
+
+@dataclass
+class Money:
+    amount: float
+    currency: str
+
+
+@dataclass
+class RateDetail:
+    rate_date: date
+    base_rate: Money
+    tax: Money
+    total: Money
+
+
+@dataclass
+class RoomRate:
+    description: str
+    additional_detail: List[str]
+    rate_plan_type: str
+    total_base_rate: Money
+    total_tax_rate: Money
+    total: Money
+    rate_detail: List[RateDetail] = field(default_factory=list)
+
+
+@dataclass
+class HotelDetails:
+    name: str
+    chain_code: str
+    hotel_code: str
+    checkin_time: str
+    checkout_time: str
+    hotel_rates: List[RoomRate]
 
 
 class HotelAdapter(abc.ABC):

@@ -9,7 +9,7 @@ class TravelportHotelDetailsBuilder:
     def __init__(self):
         self._request: Dict[Any, Any] = {
             "TargetBranch": TARGET_BRANCH,
-            "BillingPointOfSaleInfo": {"OriginApplication": "uAPI"},
+            "BillingPointOfSaleInfo": {"OriginApplication": "Simplenight"},
             "HotelProperty": {},
             "HotelDetailsModifiers": {"RateRuleDetail": "Complete", "HotelStay": {}},
         }
