@@ -1,13 +1,9 @@
-import json
 import unittest
 from datetime import datetime
 from datetime import timedelta
 
-import zeep
-
-from api.hotel.hotels import HotelSearchRequest
-from api.hotel.travelport import TravelportHotelAdapter
-from api.tests import utils
+from api.hotel.hotels import HotelSearchRequest, HotelDetailsSearchRequest
+from api.hotel.travelport.travelport import TravelportHotelAdapter
 
 
 class TestTravelport(unittest.TestCase):
@@ -23,11 +19,13 @@ class TestTravelport(unittest.TestCase):
 
     def test_hotel_details(self):
         travelport = TravelportHotelAdapter()
+        hotel_details = HotelDetailsSearchRequest(
+            chain_code="LQ",
+            hotel_code="17352",
+            checkin_date=datetime.now().date() + timedelta(days=30),
+            checkout_date=datetime.now().date() + timedelta(days=37),
 
-        checkin_date = datetime.now().date() + timedelta(days=30)
-        checkout_date = datetime.now().date() + timedelta(days=37)
-        chain_code = "LQ"
-        hotel_code = "17352"
+        )
 
-        response = travelport.details(chain_code, hotel_code, checkin_date, checkout_date)
-        print(json.dumps(zeep.helpers.serialize_object(response), indent=2))
+        response = travelport.details(hotel_details)
+        print(response)

@@ -1,7 +1,7 @@
 import unittest
 
 from api.hotel.hotels import HotelSearchRequest
-from api.hotel.travelport import TravelportHotelSearchBuilder
+from api.hotel.travelport.travelport import TravelportHotelSearchBuilder
 
 
 class TestTravelport(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestTravelport(unittest.TestCase):
         search.checkout = "2020-12-07"
         search.hotel_location = "SFO"
 
-        results = search.search_object
+        results = search.request
 
         self.assertEqual("P3081850", results["TargetBranch"])
         self.assertEqual("uAPI", results["BillingPointOfSaleInfo"]["OriginApplication"])
@@ -27,7 +27,7 @@ class TestTravelport(unittest.TestCase):
             location_name="SFO", checkin_date="2020-12-01", checkout_date="2020-12-07", num_adults=1
         )
 
-        results = TravelportHotelSearchBuilder().build_from_search_request(search_request)
+        results = TravelportHotelSearchBuilder.build(search_request)
 
         self.assertEqual("P3081850", results["TargetBranch"])
         self.assertEqual("uAPI", results["BillingPointOfSaleInfo"]["OriginApplication"])

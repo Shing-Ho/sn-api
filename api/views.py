@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from api.models.models import Hotels, Geoname, GeonameAlternateName
 from . import serializers
 from .hotel.hotels import HotelSearchRequest
-from .hotel.travelport import TravelportHotelAdapter
+from api.hotel.travelport.travelport import TravelportHotelAdapter
 from .permissions import TokenAuthSupportQueryString
 from .serializers import (
     HotelsSerializer,

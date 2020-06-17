@@ -15,6 +15,16 @@ class HotelSearchRequest:
 
 
 @dataclass
+class HotelDetailsSearchRequest:
+    chain_code: str
+    hotel_code: str
+    checkin_date: date
+    checkout_date: date
+    num_rooms: int = 1
+    currency: str = "USD"
+
+
+@dataclass
 class HotelAddress:
     city: str
     region: str
