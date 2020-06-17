@@ -1,3 +1,5 @@
+
+import json
 from django.db.models import Prefetch
 from django.http import HttpResponse
 from rest_framework import viewsets
@@ -17,9 +19,24 @@ from .serializers import (
 )
 
 
+location_dictionary = {"London":
+                       {"name": "London Luton Airport", "continent": "EU",
+                           "iso_c": "GB", "keywords": "LON", "iata": "LTN"},
+                       "Los Angeles": {"name": "Los Angeles International Airport", "continent": "0", "iso_c": "US", "keywords": "0", "iata": "LAX"}}
+
+
 def location_formater(request):
+    city = request.GET.get("city")
     search = SearchEngine()
-    city = search.search_by_city()
+    if city:
+        city_name = search.by_city(
+            city=city, sort_by="population", returns=10)[0].major_city
+
+    return HttpResponse(json.dumps({city_name: location_dictionary[city_name]["iata"]}))
+
+    # what provider wants iata code
+    # what provider wants city name or code
+    # when do we go to each provider
 
 
 def index(request):
@@ -32,7 +49,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
     serializer_class = (HotelAdapterHotelSerializer,)
     hotel_adapter = TravelportHotelAdapter()
 
-    @action(detail=False, methods=["GET"], name="Search Hotels")
+    @ action(detail=False, methods=["GET"], name="Search Hotels")
     def search(self, request):
         location = request.GET.get("location")
         checkin = request.GET.get("checkin")
