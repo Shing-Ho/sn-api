@@ -1,4 +1,5 @@
 
+import requests
 import json
 from django.db.models import Prefetch
 from django.http import HttpResponse
@@ -17,12 +18,8 @@ from .serializers import (
     LocationsSerializer,
     HotelAdapterHotelSerializer,
 )
-
-
-location_dictionary = {"London":
-                       {"name": "London Luton Airport", "continent": "EU",
-                           "iso_c": "GB", "keywords": "LON", "iata": "LTN"},
-                       "Los Angeles": {"name": "Los Angeles International Airport", "continent": "0", "iso_c": "US", "keywords": "0", "iata": "LAX"}}
+data = open("airports.json", encoding="utf-8").read()
+location_dictionary = json.loads(data)
 
 
 def location_formater(request):

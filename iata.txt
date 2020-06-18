@@ -1,1 +1,2151 @@
-{"London": {"name": "London Luton Airport", "continent": "EU", "iso_c": "GB", "keywords": "LON", "iata": "LTN"}, "Los Angeles": {"name": "Los Angeles International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "LAX"}, "New York": {"name": "La Guardia Airport", "continent": NaN, "iso_c": "US", "keywords": "Manhattan, New York City, NYC, Glenn H. Curtiss Airport, North Beach Airport, La Guardia", "iata": "LGA"}, "Chicago": {"name": "Chicago Midway International Airport", "continent": NaN, "iso_c": "US", "keywords": "CHI", "iata": "MDW"}, "Atlanta": {"name": "Hartsfield Jackson Atlanta International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "ATL"}, "Amsterdam": {"name": "Amsterdam Airport Schiphol", "continent": "EU", "iso_c": "NL", "keywords": NaN, "iata": "AMS"}, "Paris": {"name": "Paris-Orly Airport", "continent": "EU", "iso_c": "FR", "keywords": "PAR", "iata": "ORY"}, "San Francisco": {"name": "San Francisco International Airport", "continent": NaN, "iso_c": "US", "keywords": "QSF, QBA", "iata": "SFO"}, "Frankfurt am Main": {"name": "Frankfurt am Main Airport", "continent": "EU", "iso_c": "DE", "keywords": "EDAF, Rhein-Main Air Base", "iata": "FRA"}, "Newark": {"name": "Newark Liberty International Airport", "continent": NaN, "iso_c": "US", "keywords": "Manhattan, New York City, NYC", "iata": "EWR"}, "Las Vegas": {"name": "McCarran International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "LAS"}, "Dallas-Fort Worth": {"name": "Dallas Fort Worth International Airport", "continent": NaN, "iso_c": "US", "keywords": "QDF", "iata": "DFW"}, "Orlando": {"name": "Orlando Sanford International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "SFB"}, "Denver": {"name": "Denver International Airport", "continent": NaN, "iso_c": "US", "keywords": "DVX, KVDX", "iata": "DEN"}, "Miami": {"name": "Miami International Airport", "continent": NaN, "iso_c": "US", "keywords": "MFW, South Florida", "iata": "MIA"}, "Washington": {"name": "Ronald Reagan Washington National Airport", "continent": NaN, "iso_c": "US", "keywords": "WAS", "iata": "DCA"}, "Seattle": {"name": "Boeing Field King County International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "BFI"}, "Phoenix": {"name": "Phoenix Sky Harbor International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "PHX"}, "Boston": {"name": "General Edward Lawrence Logan International Airport", "continent": NaN, "iso_c": "US", "keywords": "General Edward Lawrence Logan International Airport", "iata": "BOS"}, "Philadelphia": {"name": "Philadelphia International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "PHL"}, "Houston": {"name": "William P Hobby Airport", "continent": NaN, "iso_c": "US", "keywords": "QHO", "iata": "HOU"}, "Toronto": {"name": "Lester B. Pearson International Airport", "continent": NaN, "iso_c": "CA", "keywords": "YTO, Toronto International Airport, Malton", "iata": "YYZ"}, "Charlotte": {"name": "Charlotte Douglas International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "CLT"}, "Detroit": {"name": "Detroit Metropolitan Wayne County Airport", "continent": NaN, "iso_c": "US", "keywords": "DTT, Detroit Metro Airport", "iata": "DTW"}, "Munich": {"name": "Munich Airport", "continent": "EU", "iso_c": "DE", "keywords": "Franz Josef Strauss Airport, Flughafen M\u00fcnchen Franz Josef Strau\u00df", "iata": "MUC"}, "Minneapolis": {"name": "Minneapolis-St Paul International/Wold-Chamberlain Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "MSP"}, "Barcelona": {"name": "Barcelona International Airport", "continent": "EU", "iso_c": "ES", "keywords": NaN, "iata": "BCN"}, "Rome": {"name": "Ciampino\u2013G. B. Pastine International Airport", "continent": "EU", "iso_c": "IT", "keywords": "ROM, Giovan Battista Pastine Airport", "iata": "CIA"}, "Madrid": {"name": "Adolfo Su\u00e1rez Madrid\u2013Barajas Airport", "continent": "EU", "iso_c": "ES", "keywords": "Legan\u00e9s, Madrid Barajas International Airport", "iata": "MAD"}, "Brussels": {"name": "Brussels South Charleroi Airport", "continent": "EU", "iso_c": "BE", "keywords": "Gosselies Airport", "iata": "CRL"}, "Zurich": {"name": "Z\u00fcrich Airport", "continent": "EU", "iso_c": "CH", "keywords": NaN, "iata": "ZRH"}, "Copenhagen": {"name": "Copenhagen Kastrup Airport", "continent": "EU", "iso_c": "DK", "keywords": "K\u00f8benhavn, Malm\u00f6", "iata": "CPH"}, "Salt Lake City": {"name": "Salt Lake City International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "SLC"}, "San Diego": {"name": "San Diego International Airport", "continent": NaN, "iso_c": "US", "keywords": "Lindbergh Field", "iata": "SAN"}, "Fort Lauderdale": {"name": "Fort Lauderdale Hollywood International Airport", "continent": NaN, "iso_c": "US", "keywords": "MFW, South Florida", "iata": "FLL"}, "Baltimore": {"name": "Baltimore/Washington International Thurgood Marshall Airport", "continent": NaN, "iso_c": "US", "keywords": "WAS", "iata": "BWI"}, "St Louis": {"name": "St Louis Lambert International Airport", "continent": NaN, "iso_c": "US", "keywords": "Lambert St Louis", "iata": "STL"}, "Dublin": {"name": "Dublin Airport", "continent": "EU", "iso_c": "IE", "keywords": "Aerfort Bhaile \u00c1tha Cliath", "iata": "DUB"}, "Vancouver": {"name": "Vancouver International Airport", "continent": NaN, "iso_c": "CA", "keywords": NaN, "iata": "YVR"}, "Singapore": {"name": "Singapore Changi Airport", "continent": "AS", "iso_c": "SG", "keywords": NaN, "iata": "SIN"}, "Honolulu": {"name": "Daniel K Inouye International Airport", "continent": NaN, "iso_c": "US", "keywords": "Hickam Air Force Base, HIK, PHIK, KHNL, Honolulu International", "iata": "HNL"}, "Tokyo": {"name": "Tokyo Haneda International Airport", "continent": "AS", "iso_c": "JP", "keywords": "TYO, Haneda", "iata": "HND"}, "Vienna": {"name": "Vienna International Airport", "continent": "EU", "iso_c": "AT", "keywords": NaN, "iata": "VIE"}, "Montr\u00e9al": {"name": "Montreal / Pierre Elliott Trudeau International Airport", "continent": NaN, "iso_c": "CA", "keywords": "YMQ, Dorval Airport", "iata": "YUL"}, "Dubai": {"name": "Dubai International Airport", "continent": "AS", "iso_c": "AE", "keywords": "\u0645\u0637\u0627\u0631 \u062f\u0628\u064a \u0627\u0644\u062f\u0648\u0644\u064a\u200e", "iata": "DXB"}, "Portland": {"name": "Portland International Jetport Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "PWM"}, "Prague": {"name": "V\u00e1clav Havel Airport Prague", "continent": "EU", "iso_c": "CZ", "keywords": "Leti\u0161t\u011b Praha-Ruzyn\u011b, Ruzyn\u011b International Airport, Leti\u0161t\u011b V\u00e1clava Havla Praha", "iata": "PRG"}, "Stockholm": {"name": "Stockholm-Arlanda Airport", "continent": "EU", "iso_c": "SE", "keywords": NaN, "iata": "ARN"}, "Hong Kong": {"name": "Chek Lap Kok International Airport", "continent": "AS", "iso_c": "HK", "keywords": "Chek Lap Kok Airport, \u8d64\u9c72\u89d2\u6a5f\u5834", "iata": "HKG"}, "Tampa": {"name": "Tampa International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "TPA"}, "Istanbul": {"name": "Sabiha G\u00f6k\u00e7en International Airport", "continent": "AS", "iso_c": "TR", "keywords": "Sabiha G\u00f6k\u00e7en Havaliman\u0131", "iata": "SAW"}, "Sydney": {"name": "Sydney Kingsford Smith International Airport", "continent": "OC", "iso_c": "AU", "keywords": "RAAF Station Mascot", "iata": "SYD"}, "Cincinnati": {"name": "Cincinnati Northern Kentucky International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "CVG"}, "Lisbon": {"name": "Humberto Delgado Airport (Lisbon Portela Airport)", "continent": "EU", "iso_c": "PT", "keywords": "Lisboa", "iata": "LIS"}, "New Orleans": {"name": "Louis Armstrong New Orleans International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "MSY"}, "Bangkok": {"name": "Don Mueang International Airport", "continent": "AS", "iso_c": "TH", "keywords": "Old Bangkok International Airport, Don Muang Royal Thai Air Force Base", "iata": "DMK"}, "Berlin": {"name": "Berlin-Sch\u00f6nefeld Airport", "continent": "EU", "iso_c": "DE", "keywords": "BER, Schoenefeld", "iata": "SXF"}, "Pittsburgh": {"name": "Pittsburgh International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "PIT"}, "Oakland": {"name": "Metropolitan Oakland International Airport", "continent": NaN, "iso_c": "US", "keywords": "QSF, QBA", "iata": "OAK"}, "Nashville": {"name": "Nashville International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "BNA"}, "Milan": {"name": "Milano Linate Airport", "continent": "EU", "iso_c": "IT", "keywords": "E Forlanini", "iata": "LIN"}, "San Jose": {"name": "Norman Y. Mineta San Jose International Airport", "continent": NaN, "iso_c": "US", "keywords": "QSF, QBA", "iata": "SJC"}, "Raleigh/Durham": {"name": "Raleigh Durham International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "RDU"}, "Austin": {"name": "Austin Bergstrom International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "AUS"}, "Canc\u00fan": {"name": "Canc\u00fan International Airport", "continent": NaN, "iso_c": "MX", "keywords": NaN, "iata": "CUN"}, "Oslo": {"name": "Oslo Gardermoen Airport", "continent": "EU", "iso_c": "NO", "keywords": NaN, "iata": "OSL"}, "Budapest": {"name": "Budapest Ferenc Liszt International Airport", "continent": "EU", "iso_c": "HU", "keywords": "Ferihegyi nemzetk\u00f6zi rep\u00fcl\u0151t\u00e9r, Budapest Liszt Ferenc international Airport", "iata": "BUD"}, "Memphis": {"name": "Memphis International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "MEM"}, "Athens": {"name": "Eleftherios Venizelos International Airport", "continent": "EU", "iso_c": "GR", "keywords": NaN, "iata": "ATH"}, "Santa Ana": {"name": "John Wayne Airport-Orange County Airport", "continent": NaN, "iso_c": "US", "keywords": "Disney, Disneyland, Orange County", "iata": "SNA"}, "Kansas City": {"name": "Kansas City International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "MCI"}, "San Antonio": {"name": "San Antonio International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "SAT"}, "Beijing": {"name": "Beijing Capital International Airport", "continent": "AS", "iso_c": "CN", "keywords": "BJS, Bejing, Peking, Olympics", "iata": "PEK"}, "Calgary": {"name": "Calgary International Airport", "continent": NaN, "iso_c": "CA", "keywords": "McCall Field", "iata": "YYC"}, "Manchester": {"name": "Manchester Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "MHT"}, "Geneva": {"name": "Geneva Cointrin International Airport", "continent": "EU", "iso_c": "CH", "keywords": NaN, "iata": "GVA"}, "D\u00fcsseldorf": {"name": "D\u00fcsseldorf Airport", "continent": "EU", "iso_c": "DE", "keywords": NaN, "iata": "DUS"}, "Helsinki": {"name": "Helsinki Vantaa Airport", "continent": "EU", "iso_c": "FI", "keywords": NaN, "iata": "HEL"}, "Kuala Lumpur": {"name": "Kuala Lumpur International Airport", "continent": "AS", "iso_c": "MY", "keywords": "KLIA", "iata": "KUL"}, "Cleveland": {"name": "Cleveland Hopkins International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "CLE"}, "Mexico City": {"name": "Licenciado Benito Juarez International Airport", "continent": NaN, "iso_c": "MX", "keywords": "AICM", "iata": "MEX"}, "Indianapolis": {"name": "Indianapolis International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "IND"}, "Reykjav\u00edk": {"name": "Keflavik International Airport", "continent": "EU", "iso_c": "IS", "keywords": "Keflavik Naval Air Station,REK", "iata": "KEF"}, "Albuquerque": {"name": "Albuquerque International Sunport Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "ABQ"}, "Palma De Mallorca": {"name": "Palma De Mallorca Airport", "continent": "EU", "iso_c": "ES", "keywords": "Son Sant Joan Airport, LESJ", "iata": "PMI"}, "Dallas": {"name": "Dallas Love Field", "continent": NaN, "iso_c": "US", "keywords": "QDF", "iata": "DAL"}, "Melbourne": {"name": "Melbourne International Airport", "continent": "OC", "iso_c": "AU", "keywords": NaN, "iata": "MEL"}, "Venice": {"name": "Venice Marco Polo Airport", "continent": "EU", "iso_c": "IT", "keywords": "Venezia Tessera", "iata": "VCE"}, "Milwaukee": {"name": "General Mitchell International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "MKE"}, "Shanghai": {"name": "Shanghai Hongqiao International Airport", "continent": "AS", "iso_c": "CN", "keywords": NaN, "iata": "SHA"}, "Johannesburg": {"name": "OR Tambo International Airport", "continent": "AF", "iso_c": "ZA", "keywords": "Johannesburg International Airport", "iata": "JNB"}, "Edinburgh": {"name": "Edinburgh Airport", "continent": "EU", "iso_c": "GB", "keywords": NaN, "iata": "EDI"}, "Ottawa": {"name": "Ottawa Macdonald-Cartier International Airport", "continent": NaN, "iso_c": "CA", "keywords": "Uplands, UUP, CUUP", "iata": "YOW"}, "Columbus": {"name": "John Glenn Columbus International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "CMH"}, "Nice": {"name": "Nice-C\u00f4te d'Azur Airport", "continent": "EU", "iso_c": "FR", "keywords": NaN, "iata": "NCE"}, "New Delhi": {"name": "Indira Gandhi International Airport", "continent": "AS", "iso_c": "IN", "keywords": "Palam Air Force Station", "iata": "DEL"}, "M\u00e1laga": {"name": "M\u00e1laga Airport", "continent": "EU", "iso_c": "ES", "keywords": "Costa del Sol", "iata": "AGP"}, "Warsaw": {"name": "Warsaw Chopin Airport", "continent": "EU", "iso_c": "PL", "keywords": "Ok\u0119cie", "iata": "WAW"}, "Tucson": {"name": "Tucson International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "TUS"}, "San Juan": {"name": "Luis Munoz Marin International Airport", "continent": NaN, "iso_c": "PR", "keywords": "Isla Verde", "iata": "SJU"}, "Seoul": {"name": "Gimpo International Airport", "continent": "AS", "iso_c": "KR", "keywords": NaN, "iata": "GMP"}, "Moscow": {"name": "Domodedovo International Airport", "continent": "EU", "iso_c": "RU", "keywords": "MOW, \u0410\u044d\u0440\u043e\u043f\u043e\u0440\u0442 \u0414\u043e\u043c\u043e\u0434\u0435\u0301\u0434\u043e\u0432\u043e", "iata": "DME"}, "Buffalo": {"name": "Buffalo Niagara International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "BUF"}, "Cologne": {"name": "Cologne Bonn Airport", "continent": "EU", "iso_c": "DE", "keywords": "K\u00f6ln", "iata": "CGN"}, "Auckland": {"name": "Auckland International Airport", "continent": "OC", "iso_c": "NZ", "keywords": NaN, "iata": "AKL"}, "Manila": {"name": "Ninoy Aquino International Airport", "continent": "AS", "iso_c": "PH", "keywords": "Manila International Airport", "iata": "MNL"}, "S\u00e3o Paulo": {"name": "Congonhas Airport", "continent": "SA", "iso_c": "BR", "keywords": "http://www.infraero.gov.br/usa/aero_prev_home.php?ai=219", "iata": "CGH"}, "Cairo": {"name": "Cairo International Airport", "continent": "AF", "iso_c": "EG", "keywords": NaN, "iata": "CAI"}, "Hamburg": {"name": "Hamburg Airport", "continent": "EU", "iso_c": "DE", "keywords": NaN, "iata": "HAM"}, "Anchorage": {"name": "Ted Stevens Anchorage International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "ANC"}, "Jacksonville": {"name": "Jacksonville International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "JAX"}, "Buenos Aires": {"name": "Ministro Pistarini International Airport", "continent": "SA", "iso_c": "AR", "keywords": "BUE", "iata": "EZE"}, "Hartford": {"name": "Bradley International Airport", "continent": NaN, "iso_c": "US", "keywords": "HFD, Hartford", "iata": "BDL"}, "Mumbai": {"name": "Chhatrapati Shivaji International Airport", "continent": "AS", "iso_c": "IN", "keywords": "Bombay, Sahar International Airport", "iata": "BOM"}, "Tel Aviv": {"name": "Ben Gurion International Airport", "continent": "AS", "iso_c": "IL", "keywords": NaN, "iata": "TLV"}, "Winnipeg": {"name": "Winnipeg / James Armstrong Richardson International Airport", "continent": NaN, "iso_c": "CA", "keywords": "CFB Winnipeg", "iata": "YWG"}, "Taipei": {"name": "Taiwan Taoyuan International Airport", "continent": "AS", "iso_c": "TW", "keywords": "Taiwan Taoyuan International Airport, \u81fa\u7063\u6843\u5712\u570b\u969b\u6a5f\u5834", "iata": "TPE"}, "Glasgow": {"name": "Glasgow International Airport", "continent": "EU", "iso_c": "GB", "keywords": "Port-adhair Eadar-n\u00e0iseanta Ghlaschu, RAF Abbotsinch, RAF Ayr", "iata": "GLA"}, "Oklahoma City": {"name": "Will Rogers World Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "OKC"}, "Gran Canaria Island": {"name": "Gran Canaria Airport", "continent": "EU", "iso_c": "ES", "keywords": "Canary Islands, Las Palmas Airport, Gando Airport", "iata": "LPA"}, "Edmonton": {"name": "Edmonton International Airport", "continent": NaN, "iso_c": "CA", "keywords": "YEA", "iata": "YEG"}, "West Palm Beach": {"name": "Palm Beach International Airport", "continent": NaN, "iso_c": "US", "keywords": "MFW, South Florida", "iata": "PBI"}, "Reno": {"name": "Reno Tahoe International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "RNO"}, "Sacramento": {"name": "Sacramento International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "SMF"}, "Brisbane": {"name": "Brisbane International Airport", "continent": "OC", "iso_c": "AU", "keywords": NaN, "iata": "BNE"}, "Denpasar-Bali Island": {"name": "Ngurah Rai (Bali) International Airport", "continent": "AS", "iso_c": "ID", "keywords": "WRRR", "iata": "DPS"}, "Cape Town": {"name": "Cape Town International Airport", "continent": "AF", "iso_c": "ZA", "keywords": "Kaapstad Internasionale Lughawe, CTIA, DF Malan Airport", "iata": "CPT"}, "Abu Dhabi": {"name": "Abu Dhabi International Airport", "continent": "AS", "iso_c": "AE", "keywords": NaN, "iata": "AUH"}, "Norfolk": {"name": "Norfolk International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "ORF"}, "Stuttgart": {"name": "Stuttgart Airport", "continent": "EU", "iso_c": "DE", "keywords": NaN, "iata": "STR"}, "Birmingham": {"name": "Birmingham-Shuttlesworth International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "BHM"}, "Valletta": {"name": "Malta International Airport", "continent": "EU", "iso_c": "MT", "keywords": "Luqa Airport,Valletta,Gudja,RAF Luqa", "iata": "MLA"}, "Halifax": {"name": "Halifax / Stanfield International Airport", "continent": NaN, "iso_c": "CA", "keywords": "Robert L. Stanfield International Airport", "iata": "YHZ"}, "Antalya": {"name": "Antalya International Airport", "continent": "AS", "iso_c": "TR", "keywords": NaN, "iata": "AYT"}, "Santiago": {"name": "Comodoro Arturo Merino Ben\u00edtez International Airport", "continent": "SA", "iso_c": "CL", "keywords": NaN, "iata": "SCL"}, "Louisville": {"name": "Louisville International Standiford Field", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "SDF"}, "Rio De Janeiro": {"name": "Rio Gale\u00e3o \u2013 Tom Jobim International Airport", "continent": "SA", "iso_c": "BR", "keywords": "Gale\u00e3o - Ant\u00f4nio Carlos Jobim International Airport", "iata": "GIG"}, "Bergen": {"name": "Bergen Airport Flesland", "continent": "EU", "iso_c": "NO", "keywords": NaN, "iata": "BGO"}, "Lima": {"name": "Jorge Ch\u00e1vez International Airport", "continent": "SA", "iso_c": "PE", "keywords": "SPIM", "iata": "LIM"}, "Charleston": {"name": "Yeager Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "CRW"}, "Ontario": {"name": "Ontario International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "ONT"}, "Syracuse": {"name": "Syracuse Hancock International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "SYR"}, "Bergamo": {"name": "Il Caravaggio International Airport", "continent": "EU", "iso_c": "IT", "keywords": "Bergamo Orio al Serio Airport,Orio al Serio", "iata": "BGY"}, "Richmond": {"name": "Richmond International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "RIC"}, "Boise": {"name": "Boise Air Terminal/Gowen field", "continent": NaN, "iso_c": "US", "keywords": "Boise Air Terminal, Gowen Field", "iata": "BOI"}, "Riga": {"name": "Riga International Airport", "continent": "EU", "iso_c": "LV", "keywords": NaN, "iata": "RIX"}, "Savannah": {"name": "Savannah Hilton Head International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "SAV"}, "Heraklion": {"name": "Heraklion International Nikos Kazantzakis Airport", "continent": "EU", "iso_c": "GR", "keywords": "Crete Island", "iata": "HER"}, "Tenerife Island": {"name": "Tenerife Norte Airport", "continent": "EU", "iso_c": "ES", "keywords": "Canary Islands, Los Rodeos, TCI", "iata": "TFN"}, "Nairobi": {"name": "Jomo Kenyatta International Airport", "continent": "AF", "iso_c": "KE", "keywords": "Jkia Airport, Embakasi Airport, Nairobi International Airport", "iata": "NBO"}, "Rochester": {"name": "Rochester International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "RST"}, "Phuket": {"name": "Phuket International Airport", "continent": "AS", "iso_c": "TH", "keywords": NaN, "iata": "HKT"}, "Tocumen": {"name": "Tocumen International Airport", "continent": NaN, "iso_c": "PA", "keywords": "La Joya No 1", "iata": "PTY"}, "Dayton": {"name": "James M Cox Dayton International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "DAY"}, "Spokane": {"name": "Spokane International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "GEG"}, "Zagreb": {"name": "Zagreb Airport", "continent": "EU", "iso_c": "HR", "keywords": "Pleso", "iata": "ZAG"}, "Fort Myers": {"name": "Southwest Florida International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "RSW"}, "Madison": {"name": "Dane County Regional Truax Field", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "MSN"}, "Wichita": {"name": "Wichita Mid Continent Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "ICT"}, "Ho Chi Minh City": {"name": "Tan Son Nhat International Airport", "continent": "AS", "iso_c": "VN", "keywords": "Tansonnhat, S\u00e0i G\u00f2n, Saigon, S\u00e2n bay Qu\u1ed1c t\u1ebf T\u00e2n S\u01a1n Nh\u1ea5t", "iata": "SGN"}, "Belgrade": {"name": "Belgrade Nikola Tesla Airport", "continent": "EU", "iso_c": "RS", "keywords": "Beograd, Sur\u010din Airport", "iata": "BEG"}, "Larnarca": {"name": "Larnaca International Airport", "continent": "AS", "iso_c": "CY", "keywords": "\u0394\u03b9\u03b5\u03b8\u03bd\u03ad\u03c2 A\u03b5\u03c1\u03bf\u03b4\u03c1\u03cc\u03bc\u03b9\u03bf \u039b\u03ac\u03c1\u03bd\u03b1\u03ba\u03b1\u03c2", "iata": "LCA"}, "Jakarta": {"name": "Soekarno-Hatta International Airport", "continent": "AS", "iso_c": "ID", "keywords": "JKT, Cengkareng, Java", "iata": "CGK"}, "Des Moines": {"name": "Des Moines International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "DSM"}, "Faro": {"name": "Faro Airport", "continent": "EU", "iso_c": "PT", "keywords": NaN, "iata": "FAO"}, "Osaka": {"name": "Osaka International Airport", "continent": "AS", "iso_c": "JP", "keywords": "OSA, Itami", "iata": "ITM"}, "Tulsa": {"name": "Tulsa International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "TUL"}, "Victoria": {"name": "Victoria International Airport", "continent": NaN, "iso_c": "CA", "keywords": NaN, "iata": "YYJ"}, "Perth": {"name": "Perth International Airport", "continent": "OC", "iso_c": "AU", "keywords": NaN, "iata": "PER"}, "Christchurch": {"name": "Christchurch International Airport", "continent": "OC", "iso_c": "NZ", "keywords": NaN, "iata": "CHC"}, "Colorado Springs": {"name": "City of Colorado Springs Municipal Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "COS"}, "Gothenburg": {"name": "Gothenburg-Landvetter Airport", "continent": "EU", "iso_c": "SE", "keywords": "G\u00f6teborg-Landvetter", "iata": "GOT"}, "Krak\u00f3w": {"name": "John Paul II International Airport Krak\u00f3w-Balice Airport", "continent": "EU", "iso_c": "PL", "keywords": "Krakov", "iata": "KRK"}, "Bologna": {"name": "Bologna Guglielmo Marconi Airport", "continent": "EU", "iso_c": "IT", "keywords": "Guglielmo Marconi Airport, Borgo Panigale Airport", "iata": "BLQ"}, "Bucharest": {"name": "Henri Coand\u0103 International Airport", "continent": "EU", "iso_c": "RO", "keywords": "BUH, Otopeni Airport, RoAF 90th Airlift Base", "iata": "OTP"}, "Little Rock": {"name": "Bill & Hillary Clinton National Airport/Adams Field", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "LIT"}, "Marseille": {"name": "Marseille Provence Airport", "continent": "EU", "iso_c": "FR", "keywords": NaN, "iata": "MRS"}, "Alicante": {"name": "Alicante International Airport", "continent": "EU", "iso_c": "ES", "keywords": NaN, "iata": "ALC"}, "St. Petersburg": {"name": "Pulkovo Airport", "continent": "EU", "iso_c": "RU", "keywords": "\u0410\u044d\u0440\u043e\u043f\u043e\u0301\u0440\u0442 \u041f\u0443\u0301\u043b\u043a\u043e\u0432\u043e, Leningrad, Shosseynaya Airport, Saint Petersburg, Petrograd", "iata": "LED"}, "Greensboro": {"name": "Piedmont Triad International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "GSO"}, "Limerick": {"name": "Shannon Airport", "continent": "EU", "iso_c": "IE", "keywords": NaN, "iata": "SNN"}, "Nassau": {"name": "Lynden Pindling International Airport", "continent": NaN, "iso_c": "BS", "keywords": "Nassau International Airport", "iata": "NAS"}, "Puerto Vallarta": {"name": "Licenciado Gustavo D\u00edaz Ordaz International Airport", "continent": NaN, "iso_c": "MX", "keywords": NaN, "iata": "PVR"}, "Toulouse/Blagnac": {"name": "Toulouse-Blagnac Airport", "continent": "EU", "iso_c": "FR", "keywords": NaN, "iata": "TLS"}, "N\u00e1poli": {"name": "Naples International Airport", "continent": "EU", "iso_c": "IT", "keywords": "Capodichino Airport, Aeroporto di Napoli-Capodichino, Aeroporto Internazionale di Napoli", "iata": "NAP"}, "Punta Cana": {"name": "Punta Cana International Airport", "continent": NaN, "iso_c": "DO", "keywords": NaN, "iata": "PUJ"}, "Ljubljana": {"name": "Ljubljana Jo\u017ee Pu\u010dnik Airport", "continent": "EU", "iso_c": "SI", "keywords": "Ljubljana, Brnik, Kranj", "iata": "LJU"}, "Bogota": {"name": "El Dorado International Airport", "continent": "SA", "iso_c": "CO", "keywords": NaN, "iata": "BOG"}, "Stavanger": {"name": "Stavanger Airport Sola", "continent": "EU", "iso_c": "NO", "keywords": "Sola Air Station, Stavanger lufthavn, Sola", "iata": "SVG"}, "Porto": {"name": "Francisco de S\u00e1 Carneiro Airport", "continent": "EU", "iso_c": "PT", "keywords": NaN, "iata": "OPO"}, "B\u00e2le/Mulhouse": {"name": "EuroAirport Basel-Mulhouse-Freiburg Airport", "continent": "EU", "iso_c": "FR", "keywords": "MLH, EAP", "iata": "BSL"}, "Lyon": {"name": "Lyon Saint-Exup\u00e9ry Airport", "continent": "EU", "iso_c": "FR", "keywords": NaN, "iata": "LYS"}, "Knoxville": {"name": "McGhee Tyson Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "TYS"}, "Tallinn": {"name": "Lennart Meri Tallinn Airport", "continent": "EU", "iso_c": "EE", "keywords": NaN, "iata": "TLL"}, "Sarasota/Bradenton": {"name": "Sarasota Bradenton International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "SRQ"}, "Tallahassee": {"name": "Tallahassee Regional Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "TLH"}, "Doha": {"name": "Hamad International Airport", "continent": "AS", "iso_c": "QA", "keywords": "New Doha International Airport", "iata": "DOH"}, "Bangor": {"name": "Bangor International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "BGR"}, "Eindhoven": {"name": "Eindhoven Airport", "continent": "EU", "iso_c": "NL", "keywords": "Welschap Airport", "iata": "EIN"}, "Greenville": {"name": "Greenville Spartanburg International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "GSP"}, "Lexington": {"name": "Blue Grass Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "LEX"}, "Pisa": {"name": "Pisa International Airport", "continent": "EU", "iso_c": "IT", "keywords": "Galileo Galilei Airport, San Giusto Airport", "iata": "PSA"}, "Havana": {"name": "Jos\u00e9 Mart\u00ed International Airport", "continent": NaN, "iso_c": "CU", "keywords": "Habana", "iata": "HAV"}, "Trondheim": {"name": "Trondheim Airport V\u00e6rnes", "continent": "EU", "iso_c": "NO", "keywords": NaN, "iata": "TRD"}, "Hanoi": {"name": "Noi Bai International Airport", "continent": "AS", "iso_c": "VN", "keywords": "Noibai Airport, S\u00e2n bay Qu\u1ed1c t\u1ebf N\u1ed9i B\u00e0i", "iata": "HAN"}, "Catania": {"name": "Catania-Fontanarossa Airport", "continent": "EU", "iso_c": "IT", "keywords": "Lanza Di Trabie, Catania-Fontanarossa Vincenzo Bellini", "iata": "CTA"}, "Daytona Beach": {"name": "Daytona Beach International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "DAB"}, "Nuremberg": {"name": "Nuremberg Airport", "continent": "EU", "iso_c": "DE", "keywords": "N\u00fcrnberg", "iata": "NUE"}, "Bristol": {"name": "Bristol Airport", "continent": "EU", "iso_c": "GB", "keywords": "Lulsgate Bottom", "iata": "BRS"}, "Liverpool": {"name": "Liverpool John Lennon Airport", "continent": "EU", "iso_c": "GB", "keywords": NaN, "iata": "LPL"}, "Colombo": {"name": "Bandaranaike International Colombo Airport", "continent": "AS", "iso_c": "LK", "keywords": "RAF Negombo, Katunayake International Airport", "iata": "CMB"}, "Lubbock": {"name": "Lubbock Preston Smith International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "LBB"}, "Newcastle": {"name": "Newcastle Airport", "continent": "EU", "iso_c": "GB", "keywords": NaN, "iata": "NCL"}, "Hannover": {"name": "Hannover Airport", "continent": "EU", "iso_c": "DE", "keywords": NaN, "iata": "HAJ"}, "Columbia": {"name": "Columbia Metropolitan Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "CAE"}, "Muscat": {"name": "Muscat International Airport", "continent": "AS", "iso_c": "OM", "keywords": "Seeb International Airport, Masqat", "iata": "MCT"}, "Thessaloniki": {"name": "Thessaloniki Macedonia International Airport", "continent": "EU", "iso_c": "GR", "keywords": "Makedonia. Macedonia. Salonica", "iata": "SKG"}, "Casablanca": {"name": "Mohammed V International Airport", "continent": "AF", "iso_c": "MA", "keywords": "CAS, Casabianca, Nouasseur", "iata": "CMN"}, "Tunis": {"name": "Tunis Carthage International Airport", "continent": "AF", "iso_c": "TN", "keywords": "A\u00e9roport international de Tunis-Carthage, \u0645\u0637\u0627\u0631 \u062a\u0648\u0646\u0633 \u0642\u0631\u0637\u0627\u062c \u0627\u0644\u062f\u0648\u0644\u064a", "iata": "TUN"}, "Amarillo": {"name": "Rick Husband Amarillo International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "AMA"}, "Chattanooga": {"name": "Lovell Field", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "CHA"}, "Luxembourg": {"name": "Luxembourg-Findel International Airport", "continent": "EU", "iso_c": "LU", "keywords": NaN, "iata": "LUX"}, "Billings": {"name": "Billings Logan International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "BIL"}, "Manama": {"name": "Bahrain International Airport", "continent": "AS", "iso_c": "BH", "keywords": "\u0645\u0637\u0627\u0631 \u0627\u0644\u0628\u062d\u0631\u064a\u0646 \u0627\u0644\u062f\u0648\u0644\u064a", "iata": "BAH"}, "Vilnius": {"name": "Vilnius International Airport", "continent": "EU", "iso_c": "LT", "keywords": NaN, "iata": "VNO"}, "Treviso": {"name": "Treviso-Sant'Angelo Airport", "continent": "EU", "iso_c": "IT", "keywords": "Venice, Antonio Canova Terminal, Treviso Airport", "iata": "TSF"}, "Bangalore": {"name": "Kempegowda International Airport", "continent": "AS", "iso_c": "IN", "keywords": NaN, "iata": "BLR"}, "Chennai": {"name": "Chennai International Airport", "continent": "AS", "iso_c": "IN", "keywords": NaN, "iata": "MAA"}, "Huntsville": {"name": "Huntsville International Carl T Jones Field", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "HSV"}, "Belfast": {"name": "George Best Belfast City Airport", "continent": "EU", "iso_c": "GB", "keywords": NaN, "iata": "BHD"}, "Bratislava": {"name": "M. R. \u0160tef\u00e1nik Airport", "continent": "EU", "iso_c": "SK", "keywords": NaN, "iata": "BTS"}, "Nottingham": {"name": "East Midlands Airport", "continent": "EU", "iso_c": "GB", "keywords": "RAF Castle Donington", "iata": "EMA"}, "Springfield": {"name": "Springfield Branson National Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "SGF"}, "Sofia": {"name": "Sofia Airport", "continent": "EU", "iso_c": "BG", "keywords": NaN, "iata": "SOF"}, "Chiang Mai": {"name": "Chiang Mai International Airport", "continent": "AS", "iso_c": "TH", "keywords": NaN, "iata": "CNX"}, "Cusco": {"name": "Alejandro Velasco Astete International Airport", "continent": "SA", "iso_c": "PE", "keywords": NaN, "iata": "CUZ"}, "Guangzhou": {"name": "Guangzhou Baiyun International Airport", "continent": "AS", "iso_c": "CN", "keywords": NaN, "iata": "CAN"}, "Asheville": {"name": "Asheville Regional Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "AVL"}, "Cedar Rapids": {"name": "The Eastern Iowa Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "CID"}, "Hurghada": {"name": "Hurghada International Airport", "continent": "AF", "iso_c": "EG", "keywords": "Al Ghardaqah, \u0627\u0644\u063a\u0631\u062f\u0642\u0629", "iata": "HRG"}, "San Jos\u00e9 del Cabo": {"name": "Los Cabos International Airport", "continent": NaN, "iso_c": "MX", "keywords": NaN, "iata": "SJD"}, "Adelaide": {"name": "Adelaide International Airport", "continent": "OC", "iso_c": "AU", "keywords": NaN, "iata": "ADL"}, "Kiev": {"name": "Boryspil International Airport", "continent": "EU", "iso_c": "UA", "keywords": "Borispol, \u041c\u0456\u0436\u043d\u0430\u0440\u043e\u0434\u043d\u0438\u0439 \u0430\u0435\u0440\u043e\u043f\u043e\u0440\u0442 \"\u0411\u043e\u0440\u0438\u0441\u043f\u0456\u043b\u044c\"", "iata": "KBP"}, "Billund": {"name": "Billund Airport", "continent": "EU", "iso_c": "DK", "keywords": NaN, "iata": "BLL"}, "Green Bay": {"name": "Austin Straubel International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "GRB"}, "Torino": {"name": "Turin Airport", "continent": "EU", "iso_c": "IT", "keywords": "Torino-Caselle Airport, Sandro Pertini Airport, Turin-Caselle Airport", "iata": "TRN"}, "Aberdeen": {"name": "Aberdeen Dyce Airport", "continent": "EU", "iso_c": "GB", "keywords": NaN, "iata": "ABZ"}, "Bordeaux/M\u00e9rignac": {"name": "Bordeaux-M\u00e9rignac Airport", "continent": "EU", "iso_c": "FR", "keywords": NaN, "iata": "BOD"}, "Saint Martin": {"name": "Princess Juliana International Airport", "continent": NaN, "iso_c": "SX", "keywords": NaN, "iata": "SXM"}, "St. John's": {"name": "St. John's International Airport", "continent": NaN, "iso_c": "CA", "keywords": NaN, "iata": "YYT"}, "Bremen": {"name": "Bremen Airport", "continent": "EU", "iso_c": "DE", "keywords": NaN, "iata": "BRE"}, "\u0130zmir": {"name": "Adnan Menderes International Airport", "continent": "AS", "iso_c": "TR", "keywords": NaN, "iata": "ADB"}, "Leeds": {"name": "Leeds Bradford Airport", "continent": "EU", "iso_c": "GB", "keywords": NaN, "iata": "LBA"}, "Malm\u00f6": {"name": "Malm\u00f6 Sturup Airport", "continent": "EU", "iso_c": "SE", "keywords": NaN, "iata": "MMX"}, "Southampton": {"name": "Southampton Airport", "continent": "EU", "iso_c": "GB", "keywords": "RAF Eastleigh, RAF Southampton", "iata": "SOU"}, "Fairbanks": {"name": "Fairbanks International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "FAI"}, "Mobile": {"name": "Mobile Regional Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "MOB"}, "South Bend": {"name": "South Bend Regional Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "SBN"}, "Verona": {"name": "Verona Villafranca Airport", "continent": "EU", "iso_c": "IT", "keywords": "Valerio Catullo, Villafranca International Airport, Valerio Catullo Airport, Villafranca Airport", "iata": "VRN"}, "Jeddah": {"name": "King Abdulaziz International Airport", "continent": "AS", "iso_c": "SA", "keywords": "Mecca, Hajj", "iata": "JED"}, "Kuwait City": {"name": "Kuwait International Airport", "continent": "AS", "iso_c": "KW", "keywords": "Al Mubarak Air Base", "iata": "KWI"}, "Fort Wayne": {"name": "Fort Wayne International Airport", "continent": NaN, "iso_c": "US", "keywords": "Baer Field", "iata": "FWA"}, "Palermo": {"name": "Falcone\u2013Borsellino Airport", "continent": "EU", "iso_c": "IT", "keywords": "Palermo Airport, Punta Raisi Airport", "iata": "PMO"}, "Wellington": {"name": "Wellington International Airport", "continent": "OC", "iso_c": "NZ", "keywords": NaN, "iata": "WLG"}, "Siem Reap": {"name": "Siem Reap International Airport", "continent": "AS", "iso_c": "KH", "keywords": "Angkor International Airport", "iata": "REP"}, "Dakar": {"name": "L\u00e9opold S\u00e9dar Senghor International Airport", "continent": "AF", "iso_c": "SN", "keywords": NaN, "iata": "DKR"}, "Amman": {"name": "Queen Alia International Airport", "continent": "AS", "iso_c": "JO", "keywords": NaN, "iata": "AMM"}, "Guadalajara": {"name": "Don Miguel Hidalgo Y Costilla International Airport", "continent": NaN, "iso_c": "MX", "keywords": NaN, "iata": "GDL"}, "Lapu-Lapu City": {"name": "Mactan Cebu International Airport", "continent": "AS", "iso_c": "PH", "keywords": NaN, "iata": "CEB"}, "Addis Ababa": {"name": "Addis Ababa Bole International Airport", "continent": "AF", "iso_c": "ET", "keywords": "Haile Selassie I, Bole International Airport", "iata": "ADD"}, "Roanoke": {"name": "Roanoke\u2013Blacksburg Regional Airport", "continent": NaN, "iso_c": "US", "keywords": "Woodrum Field", "iata": "ROA"}, "Santo Domingo": {"name": "Las Am\u00e9ricas International Airport", "continent": NaN, "iso_c": "DO", "keywords": "Aeropuerto Internacional de Las Am\u00e9ricas, Jos\u00e9 Francisco Pe\u00f1a G\u00f3mez Intl", "iata": "SDQ"}, "Xi'an": {"name": "Xi'an Xianyang International Airport", "continent": "AS", "iso_c": "CN", "keywords": "\u897f\u5b89\u54b8\u9633\u56fd\u9645\u673a\u573a, Xian", "iata": "XIY"}, "Mal\u00e9": {"name": "Mal\u00e9 International Airport", "continent": "AS", "iso_c": "MV", "keywords": NaN, "iata": "MLE"}, "Troms\u00f8": {"name": "Troms\u00f8 Airport", "continent": "EU", "iso_c": "NO", "keywords": "Langnes, Troms\u00f8ya, Tromso", "iata": "TOS"}, "Bod\u00f8": {"name": "Bod\u00f8 Airport", "continent": "EU", "iso_c": "NO", "keywords": "Bod\u00f8 Air Force Base, Bod\u00f8 Main Air Station", "iata": "BOO"}, "Canberra": {"name": "Canberra International Airport", "continent": "OC", "iso_c": "AU", "keywords": "RAAF Base Fairbairn", "iata": "CBR"}, "Duluth": {"name": "Duluth International Airport", "continent": NaN, "iso_c": "US", "keywords": "LKI, Duluth Air National Guard Base, Lakeside AFB", "iata": "DLH"}, "Gda\u0144sk": {"name": "Gda\u0144sk Lech Wa\u0142\u0119sa Airport", "continent": "EU", "iso_c": "PL", "keywords": "Gda\u0144sk-R\u0119biechowo", "iata": "GDN"}, "Phnom Penh": {"name": "Phnom Penh International Airport", "continent": "AS", "iso_c": "KH", "keywords": "Pochentong International Airport", "iata": "PNH"}, "Caracas": {"name": "Sim\u00f3n Bol\u00edvar International Airport", "continent": "SA", "iso_c": "VE", "keywords": "Maiquet\u00eda \"Sim\u00f3n Bol\u00edvar\" International Airport", "iata": "CCS"}, "Beirut": {"name": "Beirut Rafic Hariri International Airport", "continent": "AS", "iso_c": "LB", "keywords": "Chaldea, Beirut Air Base, \u0645\u0637\u0627\u0631 \u0628\u064a\u0631\u0648\u062a \u0631\u0641\u064a\u0642 \u0627\u0644\u062d\u0631\u064a\u0631\u064a \u0627\u0644\u062f\u0648\u0644\u064a", "iata": "BEY"}, "Monterrey": {"name": "General Mariano Escobedo International Airport", "continent": NaN, "iso_c": "MX", "keywords": NaN, "iata": "MTY"}, "Cork": {"name": "Cork Airport", "continent": "EU", "iso_c": "IE", "keywords": "Aerfort Chorca\u00ed", "iata": "ORK"}, "Fort Worth": {"name": "Fort Worth Meacham International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "FTW"}, "Ankara": {"name": "Esenbo\u011fa International Airport", "continent": "AS", "iso_c": "TR", "keywords": NaN, "iata": "ESB"}, "Gulfport": {"name": "Gulfport Biloxi International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "GPT"}, "Jackson": {"name": "Jackson-Medgar Wiley Evers International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "JAN"}, "Moline": {"name": "Quad City International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "MLI"}, "Toledo": {"name": "Toledo Express Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "TOL"}, "Bras\u00edlia": {"name": "Presidente Juscelino Kubistschek International Airport", "continent": "SA", "iso_c": "BR", "keywords": "http://www.infraero.gov.br/usa/aero_prev_home.php?ai=146", "iata": "BSB"}, "Baton Rouge": {"name": "Baton Rouge Metropolitan, Ryan Field", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "BTR"}, "Newport News": {"name": "Newport News Williamsburg International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "PHF"}, "Corpus Christi": {"name": "Corpus Christi International Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "CRP"}, "Bristol/Johnson/Kingsport": {"name": "Tri-Cities Regional TN/VA Airport", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "TRI"}, "Sarajevo": {"name": "Sarajevo International Airport", "continent": "EU", "iso_c": "BA", "keywords": NaN, "iata": "SJJ"}, "Varadero": {"name": "Juan Gualberto Gomez International Airport", "continent": NaN, "iso_c": "CU", "keywords": NaN, "iata": "VRA"}, "Cagliari": {"name": "Cagliari Elmas Airport", "continent": "EU", "iso_c": "IT", "keywords": "Cagliari Airport,Elmas", "iata": "CAG"}, "Kingston": {"name": "Norman Manley International Airport", "continent": NaN, "iso_c": "JM", "keywords": NaN, "iata": "KIN"}, "Vasco da Gama": {"name": "Dabolim Airport", "continent": "AS", "iso_c": "IN", "keywords": "Goa Airport, Dabolim Navy Airbase, \u0926\u093e\u092c\u094b\u0933\u0940 \u0935\u093f\u092e\u093e\u0928\u0924\u0933", "iata": "GOI"}, "Bloomington/Normal": {"name": "Central Illinois Regional Airport at Bloomington-Normal", "continent": NaN, "iso_c": "US", "keywords": NaN, "iata": "BMI"}, "Bodrum": {"name": "Milas Bodrum International Airport", "continent": "AS", "iso_c": "TR", "keywords": NaN, "iata": "BJV"}, "Lagos": {"name": "Murtala Muhammed International Airport", "continent": "AF", "iso_c": "NG", "keywords": NaN, "iata": "LOS"}, "Accra": {"name": "Kotoka International Airport", "continent": "AF", "iso_c": "GH", "keywords": NaN, "iata": "ACC"}, "Exeter": {"name": "Exeter International Airport", "continent": "EU", "iso_c": "GB", "keywords": NaN, "iata": "EXT"}, "Luxor": {"name": "Luxor International Airport", "continent": "AF", "iso_c": "EG", "keywords": NaN, "iata": "LXR"}, "Kunming": {"name": "Kunming Changshui International Airport", "continent": "AS", "iso_c": "CN", "keywords": NaN, "iata": "KMG"}}
+data = {
+  "London": {
+    "name": "London Luton Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "LON",
+    "iata": "LTN"
+  },
+  "Los Angeles": {
+    "name": "Los Angeles International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "LAX"
+  },
+  "New York": {
+    "name": "La Guardia Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "Manhattan, New York City, NYC, Glenn H. Curtiss Airport, North Beach Airport, La Guardia",
+    "iata": "LGA"
+  },
+  "Chicago": {
+    "name": "Chicago Midway International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "CHI",
+    "iata": "MDW"
+  },
+  "Atlanta": {
+    "name": "Hartsfield Jackson Atlanta International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "ATL"
+  },
+  "Amsterdam": {
+    "name": "Amsterdam Airport Schiphol",
+    "continent": "EU",
+    "iso_c": "NL",
+    "keywords": "none",
+    "iata": "AMS"
+  },
+  "Paris": {
+    "name": "Paris-Orly Airport",
+    "continent": "EU",
+    "iso_c": "FR",
+    "keywords": "PAR",
+    "iata": "ORY"
+  },
+  "San Francisco": {
+    "name": "San Francisco International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "QSF, QBA",
+    "iata": "SFO"
+  },
+  "Frankfurt am Main": {
+    "name": "Frankfurt am Main Airport",
+    "continent": "EU",
+    "iso_c": "DE",
+    "keywords": "EDAF, Rhein-Main Air Base",
+    "iata": "FRA"
+  },
+  "Newark": {
+    "name": "Newark Liberty International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "Manhattan, New York City, NYC",
+    "iata": "EWR"
+  },
+  "Las Vegas": {
+    "name": "McCarran International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "LAS"
+  },
+  "Dallas-Fort Worth": {
+    "name": "Dallas Fort Worth International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "QDF",
+    "iata": "DFW"
+  },
+  "Orlando": {
+    "name": "Orlando Sanford International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "SFB"
+  },
+  "Denver": {
+    "name": "Denver International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "DVX, KVDX",
+    "iata": "DEN"
+  },
+  "Miami": {
+    "name": "Miami International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "MFW, South Florida",
+    "iata": "MIA"
+  },
+  "Washington": {
+    "name": "Ronald Reagan Washington National Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "WAS",
+    "iata": "DCA"
+  },
+  "Seattle": {
+    "name": "Boeing Field King County International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "BFI"
+  },
+  "Phoenix": {
+    "name": "Phoenix Sky Harbor International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "PHX"
+  },
+  "Boston": {
+    "name": "General Edward Lawrence Logan International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "General Edward Lawrence Logan International Airport",
+    "iata": "BOS"
+  },
+  "Philadelphia": {
+    "name": "Philadelphia International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "PHL"
+  },
+  "Houston": {
+    "name": "William P Hobby Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "QHO",
+    "iata": "HOU"
+  },
+  "Toronto": {
+    "name": "Lester B. Pearson International Airport",
+    "continent": "none",
+    "iso_c": "CA",
+    "keywords": "YTO, Toronto International Airport, Malton",
+    "iata": "YYZ"
+  },
+  "Charlotte": {
+    "name": "Charlotte Douglas International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "CLT"
+  },
+  "Detroit": {
+    "name": "Detroit Metropolitan Wayne County Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "DTT, Detroit Metro Airport",
+    "iata": "DTW"
+  },
+  "Munich": {
+    "name": "Munich Airport",
+    "continent": "EU",
+    "iso_c": "DE",
+    "keywords": "Franz Josef Strauss Airport, Flughafen München Franz Josef Strauß",
+    "iata": "MUC"
+  },
+  "Minneapolis": {
+    "name": "Minneapolis-St Paul International/Wold-Chamberlain Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "MSP"
+  },
+  "Barcelona": {
+    "name": "Barcelona International Airport",
+    "continent": "EU",
+    "iso_c": "ES",
+    "keywords": "none",
+    "iata": "BCN"
+  },
+  "Rome": {
+    "name": "Ciampino–G. B. Pastine International Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "ROM, Giovan Battista Pastine Airport",
+    "iata": "CIA"
+  },
+  "Madrid": {
+    "name": "Adolfo Suárez Madrid–Barajas Airport",
+    "continent": "EU",
+    "iso_c": "ES",
+    "keywords": "Leganés, Madrid Barajas International Airport",
+    "iata": "MAD"
+  },
+  "Brussels": {
+    "name": "Brussels South Charleroi Airport",
+    "continent": "EU",
+    "iso_c": "BE",
+    "keywords": "Gosselies Airport",
+    "iata": "CRL"
+  },
+  "Zurich": {
+    "name": "Zürich Airport",
+    "continent": "EU",
+    "iso_c": "CH",
+    "keywords": "none",
+    "iata": "ZRH"
+  },
+  "Copenhagen": {
+    "name": "Copenhagen Kastrup Airport",
+    "continent": "EU",
+    "iso_c": "DK",
+    "keywords": "København, Malmö",
+    "iata": "CPH"
+  },
+  "Salt Lake City": {
+    "name": "Salt Lake City International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "SLC"
+  },
+  "San Diego": {
+    "name": "San Diego International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "Lindbergh Field",
+    "iata": "SAN"
+  },
+  "Fort Lauderdale": {
+    "name": "Fort Lauderdale Hollywood International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "MFW, South Florida",
+    "iata": "FLL"
+  },
+  "Baltimore": {
+    "name": "Baltimore/Washington International Thurgood Marshall Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "WAS",
+    "iata": "BWI"
+  },
+  "St Louis": {
+    "name": "St Louis Lambert International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "Lambert St Louis",
+    "iata": "STL"
+  },
+  "Dublin": {
+    "name": "Dublin Airport",
+    "continent": "EU",
+    "iso_c": "IE",
+    "keywords": "Aerfort Bhaile Átha Cliath",
+    "iata": "DUB"
+  },
+  "Vancouver": {
+    "name": "Vancouver International Airport",
+    "continent": "none",
+    "iso_c": "CA",
+    "keywords": "none",
+    "iata": "YVR"
+  },
+  "Singapore": {
+    "name": "Singapore Changi Airport",
+    "continent": "AS",
+    "iso_c": "SG",
+    "keywords": "none",
+    "iata": "SIN"
+  },
+  "Honolulu": {
+    "name": "Daniel K Inouye International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "Hickam Air Force Base, HIK, PHIK, KHNL, Honolulu International",
+    "iata": "HNL"
+  },
+  "Tokyo": {
+    "name": "Tokyo Haneda International Airport",
+    "continent": "AS",
+    "iso_c": "JP",
+    "keywords": "TYO, Haneda",
+    "iata": "HND"
+  },
+  "Vienna": {
+    "name": "Vienna International Airport",
+    "continent": "EU",
+    "iso_c": "AT",
+    "keywords": "none",
+    "iata": "VIE"
+  },
+  "Montréal": {
+    "name": "Montreal / Pierre Elliott Trudeau International Airport",
+    "continent": "none",
+    "iso_c": "CA",
+    "keywords": "YMQ, Dorval Airport",
+    "iata": "YUL"
+  },
+  "Dubai": {
+    "name": "Dubai International Airport",
+    "continent": "AS",
+    "iso_c": "AE",
+    "keywords": "مطار دبي الدولي‎",
+    "iata": "DXB"
+  },
+  "Portland": {
+    "name": "Portland International Jetport Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "PWM"
+  },
+  "Prague": {
+    "name": "Václav Havel Airport Prague",
+    "continent": "EU",
+    "iso_c": "CZ",
+    "keywords": "Letiště Praha-Ruzyně, Ruzyně International Airport, Letiště Václava Havla Praha",
+    "iata": "PRG"
+  },
+  "Stockholm": {
+    "name": "Stockholm-Arlanda Airport",
+    "continent": "EU",
+    "iso_c": "SE",
+    "keywords": "none",
+    "iata": "ARN"
+  },
+  "Hong Kong": {
+    "name": "Chek Lap Kok International Airport",
+    "continent": "AS",
+    "iso_c": "HK",
+    "keywords": "Chek Lap Kok Airport, 赤鱲角機場",
+    "iata": "HKG"
+  },
+  "Tampa": {
+    "name": "Tampa International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "TPA"
+  },
+  "Istanbul": {
+    "name": "Sabiha Gökçen International Airport",
+    "continent": "AS",
+    "iso_c": "TR",
+    "keywords": "Sabiha Gökçen Havalimanı",
+    "iata": "SAW"
+  },
+  "Sydney": {
+    "name": "Sydney Kingsford Smith International Airport",
+    "continent": "OC",
+    "iso_c": "AU",
+    "keywords": "RAAF Station Mascot",
+    "iata": "SYD"
+  },
+  "Cincinnati": {
+    "name": "Cincinnati Northern Kentucky International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "CVG"
+  },
+  "Lisbon": {
+    "name": "Humberto Delgado Airport (Lisbon Portela Airport)",
+    "continent": "EU",
+    "iso_c": "PT",
+    "keywords": "Lisboa",
+    "iata": "LIS"
+  },
+  "New Orleans": {
+    "name": "Louis Armstrong New Orleans International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "MSY"
+  },
+  "Bangkok": {
+    "name": "Don Mueang International Airport",
+    "continent": "AS",
+    "iso_c": "TH",
+    "keywords": "Old Bangkok International Airport, Don Muang Royal Thai Air Force Base",
+    "iata": "DMK"
+  },
+  "Berlin": {
+    "name": "Berlin-Schönefeld Airport",
+    "continent": "EU",
+    "iso_c": "DE",
+    "keywords": "BER, Schoenefeld",
+    "iata": "SXF"
+  },
+  "Pittsburgh": {
+    "name": "Pittsburgh International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "PIT"
+  },
+  "Oakland": {
+    "name": "Metropolitan Oakland International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "QSF, QBA",
+    "iata": "OAK"
+  },
+  "Nashville": {
+    "name": "Nashville International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "BNA"
+  },
+  "Milan": {
+    "name": "Milano Linate Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "E Forlanini",
+    "iata": "LIN"
+  },
+  "San Jose": {
+    "name": "Norman Y. Mineta San Jose International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "QSF, QBA",
+    "iata": "SJC"
+  },
+  "Raleigh/Durham": {
+    "name": "Raleigh Durham International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "RDU"
+  },
+  "Austin": {
+    "name": "Austin Bergstrom International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "AUS"
+  },
+  "Cancún": {
+    "name": "Cancún International Airport",
+    "continent": "none",
+    "iso_c": "MX",
+    "keywords": "none",
+    "iata": "CUN"
+  },
+  "Oslo": {
+    "name": "Oslo Gardermoen Airport",
+    "continent": "EU",
+    "iso_c": "NO",
+    "keywords": "none",
+    "iata": "OSL"
+  },
+  "Budapest": {
+    "name": "Budapest Ferenc Liszt International Airport",
+    "continent": "EU",
+    "iso_c": "HU",
+    "keywords": "Ferihegyi nemzetközi repülőtér, Budapest Liszt Ferenc international Airport",
+    "iata": "BUD"
+  },
+  "Memphis": {
+    "name": "Memphis International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "MEM"
+  },
+  "Athens": {
+    "name": "Eleftherios Venizelos International Airport",
+    "continent": "EU",
+    "iso_c": "GR",
+    "keywords": "none",
+    "iata": "ATH"
+  },
+  "Santa Ana": {
+    "name": "John Wayne Airport-Orange County Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "Disney, Disneyland, Orange County",
+    "iata": "SNA"
+  },
+  "Kansas City": {
+    "name": "Kansas City International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "MCI"
+  },
+  "San Antonio": {
+    "name": "San Antonio International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "SAT"
+  },
+  "Beijing": {
+    "name": "Beijing Capital International Airport",
+    "continent": "AS",
+    "iso_c": "CN",
+    "keywords": "BJS, Bejing, Peking, Olympics",
+    "iata": "PEK"
+  },
+  "Calgary": {
+    "name": "Calgary International Airport",
+    "continent": "none",
+    "iso_c": "CA",
+    "keywords": "McCall Field",
+    "iata": "YYC"
+  },
+  "Manchester": {
+    "name": "Manchester Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "MHT"
+  },
+  "Geneva": {
+    "name": "Geneva Cointrin International Airport",
+    "continent": "EU",
+    "iso_c": "CH",
+    "keywords": "none",
+    "iata": "GVA"
+  },
+  "Düsseldorf": {
+    "name": "Düsseldorf Airport",
+    "continent": "EU",
+    "iso_c": "DE",
+    "keywords": "none",
+    "iata": "DUS"
+  },
+  "Helsinki": {
+    "name": "Helsinki Vantaa Airport",
+    "continent": "EU",
+    "iso_c": "FI",
+    "keywords": "none",
+    "iata": "HEL"
+  },
+  "Kuala Lumpur": {
+    "name": "Kuala Lumpur International Airport",
+    "continent": "AS",
+    "iso_c": "MY",
+    "keywords": "KLIA",
+    "iata": "KUL"
+  },
+  "Cleveland": {
+    "name": "Cleveland Hopkins International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "CLE"
+  },
+  "Mexico City": {
+    "name": "Licenciado Benito Juarez International Airport",
+    "continent": "none",
+    "iso_c": "MX",
+    "keywords": "AICM",
+    "iata": "MEX"
+  },
+  "Indianapolis": {
+    "name": "Indianapolis International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "IND"
+  },
+  "Reykjavík": {
+    "name": "Keflavik International Airport",
+    "continent": "EU",
+    "iso_c": "IS",
+    "keywords": "Keflavik Naval Air Station,REK",
+    "iata": "KEF"
+  },
+  "Albuquerque": {
+    "name": "Albuquerque International Sunport Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "ABQ"
+  },
+  "Palma De Mallorca": {
+    "name": "Palma De Mallorca Airport",
+    "continent": "EU",
+    "iso_c": "ES",
+    "keywords": "Son Sant Joan Airport, LESJ",
+    "iata": "PMI"
+  },
+  "Dallas": {
+    "name": "Dallas Love Field",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "QDF",
+    "iata": "DAL"
+  },
+  "Melbourne": {
+    "name": "Melbourne International Airport",
+    "continent": "OC",
+    "iso_c": "AU",
+    "keywords": "none",
+    "iata": "MEL"
+  },
+  "Venice": {
+    "name": "Venice Marco Polo Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "Venezia Tessera",
+    "iata": "VCE"
+  },
+  "Milwaukee": {
+    "name": "General Mitchell International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "MKE"
+  },
+  "Shanghai": {
+    "name": "Shanghai Hongqiao International Airport",
+    "continent": "AS",
+    "iso_c": "CN",
+    "keywords": "none",
+    "iata": "SHA"
+  },
+  "Johannesburg": {
+    "name": "OR Tambo International Airport",
+    "continent": "AF",
+    "iso_c": "ZA",
+    "keywords": "Johannesburg International Airport",
+    "iata": "JNB"
+  },
+  "Edinburgh": {
+    "name": "Edinburgh Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "none",
+    "iata": "EDI"
+  },
+  "Ottawa": {
+    "name": "Ottawa Macdonald-Cartier International Airport",
+    "continent": "none",
+    "iso_c": "CA",
+    "keywords": "Uplands, UUP, CUUP",
+    "iata": "YOW"
+  },
+  "Columbus": {
+    "name": "John Glenn Columbus International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "CMH"
+  },
+  "Nice": {
+    "name": "Nice-Côte d'Azur Airport",
+    "continent": "EU",
+    "iso_c": "FR",
+    "keywords": "none",
+    "iata": "NCE"
+  },
+  "New Delhi": {
+    "name": "Indira Gandhi International Airport",
+    "continent": "AS",
+    "iso_c": "IN",
+    "keywords": "Palam Air Force Station",
+    "iata": "DEL"
+  },
+  "Málaga": {
+    "name": "Málaga Airport",
+    "continent": "EU",
+    "iso_c": "ES",
+    "keywords": "Costa del Sol",
+    "iata": "AGP"
+  },
+  "Warsaw": {
+    "name": "Warsaw Chopin Airport",
+    "continent": "EU",
+    "iso_c": "PL",
+    "keywords": "Okęcie",
+    "iata": "WAW"
+  },
+  "Tucson": {
+    "name": "Tucson International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "TUS"
+  },
+  "San Juan": {
+    "name": "Luis Munoz Marin International Airport",
+    "continent": "none",
+    "iso_c": "PR",
+    "keywords": "Isla Verde",
+    "iata": "SJU"
+  },
+  "Seoul": {
+    "name": "Gimpo International Airport",
+    "continent": "AS",
+    "iso_c": "KR",
+    "keywords": "none",
+    "iata": "GMP"
+  },
+  "Moscow": {
+    "name": "Domodedovo International Airport",
+    "continent": "EU",
+    "iso_c": "RU",
+    "keywords": "MOW, Аэропорт Домоде́дово",
+    "iata": "DME"
+  },
+  "Buffalo": {
+    "name": "Buffalo Niagara International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "BUF"
+  },
+  "Cologne": {
+    "name": "Cologne Bonn Airport",
+    "continent": "EU",
+    "iso_c": "DE",
+    "keywords": "Köln",
+    "iata": "CGN"
+  },
+  "Auckland": {
+    "name": "Auckland International Airport",
+    "continent": "OC",
+    "iso_c": "NZ",
+    "keywords": "none",
+    "iata": "AKL"
+  },
+  "Manila": {
+    "name": "Ninoy Aquino International Airport",
+    "continent": "AS",
+    "iso_c": "PH",
+    "keywords": "Manila International Airport",
+    "iata": "MNL"
+  },
+  "São Paulo": {
+    "name": "Congonhas Airport",
+    "continent": "SA",
+    "iso_c": "BR",
+    "keywords": "http://www.infraero.gov.br/usa/aero_prev_home.php?ai=219",
+    "iata": "CGH"
+  },
+  "Cairo": {
+    "name": "Cairo International Airport",
+    "continent": "AF",
+    "iso_c": "EG",
+    "keywords": "none",
+    "iata": "CAI"
+  },
+  "Hamburg": {
+    "name": "Hamburg Airport",
+    "continent": "EU",
+    "iso_c": "DE",
+    "keywords": "none",
+    "iata": "HAM"
+  },
+  "Anchorage": {
+    "name": "Ted Stevens Anchorage International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "ANC"
+  },
+  "Jacksonville": {
+    "name": "Jacksonville International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "JAX"
+  },
+  "Buenos Aires": {
+    "name": "Ministro Pistarini International Airport",
+    "continent": "SA",
+    "iso_c": "AR",
+    "keywords": "BUE",
+    "iata": "EZE"
+  },
+  "Hartford": {
+    "name": "Bradley International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "HFD, Hartford",
+    "iata": "BDL"
+  },
+  "Mumbai": {
+    "name": "Chhatrapati Shivaji International Airport",
+    "continent": "AS",
+    "iso_c": "IN",
+    "keywords": "Bombay, Sahar International Airport",
+    "iata": "BOM"
+  },
+  "Tel Aviv": {
+    "name": "Ben Gurion International Airport",
+    "continent": "AS",
+    "iso_c": "IL",
+    "keywords": "none",
+    "iata": "TLV"
+  },
+  "Winnipeg": {
+    "name": "Winnipeg / James Armstrong Richardson International Airport",
+    "continent": "none",
+    "iso_c": "CA",
+    "keywords": "CFB Winnipeg",
+    "iata": "YWG"
+  },
+  "Taipei": {
+    "name": "Taiwan Taoyuan International Airport",
+    "continent": "AS",
+    "iso_c": "TW",
+    "keywords": "Taiwan Taoyuan International Airport, 臺灣桃園國際機場",
+    "iata": "TPE"
+  },
+  "Glasgow": {
+    "name": "Glasgow International Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "Port-adhair Eadar-nàiseanta Ghlaschu, RAF Abbotsinch, RAF Ayr",
+    "iata": "GLA"
+  },
+  "Oklahoma City": {
+    "name": "Will Rogers World Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "OKC"
+  },
+  "Gran Canaria Island": {
+    "name": "Gran Canaria Airport",
+    "continent": "EU",
+    "iso_c": "ES",
+    "keywords": "Canary Islands, Las Palmas Airport, Gando Airport",
+    "iata": "LPA"
+  },
+  "Edmonton": {
+    "name": "Edmonton International Airport",
+    "continent": "none",
+    "iso_c": "CA",
+    "keywords": "YEA",
+    "iata": "YEG"
+  },
+  "West Palm Beach": {
+    "name": "Palm Beach International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "MFW, South Florida",
+    "iata": "PBI"
+  },
+  "Reno": {
+    "name": "Reno Tahoe International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "RNO"
+  },
+  "Sacramento": {
+    "name": "Sacramento International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "SMF"
+  },
+  "Brisbane": {
+    "name": "Brisbane International Airport",
+    "continent": "OC",
+    "iso_c": "AU",
+    "keywords": "none",
+    "iata": "BNE"
+  },
+  "Denpasar-Bali Island": {
+    "name": "Ngurah Rai (Bali) International Airport",
+    "continent": "AS",
+    "iso_c": "ID",
+    "keywords": "WRRR",
+    "iata": "DPS"
+  },
+  "Cape Town": {
+    "name": "Cape Town International Airport",
+    "continent": "AF",
+    "iso_c": "ZA",
+    "keywords": "Kaapstad Internasionale Lughawe, CTIA, DF Malan Airport",
+    "iata": "CPT"
+  },
+  "Abu Dhabi": {
+    "name": "Abu Dhabi International Airport",
+    "continent": "AS",
+    "iso_c": "AE",
+    "keywords": "none",
+    "iata": "AUH"
+  },
+  "Norfolk": {
+    "name": "Norfolk International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "ORF"
+  },
+  "Stuttgart": {
+    "name": "Stuttgart Airport",
+    "continent": "EU",
+    "iso_c": "DE",
+    "keywords": "none",
+    "iata": "STR"
+  },
+  "Birmingham": {
+    "name": "Birmingham-Shuttlesworth International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "BHM"
+  },
+  "Valletta": {
+    "name": "Malta International Airport",
+    "continent": "EU",
+    "iso_c": "MT",
+    "keywords": "Luqa Airport,Valletta,Gudja,RAF Luqa",
+    "iata": "MLA"
+  },
+  "Halifax": {
+    "name": "Halifax / Stanfield International Airport",
+    "continent": "none",
+    "iso_c": "CA",
+    "keywords": "Robert L. Stanfield International Airport",
+    "iata": "YHZ"
+  },
+  "Antalya": {
+    "name": "Antalya International Airport",
+    "continent": "AS",
+    "iso_c": "TR",
+    "keywords": "none",
+    "iata": "AYT"
+  },
+  "Santiago": {
+    "name": "Comodoro Arturo Merino Benítez International Airport",
+    "continent": "SA",
+    "iso_c": "CL",
+    "keywords": "none",
+    "iata": "SCL"
+  },
+  "Louisville": {
+    "name": "Louisville International Standiford Field",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "SDF"
+  },
+  "Rio De Janeiro": {
+    "name": "Rio Galeão – Tom Jobim International Airport",
+    "continent": "SA",
+    "iso_c": "BR",
+    "keywords": "Galeão - Antônio Carlos Jobim International Airport",
+    "iata": "GIG"
+  },
+  "Bergen": {
+    "name": "Bergen Airport Flesland",
+    "continent": "EU",
+    "iso_c": "NO",
+    "keywords": "none",
+    "iata": "BGO"
+  },
+  "Lima": {
+    "name": "Jorge Chávez International Airport",
+    "continent": "SA",
+    "iso_c": "PE",
+    "keywords": "SPIM",
+    "iata": "LIM"
+  },
+  "Charleston": {
+    "name": "Yeager Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "CRW"
+  },
+  "Ontario": {
+    "name": "Ontario International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "ONT"
+  },
+  "Syracuse": {
+    "name": "Syracuse Hancock International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "SYR"
+  },
+  "Bergamo": {
+    "name": "Il Caravaggio International Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "Bergamo Orio al Serio Airport,Orio al Serio",
+    "iata": "BGY"
+  },
+  "Richmond": {
+    "name": "Richmond International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "RIC"
+  },
+  "Boise": {
+    "name": "Boise Air Terminal/Gowen field",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "Boise Air Terminal, Gowen Field",
+    "iata": "BOI"
+  },
+  "Riga": {
+    "name": "Riga International Airport",
+    "continent": "EU",
+    "iso_c": "LV",
+    "keywords": "none",
+    "iata": "RIX"
+  },
+  "Savannah": {
+    "name": "Savannah Hilton Head International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "SAV"
+  },
+  "Heraklion": {
+    "name": "Heraklion International Nikos Kazantzakis Airport",
+    "continent": "EU",
+    "iso_c": "GR",
+    "keywords": "Crete Island",
+    "iata": "HER"
+  },
+  "Tenerife Island": {
+    "name": "Tenerife Norte Airport",
+    "continent": "EU",
+    "iso_c": "ES",
+    "keywords": "Canary Islands, Los Rodeos, TCI",
+    "iata": "TFN"
+  },
+  "Nairobi": {
+    "name": "Jomo Kenyatta International Airport",
+    "continent": "AF",
+    "iso_c": "KE",
+    "keywords": "Jkia Airport, Embakasi Airport, Nairobi International Airport",
+    "iata": "NBO"
+  },
+  "Rochester": {
+    "name": "Rochester International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "RST"
+  },
+  "Phuket": {
+    "name": "Phuket International Airport",
+    "continent": "AS",
+    "iso_c": "TH",
+    "keywords": "none",
+    "iata": "HKT"
+  },
+  "Tocumen": {
+    "name": "Tocumen International Airport",
+    "continent": "none",
+    "iso_c": "PA",
+    "keywords": "La Joya No 1",
+    "iata": "PTY"
+  },
+  "Dayton": {
+    "name": "James M Cox Dayton International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "DAY"
+  },
+  "Spokane": {
+    "name": "Spokane International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "GEG"
+  },
+  "Zagreb": {
+    "name": "Zagreb Airport",
+    "continent": "EU",
+    "iso_c": "HR",
+    "keywords": "Pleso",
+    "iata": "ZAG"
+  },
+  "Fort Myers": {
+    "name": "Southwest Florida International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "RSW"
+  },
+  "Madison": {
+    "name": "Dane County Regional Truax Field",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "MSN"
+  },
+  "Wichita": {
+    "name": "Wichita Mid Continent Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "ICT"
+  },
+  "Ho Chi Minh City": {
+    "name": "Tan Son Nhat International Airport",
+    "continent": "AS",
+    "iso_c": "VN",
+    "keywords": "Tansonnhat, Sài Gòn, Saigon, Sân bay Quốc tế Tân Sơn Nhất",
+    "iata": "SGN"
+  },
+  "Belgrade": {
+    "name": "Belgrade Nikola Tesla Airport",
+    "continent": "EU",
+    "iso_c": "RS",
+    "keywords": "Beograd, Surčin Airport",
+    "iata": "BEG"
+  },
+  "Larnarca": {
+    "name": "Larnaca International Airport",
+    "continent": "AS",
+    "iso_c": "CY",
+    "keywords": "Διεθνές Aεροδρόμιο Λάρνακας",
+    "iata": "LCA"
+  },
+  "Jakarta": {
+    "name": "Soekarno-Hatta International Airport",
+    "continent": "AS",
+    "iso_c": "ID",
+    "keywords": "JKT, Cengkareng, Java",
+    "iata": "CGK"
+  },
+  "Des Moines": {
+    "name": "Des Moines International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "DSM"
+  },
+  "Faro": {
+    "name": "Faro Airport",
+    "continent": "EU",
+    "iso_c": "PT",
+    "keywords": "none",
+    "iata": "FAO"
+  },
+  "Osaka": {
+    "name": "Osaka International Airport",
+    "continent": "AS",
+    "iso_c": "JP",
+    "keywords": "OSA, Itami",
+    "iata": "ITM"
+  },
+  "Tulsa": {
+    "name": "Tulsa International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "TUL"
+  },
+  "Victoria": {
+    "name": "Victoria International Airport",
+    "continent": "none",
+    "iso_c": "CA",
+    "keywords": "none",
+    "iata": "YYJ"
+  },
+  "Perth": {
+    "name": "Perth International Airport",
+    "continent": "OC",
+    "iso_c": "AU",
+    "keywords": "none",
+    "iata": "PER"
+  },
+  "Christchurch": {
+    "name": "Christchurch International Airport",
+    "continent": "OC",
+    "iso_c": "NZ",
+    "keywords": "none",
+    "iata": "CHC"
+  },
+  "Colorado Springs": {
+    "name": "City of Colorado Springs Municipal Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "COS"
+  },
+  "Gothenburg": {
+    "name": "Gothenburg-Landvetter Airport",
+    "continent": "EU",
+    "iso_c": "SE",
+    "keywords": "Göteborg-Landvetter",
+    "iata": "GOT"
+  },
+  "Kraków": {
+    "name": "John Paul II International Airport Kraków-Balice Airport",
+    "continent": "EU",
+    "iso_c": "PL",
+    "keywords": "Krakov",
+    "iata": "KRK"
+  },
+  "Bologna": {
+    "name": "Bologna Guglielmo Marconi Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "Guglielmo Marconi Airport, Borgo Panigale Airport",
+    "iata": "BLQ"
+  },
+  "Bucharest": {
+    "name": "Henri Coandă International Airport",
+    "continent": "EU",
+    "iso_c": "RO",
+    "keywords": "BUH, Otopeni Airport, RoAF 90th Airlift Base",
+    "iata": "OTP"
+  },
+  "Little Rock": {
+    "name": "Bill & Hillary Clinton National Airport/Adams Field",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "LIT"
+  },
+  "Marseille": {
+    "name": "Marseille Provence Airport",
+    "continent": "EU",
+    "iso_c": "FR",
+    "keywords": "none",
+    "iata": "MRS"
+  },
+  "Alicante": {
+    "name": "Alicante International Airport",
+    "continent": "EU",
+    "iso_c": "ES",
+    "keywords": "none",
+    "iata": "ALC"
+  },
+  "St. Petersburg": {
+    "name": "Pulkovo Airport",
+    "continent": "EU",
+    "iso_c": "RU",
+    "keywords": "Аэропо́рт Пу́лково, Leningrad, Shosseynaya Airport, Saint Petersburg, Petrograd",
+    "iata": "LED"
+  },
+  "Greensboro": {
+    "name": "Piedmont Triad International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "GSO"
+  },
+  "Limerick": {
+    "name": "Shannon Airport",
+    "continent": "EU",
+    "iso_c": "IE",
+    "keywords": "none",
+    "iata": "SNN"
+  },
+  "Nassau": {
+    "name": "Lynden Pindling International Airport",
+    "continent": "none",
+    "iso_c": "BS",
+    "keywords": "Nassau International Airport",
+    "iata": "NAS"
+  },
+  "Puerto Vallarta": {
+    "name": "Licenciado Gustavo Díaz Ordaz International Airport",
+    "continent": "none",
+    "iso_c": "MX",
+    "keywords": "none",
+    "iata": "PVR"
+  },
+  "Toulouse/Blagnac": {
+    "name": "Toulouse-Blagnac Airport",
+    "continent": "EU",
+    "iso_c": "FR",
+    "keywords": "none",
+    "iata": "TLS"
+  },
+  "Nápoli": {
+    "name": "Naples International Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "Capodichino Airport, Aeroporto di Napoli-Capodichino, Aeroporto Internazionale di Napoli",
+    "iata": "NAP"
+  },
+  "Punta Cana": {
+    "name": "Punta Cana International Airport",
+    "continent": "none",
+    "iso_c": "DO",
+    "keywords": "none",
+    "iata": "PUJ"
+  },
+  "Ljubljana": {
+    "name": "Ljubljana Jože Pučnik Airport",
+    "continent": "EU",
+    "iso_c": "SI",
+    "keywords": "Ljubljana, Brnik, Kranj",
+    "iata": "LJU"
+  },
+  "Bogota": {
+    "name": "El Dorado International Airport",
+    "continent": "SA",
+    "iso_c": "CO",
+    "keywords": "none",
+    "iata": "BOG"
+  },
+  "Stavanger": {
+    "name": "Stavanger Airport Sola",
+    "continent": "EU",
+    "iso_c": "NO",
+    "keywords": "Sola Air Station, Stavanger lufthavn, Sola",
+    "iata": "SVG"
+  },
+  "Porto": {
+    "name": "Francisco de Sá Carneiro Airport",
+    "continent": "EU",
+    "iso_c": "PT",
+    "keywords": "none",
+    "iata": "OPO"
+  },
+  "Bâle/Mulhouse": {
+    "name": "EuroAirport Basel-Mulhouse-Freiburg Airport",
+    "continent": "EU",
+    "iso_c": "FR",
+    "keywords": "MLH, EAP",
+    "iata": "BSL"
+  },
+  "Lyon": {
+    "name": "Lyon Saint-Exupéry Airport",
+    "continent": "EU",
+    "iso_c": "FR",
+    "keywords": "none",
+    "iata": "LYS"
+  },
+  "Knoxville": {
+    "name": "McGhee Tyson Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "TYS"
+  },
+  "Tallinn": {
+    "name": "Lennart Meri Tallinn Airport",
+    "continent": "EU",
+    "iso_c": "EE",
+    "keywords": "none",
+    "iata": "TLL"
+  },
+  "Sarasota/Bradenton": {
+    "name": "Sarasota Bradenton International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "SRQ"
+  },
+  "Tallahassee": {
+    "name": "Tallahassee Regional Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "TLH"
+  },
+  "Doha": {
+    "name": "Hamad International Airport",
+    "continent": "AS",
+    "iso_c": "QA",
+    "keywords": "New Doha International Airport",
+    "iata": "DOH"
+  },
+  "Bangor": {
+    "name": "Bangor International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "BGR"
+  },
+  "Eindhoven": {
+    "name": "Eindhoven Airport",
+    "continent": "EU",
+    "iso_c": "NL",
+    "keywords": "Welschap Airport",
+    "iata": "EIN"
+  },
+  "Greenville": {
+    "name": "Greenville Spartanburg International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "GSP"
+  },
+  "Lexington": {
+    "name": "Blue Grass Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "LEX"
+  },
+  "Pisa": {
+    "name": "Pisa International Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "Galileo Galilei Airport, San Giusto Airport",
+    "iata": "PSA"
+  },
+  "Havana": {
+    "name": "José Martí International Airport",
+    "continent": "none",
+    "iso_c": "CU",
+    "keywords": "Habana",
+    "iata": "HAV"
+  },
+  "Trondheim": {
+    "name": "Trondheim Airport Værnes",
+    "continent": "EU",
+    "iso_c": "NO",
+    "keywords": "none",
+    "iata": "TRD"
+  },
+  "Hanoi": {
+    "name": "Noi Bai International Airport",
+    "continent": "AS",
+    "iso_c": "VN",
+    "keywords": "Noibai Airport, Sân bay Quốc tế Nội Bài",
+    "iata": "HAN"
+  },
+  "Catania": {
+    "name": "Catania-Fontanarossa Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "Lanza Di Trabie, Catania-Fontanarossa Vincenzo Bellini",
+    "iata": "CTA"
+  },
+  "Daytona Beach": {
+    "name": "Daytona Beach International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "DAB"
+  },
+  "Nuremberg": {
+    "name": "Nuremberg Airport",
+    "continent": "EU",
+    "iso_c": "DE",
+    "keywords": "Nürnberg",
+    "iata": "NUE"
+  },
+  "Bristol": {
+    "name": "Bristol Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "Lulsgate Bottom",
+    "iata": "BRS"
+  },
+  "Liverpool": {
+    "name": "Liverpool John Lennon Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "none",
+    "iata": "LPL"
+  },
+  "Colombo": {
+    "name": "Bandaranaike International Colombo Airport",
+    "continent": "AS",
+    "iso_c": "LK",
+    "keywords": "RAF Negombo, Katunayake International Airport",
+    "iata": "CMB"
+  },
+  "Lubbock": {
+    "name": "Lubbock Preston Smith International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "LBB"
+  },
+  "Newcastle": {
+    "name": "Newcastle Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "none",
+    "iata": "NCL"
+  },
+  "Hannover": {
+    "name": "Hannover Airport",
+    "continent": "EU",
+    "iso_c": "DE",
+    "keywords": "none",
+    "iata": "HAJ"
+  },
+  "Columbia": {
+    "name": "Columbia Metropolitan Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "CAE"
+  },
+  "Muscat": {
+    "name": "Muscat International Airport",
+    "continent": "AS",
+    "iso_c": "OM",
+    "keywords": "Seeb International Airport, Masqat",
+    "iata": "MCT"
+  },
+  "Thessaloniki": {
+    "name": "Thessaloniki Macedonia International Airport",
+    "continent": "EU",
+    "iso_c": "GR",
+    "keywords": "Makedonia. Macedonia. Salonica",
+    "iata": "SKG"
+  },
+  "Casablanca": {
+    "name": "Mohammed V International Airport",
+    "continent": "AF",
+    "iso_c": "MA",
+    "keywords": "CAS, Casabianca, Nouasseur",
+    "iata": "CMN"
+  },
+  "Tunis": {
+    "name": "Tunis Carthage International Airport",
+    "continent": "AF",
+    "iso_c": "TN",
+    "keywords": "Aéroport international de Tunis-Carthage, مطار تونس قرطاج الدولي",
+    "iata": "TUN"
+  },
+  "Amarillo": {
+    "name": "Rick Husband Amarillo International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "AMA"
+  },
+  "Chattanooga": {
+    "name": "Lovell Field",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "CHA"
+  },
+  "Luxembourg": {
+    "name": "Luxembourg-Findel International Airport",
+    "continent": "EU",
+    "iso_c": "LU",
+    "keywords": "none",
+    "iata": "LUX"
+  },
+  "Billings": {
+    "name": "Billings Logan International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "BIL"
+  },
+  "Manama": {
+    "name": "Bahrain International Airport",
+    "continent": "AS",
+    "iso_c": "BH",
+    "keywords": "مطار البحرين الدولي",
+    "iata": "BAH"
+  },
+  "Vilnius": {
+    "name": "Vilnius International Airport",
+    "continent": "EU",
+    "iso_c": "LT",
+    "keywords": "none",
+    "iata": "VNO"
+  },
+  "Treviso": {
+    "name": "Treviso-Sant'Angelo Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "Venice, Antonio Canova Terminal, Treviso Airport",
+    "iata": "TSF"
+  },
+  "Bangalore": {
+    "name": "Kempegowda International Airport",
+    "continent": "AS",
+    "iso_c": "IN",
+    "keywords": "none",
+    "iata": "BLR"
+  },
+  "Chennai": {
+    "name": "Chennai International Airport",
+    "continent": "AS",
+    "iso_c": "IN",
+    "keywords": "none",
+    "iata": "MAA"
+  },
+  "Huntsville": {
+    "name": "Huntsville International Carl T Jones Field",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "HSV"
+  },
+  "Belfast": {
+    "name": "George Best Belfast City Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "none",
+    "iata": "BHD"
+  },
+  "Bratislava": {
+    "name": "M. R. Štefánik Airport",
+    "continent": "EU",
+    "iso_c": "SK",
+    "keywords": "none",
+    "iata": "BTS"
+  },
+  "Nottingham": {
+    "name": "East Midlands Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "RAF Castle Donington",
+    "iata": "EMA"
+  },
+  "Springfield": {
+    "name": "Springfield Branson National Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "SGF"
+  },
+  "Sofia": {
+    "name": "Sofia Airport",
+    "continent": "EU",
+    "iso_c": "BG",
+    "keywords": "none",
+    "iata": "SOF"
+  },
+  "Chiang Mai": {
+    "name": "Chiang Mai International Airport",
+    "continent": "AS",
+    "iso_c": "TH",
+    "keywords": "none",
+    "iata": "CNX"
+  },
+  "Cusco": {
+    "name": "Alejandro Velasco Astete International Airport",
+    "continent": "SA",
+    "iso_c": "PE",
+    "keywords": "none",
+    "iata": "CUZ"
+  },
+  "Guangzhou": {
+    "name": "Guangzhou Baiyun International Airport",
+    "continent": "AS",
+    "iso_c": "CN",
+    "keywords": "none",
+    "iata": "CAN"
+  },
+  "Asheville": {
+    "name": "Asheville Regional Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "AVL"
+  },
+  "Cedar Rapids": {
+    "name": "The Eastern Iowa Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "CID"
+  },
+  "Hurghada": {
+    "name": "Hurghada International Airport",
+    "continent": "AF",
+    "iso_c": "EG",
+    "keywords": "Al Ghardaqah, الغردقة",
+    "iata": "HRG"
+  },
+  "San José del Cabo": {
+    "name": "Los Cabos International Airport",
+    "continent": "none",
+    "iso_c": "MX",
+    "keywords": "none",
+    "iata": "SJD"
+  },
+  "Adelaide": {
+    "name": "Adelaide International Airport",
+    "continent": "OC",
+    "iso_c": "AU",
+    "keywords": "none",
+    "iata": "ADL"
+  },
+  "Kiev": {
+    "name": "Boryspil International Airport",
+    "continent": "EU",
+    "iso_c": "UA",
+    "keywords": "Borispol, Міжнародний аеропорт \"Бориспіль\"",
+    "iata": "KBP"
+  },
+  "Billund": {
+    "name": "Billund Airport",
+    "continent": "EU",
+    "iso_c": "DK",
+    "keywords": "none",
+    "iata": "BLL"
+  },
+  "Green Bay": {
+    "name": "Austin Straubel International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "GRB"
+  },
+  "Torino": {
+    "name": "Turin Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "Torino-Caselle Airport, Sandro Pertini Airport, Turin-Caselle Airport",
+    "iata": "TRN"
+  },
+  "Aberdeen": {
+    "name": "Aberdeen Dyce Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "none",
+    "iata": "ABZ"
+  },
+  "Bordeaux/Mérignac": {
+    "name": "Bordeaux-Mérignac Airport",
+    "continent": "EU",
+    "iso_c": "FR",
+    "keywords": "none",
+    "iata": "BOD"
+  },
+  "Saint Martin": {
+    "name": "Princess Juliana International Airport",
+    "continent": "none",
+    "iso_c": "SX",
+    "keywords": "none",
+    "iata": "SXM"
+  },
+  "St. John's": {
+    "name": "St. John's International Airport",
+    "continent": "none",
+    "iso_c": "CA",
+    "keywords": "none",
+    "iata": "YYT"
+  },
+  "Bremen": {
+    "name": "Bremen Airport",
+    "continent": "EU",
+    "iso_c": "DE",
+    "keywords": "none",
+    "iata": "BRE"
+  },
+  "İzmir": {
+    "name": "Adnan Menderes International Airport",
+    "continent": "AS",
+    "iso_c": "TR",
+    "keywords": "none",
+    "iata": "ADB"
+  },
+  "Leeds": {
+    "name": "Leeds Bradford Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "none",
+    "iata": "LBA"
+  },
+  "Malmö": {
+    "name": "Malmö Sturup Airport",
+    "continent": "EU",
+    "iso_c": "SE",
+    "keywords": "none",
+    "iata": "MMX"
+  },
+  "Southampton": {
+    "name": "Southampton Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "RAF Eastleigh, RAF Southampton",
+    "iata": "SOU"
+  },
+  "Fairbanks": {
+    "name": "Fairbanks International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "FAI"
+  },
+  "Mobile": {
+    "name": "Mobile Regional Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "MOB"
+  },
+  "South Bend": {
+    "name": "South Bend Regional Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "SBN"
+  },
+  "Verona": {
+    "name": "Verona Villafranca Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "Valerio Catullo, Villafranca International Airport, Valerio Catullo Airport, Villafranca Airport",
+    "iata": "VRN"
+  },
+  "Jeddah": {
+    "name": "King Abdulaziz International Airport",
+    "continent": "AS",
+    "iso_c": "SA",
+    "keywords": "Mecca, Hajj",
+    "iata": "JED"
+  },
+  "Kuwait City": {
+    "name": "Kuwait International Airport",
+    "continent": "AS",
+    "iso_c": "KW",
+    "keywords": "Al Mubarak Air Base",
+    "iata": "KWI"
+  },
+  "Fort Wayne": {
+    "name": "Fort Wayne International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "Baer Field",
+    "iata": "FWA"
+  },
+  "Palermo": {
+    "name": "Falcone–Borsellino Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "Palermo Airport, Punta Raisi Airport",
+    "iata": "PMO"
+  },
+  "Wellington": {
+    "name": "Wellington International Airport",
+    "continent": "OC",
+    "iso_c": "NZ",
+    "keywords": "none",
+    "iata": "WLG"
+  },
+  "Siem Reap": {
+    "name": "Siem Reap International Airport",
+    "continent": "AS",
+    "iso_c": "KH",
+    "keywords": "Angkor International Airport",
+    "iata": "REP"
+  },
+  "Dakar": {
+    "name": "Léopold Sédar Senghor International Airport",
+    "continent": "AF",
+    "iso_c": "SN",
+    "keywords": "none",
+    "iata": "DKR"
+  },
+  "Amman": {
+    "name": "Queen Alia International Airport",
+    "continent": "AS",
+    "iso_c": "JO",
+    "keywords": "none",
+    "iata": "AMM"
+  },
+  "Guadalajara": {
+    "name": "Don Miguel Hidalgo Y Costilla International Airport",
+    "continent": "none",
+    "iso_c": "MX",
+    "keywords": "none",
+    "iata": "GDL"
+  },
+  "Lapu-Lapu City": {
+    "name": "Mactan Cebu International Airport",
+    "continent": "AS",
+    "iso_c": "PH",
+    "keywords": "none",
+    "iata": "CEB"
+  },
+  "Addis Ababa": {
+    "name": "Addis Ababa Bole International Airport",
+    "continent": "AF",
+    "iso_c": "ET",
+    "keywords": "Haile Selassie I, Bole International Airport",
+    "iata": "ADD"
+  },
+  "Roanoke": {
+    "name": "Roanoke–Blacksburg Regional Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "Woodrum Field",
+    "iata": "ROA"
+  },
+  "Santo Domingo": {
+    "name": "Las Américas International Airport",
+    "continent": "none",
+    "iso_c": "DO",
+    "keywords": "Aeropuerto Internacional de Las Américas, José Francisco Peña Gómez Intl",
+    "iata": "SDQ"
+  },
+  "Xi'an": {
+    "name": "Xi'an Xianyang International Airport",
+    "continent": "AS",
+    "iso_c": "CN",
+    "keywords": "西安咸阳国际机场, Xian",
+    "iata": "XIY"
+  },
+  "Malé": {
+    "name": "Malé International Airport",
+    "continent": "AS",
+    "iso_c": "MV",
+    "keywords": "none",
+    "iata": "MLE"
+  },
+  "Tromsø": {
+    "name": "Tromsø Airport",
+    "continent": "EU",
+    "iso_c": "NO",
+    "keywords": "Langnes, Tromsøya, Tromso",
+    "iata": "TOS"
+  },
+  "Bodø": {
+    "name": "Bodø Airport",
+    "continent": "EU",
+    "iso_c": "NO",
+    "keywords": "Bodø Air Force Base, Bodø Main Air Station",
+    "iata": "BOO"
+  },
+  "Canberra": {
+    "name": "Canberra International Airport",
+    "continent": "OC",
+    "iso_c": "AU",
+    "keywords": "RAAF Base Fairbairn",
+    "iata": "CBR"
+  },
+  "Duluth": {
+    "name": "Duluth International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "LKI, Duluth Air National Guard Base, Lakeside AFB",
+    "iata": "DLH"
+  },
+  "Gdańsk": {
+    "name": "Gdańsk Lech Wałęsa Airport",
+    "continent": "EU",
+    "iso_c": "PL",
+    "keywords": "Gdańsk-Rębiechowo",
+    "iata": "GDN"
+  },
+  "Phnom Penh": {
+    "name": "Phnom Penh International Airport",
+    "continent": "AS",
+    "iso_c": "KH",
+    "keywords": "Pochentong International Airport",
+    "iata": "PNH"
+  },
+  "Caracas": {
+    "name": "Simón Bolívar International Airport",
+    "continent": "SA",
+    "iso_c": "VE",
+    "keywords": "Maiquetía \"Simón Bolívar\" International Airport",
+    "iata": "CCS"
+  },
+  "Beirut": {
+    "name": "Beirut Rafic Hariri International Airport",
+    "continent": "AS",
+    "iso_c": "LB",
+    "keywords": "Chaldea, Beirut Air Base, مطار بيروت رفيق الحريري الدولي",
+    "iata": "BEY"
+  },
+  "Monterrey": {
+    "name": "General Mariano Escobedo International Airport",
+    "continent": "none",
+    "iso_c": "MX",
+    "keywords": "none",
+    "iata": "MTY"
+  },
+  "Cork": {
+    "name": "Cork Airport",
+    "continent": "EU",
+    "iso_c": "IE",
+    "keywords": "Aerfort Chorcaí",
+    "iata": "ORK"
+  },
+  "Fort Worth": {
+    "name": "Fort Worth Meacham International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "FTW"
+  },
+  "Ankara": {
+    "name": "Esenboğa International Airport",
+    "continent": "AS",
+    "iso_c": "TR",
+    "keywords": "none",
+    "iata": "ESB"
+  },
+  "Gulfport": {
+    "name": "Gulfport Biloxi International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "GPT"
+  },
+  "Jackson": {
+    "name": "Jackson-Medgar Wiley Evers International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "JAN"
+  },
+  "Moline": {
+    "name": "Quad City International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "MLI"
+  },
+  "Toledo": {
+    "name": "Toledo Express Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "TOL"
+  },
+  "Brasília": {
+    "name": "Presidente Juscelino Kubistschek International Airport",
+    "continent": "SA",
+    "iso_c": "BR",
+    "keywords": "http://www.infraero.gov.br/usa/aero_prev_home.php?ai=146",
+    "iata": "BSB"
+  },
+  "Baton Rouge": {
+    "name": "Baton Rouge Metropolitan, Ryan Field",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "BTR"
+  },
+  "Newport News": {
+    "name": "Newport News Williamsburg International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "PHF"
+  },
+  "Corpus Christi": {
+    "name": "Corpus Christi International Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "CRP"
+  },
+  "Bristol/Johnson/Kingsport": {
+    "name": "Tri-Cities Regional TN/VA Airport",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "TRI"
+  },
+  "Sarajevo": {
+    "name": "Sarajevo International Airport",
+    "continent": "EU",
+    "iso_c": "BA",
+    "keywords": "none",
+    "iata": "SJJ"
+  },
+  "Varadero": {
+    "name": "Juan Gualberto Gomez International Airport",
+    "continent": "none",
+    "iso_c": "CU",
+    "keywords": "none",
+    "iata": "VRA"
+  },
+  "Cagliari": {
+    "name": "Cagliari Elmas Airport",
+    "continent": "EU",
+    "iso_c": "IT",
+    "keywords": "Cagliari Airport,Elmas",
+    "iata": "CAG"
+  },
+  "Kingston": {
+    "name": "Norman Manley International Airport",
+    "continent": "none",
+    "iso_c": "JM",
+    "keywords": "none",
+    "iata": "KIN"
+  },
+  "Vasco da Gama": {
+    "name": "Dabolim Airport",
+    "continent": "AS",
+    "iso_c": "IN",
+    "keywords": "Goa Airport, Dabolim Navy Airbase, दाबोळी विमानतळ",
+    "iata": "GOI"
+  },
+  "Bloomington/Normal": {
+    "name": "Central Illinois Regional Airport at Bloomington-Normal",
+    "continent": "none",
+    "iso_c": "US",
+    "keywords": "none",
+    "iata": "BMI"
+  },
+  "Bodrum": {
+    "name": "Milas Bodrum International Airport",
+    "continent": "AS",
+    "iso_c": "TR",
+    "keywords": "none",
+    "iata": "BJV"
+  },
+  "Lagos": {
+    "name": "Murtala Muhammed International Airport",
+    "continent": "AF",
+    "iso_c": "NG",
+    "keywords": "none",
+    "iata": "LOS"
+  },
+  "Accra": {
+    "name": "Kotoka International Airport",
+    "continent": "AF",
+    "iso_c": "GH",
+    "keywords": "none",
+    "iata": "ACC"
+  },
+  "Exeter": {
+    "name": "Exeter International Airport",
+    "continent": "EU",
+    "iso_c": "GB",
+    "keywords": "none",
+    "iata": "EXT"
+  },
+  "Luxor": {
+    "name": "Luxor International Airport",
+    "continent": "AF",
+    "iso_c": "EG",
+    "keywords": "none",
+    "iata": "LXR"
+  },
+  "Kunming": {
+    "name": "Kunming Changshui International Airport",
+    "continent": "AS",
+    "iso_c": "CN",
+    "keywords": "none",
+    "iata": "KMG"
+  }
+}
