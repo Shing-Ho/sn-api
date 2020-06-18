@@ -25,11 +25,15 @@ location_dictionary = json.loads(data)
 def location_formater(request):
     city = request.GET.get("city")
     search = SearchEngine()
+
     if city:
         city_name = search.by_city(
             city=city, sort_by="population", returns=10)[0].major_city
 
+
     return HttpResponse(json.dumps({city_name: location_dictionary[city_name]["iata"]}))
+
+
 
     # what provider wants iata code
     # what provider wants city name or code
@@ -38,7 +42,6 @@ def location_formater(request):
 
 def index(request):
     return HttpResponse("Hello, World!  This is the index page")
-
 
 class HotelSupplierViewset(viewsets.ViewSet):
     authentication_classes = (TokenAuthSupportQueryString,)
@@ -55,7 +58,6 @@ class HotelSupplierViewset(viewsets.ViewSet):
         ratetype = request.GET.get("ratetype")
         snpropertyid = request.GET.get("snpropertyid")
         language = request.GET.get("language")
-
         hotels = self.hotel_adapter.search(HotelSearchRequest(
             location, checkin, checkout, ratetype, language, snpropertyid, num_adults=num_adults))
         serializer = serializers.HotelAdapterHotelSerializer(
