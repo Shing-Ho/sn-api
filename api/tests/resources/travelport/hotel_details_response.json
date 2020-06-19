@@ -7,7 +7,10 @@
       "PropertyAddress": {
         "Address": [
           "20 Airport Blvd ",
-          "South San Francisco CA 9408"
+          "South San Francisco",
+          "CA",
+          "94108",
+          "US"
         ]
       },
       "PhoneNumber": [

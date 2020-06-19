@@ -4,12 +4,6 @@ from .hotel.hotels import HotelAdapterHotel, HotelAddress, HotelRate
 from .models.models import Hotels, Geoname
 
 
-class HotelsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Hotels
-        fields = "__all__"
-
-
 class LocationAlternateNameSerializer(serializers.StringRelatedField):
     def to_internal_value(self, data):
         pass

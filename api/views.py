@@ -7,11 +7,10 @@ from rest_framework.response import Response
 
 from api.models.models import Hotels, Geoname, GeonameAlternateName
 from . import serializers
-from .hotel.hotels import HotelSearchRequest
-from api.hotel.travelport.travelport import TravelportHotelAdapter
+from .hotel.hotels import HotelLocationSearch
+from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from .permissions import TokenAuthSupportQueryString
 from .serializers import (
-    HotelsSerializer,
     LocationsSerializer,
     HotelAdapterHotelSerializer,
 )
@@ -22,23 +21,7 @@ def index(request):
 
 
 def detail(request):
-
     return HttpResponse("there are currently {} Hotelss in the Hotels model".format(Hotels.objects.all().count()))
-
-
-class HotelsViewset(viewsets.ModelViewSet):
-    queryset = Hotels.objects.all()
-    serializer_class = HotelsSerializer
-
-    def get_queryset(self):
-        queryset = self.queryset
-        locations = self.request.GET.get("locations")
-        minstars = self.request.GET.get("minstars")
-        if locations:
-            queryset = queryset.filter(city=locations)
-        if minstars:
-            queryset = queryset.filter(stars__gt=minstars)
-        return queryset
 
 
 class HotelSupplierViewset(viewsets.ViewSet):
@@ -54,7 +37,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
         checkout = request.GET.get("checkout")
         num_adults = request.GET.get("num_adults")
 
-        hotels = self.hotel_adapter.search(HotelSearchRequest(location, checkin, checkout, num_adults=num_adults))
+        hotels = self.hotel_adapter.search_by_location(HotelLocationSearch(location, checkin, checkout, num_adults=num_adults))
         serializer = serializers.HotelAdapterHotelSerializer(instance=hotels, many=True)
 
         return Response(serializer.data)

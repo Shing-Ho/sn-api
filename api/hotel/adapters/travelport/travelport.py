@@ -1,9 +1,12 @@
 from datetime import date, timedelta
 from typing import List, Optional
 
+from api.hotel.adapters.hotel_service import HotelAdapter
+from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBuilder
+from api.hotel.adapters.travelport.search import TravelportHotelSearchBuilder
+from api.hotel.adapters.travelport.transport import TravelportTransport
 from api.hotel.hotels import (
-    HotelAdapter,
-    HotelSearchRequest,
+    HotelLocationSearch,
     HotelAdapterHotel,
     HotelAddress,
     HotelRate,
@@ -12,10 +15,10 @@ from api.hotel.hotels import (
     Money,
     DailyRate,
     RoomRate,
+    HotelSpecificSearch,
+    HotelSearchResponse,
+    GeoLocation,
 )
-from api.hotel.travelport.hotel_details import TravelportHotelDetailsBuilder
-from api.hotel.travelport.search import TravelportHotelSearchBuilder
-from api.hotel.travelport.transport import TravelportTransport
 
 
 class TravelportHotelAdapter(HotelAdapter):
@@ -23,7 +26,7 @@ class TravelportHotelAdapter(HotelAdapter):
         if transport is None:
             self.transport = TravelportTransport()
 
-    def search(self, search_request: HotelSearchRequest) -> List[HotelAdapterHotel]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelAdapterHotel]:
         hotel_search_service = self.transport.create_hotel_search_service()
         request = TravelportHotelSearchBuilder().build(search_request)
         response = hotel_search_service.service(**request)
@@ -33,12 +36,15 @@ class TravelportHotelAdapter(HotelAdapter):
 
         return list(map(self._parse_hotel, hotels_with_rates))
 
-    def details(self, hotel_details: HotelDetailsSearchRequest):
+    def details(self, hotel_details: HotelDetailsSearchRequest) -> HotelDetails:
         hotel_details_service = self.transport.create_hotel_details_service()
         request = TravelportHotelDetailsBuilder.build(hotel_details)
         response = hotel_details_service.service(**request)
 
         return self._parse_details(response)
+
+    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponse:
+        pass
 
     def _parse_hotel(self, hotel):
         hotel_property = hotel["HotelProperty"]
@@ -55,8 +61,13 @@ class TravelportHotelAdapter(HotelAdapter):
 
     @staticmethod
     def _parse_hotel_address(hotel_property):
-        address, city, state, postal_code, country = hotel_property["PropertyAddress"]["Address"]
-        address = HotelAddress(city, state, postal_code, country, [address])
+        address_list = hotel_property["PropertyAddress"]["Address"]
+        if len(address_list) >= 5:
+            address, city, state, postal_code, country = address_list
+            return HotelAddress(city, state, postal_code, country, address1=address)
+        else:
+            address, city, *_ = address_list
+
         return address
 
     @staticmethod
@@ -88,7 +99,23 @@ class TravelportHotelAdapter(HotelAdapter):
 
         room_type_rates = list(map(self._parse_rate_detail, hotel["HotelRateDetail"]))
 
-        return HotelDetails(name, chain, hotel_code, checkin_time, checkout_time, room_type_rates)
+        geolocation = GeoLocation(0.0, 0.0)
+        address = self._parse_hotel_address(hotel_property)
+
+        return HotelDetails(
+            name=name,
+            address=address,
+            chain_code=chain,
+            hotel_code=hotel_code,
+            checkin_time=checkin_time,
+            checkout_time=checkout_time,
+            hotel_rates=room_type_rates,
+            geolocation=geolocation,
+            phone_number=None,
+            email=None,
+            homepage_url=None,
+            photos=[],
+        )
 
     def _parse_rate_detail(self, rate_detail):
         rate_plan_type = rate_detail["RatePlanType"]

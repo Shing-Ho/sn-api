@@ -18,11 +18,10 @@ from django.urls import path, include
 from rest_framework import routers
 
 from api import views
-from .views import HotelsViewset, LocationsViewSet, HotelSupplierViewset
+from .views import LocationsViewSet, HotelSupplierViewset
 
 router = routers.SimpleRouter()
 
-router.register(r"Hotels", HotelsViewset)
 router.register(r"Locations", LocationsViewSet)
 router.register(r"Suppliers", HotelSupplierViewset, basename="suppliers")
 

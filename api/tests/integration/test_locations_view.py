@@ -36,8 +36,6 @@ class TestLocationsView(APITestCase):
         response = self.client.get(LOCATION_ENDPOINT)
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, len(response.json()))
-        self.assertEqual(1, response.json()[0]["id"])
-        self.assertEqual(2, response.json()[1]["id"])
         self.assertEqual("Test One", response.json()[0]["primary_name"])
         self.assertEqual("Test Two", response.json()[1]["primary_name"])
 

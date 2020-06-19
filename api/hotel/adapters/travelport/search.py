@@ -1,8 +1,8 @@
 from datetime import date
 from typing import Optional, Union, Dict, Any
 
-from api.hotel.hotels import HotelSearchRequest
-from api.hotel.travelport.settings import TARGET_BRANCH
+from api.hotel.hotels import HotelLocationSearch
+from api.hotel.adapters.travelport.settings import TARGET_BRANCH
 
 
 class TravelportHotelSearchBuilder:
@@ -16,7 +16,7 @@ class TravelportHotelSearchBuilder:
         }
 
     @staticmethod
-    def build(search_request: HotelSearchRequest):
+    def build(search_request: HotelLocationSearch):
         builder = TravelportHotelSearchBuilder()
         builder.hotel_location = search_request.location_name
         builder.checkin = search_request.checkin_date

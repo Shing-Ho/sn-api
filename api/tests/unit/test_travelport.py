@@ -1,8 +1,8 @@
 import unittest
 
-from api.hotel.hotels import HotelSearchRequest
-from api.hotel.travelport.hotel_details import TravelportHotelDetailsBuilder
-from api.hotel.travelport.travelport import TravelportHotelSearchBuilder, TravelportHotelAdapter
+from api.hotel.hotels import HotelLocationSearch
+from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBuilder
+from api.hotel.adapters.travelport.travelport import TravelportHotelSearchBuilder, TravelportHotelAdapter
 from api.tests.utils import load_test_json_resource
 
 
@@ -25,7 +25,7 @@ class TestTravelport(unittest.TestCase):
         self.assertEqual("2020-12-07", results["HotelStay"]["CheckoutDate"])
 
     def test_hotel_search_builder_from_search_request(self):
-        search_request = HotelSearchRequest(
+        search_request = HotelLocationSearch(
             location_name="SFO", checkin_date="2020-12-01", checkout_date="2020-12-07", num_adults=1
         )
 
@@ -70,6 +70,12 @@ class TestTravelport(unittest.TestCase):
         self.assertEqual("17352", hotel_details.hotel_code)
         self.assertEqual("3PM", hotel_details.checkin_time)
         self.assertEqual("12N", hotel_details.checkout_time)
+
+        self.assertEqual("South San Francisco", hotel_details.address.city)
+        self.assertEqual("CA", hotel_details.address.province)
+        self.assertEqual("20 Airport Blvd", hotel_details.address.address1.strip())
+        self.assertEqual("US", hotel_details.address.country)
+        self.assertEqual("94108", hotel_details.address.postal_code)
 
         self.assertEqual(4, len(hotel_details.hotel_rates))
         self.assertEqual(7, len(hotel_details.hotel_rates[0].daily_rates))
