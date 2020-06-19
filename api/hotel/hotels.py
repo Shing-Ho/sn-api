@@ -76,7 +76,7 @@ class Money:
 
 
 @dataclass
-class RateDetail:
+class DailyRate:
     rate_date: date
     base_rate: Money
     tax: Money
@@ -91,7 +91,7 @@ class RoomRate:
     total_base_rate: Money
     total_tax_rate: Money
     total: Money
-    rate_detail: List[RateDetail] = field(default_factory=list)
+    daily_rates: List[DailyRate] = field(default_factory=list)
 
 
 @dataclass

@@ -10,7 +10,7 @@ from api.hotel.hotels import (
     HotelDetailsSearchRequest,
     HotelDetails,
     Money,
-    RateDetail,
+    DailyRate,
     RoomRate,
 )
 from api.hotel.travelport.hotel_details import TravelportHotelDetailsBuilder
@@ -115,7 +115,7 @@ class TravelportHotelAdapter(HotelAdapter):
             days_in_rate_schedule = (expire_date - effective_date).days
             for i in range(days_in_rate_schedule):
                 rate_date = effective_date + timedelta(days=i)
-                rate_detail = RateDetail(rate_date, base_rate, tax_rate, total_rate)
+                rate_detail = DailyRate(rate_date, base_rate, tax_rate, total_rate)
                 hotel_rates_by_date.append(rate_detail)
 
         return RoomRate(
