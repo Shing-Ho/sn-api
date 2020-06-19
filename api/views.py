@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db.models import Prefetch
 from django.http import HttpResponse
 from rest_framework import viewsets
@@ -7,7 +9,8 @@ from rest_framework.response import Response
 
 from api.models.models import Hotels, Geoname, GeonameAlternateName
 from . import serializers
-from .hotel.hotels import HotelLocationSearch
+from .hotel.adapters.hotel_service import HotelService
+from .hotel.hotels import HotelLocationSearch, HotelSpecificSearch, RoomOccupancy, HotelSearchResponse
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from .permissions import TokenAuthSupportQueryString
 from .serializers import (
@@ -29,9 +32,10 @@ class HotelSupplierViewset(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = (HotelAdapterHotelSerializer,)
     hotel_adapter = TravelportHotelAdapter()
+    hotel_service = HotelService("stub")
 
     @action(detail=False, methods=["GET"], name="Search Hotels")
-    def search(self, request):
+    def search_by_location(self, request):
         location = request.GET.get("location")
         checkin = request.GET.get("checkin")
         checkout = request.GET.get("checkout")
@@ -41,6 +45,18 @@ class HotelSupplierViewset(viewsets.ViewSet):
         serializer = serializers.HotelAdapterHotelSerializer(instance=hotels, many=True)
 
         return Response(serializer.data)
+
+    @action(detail=False, methods=["GET"], name="Search Hotels")
+    def search_by_id(self, request):
+        hotel_code = request.GET.get("hotel_code")
+        checkin = date.fromisoformat(request.GET.get("checkin"))
+        checkout = date.fromisoformat(request.GET.get("checkout"))
+        num_adults = request.GET.get("num_adults")
+
+        search = HotelSpecificSearch(hotel_code, checkin, checkout, RoomOccupancy(num_adults, 0))
+        response = self.hotel_service.search_by_id(search)
+
+        return Response(HotelSearchResponse.Schema().dump(response))
 
 
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):

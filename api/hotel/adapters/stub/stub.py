@@ -3,7 +3,7 @@ from enum import Enum
 import random
 from typing import List, Type
 
-from api.hotel.adapters.hotel_service import HotelAdapter
+from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotels import (
     HotelLocationSearch,
     HotelAdapterHotel,
@@ -115,7 +115,7 @@ class StubHotelAdapter(HotelAdapter):
     def _generate_room_rates(self):
         return []
 
-    def _generate_hotel_details(self):
+    def _generate_hotel_details(self, city=None):
         hotel_brands = ["Marriott", "Westin", "St. Regis", "Hyatt", "Holiday Inn"]
         hotel_location = ["Oceanfront", "Beach", "Gardens", "Boardwalk", "Downtown"]
         hotel_types = ["Suites", "Cottages", "Tower", "Villas", "Inn"]
@@ -125,7 +125,7 @@ class StubHotelAdapter(HotelAdapter):
         random_type = random.choice(hotel_types)
 
         hotel_name = f"{random_brand} {random_location} {random_type}"
-        hotel_address = self._generate_address()
+        hotel_address = self._generate_address(city=city)
         hotel_code = random_string(5).upper()
 
         latitude = random.random() * 100
@@ -135,17 +135,20 @@ class StubHotelAdapter(HotelAdapter):
         return HotelDetails(hotel_name, hotel_address, "1A", hotel_code, "3PM", "12PM", [], geolocation)
 
     @staticmethod
-    def _generate_address():
+    def _generate_address(city=None):
         cities = ["San Francisco", "New York", "Seattle", "Los Angeles", "Boston"]
         street_types = ["Street", "Way", "Place", "Loop", "Boulevard"]
         street_names = ["Market", "Park", "Broadway", "First", "Second"]
         random_address = random.randrange(1, 1000, 8)
         random_type = random.choice(street_types)
         random_name = random.choice(street_names)
-        random_city = random.choice(cities)
+
+        if city is None:
+            city = random.choice(cities)
+
         random_street_address = f"{random_address} {random_name} {random_type}"
 
-        return HotelAddress(random_city, "NA", "12345", "US", random_street_address)
+        return HotelAddress(city, "NA", "12345", "US", random_street_address)
 
     @staticmethod
     def _sample_enum(cls: Type[Enum]):

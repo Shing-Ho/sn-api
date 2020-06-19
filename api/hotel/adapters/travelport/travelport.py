@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import List, Optional
 
-from api.hotel.adapters.hotel_service import HotelAdapter
+from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBuilder
 from api.hotel.adapters.travelport.search import TravelportHotelSearchBuilder
 from api.hotel.adapters.travelport.transport import TravelportTransport
