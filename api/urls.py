@@ -18,19 +18,16 @@ from django.urls import path, include
 from rest_framework import routers
 
 from api import views
-from .views import LocationsViewSet, HotelSupplierViewset, location_formater, Hotelbedmap
+from .views import LocationsViewSet, HotelSupplierViewset, location_formater, HotelBedsMap
 
 router = routers.SimpleRouter()
-router2 = routers.SimpleRouter()
 
 router.register(r"Locations", LocationsViewSet)
 router.register(r"Suppliers", HotelSupplierViewset, basename="suppliers")
-router2.register(r"hotelbeds",Hotelbedmap,basename="hotelbeds")
+router.register(r"hotelbeds", HotelBedsMap, basename="hotelbeds")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", views.index, name="index"),
     path("iata/", location_formater, name="location_formater"),
-    path("v0/", include(router2.urls)),
     path("api/v1/", include(router.urls)),
 ]
