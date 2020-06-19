@@ -32,8 +32,8 @@ class TestLocationsView(APITestCase):
         self.assertEqual(2, len(response.json()))
 
     def test_locations_returned(self):
+        self.setupCredentials()
         response = self.client.get(LOCATION_ENDPOINT)
-
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, len(response.json()))
         self.assertEqual(1, response.json()[0]["id"])
@@ -42,6 +42,8 @@ class TestLocationsView(APITestCase):
         self.assertEqual("Test Two", response.json()[1]["primary_name"])
 
     def test_country_filtering(self):
+        self.setupCredentials()
+
         # All Countries
         response = self.client.get(LOCATION_ENDPOINT)
         self.assertEqual(2, len(response.json()))
@@ -80,3 +82,10 @@ class TestLocationsView(APITestCase):
 
         alternate_name.save()
         return alternate_name
+
+    def setupCredentials(self):
+        user = User(username="tester")
+        user.save()
+        token = Token.objects.get_or_create(user=user)
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token[0].key)
