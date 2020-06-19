@@ -3,10 +3,12 @@ from django.core.management import BaseCommand
 from api.models.models import mappingcodes
 import pandas as pd
 
-
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        hotels = pd.read_csv("api/FullHotelBedsInventory.csv")
+
+
+        #hotels = pd.read_csv("api/FullHotelBedsInventory.csv")
+        '''
         print(hotels.columns)
         for x in range(0, len(hotels)):
             try:
@@ -31,7 +33,7 @@ class Command(BaseCommand):
                 print("had a nan")
 
 
-'''['Hotel Code', 'Hotel Name', 'Category Name', 'Chain Name',
+['Hotel Code', 'Hotel Name', 'Category Name', 'Chain Name',
        'Country Name', 'Destination Name', 'Address', 'Postal Code', 'City',
        'Latitude', 'Longitude'],
     

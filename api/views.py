@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from uszipcode import SearchEngine, SimpleZipcode, Zipcode
-from api.models.models import Geoname, GeonameAlternateName
+from api.models.models import Geoname, GeonameAlternateName, mappingcodes
 from . import serializers
 from .hotel.hotels import HotelSearchRequest
 from .hotel.travelport import TravelportHotelAdapter
@@ -17,6 +17,7 @@ from .serializers import (
 
     LocationsSerializer,
     HotelAdapterHotelSerializer,
+    mappingcodesSerializer
 )
 data = open("airports.json", encoding="utf-8").read()
 location_dictionary = json.loads(data)
@@ -30,10 +31,18 @@ def location_formater(request):
         city_name = search.by_city(
             city=city, sort_by="population", returns=10)[0].major_city
 
-
     return HttpResponse(json.dumps({city_name: location_dictionary[city_name]["iata"]}))
 
+class Hotelbedmap(viewsets.ViewSet):
+    serializer_class = mappingcodesSerializer
+    queryset  = mappingcodes.objects.all()
+    def get_queryset(self):
+        queryset = self.queryset
+        city = self.request.GET.get("city")
+        if city:
+            queryset = queryset.filter(city=city)
 
+        return queryset
 
     # what provider wants iata code
     # what provider wants city name or code
