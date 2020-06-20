@@ -2,17 +2,21 @@ openapi: 3.0.0
 
 servers:
 # Added by API Auto Mocking Plugin
+# Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/LPBS7/Cities/1.0.0
-  - description: API
+    url: https://virtserver.swaggerhub.com/LPBS7/SN_HOTEL_API/1.0.0
+  - description: Simplenight Live Sandbox
     url: https://simplenight-api-278418.ue.r.appspot.com/api/v1/
 info:
-  description: Hotel API
   version: "1.0.0"
-  title: Hotel API
+  title: Simplenight Hotel API
+  description: |
+    This OpenAPI Specification describes the Simplenight Hotel API.  In the dropdown below, there are a list of two servers to choose from.  The first is a simple automock server which returns static mock responses.  The second is the Simplenight Live Sandbox server, which returns real data.
+
+    Using the Simplenight Live Sandbox server requires a Bearer token.  This key must be provided by Simplenight.  Once you have obtained a token, you can click the "Authorize" button below, and submit your token.
 tags:
   - name: Locations
-    description: Location-related data (cities, regions, airports, etc)
+    description: Location-related data (cities, regions, airports, etc).  Each of these endpoints takes country code and language code as query parameters.
   - name: Hotel
     description: Hotel availabilty, hotel details, and hotel booking endpoints
 
@@ -20,6 +24,56 @@ security:
   - bearerAuth: []
 
 paths:
+  /hotels/booking-availability:
+    post:
+      tags:
+        - Hotel
+      summary: Uncached availability search
+      description: The search endpoints may return cached availability, which may not be up-to-date.  This endpoint peforms an uncached search, to confirm availability and rates before booking.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HotelSearchRequest'
+      responses:
+        '200':
+          description: List of matching locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HotelSearchResponse'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No locations found for input
+
+  /hotels/booking:
+    post:
+      tags:
+        - Hotel
+      summary: Submit a booking request and receive a Reservation in response.
+      description: Collect a customer record, payment information and itinerary for booking and return a Reservation on success.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingRequest'
+      responses:
+        '200':
+          description: Reservation on success, or else an Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal error while completing a booking
+
   /hotels/search-by-id:
     post:
       tags:
@@ -46,7 +100,7 @@ paths:
         '404':
           description: No locations found for input
 
-  /locations/cities:
+  /locations/cities/:
     get:
       tags:
         - Locations
@@ -239,7 +293,7 @@ components:
         room_rates:
           type: array
           items:
-            $ref: '#/components/schemas/RoomRates'
+            $ref: '#/components/schemas/RoomRate'
         hotel_details:
           $ref: '#/components/schemas/HotelDetails'
         error:
@@ -464,7 +518,7 @@ components:
         - FREE_CANCELLATION
         - NON_REFUNDABLE
         - PARTIAL_REFUND
-    RoomRates:
+    RoomRate:
       type: object
       required:
         - code
@@ -648,5 +702,256 @@ components:
         - REQUEST_NOT_PARSABLE
         - SUPPLIER_ERROR
 
+    CardType:
+      type: object
+      description: |
+        Card network of the payment card
+        AX = American Express
+        DC = Diner's Club
+        DS = Discovery
+        JC = JCB
+        MC = Mastercard
+        VI = Visa
+      enum:
+        - AX
+        - DC
+        - DS
+        - JC
+        - MC
+        - VI
 
+    BookingRequest:
+      required:
+        - api_version
+        - transaction_id
+        - hotel_id
+        - checkin
+        - checkout
+        - language
+        - customer
+        - traveler
+        - room_rate
+        - payment
+      properties:
+        api_version:
+          type: integer
+          example: 1
+          description: The API version of this booking request message
+        transaction_id:
+          type: string
+          example:
+            3ef11392-a96a-423f-8bc6-4207d957a545
+          description: Unique ID for this booking transaction
+        tracking:
+          $ref: '#/components/schemas/Tracking'
+        hotel_id:
+          type: string
+          example: AHY14Z
+          description: The SimpleNight Hotel ID of the property being booked
+        checkin:
+          type: string
+          format: date
+          description: The start date of the hotel booking
+        checkout:
+          type: string
+          format: date
+          description: The end date of the hotel booking
+        ip_address:
+          type: string
+          example: 1.2.3.4
+          description: The end user IP address, for tracking purposes.  Optional.
+        language:
+          type: string
+          example: en_US
+          description: The language of the request, for hotel details and property descriptions
+        customer:
+          $ref: '#/components/schemas/Customer'
+        traveler:
+          $ref: '#/components/schemas/Traveler'
+        room_rate:
+          $ref: '#/components/schemas/RoomRate'
+        payment:
+          $ref: '#/components/schemas/Payment'
+
+    Tracking:
+      description: Campaign tracking information
+      properties:
+        campaign_id:
+          type: string
+          description: Marketing campaign ID
+          example: CAMPAIGN_ONE
+        pos_url:
+          type: string
+          description: Point of Sale deeplink URL
+
+    Customer:
+      description: The lead traveler, and booking owner
+      required:
+        - first_name
+        - last_name
+        - phone_number
+        - email
+        - country
+      properties:
+        first_name:
+          type: string
+          description: Booking owner given name
+          example: John
+        last_name:
+          type: string
+          description: Booking owner family name
+          example: Smith
+        phone_number:
+          type: string
+          description: Booking owner primary phone contact
+          example: +1 (555) 867-5309
+        email:
+          type: string
+          description: Booking owner primary email address
+          example: johnsmith@gmail.com
+        country:
+          type: string
+          description: Two character ISO country code of the lead traveler
+
+    Traveler:
+      description: The lead traveler of the booking
+      required:
+        - first_name
+        - last_name
+        - occupancy
+      properties:
+        first_name:
+          type: string
+          example: John
+          description: Lead traveler given name
+        last_name:
+          type: string
+          example: Smith
+          description: Lead traveler last name
+        occupancy:
+          $ref: '#/components/schemas/Occupancy'
+
+    Payment:
+      description: Payment information for the booking
+      required:
+        - payment_card_parameters
+        - billing_address
+      properties:
+        payment_card_parameters:
+          $ref: '#/components/schemas/PaymentCardParameters'
+        billing_address:
+          $ref: '#/components/schemas/Address'
+
+    PaymentCardParameters:
+      description: The payment card used for this booking
+      required:
+        - card_type
+        - card_number
+        - cardholder_name
+        - expiration_month
+        - expiration_year
+        - cvv
+      properties:
+        card_type:
+          $ref: '#/components/schemas/CardType'
+        card_number:
+          type: string
+          example: 41111111111111111
+          description: Payment card number
+        cardholder_name:
+          type: string
+          example: John Q. Smith
+          description: The name of the payment card holder
+        expiration_month:
+          type: string
+          example: 06
+          description: Two letter month of the card expiration date
+        expiration_date:
+          type: string
+          example: 2025
+          description: Four letter year of the card expiration date
+        cvv:
+          type: string
+          example: 123
+          description: The payment card verification code
+
+    BookingResponse:
+      type: object
+      description: The booking response for a successful booking
+      required:
+        - api_version
+        - transaction_id
+        - status
+        - reservation
+      properties:
+        api_version:
+          type: integer
+          example: 2
+          description: The API version of the booking response
+        transaction_id:
+          type: string
+          example: 3ef11392-a96a-423f-8bc6-4207d957a545
+          description: Echoed transaction_id response
+        status:
+          $ref: '#/components/schemas/Status'
+        reservation:
+          $ref: '#/components/schemas/Reservation'
+
+    Status:
+      description: Success/Failure indicator for a booking
+      type: object
+      enum:
+        - SUCCESS
+        - FAILURE
+
+    Reservation:
+      type: object
+      description: Confirmation record of the booked itinerary
+      required:
+        - record_locator
+        - hotel_locators
+        - hotel_id
+        - checkin
+        - checkout
+        - customer
+        - traveler
+        - room_rate
+      properties:
+        locator:
+          $ref: '#/components/schemas/Locator'
+        hotel_locators:
+          $ref: '#/components/schemas/Locator'
+        hotel_id:
+          type: string
+          example: A24214
+          description: Echoed Hotel ID of the booked property
+        checkin:
+          type: string
+          format: date
+          description: Echoed checkin date
+        checkout:
+          type: string
+          format: date
+          description: Echoed checkout date
+        customer:
+          $ref: '#/components/schemas/Customer'
+        traveler:
+          $ref: '#/components/schemas/Traveler'
+        room_rate:
+          $ref: '#/components/schemas/RoomRate'
+
+    Locator:
+      type: object
+      description: The record locator
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          example: A398415
+          description: booking reference
+        pin:
+          type: string
+          example: 174225
+          description: PIN code used to access the reservation
 
