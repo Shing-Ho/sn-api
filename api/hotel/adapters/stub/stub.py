@@ -1,6 +1,6 @@
-from datetime import datetime
-from enum import Enum
 import random
+from datetime import datetime, timedelta
+from enum import Enum
 from typing import List, Type
 
 from api.hotel.hotel_adapter import HotelAdapter
@@ -15,7 +15,14 @@ from api.hotel.hotels import (
     Image,
     ImageType,
     BedTypes,
-    RatePlan, CancellationPolicy, HotelDetails, HotelAddress, GeoLocation,
+    RatePlan,
+    CancellationPolicy,
+    HotelDetails,
+    HotelAddress,
+    GeoLocation,
+    RoomRate,
+    Money,
+    DailyRate,
 )
 from common.utils import random_string
 
@@ -26,15 +33,18 @@ class StubHotelAdapter(HotelAdapter):
 
     def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponse:
         hotel_code = random_string(5).upper()
+        room_types = self._generate_room_types()
+        rate_plans = self._generate_rate_plans()
+        room_rates = self._generate_room_rates(search_request, room_types, rate_plans)
         response = HotelSearchResponse(
             hotel_id=hotel_code,
             checkin_date=search_request.checkin_date,
             checkout_date=search_request.checkout_date,
             occupancy=RoomOccupancy(2, 2),
-            room_types=self._generate_room_types(),
-            rate_plans=self._generate_rate_plans(),
-            room_rates=self._generate_room_rates(),
-            hotel_details=self._generate_hotel_details()
+            room_types=room_types,
+            rate_plans=rate_plans,
+            room_rates=room_rates,
+            hotel_details=self._generate_hotel_details(),
         )
 
         return response
@@ -66,11 +76,11 @@ class StubHotelAdapter(HotelAdapter):
             code = random_string(6).upper()
             bed_type = random.choice([x for x in bed_types.keys()])
             category = random.choice(room_category)
-            room_type_name = f"{bed_type} {category}"
+            room_type_name = f"{bed_type} Bed {category}"
             amenities = self._sample_enum(Amenity)
             photos = self._get_photos(code)
 
-            description = f"Beautiful {category} room with a {bed_type.lower()} bed"
+            description = f"{category} room with a {bed_type.lower()} bed"
             room_type = RoomType(
                 code=code,
                 name=room_type_name,
@@ -89,7 +99,7 @@ class StubHotelAdapter(HotelAdapter):
         rate_plan_def = {
             "Resort Package": {
                 "Amenities": [Amenity.FREE_WIFI],
-                "Cancellation": CancellationPolicy("Non Refundable", datetime.now(), "")
+                "Cancellation": CancellationPolicy("Non Refundable", datetime.now(), ""),
             },
             "Free Continental Breakfast": {
                 "Amenities": [Amenity.FREE_BREAKFAST],
@@ -97,8 +107,8 @@ class StubHotelAdapter(HotelAdapter):
             },
             "Refundable": {
                 "Amenities": [],
-                "Cancellation": CancellationPolicy("Refundable Up to 24 Hours", datetime.now(), "")
-            }
+                "Cancellation": CancellationPolicy("Refundable Up to 24 Hours", datetime.now(), ""),
+            },
         }
 
         rate_plans = []
@@ -112,12 +122,49 @@ class StubHotelAdapter(HotelAdapter):
 
         return rate_plans
 
-    def _generate_room_rates(self):
-        return []
+    @staticmethod
+    def _generate_room_rates(
+        search_request: HotelSpecificSearch, room_types: List[RoomType], rate_plan_types: List[RatePlan]
+    ):
+        room_rates = []
+        for i in range(len(rate_plan_types)):
+            for j in range(len(room_types)):
+                rate_plan = rate_plan_types[i]
+                room_type = room_types[j]
+
+                description = f"{room_type.name} {rate_plan.name}"
+                room_nights = (search_request.checkout_date - search_request.checkin_date).days
+                total_rate = round(random.random() * 1200, 2)
+                total_tax_rate = round(total_rate / 10, 2)
+                total_base_rate = total_rate - total_tax_rate
+                base_rate = round(total_rate / room_nights, 2)
+                tax_rate = round(total_tax_rate / room_nights, 2)
+
+                daily_rates = []
+                for night in range(room_nights):
+                    rate_date = search_request.checkin_date + timedelta(days=night)
+                    daily_base_rate = Money(base_rate, "USD")
+                    daily_tax_rate = Money(tax_rate, "USD")
+                    daily_total_rate = Money(base_rate + tax_rate, "USD")
+                    daily_rates.append(DailyRate(rate_date, daily_base_rate, daily_tax_rate, daily_total_rate))
+
+                room_rates.append(
+                    RoomRate(
+                        description=description,
+                        additional_detail=list(),
+                        rate_plan_type=rate_plan.code,
+                        total_base_rate=Money(total_base_rate, "USD"),
+                        total_tax_rate=Money(total_tax_rate, "USD"),
+                        total=Money(total_rate, "USD"),
+                        daily_rates=daily_rates,
+                    )
+                )
+
+        return room_rates
 
     def _generate_hotel_details(self, city=None):
         hotel_brands = ["Marriott", "Westin", "St. Regis", "Hyatt", "Holiday Inn"]
-        hotel_location = ["Oceanfront", "Beach", "Gardens", "Boardwalk", "Downtown"]
+        hotel_location = ["Oceanfront", "Beach", "Garden", "Boardwalk", "Downtown"]
         hotel_types = ["Suites", "Cottages", "Tower", "Villas", "Inn"]
 
         random_brand = random.choice(hotel_brands)
@@ -159,7 +206,7 @@ class StubHotelAdapter(HotelAdapter):
     def _get_photos(code):
         photos = []
         for i in range(random.randint(1, 10)):
-            url = f"https://i.simplenight-api-278418.ue.r.appspot.com/i/{code}.i.jpg"
+            url = f"https://i.simplenight-api-278418.ue.r.appspot.com/i/{code}.{i}.jpg"
             photos.append(Image(url, ImageType.ROOM))
 
         return photos
