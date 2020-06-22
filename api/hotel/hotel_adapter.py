@@ -5,7 +5,7 @@ from api.hotel.hotels import (
     HotelAdapterHotel,
     HotelSpecificSearch,
     HotelSearchResponse,
-    HotelDetails
+    HotelDetails, HotelBookingRequest
 )
 
 
@@ -20,4 +20,12 @@ class HotelAdapter(abc.ABC):
 
     @abc.abstractmethod
     def details(self, *args) -> HotelDetails:
+        pass
+
+    @abc.abstractmethod
+    def booking_availability(self, search_request: HotelSpecificSearch):
+        pass
+
+    @abc.abstractmethod
+    def booking(self, book_request: HotelBookingRequest):
         pass

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from .hotel.hotels import HotelAdapterHotel, HotelAddress, HotelRate
-from .models.models import Hotels, Geoname
+from .hotel.hotels import HotelAdapterHotel, Address, HotelRate
+from .models.models import Geoname
 
 
 class LocationAlternateNameSerializer(serializers.StringRelatedField):
@@ -38,7 +38,7 @@ class HotelAdapterHotelAddressSerializer(serializers.Serializer):
         pass
 
     def create(self, validated_data):
-        return HotelAddress(**validated_data)
+        return Address(**validated_data)
 
 
 class HotelAdapterHotelRateSerializer(serializers.Serializer):

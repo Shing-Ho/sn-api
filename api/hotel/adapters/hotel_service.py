@@ -11,7 +11,7 @@ from api.hotel.hotels import (
     HotelSearchResponse,
     HotelLocationSearch,
     HotelAdapterHotel,
-    HotelDetailsSearchRequest,
+    HotelDetailsSearchRequest, HotelBookingRequest,
 )
 
 HOTEL_ADAPTERS = {"stub": StubHotelAdapter(), "travelport": TravelportHotelAdapter(TravelportTransport())}
@@ -36,7 +36,16 @@ class HotelService(HotelAdapter):
         return all_hotels
 
     def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponse:
-        return HOTEL_ADAPTERS[self.adapters].search_by_id(search_request)
+        return self.get_adapter().search_by_id(search_request)
 
     def details(self, hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:
-        return HOTEL_ADAPTERS.get(self.adapters).details(hotel_details_req)
+        return self.get_adapter().details(hotel_details_req)
+
+    def booking_availability(self, search_request: HotelSpecificSearch):
+        return self.get_adapter().booking_availability(search_request)
+
+    def booking(self, book_request: HotelBookingRequest):
+        return self.get_adapter().booking(book_request)
+
+    def get_adapter(self):
+        return HOTEL_ADAPTERS.get(self.adapters)

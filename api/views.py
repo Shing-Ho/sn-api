@@ -10,7 +10,13 @@ from rest_framework.response import Response
 from api.models.models import Hotels, Geoname, GeonameAlternateName
 from . import serializers
 from .hotel.adapters.hotel_service import HotelService
-from .hotel.hotels import HotelLocationSearch, HotelSpecificSearch, RoomOccupancy, HotelSearchResponse
+from .hotel.hotels import (
+    HotelLocationSearch,
+    HotelSpecificSearch,
+    RoomOccupancy,
+    HotelSearchResponse,
+    HotelBookingRequest, HotelBookingResponse
+)
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from .permissions import TokenAuthSupportQueryString
 from .serializers import (
@@ -57,6 +63,13 @@ class HotelSupplierViewset(viewsets.ViewSet):
         response = self.hotel_service.search_by_id(search)
 
         return Response(HotelSearchResponse.Schema().dump(response))
+
+    @action(detail=False, methods=["POST"], name="Hotel Booking")
+    def booking(self, request):
+        booking_request = HotelBookingRequest.Schema().load(request.data)
+        booking_response = self.hotel_service.booking(booking_request)
+
+        return Response(HotelBookingResponse.Schema().dump(booking_response))
 
 
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):

@@ -8,7 +8,7 @@ from api.hotel.adapters.travelport.transport import TravelportTransport
 from api.hotel.hotels import (
     HotelLocationSearch,
     HotelAdapterHotel,
-    HotelAddress,
+    Address,
     HotelRate,
     HotelDetailsSearchRequest,
     HotelDetails,
@@ -17,7 +17,7 @@ from api.hotel.hotels import (
     RoomRate,
     HotelSpecificSearch,
     HotelSearchResponse,
-    GeoLocation,
+    GeoLocation, HotelBookingRequest,
 )
 
 
@@ -46,6 +46,12 @@ class TravelportHotelAdapter(HotelAdapter):
     def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponse:
         pass
 
+    def booking_availability(self, search_request: HotelSpecificSearch):
+        pass
+
+    def booking(self, book_request: HotelBookingRequest):
+        pass
+
     def _parse_hotel(self, hotel):
         hotel_property = hotel["HotelProperty"]
         chain = hotel_property["HotelChain"]
@@ -64,7 +70,7 @@ class TravelportHotelAdapter(HotelAdapter):
         address_list = hotel_property["PropertyAddress"]["Address"]
         if len(address_list) >= 5:
             address, city, state, postal_code, country = address_list
-            return HotelAddress(city, state, postal_code, country, address1=address)
+            return Address(city, state, postal_code, country, address1=address)
         else:
             address, city, *_ = address_list
 

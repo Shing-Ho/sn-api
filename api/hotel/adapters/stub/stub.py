@@ -1,4 +1,5 @@
 import random
+import uuid
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Type
@@ -18,12 +19,18 @@ from api.hotel.hotels import (
     RatePlan,
     CancellationPolicy,
     HotelDetails,
-    HotelAddress,
+    Address,
     GeoLocation,
     RoomRate,
     Money,
     DailyRate,
+    HotelBookingRequest,
+    HotelBookingResponse,
+    Status,
+    Reservation,
+    Locator,
 )
+from api.tests.utils import random_alphanumeric
 from common.utils import random_string
 
 
@@ -51,6 +58,25 @@ class StubHotelAdapter(HotelAdapter):
 
     def details(self, *args):
         pass
+
+    def booking_availability(self, search_request: HotelSpecificSearch):
+        return self.search_by_id(search_request)
+
+    def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
+        reservation = Reservation(
+            locator=Locator(str(uuid.uuid4())),
+            hotel_locator=Locator(random_alphanumeric(6)),
+            hotel_id=book_request.hotel_id,
+            checkin=book_request.checkin,
+            checkout=book_request.checkout,
+            customer=book_request.customer,
+            traveler=book_request.traveler,
+            room_rate=book_request.room_rate,
+        )
+
+        return HotelBookingResponse(
+            api_version=1, transaction_id=str(uuid.uuid4()), status=Status(True, "Success"), reservation=reservation
+        )
 
     def _generate_room_types(self):
         bed_types = {
@@ -195,7 +221,7 @@ class StubHotelAdapter(HotelAdapter):
 
         random_street_address = f"{random_address} {random_name} {random_type}"
 
-        return HotelAddress(city, "NA", "12345", "US", random_street_address)
+        return Address(city, "NA", "12345", "US", random_street_address)
 
     @staticmethod
     def _sample_enum(cls: Type[Enum]):
