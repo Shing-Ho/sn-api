@@ -40,7 +40,9 @@ class HotelBedsMap(viewsets.ModelViewSet):
         city = self.request.GET.get("city")
         if city:
             queryset = queryset.filter(city=city)
-
+        category_name = self.request.GET.get("category_name")
+        if category_name:
+            queryset = queryset.filter(category_name=category_name)
         return queryset
 
 
