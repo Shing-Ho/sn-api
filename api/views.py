@@ -44,8 +44,14 @@ class HotelBedsMap(viewsets.ModelViewSet):
         if category_name:
             queryset = queryset.filter(category_name=category_name)
         return queryset
-
-
+        if destination_name:
+            queryset = queryset.requet.GET.get("destination_name")
+        if latitude:
+            queryset = self.request.GET.get("latitude")
+            return queryset
+        if longitude:
+            queryset = queryset.request.GET.get("longitude")
+            return queryset
 def index(request):
     return HttpResponse("Hello, World!  This is the index page")
 
