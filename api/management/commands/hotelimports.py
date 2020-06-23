@@ -3,36 +3,42 @@ from django.core.management import BaseCommand
 from api.models.models import mappingcodes
 import pandas as pd
 
+
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        mappingcodes.objects.all().delete()
 
+        hotels = pd.read_csv("api/FullHotelBedsInventory.csv")
 
-        #hotels = pd.read_csv("api/FullHotelBedsInventory.csv")
-        '''
         print(hotels.columns)
-        for x in range(0, len(hotels)):
+
+        for x in range(0, 1111):
             try:
 
                 mappingcodes.objects.update_or_create(
                     provider_id=0,
                     hotel_codes=hotels.iloc[x]['Hotel Code'],
-                    hotel_name=hotels.iloc[x]['Hotel Name'],
-                    category_name=hotels.iloc[x]['Category Name'],
+                    hotel_name=str(
+                        hotels.iloc[x]['Hotel Name']).replace(" ", ""),
+                    category_name=str(hotels.iloc[x]['Category Name']).replace(
+                        " ", ""),
                     chain_name=hotels.iloc[x]['Chain Name'],
                     country_name=hotels.iloc[x]['Country Name'],
-                    destination_name=hotels.iloc[x]['Destination Name'],
+                    destination_name=str(
+                        hotels.iloc[x]['Destination Name']).replace(" ", ""),
                     address=hotels.iloc[x]['Address'],
                     postal_code=hotels.iloc[x]['Postal Code'],
-                    city=hotels.iloc[x]['City'],
+                    city=str(hotels.iloc[x]['City']).replace(" ", ""),
                     latitude=round(int(str(hotels.iloc[x]['Latitude']
                                            ).replace(",", ""))/100000, 5),
                     longitude=round(int(str(hotels.iloc[x]['Longitude']).replace(
-                        ",", ""))/100000, 5)
+                        ",", ""))/1000000, 5)
                 )
             except:
                 print("had a nan")
 
 
+'''
 ['Hotel Code', 'Hotel Name', 'Category Name', 'Chain Name',
        'Country Name', 'Destination Name', 'Address', 'Postal Code', 'City',
        'Latitude', 'Longitude'],

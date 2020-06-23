@@ -24,14 +24,16 @@ def location_formater(request):
     search = SearchEngine()
 
     if city:
-        city_name = search.by_city(city=city, sort_by="population", returns=10)[0].major_city
+        city_name = search.by_city(city=city, sort_by="population", returns=10)[
+            0].major_city
 
         return HttpResponse(json.dumps({city_name: location_dictionary[city_name]["iata"]}))
 
 
-class HotelBedsMap(viewsets.ReadOnlyModelViewSet):
-    serializer_class = mappingcodesSerializer
+class HotelBedsMap(viewsets.ModelViewSet):
+
     queryset = mappingcodes.objects.all()
+    serializer_class = mappingcodesSerializer
 
     def get_queryset(self):
         queryset = self.queryset
@@ -40,10 +42,6 @@ class HotelBedsMap(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(city=city)
 
         return queryset
-
-    # what provider wants iata code
-    # what provider wants city name or code
-    # when do we go to each provider
 
 
 def index(request):
@@ -66,9 +64,11 @@ class HotelSupplierViewset(viewsets.ViewSet):
         snpropertyid = request.GET.get("snpropertyid")
         language = request.GET.get("language")
         hotels = self.hotel_adapter.search(
-            HotelSearchRequest(location, checkin, checkout, ratetype, language, snpropertyid, num_adults=num_adults)
+            HotelSearchRequest(location, checkin, checkout, ratetype,
+                               language, snpropertyid, num_adults=num_adults)
         )
-        serializer = serializers.HotelAdapterHotelSerializer(instance=hotels, many=True)
+        serializer = serializers.HotelAdapterHotelSerializer(
+            instance=hotels, many=True)
 
         return Response(serializer.data)
 
@@ -85,7 +85,8 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
         country = self.request.GET.get("country")
 
         if lang_code.lower() != "all":
-            lang_filter = GeonameAlternateName.objects.filter(iso_language_code=lang_code)
+            lang_filter = GeonameAlternateName.objects.filter(
+                iso_language_code=lang_code)
             queryset = queryset.prefetch_related(Prefetch("lang", lang_filter))
             queryset = queryset.filter(lang__iso_language_code=lang_code)
         else:
