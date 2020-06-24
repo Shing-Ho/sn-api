@@ -26,35 +26,53 @@ def location_formater(request):
     if city:
         city_name = search.by_city(city=city, sort_by="population", returns=10)[
             0].major_city
-
         return HttpResponse(json.dumps({city_name: location_dictionary[city_name]["iata"]}))
 
-
 class HotelBedsMap(viewsets.ModelViewSet):
-
     queryset = mappingcodes.objects.all()
     serializer_class = mappingcodesSerializer
 
     def get_queryset(self):
         queryset = self.queryset
         city = self.request.GET.get("city")
+        provider_id = self.request.GET.get("provider_id")
+        hotel_codes = self.request.GET.get("hotel_codes")
+        hotel_name = self.request.GET.get("hotel_name")
+        rating = self.request.GET.get("rating")
+        category_name = self.request.GET.get("category_name")
+        chain_name = self.request.GET.get("chain_name")
+        country_name = self.request.GET.get("country_name")
+        destination_name = self.request.GET.get("destination_name")
+        address = self.request.GET.get("address")
+        postal_code = self.request.GET.get("postal_code")
+        latitude = self.request.GET.get("latitude")
+        longitude = self.request.GET.get("longitude")
+
+        if provider_id:
+            queryset = queryset.request.GET.get("provider_id")
+        if  hotel_codes:
+            queryset = queryset.request.GET.get("hotel_codes")
+        if category_name:
+            queryset = queryset.filter(rating=category_name)
+        if chain_name:
+            queryset = queryset.request.GET.get("chain_name")
+        if country_name:
+            queryset = queryset.request.GET.get("country_name")
+        if destination_name:
+            queryset = queryset.filter(destination_name=destination_name)
+        if address:
+            queryset = queryset.request.GET.get("address")
+        if postal_code:
+            queryset = queryset.request.GET.get("postal_code")
         if city:
             queryset = queryset.filter(city=city)
-        category_name = self.request.GET.get("category_name")
-        if category_name:
-            queryset = queryset.filter(category_name=category_name)
-        return queryset
-        if destination_name:
-            queryset = queryset.requet.GET.get("destination_name")
         if latitude:
             queryset = self.request.GET.get("latitude")
-            return queryset
         if longitude:
             queryset = queryset.request.GET.get("longitude")
-            return queryset
+
 def index(request):
     return HttpResponse("Hello, World!  This is the index page")
-
 
 class HotelSupplierViewset(viewsets.ViewSet):
     authentication_classes = (TokenAuthSupportQueryString,)
