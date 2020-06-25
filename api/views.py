@@ -4,21 +4,22 @@ from django.db.models import Prefetch
 from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_api_key.permissions import HasAPIKey
 
-from api.models.models import Hotels, Geoname, GeonameAlternateName
-from . import serializers
+from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
+from api.models.models import Geoname, GeonameAlternateName
+from . import serializers, api_access
+from .api_access import ApiAccessRequest, ApiAccessResponse
 from .hotel.adapters.hotel_service import HotelService
 from .hotel.hotels import (
     HotelLocationSearch,
     HotelSpecificSearch,
     RoomOccupancy,
     HotelSearchResponse,
-    HotelBookingRequest, HotelBookingResponse
+    HotelBookingRequest,
+    HotelBookingResponse,
 )
-from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
-from .permissions import TokenAuthSupportQueryString
 from .serializers import (
     LocationsSerializer,
     HotelAdapterHotelSerializer,
@@ -26,16 +27,11 @@ from .serializers import (
 
 
 def index(request):
-    return HttpResponse("Hello, World!  This is the index page")
-
-
-def detail(request):
-    return HttpResponse("there are currently {} Hotelss in the Hotels model".format(Hotels.objects.all().count()))
+    return HttpResponse(status=404)
 
 
 class HotelSupplierViewset(viewsets.ViewSet):
-    authentication_classes = (TokenAuthSupportQueryString,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (HasAPIKey,)
     serializer_class = (HotelAdapterHotelSerializer,)
     hotel_adapter = TravelportHotelAdapter()
     hotel_service = HotelService("stub")
@@ -47,7 +43,9 @@ class HotelSupplierViewset(viewsets.ViewSet):
         checkout = request.GET.get("checkout")
         num_adults = request.GET.get("num_adults")
 
-        hotels = self.hotel_adapter.search_by_location(HotelLocationSearch(location, checkin, checkout, num_adults=num_adults))
+        hotels = self.hotel_adapter.search_by_location(
+            HotelLocationSearch(location, checkin, checkout, num_adults=num_adults)
+        )
         serializer = serializers.HotelAdapterHotelSerializer(instance=hotels, many=True)
 
         return Response(serializer.data)
@@ -69,14 +67,13 @@ class HotelSupplierViewset(viewsets.ViewSet):
         booking_request = HotelBookingRequest.Schema().load(request.data)
         booking_response = self.hotel_service.booking(booking_request)
 
-        return Response(HotelBookingResponse.Schema().dump(booking_response))
+        return _response(booking_response, HotelBookingResponse)
 
 
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Geoname.objects.all()
     serializer_class = LocationsSerializer
-    authentication_classes = (TokenAuthSupportQueryString,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (HasAPIKey,)
 
     def get_queryset(self):
         queryset = self.queryset
@@ -94,3 +91,18 @@ class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(iso_country_code=country)
 
         return queryset
+
+
+class AuthenticationView(viewsets.ViewSet):
+    @action(detail=False, methods=["POST"], name="Create Anonymous API Key")
+    def create_api_key(self, request):
+        request = ApiAccessRequest.Schema().load(request.data)
+        if not request:
+            return Response(status=400)
+
+        response = api_access.create_anonymous_api_user(request)
+        return _response(response, ApiAccessResponse)
+
+
+def _response(obj, cls):
+    return Response(cls.Schema().dump(obj))

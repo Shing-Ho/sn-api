@@ -365,3 +365,5 @@ class HotelBookingResponse(BaseSchema):
     transaction_id: str
     status: Status
     reservation: Reservation
+
+    Schema: ClassVar[Type[Schema]] = Schema

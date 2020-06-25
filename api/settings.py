@@ -39,7 +39,8 @@ INSTALLED_APPS = [
 
     # Third-party
     "rest_framework",
-    "rest_framework.authtoken"
+    "rest_framework_api_key",
+    "corsheaders",
 ]
 
 
@@ -172,5 +173,9 @@ LOGGING = {
     "root": {"handlers": ["console"], "level": "WARNING", },
 }
 
+CORS_ORIGIN_WHITELIST = [
+    "https://simplenightdv.github.io",
+]
 
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
+APPEND_SLASH=False
