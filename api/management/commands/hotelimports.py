@@ -1,12 +1,12 @@
 
 from django.core.management import BaseCommand
-from api.models.models import mappingcodes
+from api.models.models import hotelmappingcodes
 import pandas as pd
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        mappingcodes.objects.all().delete()
+        hotelmappingcodes.objects.all().delete()
 
         hotels = pd.read_csv("api/FullHotelBedsInventory.csv")
 
