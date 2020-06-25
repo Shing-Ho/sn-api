@@ -52,7 +52,7 @@ class bookingrequest(models.Model):
     Standalone = models.BooleanField(default=True)
 
 
-class mappingcodes(models.Model):
+class hotelmappingcodes(models.Model):
 
     class Meta:
         app_label = "api"
@@ -60,7 +60,6 @@ class mappingcodes(models.Model):
     provider_id = models.IntegerField(5)
     hotel_codes = models.IntegerField(1, default=1)
     hotel_name = models.CharField(max_length=50)
-    #category_name = models.CharField(max_length=20, blank=True)
     rating = models.IntegerField(blank=True)
     chain_name = models.CharField(max_length=50)
     country_name = models.CharField(max_length=50)
@@ -70,3 +69,8 @@ class mappingcodes(models.Model):
     city = models.CharField(max_length=50)
     latitude = models.FloatField()
     longitude = models.FloatField()
+
+class sn_hotel_mappings():
+    simplenight_id = models.IntegerField(5)
+    provider = models.CharField(max_length=50)
+    provider_id = models.IntegerField(5)
