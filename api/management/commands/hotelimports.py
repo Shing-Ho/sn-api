@@ -14,15 +14,22 @@ class Command(BaseCommand):
 
         for x in range(0, 1111):
             try:
-
+                if "HALF" in (str(hotels.iloc[x]['Category Name']).replace("STARS", "")):
+                    rating = int(
+                        str(str(hotels.iloc[x]['Category Name']).replace("STARS", "").replace("AND A HALF", "")))+.5
+                else:
+                    rating = int(
+                        str(hotels.iloc[x]['Category Name']).replace("STARS", ""))
+            except:
+                pass
+            try:
                 mappingcodes.objects.update_or_create(
                     provider_id=0,
                     hotel_codes=hotels.iloc[x]['Hotel Code'],
                     hotel_name=str(
                         hotels.iloc[x]['Hotel Name']).replace(" ", ""),
-                    category_name=str(hotels.iloc[x]['Category Name']).replace(
-                        " ", ""),
-                    chain_name=hotels.iloc[x]['Chain Name'],
+                    rating=rating,
+                    chain_name=hotels.iloc[x]['Chain Name'].strip(),
                     country_name=hotels.iloc[x]['Country Name'],
                     destination_name=str(
                         hotels.iloc[x]['Destination Name']).replace(" ", ""),
@@ -35,14 +42,14 @@ class Command(BaseCommand):
                         ",", ""))/1000000, 5)
                 )
             except:
-                print("had a nan")
+                print("")
 
 
 '''
 ['Hotel Code', 'Hotel Name', 'Category Name', 'Chain Name',
        'Country Name', 'Destination Name', 'Address', 'Postal Code', 'City',
        'Latitude', 'Longitude'],
-    
+
     provider_id = models.IntegerField(5)
     hotel_codes = models.IntegerField(1, default=1)
     hotel_name = models.CharField(max_length=50)

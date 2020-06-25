@@ -28,6 +28,7 @@ def location_formater(request):
             0].major_city
         return HttpResponse(json.dumps({city_name: location_dictionary[city_name]["iata"]}))
 
+
 class HotelBedsMap(viewsets.ModelViewSet):
     queryset = mappingcodes.objects.all()
     serializer_class = mappingcodesSerializer
@@ -49,30 +50,33 @@ class HotelBedsMap(viewsets.ModelViewSet):
         longitude = self.request.GET.get("longitude")
 
         if provider_id:
-            queryset = queryset.request.GET.get("provider_id")
-        if  hotel_codes:
-            queryset = queryset.request.GET.get("hotel_codes")
+            queryset = queryset.filter(provider_id=provider_id)
+        if hotel_codes:
+            queryset = queryset.filter(hotel_codes=hotel_codes)
         if category_name:
             queryset = queryset.filter(rating=category_name)
         if chain_name:
-            queryset = queryset.request.GET.get("chain_name")
+            queryset = queryset.filter(chain_name=chain_name)
         if country_name:
-            queryset = queryset.request.GET.get("country_name")
+            queryset = queryset.filter(country_name=country_name)
         if destination_name:
             queryset = queryset.filter(destination_name=destination_name)
         if address:
-            queryset = queryset.request.GET.get("address")
+            queryset = queryset.fiter(address__isin=address)
         if postal_code:
-            queryset = queryset.request.GET.get("postal_code")
+            queryset = queryset.filter(postal_code=postal_code)
         if city:
             queryset = queryset.filter(city=city)
         if latitude:
-            queryset = self.request.GET.get("latitude")
+            queryset = queryset.filter(latitude=latitude)
         if longitude:
-            queryset = queryset.request.GET.get("longitude")
+            queryset = queryset.filter(longitude=longitude)
+        return queryset
+
 
 def index(request):
     return HttpResponse("Hello, World!  This is the index page")
+
 
 class HotelSupplierViewset(viewsets.ViewSet):
     authentication_classes = (TokenAuthSupportQueryString,)
