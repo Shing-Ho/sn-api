@@ -23,7 +23,7 @@ class Command(BaseCommand):
             except:
                 pass
             try:
-                mappingcodes.objects.update_or_create(
+                hotelmappingcodes.objects.update_or_create(
                     provider_id=0,
                     hotel_codes=hotels.iloc[x]['Hotel Code'],
                     hotel_name=str(
