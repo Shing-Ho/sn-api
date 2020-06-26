@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-from api.models.models import hotelmappingcodes, sn_hotel_map
+from api.models.models import supplier_hotels, sn_hotel_map
 import pandas as pd
 
 '''
@@ -18,16 +18,19 @@ class Command(BaseCommand):
 
         for i in range(10000, 999999):
             random_ids.append(i)
-
         main_dict = {"hotelbeds": {
-            "model": hotelmappingcodes, "name": "HotelBeds"}}
+            "model": supplier_hotels, "name": "HotelBeds"}}
 
         for table in main_dict.keys():
             for hotel in main_dict[table]["model"].objects.all():
                 if sn_hotel_map.objects.filter(provider_id=hotel.hotel_codes).count() > 0:
+                    # dont do anything we already have this in the database
                     print("skipping")
+
                 else:
                     name = table
+                    # for address in main_dict.keys():
+                    #     if main_dict[]
                     print({"provider": main_dict[table]["name"]})
                     print(hotel.hotel_codes)
                     # grab an a radom number from our list
@@ -36,7 +39,6 @@ class Command(BaseCommand):
                     # then remove so we arnt using the same id twice
                     random_ids.remove(sn_id)
                     # then simply just create the objects
-
                     # if that simple night id is already in there (from a previous run) then do not use it again
                     while sn_hotel_map.objects.filter(simplenight_id=sn_id).count() > 0:
                         sn_id = random.choice(random_ids)

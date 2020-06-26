@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from uszipcode import SearchEngine
 
-from api.models.models import Geoname, GeonameAlternateName, hotelmappingcodes
+from api.models.models import Geoname, GeonameAlternateName, supplier_hotels
 from . import serializers
 from .hotel.hotels import HotelSearchRequest
 from .hotel.travelport import TravelportHotelAdapter
@@ -30,7 +30,7 @@ def location_formater(request):
 
 
 class HotelBedsMap(viewsets.ModelViewSet):
-    queryset = hotelmappingcodes.objects.all()
+    queryset = supplier_hotels.objects.all()
     serializer_class = mappingcodesSerializer
 
     def get_queryset(self):

@@ -1,18 +1,18 @@
 
 from django.core.management import BaseCommand
-from api.models.models import hotelmappingcodes
+from api.models.models import supplier_hotels
 import pandas as pd
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        hotelmappingcodes.objects.all().delete()
+        supplier_hotels.objects.all().delete()
 
         hotels = pd.read_csv("api/FullHotelBedsInventory.csv")
 
         print(hotels.columns)
 
-        for x in range(1112, 2211):
+        for x in range(2112, 3211):
             try:
                 if "HALF" in (str(hotels.iloc[x]['Category Name']).replace("STARS", "")):
                     rating = int(
@@ -23,7 +23,7 @@ class Command(BaseCommand):
             except:
                 pass
             try:
-                hotelmappingcodes.objects.update_or_create(
+                supplier_hotels.objects.update_or_create(
                     provider_id=0,
                     hotel_codes=hotels.iloc[x]['Hotel Code'],
                     hotel_name=str(

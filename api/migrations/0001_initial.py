@@ -15,11 +15,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='bookingrequest',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('checkindate', models.DateField(auto_now=True)),
                 ('checkoutdate', models.DateField(auto_now=True)),
-                ('currency', models.CharField(choices=[('US Dollars', 'US DOLLARS')], default='US Dollars', max_length=30)),
-                ('language', models.CharField(choices=[('English', 'ENGLISH')], default='US Dollars', max_length=10)),
+                ('currency', models.CharField(choices=[
+                 ('US Dollars', 'US DOLLARS')], default='US Dollars', max_length=30)),
+                ('language', models.CharField(choices=[
+                 ('English', 'ENGLISH')], default='US Dollars', max_length=10)),
                 ('occupancy', models.IntegerField(default=1, verbose_name=1)),
                 ('snpropertyid', models.CharField(default='AAA', max_length=10)),
                 ('package', models.BooleanField(default=False)),
@@ -29,7 +32,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Geoname',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('geoname_id', models.IntegerField(unique=True)),
                 ('iso_country_code', models.CharField(max_length=2)),
                 ('location_name', models.TextField()),
@@ -38,9 +42,10 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='hotelmappingcodes',
+            name='supplier_hotels',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('provider_id', models.IntegerField(verbose_name=5)),
                 ('hotel_codes', models.IntegerField(default=1, verbose_name=1)),
                 ('hotel_name', models.CharField(max_length=50)),
@@ -58,7 +63,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='sn_hotel_map',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('simplenight_id', models.IntegerField(verbose_name=9)),
                 ('provider', models.CharField(max_length=50)),
                 ('provider_id', models.IntegerField(verbose_name=5)),
@@ -67,13 +73,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='GeonameAlternateName',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('alternate_name_id', models.IntegerField()),
                 ('iso_language_code', models.CharField(max_length=2)),
                 ('name', models.TextField()),
                 ('is_colloquial', models.BooleanField()),
                 ('iatacode', models.CharField(max_length=3)),
-                ('geoname', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='lang', to='api.Geoname', to_field='geoname_id')),
+                ('geoname', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
+                                              related_name='lang', to='api.Geoname', to_field='geoname_id')),
             ],
         ),
     ]
