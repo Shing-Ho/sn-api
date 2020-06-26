@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
         print(hotels.columns)
 
-        for x in range(0, 1111):
+        for x in range(1112, 2211):
             try:
                 if "HALF" in (str(hotels.iloc[x]['Category Name']).replace("STARS", "")):
                     rating = int(

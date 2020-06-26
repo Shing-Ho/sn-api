@@ -24,14 +24,29 @@ class Command(BaseCommand):
 
         for table in main_dict.keys():
             for hotel in main_dict[table]["model"].objects.all():
-                name = table
-                print({"provider": main_dict[table]["name"]})
-                print(hotel.hotel_codes)
+                if sn_hotel_map.objects.filter(provider_id=hotel.hotel_codes).count() > 0:
+                    print("skipping")
+                else:
+                    name = table
+                    print({"provider": main_dict[table]["name"]})
+                    print(hotel.hotel_codes)
+                    # grab an a radom number from our list
+                    # and assign as our sn id
+                    sn_id = random.choice(random_ids)
+                    # then remove so we arnt using the same id twice
+                    random_ids.remove(sn_id)
+                    # then simply just create the objects
 
-                sn_id = random.choice(random_ids)
-                random_ids.remove(sn_id)
-                sn_hotel_map.objects.update_or_create(
-                    simplenight_id=sn_id,
-                    provider=main_dict[table]["name"],
-                    provider_id=hotel.hotel_codes
-                )
+                    # if that simple night id is already in there (from a previous run) then do not use it again
+                    while sn_hotel_map.objects.filter(simplenight_id=sn_id).count() > 0:
+                        sn_id = random.choice(random_ids)
+                    # then remove so we arnt using the same id twice
+                        random_ids.remove(sn_id)
+                    # then simply just create the objects
+
+                    sn_hotel_map.objects.update_or_create(
+                        simplenight_id=sn_id,
+                        provider=main_dict[table]["name"],
+                        provider_id=hotel.hotel_codes
+                    )
+                    print("its been added")
