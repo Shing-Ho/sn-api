@@ -57,10 +57,10 @@ class hotelmappingcodes(models.Model):
     class Meta:
         app_label = "api"
 
-    provider_id = models.IntegerField(5)
-    hotel_codes = models.IntegerField(1, default=1)
+    provider_id = models.IntegerField()
+    hotel_codes = models.IntegerField(default=1)
     hotel_name = models.CharField(max_length=50)
-    rating = models.IntegerField(blank=True)
+    rating = models.FloatField(blank=True)
     chain_name = models.CharField(max_length=50)
     country_name = models.CharField(max_length=50)
     destination_name = models.CharField(max_length=50)
@@ -70,7 +70,19 @@ class hotelmappingcodes(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
 
-class sn_hotel_mappings():
-    simplenight_id = models.IntegerField(5)
+
+# class sn_hotel_map(): <--- we cant leave this empty we must use models.Model for example
+    # if we dont have it we dont have access to .objects etc
+#     class Meta: app_label = "api" this must be added in because models does doesnt recognize what app it is
+#     simplenight_id = models.IntegerField(5)
+#     provider = models.CharField(max_length=50)
+#     provider_id = models.IntegerField(5) <----- we dont want to put this 5 in there it doesnt do
+#                                               anything other than displace the field
+#                                               as a 5 instead of provider_id
+
+class sn_hotel_map(models.Model):
+    class Meta:
+        app_label = "api"
+    simplenight_id = models.IntegerField()
     provider = models.CharField(max_length=50)
-    provider_id = models.IntegerField(5)
+    provider_id = models.IntegerField()

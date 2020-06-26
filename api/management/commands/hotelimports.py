@@ -1,12 +1,12 @@
 
 from django.core.management import BaseCommand
-from api.models.models import mappingcodes
+from api.models.models import hotelmappingcodes
 import pandas as pd
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        mappingcodes.objects.all().delete()
+        hotelmappingcodes.objects.all().delete()
 
         hotels = pd.read_csv("api/FullHotelBedsInventory.csv")
 
@@ -23,7 +23,7 @@ class Command(BaseCommand):
             except:
                 pass
             try:
-                mappingcodes.objects.update_or_create(
+                hotelmappingcodes.objects.update_or_create(
                     provider_id=0,
                     hotel_codes=hotels.iloc[x]['Hotel Code'],
                     hotel_name=str(
