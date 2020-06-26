@@ -5,12 +5,12 @@ from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework_api_key.permissions import HasAPIKey
 
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from api.models.models import Geoname, GeonameAlternateName
 from . import serializers, api_access
 from .api_access import ApiAccessRequest, ApiAccessResponse
+from .auth.models import HasOrganizationAPIKey, OrganizationApiThrottle
 from .hotel.adapters.hotel_service import HotelService
 from .hotel.hotels import (
     HotelLocationSearch,
@@ -31,7 +31,8 @@ def index(request):
 
 
 class HotelSupplierViewset(viewsets.ViewSet):
-    permission_classes = (HasAPIKey,)
+    permission_classes = (HasOrganizationAPIKey,)
+    throttle_classes = (OrganizationApiThrottle,)
     serializer_class = (HotelAdapterHotelSerializer,)
     hotel_adapter = TravelportHotelAdapter()
     hotel_service = HotelService("stub")
@@ -73,7 +74,8 @@ class HotelSupplierViewset(viewsets.ViewSet):
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Geoname.objects.all()
     serializer_class = LocationsSerializer
-    permission_classes = (HasAPIKey,)
+    permission_classes = (HasOrganizationAPIKey,)
+    throttle_classes = (OrganizationApiThrottle,)
 
     def get_queryset(self):
         queryset = self.queryset
