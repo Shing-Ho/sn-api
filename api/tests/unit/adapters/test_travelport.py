@@ -1,8 +1,9 @@
 import unittest
+from datetime import date
 
-from api.hotel.hotels import HotelLocationSearch
 from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBuilder
 from api.hotel.adapters.travelport.travelport import TravelportHotelSearchBuilder, TravelportHotelAdapter
+from api.hotel.hotels import HotelLocationSearch
 from api.tests.utils import load_test_json_resource
 
 
@@ -26,7 +27,7 @@ class TestTravelport(unittest.TestCase):
 
     def test_hotel_search_builder_from_search_request(self):
         search_request = HotelLocationSearch(
-            location_name="SFO", checkin_date="2020-12-01", checkout_date="2020-12-07", num_adults=1
+            location_name="SFO", checkin_date=date(2020, 12, 1), checkout_date=date(2020, 12, 7), num_adults=1
         )
 
         results = TravelportHotelSearchBuilder.build(search_request)
@@ -104,4 +105,3 @@ class TestTravelport(unittest.TestCase):
         self.assertEqual(118.75, hotel_details.hotel_rates[0].daily_rates[6].base_rate.amount)
 
         print(hotel_details.hotel_rates)
-

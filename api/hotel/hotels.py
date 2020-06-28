@@ -2,10 +2,14 @@ import dataclasses
 from dataclasses import field
 from datetime import date, datetime
 from enum import Enum
-from typing import List, Optional, ClassVar, Type
+from typing import List, Optional, ClassVar, Type, Union
 
 import marshmallow_dataclass
 from marshmallow import Schema, EXCLUDE
+
+
+def to_json(obj):
+    return obj.Schema().dump(obj)
 
 
 @dataclasses.dataclass
@@ -43,8 +47,8 @@ class HotelLocationSearch(BaseSchema):
     num_rooms: int = 1
     num_adults: int = 1
     num_children: int = 0
-    checkin_time: str = None
-    checkout_time: str = None
+    checkin_time: Optional[Union[str, datetime]] = None
+    checkout_time: Optional[Union[str, datetime]] = None
 
 
 @dataclasses.dataclass

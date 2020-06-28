@@ -1,4 +1,4 @@
-from django.db import models, connection
+from django.db import models
 
 
 class Geoname(models.Model):
