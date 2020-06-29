@@ -1,8 +1,9 @@
-from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
-from rest_framework.test import APITestCase, force_authenticate, APIClient
+import uuid
+
+from rest_framework.test import APITestCase
 
 from api.models.models import Geoname, GeonameAlternateName
+from api.tests import utils
 
 LOCATION_ENDPOINT = "/api/v1/Locations/"
 
@@ -21,11 +22,7 @@ class TestLocationsView(APITestCase):
         response = self.client.get(LOCATION_ENDPOINT)
         self.assertEqual(401, response.status_code)
 
-        user = User(username="tester")
-        user.save()
-        token = Token.objects.get_or_create(user=user)
-
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token[0].key)
+        self.setupCredentials()
         response = self.client.get(LOCATION_ENDPOINT)
 
         self.assertEqual(200, response.status_code)
@@ -82,8 +79,5 @@ class TestLocationsView(APITestCase):
         return alternate_name
 
     def setupCredentials(self):
-        user = User(username="tester")
-        user.save()
-        token = Token.objects.get_or_create(user=user)
-
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token[0].key)
+        api_key = utils.create_api_key(organization_name=str(uuid.uuid4()))
+        self.client.credentials(HTTP_AUTHORIZATION='Api-Key ' + api_key)
