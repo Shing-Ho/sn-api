@@ -114,3 +114,12 @@ class TestHotelBeds(unittest.TestCase):
 
         self.assertEqual("2020-07-20 23:59:00-07:00", str(rate.cancellation_policies[0].deadline))
         self.assertEqual("50.08", rate.cancellation_policies[0].amount)
+
+    def test_hotelbeds_hotel_details(self):
+        hotel_details_resource = load_test_resource("hotelbeds/hotel-details-response.json")
+        hotelbeds = HotelBeds()
+        with requests_mock.Mocker() as mocker:
+            mocker.get(HotelBedsTransport.get_hotel_content_url(), text=hotel_details_resource)
+            response = hotelbeds.details(["foo", "bar"], "en_US")
+
+        self.assertIsNotNone(response)

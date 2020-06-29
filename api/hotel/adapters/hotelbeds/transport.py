@@ -1,5 +1,6 @@
 import hashlib
 import time
+from typing import Dict
 
 import requests
 
@@ -21,8 +22,11 @@ class HotelBedsTransport:
 
         return headers
 
-    def submit(self, url, request: BaseSchema, **kwargs):
+    def post(self, url, request: BaseSchema, **kwargs):
         return requests.post(url, json=to_json(request), headers=self.get_headers(**kwargs))
+
+    def get(self, url, params: Dict):
+        return requests.get(url, params=params, headers=self.get_headers())
 
     def _get_default_headers(self):
         return self._headers.copy()
@@ -43,11 +47,19 @@ class HotelBedsTransport:
 
     @classmethod
     def get_hotels_url(cls):
-        return f"{cls._get_base_url()}/hotels"
+        return f"{cls._get_base_url()}//hotel-api/1.0/hotels"
+
+    @classmethod
+    def get_hotel_content_url(cls):
+        return f"{cls._get_content_base_url()}/hotels"
+
+    @classmethod
+    def _get_content_base_url(cls):
+        return f"{cls._get_base_url()}/hotel-content-api/1.0"
 
     @classmethod
     def _get_base_url(cls):
-        return f"https://{cls._get_hostname()}/hotel-api/1.0"
+        return f"https://{cls._get_hostname()}"
 
     @staticmethod
     def _get_hostname():

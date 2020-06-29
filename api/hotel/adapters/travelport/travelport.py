@@ -1,10 +1,10 @@
 from datetime import date, timedelta
 from typing import List, Optional
 
-from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBuilder
 from api.hotel.adapters.travelport.search import TravelportHotelSearchBuilder
 from api.hotel.adapters.travelport.transport import TravelportTransport
+from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotels import (
     HotelLocationSearch,
     HotelAdapterHotel,
@@ -17,7 +17,8 @@ from api.hotel.hotels import (
     RoomRate,
     HotelSpecificSearch,
     HotelSearchResponse,
-    GeoLocation, HotelBookingRequest,
+    GeoLocation,
+    HotelBookingRequest,
 )
 
 
@@ -63,7 +64,7 @@ class TravelportHotelAdapter(HotelAdapter):
         hotel_rate = HotelRate(total, tax)
         star_rating = self._parse_hotel_star_rating(hotel_property)
 
-        return HotelAdapterHotel(name, chain, address, hotel_rate, star_rating)
+        return HotelAdapterHotel(name=name, chain_code=chain, address=address, rate=hotel_rate, star_rating=star_rating)
 
     @staticmethod
     def _parse_hotel_address(hotel_property):

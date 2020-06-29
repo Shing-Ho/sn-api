@@ -1,14 +1,10 @@
-import uuid
-
-from rest_framework.test import APITestCase
-
 from api.models.models import Geoname, GeonameAlternateName
-from api.tests import utils
+from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 
 LOCATION_ENDPOINT = "/api/v1/Locations/"
 
 
-class TestLocationsView(APITestCase):
+class TestLocationsView(SimplenightAPITestCase):
     def setUp(self) -> None:
         geoname_one = self._create_geoname_model(1, "Test One", "US")
         geoname_two = self._create_geoname_model(2, "Test Two", "CA")
@@ -77,7 +73,3 @@ class TestLocationsView(APITestCase):
 
         alternate_name.save()
         return alternate_name
-
-    def setupCredentials(self):
-        api_key = utils.create_api_key(organization_name=str(uuid.uuid4()))
-        self.client.credentials(HTTP_AUTHORIZATION='Api-Key ' + api_key)

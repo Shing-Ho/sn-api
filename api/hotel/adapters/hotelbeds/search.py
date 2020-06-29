@@ -7,19 +7,20 @@ from typing import ClassVar, Type, List, Optional
 import marshmallow_dataclass
 from marshmallow import Schema
 
+from api.hotel.adapters.hotelbeds.common import HotelBedsAuditDataRS, get_language_mapping
 from api.hotel.hotels import HotelLocationSearch, BaseSchema
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelBedsStay(BaseSchema):
+class HotelBedsStayRQ(BaseSchema):
     checkin: date = field(metadata=dict(data_key="checkIn"))
     checkout: date = field(metadata=dict(data_key="checkOut"))
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelBedsOccupancy(BaseSchema):
+class HotelBedsOccupancyRQ(BaseSchema):
     rooms: int
     adults: int
     children: int
@@ -27,29 +28,20 @@ class HotelBedsOccupancy(BaseSchema):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelBedsDestination(BaseSchema):
+class HotelBedsDestinationRQ(BaseSchema):
     code: str
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class HotelBedsAvailabilityRQ(BaseSchema):
-    stay: HotelBedsStay
-    occupancies: List[HotelBedsOccupancy]
-    destination: HotelBedsDestination
+    stay: HotelBedsStayRQ
+    occupancies: List[HotelBedsOccupancyRQ]
+    destination: HotelBedsDestinationRQ
+    daily_rates: bool = field(metadata=dict(data_key="dailyRate"), default=False)
+    language: str = field(metadata=dict(data_key="language"), default="ENG")
 
     Schema: ClassVar[Type[Schema]] = Schema
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsAuditData(BaseSchema):
-    timestamp: datetime
-    environment: str
-    release: str
-    process_time: str = field(metadata=dict(data_key="processTime"))
-    request_host: str = field(metadata=dict(data_key="requestHost"))
-    server_id: str = field(metadata=dict(data_key="serverId"))
 
 
 class HotelBedsRateType(Enum):
@@ -64,7 +56,7 @@ class HotelBedsPaymentType(Enum):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelBedsCancellationPolicies(BaseSchema):
+class HotelBedsCancellationPoliciesRS(BaseSchema):
     deadline: datetime = field(metadata=dict(data_key="from"))
     amount: str = field(metadata=dict(data_key="amount"))
 
@@ -77,7 +69,7 @@ class HotelBedsTaxType(Enum):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelBedsTax(BaseSchema):
+class HotelBedsTaxRS(BaseSchema):
     included: bool
     amount: str
     currency: str
@@ -86,21 +78,21 @@ class HotelBedsTax(BaseSchema):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelBedsTaxes(BaseSchema):
-    taxes: List[HotelBedsTax] = field(metadata=dict(data_key="taxes"))
+class HotelBedsTaxesRS(BaseSchema):
+    taxes: List[HotelBedsTaxRS] = field(metadata=dict(data_key="taxes"))
     all_included: bool = field(metadata=dict(data_key="allIncluded"))
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelBedsPromotions(BaseSchema):
+class HotelBedsPromotionsRS(BaseSchema):
     code: str
     name: str
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelBedsRoomRate(BaseSchema):
+class HotelBedsRoomRateRS(BaseSchema):
     rate_key: str = field(metadata=dict(data_key="rateKey"))
     rate_class: str = field(metadata=dict(data_key="rateClass"))
     rate_type: HotelBedsRateType = field(metadata=dict(data_key="rateType"))
@@ -111,19 +103,21 @@ class HotelBedsRoomRate(BaseSchema):
     rooms: int = field(metadata=dict(data_key="rooms"))
     adults: int = field(metadata=dict(data_key="adults"))
     children: int = field(metadata=dict(data_key="children"))
-    taxes: Optional[HotelBedsTaxes] = field(metadata=dict(data_key="taxes"))
-    promotions: Optional[List[HotelBedsPromotions]] = field(metadata=dict(data_key="promotions"), default_factory=list)
-    cancellation_policies: Optional[List[HotelBedsCancellationPolicies]] = field(
+    taxes: Optional[HotelBedsTaxesRS] = field(metadata=dict(data_key="taxes"))
+    promotions: Optional[List[HotelBedsPromotionsRS]] = field(
+        metadata=dict(data_key="promotions"), default_factory=list
+    )
+    cancellation_policies: Optional[List[HotelBedsCancellationPoliciesRS]] = field(
         metadata=dict(data_key="cancellationPolicies"), default_factory=list
     )
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelBedsRoom(BaseSchema):
+class HotelBedsRoomRS(BaseSchema):
     code: str
     name: str
-    rates: List[HotelBedsRoomRate]
+    rates: List[HotelBedsRoomRateRS]
 
 
 @dataclasses.dataclass
@@ -139,7 +133,7 @@ class HotelBedsHotel(BaseSchema):
     zone_name: str = field(metadata=dict(data_key="zoneName"))
     latitude: str = field(metadata=dict(data_key="latitude"))
     longitude: str = field(metadata=dict(data_key="longitude"))
-    rooms: List[HotelBedsRoom] = field(metadata=dict(data_key="rooms"))
+    rooms: List[HotelBedsRoomRS] = field(metadata=dict(data_key="rooms"))
     min_rate: str = field(metadata=dict(data_key="minRate"))
     max_rate: str = field(metadata=dict(data_key="maxRate"))
     currency: Optional[str] = field(metadata=dict(data_key="currency"))
@@ -157,17 +151,24 @@ class HotelBedsHotelRS(BaseSchema):
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class HotelBedsAvailabilityRS(BaseSchema):
-    audit_data: HotelBedsAuditData = field(metadata=dict(data_key="auditData"))
+    audit_data: HotelBedsAuditDataRS = field(metadata=dict(data_key="auditData"))
     results: HotelBedsHotelRS = field(metadata=dict(data_key="hotels"))
 
 
 class HotelBedsSearchBuilder:
     @staticmethod
     def build(request: HotelLocationSearch) -> HotelBedsAvailabilityRQ:
-        stay = HotelBedsStay(request.checkin_date, request.checkout_date)
-        destination = HotelBedsDestination(request.location_name)
-        occupancy = [HotelBedsOccupancy(request.num_rooms, request.num_adults, request.num_children)]
+        stay = HotelBedsStayRQ(request.checkin_date, request.checkout_date)
+        destination = HotelBedsDestinationRQ(request.location_name)
+        occupancy = [HotelBedsOccupancyRQ(request.num_rooms, request.num_adults, request.num_children)]
+        language = get_language_mapping(request.language)
 
-        request = HotelBedsAvailabilityRQ(stay, occupancy, destination)
+        request = HotelBedsAvailabilityRQ(
+            stay=stay,
+            occupancies=occupancy,
+            destination=destination,
+            daily_rates=request.daily_rates,
+            language=language,
+        )
 
         return request

@@ -47,6 +47,8 @@ class HotelLocationSearch(BaseSchema):
     num_rooms: int = 1
     num_adults: int = 1
     num_children: int = 0
+    daily_rates: bool = False
+    language: str = "en"
     checkin_time: Optional[Union[str, datetime]] = None
     checkout_time: Optional[Union[str, datetime]] = None
 
@@ -60,6 +62,7 @@ class HotelDetailsSearchRequest(BaseSchema):
     checkout_date: date
     num_rooms: int = 1
     currency: str = "USD"
+    language: str = "en_US"
 
 
 @dataclasses.dataclass
@@ -93,9 +96,9 @@ class Phone(BaseSchema):
 @marshmallow_dataclass.dataclass
 class HotelAdapterHotel(BaseSchema):
     name: str
-    chain_code: str
     address: Address
     rate: HotelRate
+    chain_code: Optional[str]
     star_rating: Optional[int] = None
 
 

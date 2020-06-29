@@ -1,18 +1,15 @@
-from rest_framework.test import APITestCase
-
-from api.auth.models import OrganizationAPIKey, Organization
-from api.tests import utils
+from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 
 LOCATION_ENDPOINT = "/api/v1/Locations/"
 
 
-class TestAuth(APITestCase):
+class TestAuth(SimplenightAPITestCase):
     def test_authentication_required(self):
         response = self.client.get(LOCATION_ENDPOINT)
         self.assertEqual(401, response.status_code)
         self.assertEqual("Authentication credentials were not provided.", response.json()["detail"])
 
-        key = utils.create_api_key(organization_name="test")
+        key = self.create_api_key(organization_name="test")
 
         self.client.credentials(HTTP_AUTHORIZATION="Api-Key " + key)
         response = self.client.get(LOCATION_ENDPOINT)
@@ -20,7 +17,7 @@ class TestAuth(APITestCase):
         self.assertEqual(200, response.status_code)
 
     def test_api_quota_for_anonymous_organization(self):
-        key = utils.create_api_key()
+        key = self.create_api_key()
         self.client.credentials(HTTP_AUTHORIZATION="Api-Key " + key)
 
         self.assertEqual(200, self.client.get(LOCATION_ENDPOINT).status_code)
