@@ -60,7 +60,7 @@ class supplier_hotels(models.Model):
     provider_id = models.IntegerField()
     hotel_codes = models.IntegerField(default=1)
     hotel_name = models.CharField(max_length=50)
-    rating = models.supplier_hotelsloatField(blank=True)
+    rating = models.FloatField(blank=True)
     chain_name = models.CharField(max_length=50)
     country_name = models.CharField(max_length=50)
     destination_name = models.CharField(max_length=50)
@@ -86,3 +86,11 @@ class sn_hotel_map(models.Model):
     simplenight_id = models.IntegerField()
     provider = models.CharField(max_length=50)
     provider_id = models.IntegerField()
+
+
+class sn_city_map(models.Model):
+    class Meta:
+        app_label = "api"
+    simplenight_city_id = models.IntegerField()
+    provider = models.CharField(max_length=50)
+    provider_city_name = models.CharField(max_length=50)
