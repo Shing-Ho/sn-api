@@ -2,9 +2,10 @@ import dataclasses
 from typing import ClassVar, Type
 
 import marshmallow_dataclass
-from rest_framework_api_key.models import APIKey
 from marshmallow import Schema
+
 from api import logger
+from api.auth.models import OrganizationAPIKey, Organization
 
 
 @dataclasses.dataclass
@@ -24,7 +25,9 @@ class ApiAccessResponse:
 
 def create_anonymous_api_user(request: ApiAccessRequest):
     logger.info(f"Creating API Key for user {request.name}")
-    api_key, key = APIKey.objects.create_key(name=request.name)
+
+    anonymous_org = Organization.objects.get(name="anonymous")
+    api_key, key = OrganizationAPIKey.objects.create_key(name=request.name, organization=anonymous_org)
 
     return ApiAccessResponse(api_key=api_key, key=key)
 
