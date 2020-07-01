@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "api",
+    'django_extensions',
 
     # Third-party
     "rest_framework",
@@ -102,10 +103,10 @@ DATABASES = {
     },
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "dagbjrr2fhns0i",
-        "USER": "ckojhjnocvghmq",
-        "PASSWORD": "3e47baa681880344d35e3884e7d9691126a5b20f7a5a3e1b33129b8c93fb6804",
-        "HOST": "ec2-54-243-128-95.compute-1.amazonaws.com",
+        "NAME": "d6s8eu0bcmf3s3",
+        "USER": "cvgmhjuvbklqrn",
+        "PASSWORD": "388c4c55c04646648e187d93a554899a69710f97cf8bfe0a3c8dc1a7909af4e5",
+        "HOST": "ec2-34-233-226-84.compute-1.amazonaws.com",
         "PORT": "5432",
     },
     "local": {

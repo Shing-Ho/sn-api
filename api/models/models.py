@@ -69,16 +69,15 @@ class supplier_hotels(models.Model):
     city = models.CharField(max_length=50)
     latitude = models.FloatField()
     longitude = models.FloatField()
+    provider_name = models.CharField(max_length=50, default="HotelBeds")
 
 
-# class sn_hotel_map(): <--- we cant leave this empty we must use models.Model for example
-    # if we dont have it we dont have access to .objects etc
-#     class Meta: app_label = "api" this must be added in because models does doesnt recognize what app it is
-#     simplenight_id = models.IntegerField(5)
-#     provider = models.CharField(max_length=50)
-#     provider_id = models.IntegerField(5) <----- we dont want to put this 5 in there it doesnt do
-#                                               anything other than displace the field
-#                                               as a 5 instead of provider_id
+# 'ICEID (don't change)', 'Property Name', 'Country', 'State', 'City',
+#     'Address', 'Address2', 'Address3', 'ZipCode', 'Published', 'DID',
+#     'MType Id', 'Chain Code', 'Mapped ID'],
+
+# class ice_hotels(models.Model):
+
 
 class sn_hotel_map(models.Model):
     class Meta:

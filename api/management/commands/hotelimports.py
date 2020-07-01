@@ -6,7 +6,6 @@ import pandas as pd
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        supplier_hotels.objects.all().delete()
 
         hotels = pd.read_csv("api/FullHotelBedsInventory.csv")
 
@@ -45,21 +44,4 @@ class Command(BaseCommand):
                 print("")
 
 
-'''
-['Hotel Code', 'Hotel Name', 'Category Name', 'Chain Name',
-       'Country Name', 'Destination Name', 'Address', 'Postal Code', 'City',
-       'Latitude', 'Longitude'],
-
-    provider_id = models.IntegerField(5)
-    hotel_codes = models.IntegerField(1, default=1)
-    hotel_name = models.CharField(max_length=50)
-    category_name = models.CharField(max_length=20, blank = True)
-    chain_name = models.CharField(max_length=50)
-    country_name = models.CharField(max_length=50)
-    destination_name = models.CharF"ield(max_length=50)
-    address = models.CharField(max_length=75)
-    postal_code = models.CharField(max_length=10)
-    city = models.CharField(max_length=50)
-    latitude = models.DecimalField(decimal_places=6, max_digits=11)
-    longitude = models.DecimalField(decimal_places=6, max_digits=10)
-'''
+# LIST OF HOTELS FROM PROVIDER

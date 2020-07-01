@@ -71,6 +71,9 @@ class HotelBedsMap(viewsets.ModelViewSet):
             queryset = queryset.filter(latitude=latitude)
         if longitude:
             queryset = queryset.filter(longitude=longitude)
+            # hotels beds id - - > sn_id - 4
+            # other provider ids > send provider id to corresponding provider
+            # -- get data back and display what we want to users 
         return queryset
 
 
