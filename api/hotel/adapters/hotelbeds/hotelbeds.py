@@ -1,9 +1,15 @@
-from typing import List, Union
+from typing import List, Union, Dict
 
 from api import logger
 from api.hotel.adapters.hotelbeds.common import get_language_mapping
 from api.hotel.adapters.hotelbeds.details import HotelBedsHotelDetailsRS, HotelBedsHotelDetail
-from api.hotel.adapters.hotelbeds.search import HotelBedsSearchBuilder, HotelBedsAvailabilityRS, HotelBedsHotel
+from api.hotel.adapters.hotelbeds.search import (
+    HotelBedsSearchBuilder,
+    HotelBedsAvailabilityRS,
+    HotelBedsHotel,
+    HotelBedsRoomRS,
+    HotelBedsRoomRateRS,
+)
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotels import (
@@ -12,8 +18,12 @@ from api.hotel.hotels import (
     HotelDetails,
     HotelSearchResponse,
     HotelLocationSearch,
-    HotelAdapterHotel,
     Address,
+    BaseHotelSearch,
+    RoomOccupancy,
+    RoomType,
+    RoomRate,
+    Money,
 )
 
 
@@ -24,10 +34,19 @@ class HotelBeds(HotelAdapter):
 
         self.transport = transport
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelAdapterHotel]:
-        results = self._search_by_location(search_request)
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponse]:
+        availability_results = self._search_by_location(search_request)
+        hotel_codes = list(map(lambda x: str(x.code), availability_results.results.hotels))
+        hotel_codes.append("99999999")
+        hotel_details = self.details(hotel_codes, search_request.language)
+        hotel_details_map = self._hotel_details_by_hotel_code(hotel_details)
 
-        return []
+        hotels = []
+        for hotel in availability_results.results.hotels:
+            hotel = self._create_hotel(search_request, hotel, hotel_details_map[hotel.code])
+            hotels.append(hotel)
+
+        return hotels
 
     def _search_by_location(self, search_request: HotelLocationSearch) -> HotelBedsAvailabilityRS:
         request = HotelBedsSearchBuilder.build(search_request)
@@ -43,6 +62,13 @@ class HotelBeds(HotelAdapter):
         pass
 
     def details(self, hotel_codes: Union[List[str], str], language: str) -> List[HotelDetails]:
+        hotel_details_response = self._details(hotel_codes, language)
+        return list(map(self._create_hotel_details, hotel_details_response.hotels))
+
+    def _details(self, hotel_codes: Union[List[str], str], language: str) -> HotelBedsHotelDetailsRS:
+        if isinstance(hotel_codes, list):
+            hotel_codes = str.join(",", hotel_codes)
+
         params = {
             "language": get_language_mapping(language),
             "codes": str.join(",", hotel_codes),
@@ -67,10 +93,66 @@ class HotelBeds(HotelAdapter):
         return self._get_image_base_url() + path
 
     @staticmethod
+    def _hotel_details_by_hotel_code(hotel_details: List[HotelDetails]) -> Dict[str, HotelDetails]:
+        return {x.hotel_code: x for x in hotel_details}
+
+    @staticmethod
     def _get_image_base_url():
         return "http://photos.hotelbeds.com/giata/bigger/"
 
-    def _create_hotel(self, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail) -> HotelAdapterHotel:
+    def _create_hotel(
+        self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail
+    ) -> HotelSearchResponse:
+
+        occupancy = RoomOccupancy(adults=search.num_adults, children=search.num_children)
+        room_types = list(map(self._create_room_type, hotel.rooms))
+
+        return HotelSearchResponse(
+            hotel_id=str(hotel.code),
+            checkin_date=search.checkin_date,
+            checkout_date=search.checkout_date,
+            occupancy=occupancy,
+            room_types=room_types,
+            hotel_details=None,
+        )
+
+    def _create_room_type(self, search: HotelSpecificSearch, hotelbeds_room: HotelBedsRoomRS):
+        adults = max(x.adults for x in hotelbeds_room.rates)
+        children = max(x.children for x in hotelbeds_room.rates)
+        occupancy = RoomOccupancy(adults=adults, children=children)
+
+        rates = list(map(lambda x: self._create_room_rates(search, x), hotelbeds_room.rates))
+
+        return RoomType(
+            code=hotelbeds_room.code,
+            name=hotelbeds_room.name,
+            description=None,
+            amenities=[],
+            photos=[],
+            capacity=occupancy,
+            bed_types=None,
+            unstructured_policies=None,
+            rates=rates,
+        )
+
+    @staticmethod
+    def _create_room_rates(search: HotelSpecificSearch, rate: HotelBedsRoomRateRS):
+        currency = search.currency
+        total_base_rate = Money(float(rate.net), currency)
+        total_taxes = sum(x.amount for x in rate.taxes.taxes)
+        total_tax_rate = Money(total_taxes, currency)
+        total_rate = Money(total_base_rate.amount + total_tax_rate.amount, currency)
+
+        return RoomRate(
+            description="",
+            additional_detail=[],
+            total_base_rate=total_base_rate,
+            total_tax_rate=total_tax_rate,
+            total=total_rate,
+        )
+
+    @staticmethod
+    def _create_hotel_details(detail: HotelBedsHotelDetail) -> HotelDetails:
         address = Address(
             city=detail.city.content,
             province=detail.state_code,
@@ -79,4 +161,11 @@ class HotelBeds(HotelAdapter):
             address1=detail.address.content,
         )
 
-        return HotelAdapterHotel(name=hotel.name, address=address, )
+        return HotelDetails(
+            name=detail.name.content,
+            address=address,
+            chain_code=detail.chain_code,
+            hotel_code=str(detail.code),
+            checkin_time=None,
+            checkout_time=None,
+        )

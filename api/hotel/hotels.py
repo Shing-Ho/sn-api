@@ -23,34 +23,34 @@ class BaseSchema(Schema):
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class RoomOccupancy(BaseSchema):
-    adults: int
-    children: int
+    adults: Optional[int] = 1
+    children: Optional[int] = 0
+    num_rooms: Optional[int] = 1
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelSpecificSearch(BaseSchema):
-    hotel_id: str
+class BaseHotelSearch(BaseSchema):
     checkin_date: date
     checkout_date: date
-    occupancy: RoomOccupancy
+    occupancy: Optional[RoomOccupancy]
+    daily_rates: bool = False
     language: Optional[str] = "en"
     currency: Optional[str] = "USD"
+    checkin_time: Optional[Union[str, datetime]] = None
+    checkout_time: Optional[Union[str, datetime]] = None
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelLocationSearch(BaseSchema):
-    location_name: str
-    checkin_date: date
-    checkout_date: date
-    num_rooms: int = 1
-    num_adults: int = 1
-    num_children: int = 0
-    daily_rates: bool = False
-    language: str = "en"
-    checkin_time: Optional[Union[str, datetime]] = None
-    checkout_time: Optional[Union[str, datetime]] = None
+class HotelLocationSearch(BaseHotelSearch):
+    location_name: str = None
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class HotelSpecificSearch(BaseHotelSearch):
+    hotel_id: str = None
 
 
 @dataclasses.dataclass
@@ -137,7 +137,6 @@ class DailyRate(BaseSchema):
 class RoomRate(BaseSchema):
     description: str
     additional_detail: List[str]
-    rate_plan_type: str
     total_base_rate: Money
     total_tax_rate: Money
     total: Money
@@ -189,11 +188,12 @@ class RoomType(BaseSchema):
 
     code: str
     name: str
-    description: str
+    description: Optional[str]
     amenities: List[Amenity]
     photos: List[Image]
     capacity: RoomOccupancy
-    bed_types: BedTypes
+    bed_types: Optional[BedTypes]
+    rates: List[RoomRate] = field(default_factory=list)
     unstructured_policies: Optional[str] = None
 
 
@@ -243,11 +243,10 @@ class HotelDetails(BaseSchema):
     address: Address
     chain_code: str
     hotel_code: str
-    checkin_time: str
-    checkout_time: str
-    hotel_rates: List[RoomRate]
-    geolocation: GeoLocation
+    checkin_time: Optional[str]
+    checkout_time: Optional[str]
     photos: List[Image] = field(default_factory=list)
+    geolocation: Optional[GeoLocation] = None
     phone_number: Optional[str] = None
     email: Optional[str] = None
     homepage_url: Optional[str] = None
@@ -268,8 +267,6 @@ class HotelSearchResponse(BaseSchema):
     checkout_date: date
     occupancy: RoomOccupancy
     room_types: List[RoomType]
-    rate_plans: List[RatePlan]
-    room_rates: List[RoomRate]
     hotel_details: HotelDetails
     error: Optional[ErrorResponse] = None
 

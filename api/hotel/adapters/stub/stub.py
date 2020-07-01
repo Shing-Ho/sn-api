@@ -8,7 +8,6 @@ from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotels import (
     HotelLocationSearch,
     HotelAdapterHotel,
-    HotelSpecificSearch,
     HotelSearchResponse,
     RoomOccupancy,
     RoomType,
@@ -16,7 +15,6 @@ from api.hotel.hotels import (
     Image,
     ImageType,
     BedTypes,
-    RatePlan,
     CancellationPolicy,
     HotelDetails,
     Address,
@@ -29,6 +27,8 @@ from api.hotel.hotels import (
     Status,
     Reservation,
     Locator,
+    BaseHotelSearch,
+    RatePlan,
 )
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
@@ -38,19 +38,16 @@ class StubHotelAdapter(HotelAdapter):
     def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelAdapterHotel]:
         pass
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponse:
+    def search_by_id(self, search_request: BaseHotelSearch) -> HotelSearchResponse:
         hotel_code = random_string(5).upper()
-        room_types = self._generate_room_types()
+        room_types = self._generate_room_types(search_request)
         rate_plans = self._generate_rate_plans()
-        room_rates = self._generate_room_rates(search_request, room_types, rate_plans)
         response = HotelSearchResponse(
             hotel_id=hotel_code,
             checkin_date=search_request.checkin_date,
             checkout_date=search_request.checkout_date,
             occupancy=RoomOccupancy(2, 2),
             room_types=room_types,
-            rate_plans=rate_plans,
-            room_rates=room_rates,
             hotel_details=self._generate_hotel_details(),
         )
 
@@ -59,7 +56,7 @@ class StubHotelAdapter(HotelAdapter):
     def details(self, *args):
         pass
 
-    def booking_availability(self, search_request: HotelSpecificSearch):
+    def booking_availability(self, search_request: BaseHotelSearch):
         return self.search_by_id(search_request)
 
     def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
@@ -78,7 +75,7 @@ class StubHotelAdapter(HotelAdapter):
             api_version=1, transaction_id=str(uuid.uuid4()), status=Status(True, "Success"), reservation=reservation
         )
 
-    def _generate_room_types(self):
+    def _generate_room_types(self, search_request: BaseHotelSearch):
         bed_types = {
             "King": BedTypes(king=1),
             "Queen": BedTypes(queen=random.randint(1, 2)),
@@ -107,6 +104,7 @@ class StubHotelAdapter(HotelAdapter):
             photos = self._get_photos(code)
 
             description = f"{category} room with a {bed_type.lower()} bed"
+            rate_plans = self._generate_rate_plans()
             room_type = RoomType(
                 code=code,
                 name=room_type_name,
@@ -116,6 +114,8 @@ class StubHotelAdapter(HotelAdapter):
                 capacity=RoomOccupancy(random.randint(2, 3), random.randint(0, 2)),
                 bed_types=bed_types[bed_type],
             )
+
+            room_type.rates = self._generate_room_rates(search_request, room_type, rate_plans)
             room_types.append(room_type)
 
         return room_types
@@ -140,8 +140,8 @@ class StubHotelAdapter(HotelAdapter):
         rate_plans = []
         rate_plan_types = list(rate_plan_def)
         for i in range(random.randint(1, len(rate_plan_types))):
-            code = random_string(3).upper()
             rate_plan_type = rate_plan_types[i]
+            code = random_string(3).upper()
             rate_plan_amenities = rate_plan_def[rate_plan_type]["Amenities"]
             cancellation = rate_plan_def[rate_plan_type]["Cancellation"]
             rate_plans.append(RatePlan(code, rate_plan_type, rate_plan_type, rate_plan_amenities, cancellation))
@@ -149,42 +149,37 @@ class StubHotelAdapter(HotelAdapter):
         return rate_plans
 
     @staticmethod
-    def _generate_room_rates(
-        search_request: HotelSpecificSearch, room_types: List[RoomType], rate_plan_types: List[RatePlan]
-    ):
+    def _generate_room_rates(search_request: BaseHotelSearch, room_type: RoomType, rate_plan_types: List[RatePlan]):
         room_rates = []
         for i in range(len(rate_plan_types)):
-            for j in range(len(room_types)):
-                rate_plan = rate_plan_types[i]
-                room_type = room_types[j]
+            rate_plan = rate_plan_types[i]
 
-                description = f"{room_type.name} {rate_plan.name}"
-                room_nights = (search_request.checkout_date - search_request.checkin_date).days
-                total_rate = round(random.random() * 1200, 2)
-                total_tax_rate = round(total_rate / 10, 2)
-                total_base_rate = total_rate - total_tax_rate
-                base_rate = round(total_rate / room_nights, 2)
-                tax_rate = round(total_tax_rate / room_nights, 2)
+            description = f"{room_type.name} {rate_plan.name}"
+            room_nights = (search_request.checkout_date - search_request.checkin_date).days
+            total_rate = round(random.random() * 1200, 2)
+            total_tax_rate = round(total_rate / 10, 2)
+            total_base_rate = total_rate - total_tax_rate
+            base_rate = round(total_rate / room_nights, 2)
+            tax_rate = round(total_tax_rate / room_nights, 2)
 
-                daily_rates = []
-                for night in range(room_nights):
-                    rate_date = search_request.checkin_date + timedelta(days=night)
-                    daily_base_rate = Money(base_rate, "USD")
-                    daily_tax_rate = Money(tax_rate, "USD")
-                    daily_total_rate = Money(base_rate + tax_rate, "USD")
-                    daily_rates.append(DailyRate(rate_date, daily_base_rate, daily_tax_rate, daily_total_rate))
+            daily_rates = []
+            for night in range(room_nights):
+                rate_date = search_request.checkin_date + timedelta(days=night)
+                daily_base_rate = Money(base_rate, "USD")
+                daily_tax_rate = Money(tax_rate, "USD")
+                daily_total_rate = Money(base_rate + tax_rate, "USD")
+                daily_rates.append(DailyRate(rate_date, daily_base_rate, daily_tax_rate, daily_total_rate))
 
-                room_rates.append(
-                    RoomRate(
-                        description=description,
-                        additional_detail=list(),
-                        rate_plan_type=rate_plan.code,
-                        total_base_rate=Money(total_base_rate, "USD"),
-                        total_tax_rate=Money(total_tax_rate, "USD"),
-                        total=Money(total_rate, "USD"),
-                        daily_rates=daily_rates,
-                    )
+            room_rates.append(
+                RoomRate(
+                    description=description,
+                    additional_detail=list(),
+                    total_base_rate=Money(total_base_rate, "USD"),
+                    total_tax_rate=Money(total_tax_rate, "USD"),
+                    total=Money(total_rate, "USD"),
+                    daily_rates=daily_rates,
                 )
+            )
 
         return room_rates
 
@@ -205,7 +200,16 @@ class StubHotelAdapter(HotelAdapter):
         longitude = random.random() * 100
         geolocation = GeoLocation(latitude, longitude)
 
-        return HotelDetails(hotel_name, hotel_address, "1A", hotel_code, "3PM", "12PM", [], geolocation)
+        return HotelDetails(
+            name=hotel_name,
+            address=hotel_address,
+            chain_code="1A",
+            hotel_code=hotel_code,
+            checkin_time="3PM",
+            checkout_time="12PM",
+            geolocation=geolocation,
+            photos=[],
+        )
 
     @staticmethod
     def _generate_address(city=None):

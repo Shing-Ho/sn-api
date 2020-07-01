@@ -37,19 +37,15 @@ class TestStubHotelAdapter(unittest.TestCase):
         self.assertIsNotNone(response.room_types[0].bed_types)
         self.assertIsNotNone(response.room_types[0].amenities)
         self.assertIsNotNone(response.room_types[0].photos)
-        self.assertIsNotNone(response.rate_plans)
-        self.assertIsNotNone(response.rate_plans[0].name)
-        self.assertIsNotNone(response.rate_plans[0].code)
-        self.assertIsNotNone(response.rate_plans[0].description)
-        self.assertIsNotNone(response.room_rates)
-        self.assertIsNotNone(response.room_rates[0].description)
-        self.assertIsNotNone(response.room_rates[0].total)
-        self.assertIsNotNone(response.room_rates[0].total_tax_rate)
-        self.assertIsNotNone(response.room_rates[0].total_base_rate)
-        self.assertIsNotNone(response.room_rates[0].daily_rates)
-        self.assertIsNotNone(response.room_rates[0].daily_rates[0].total)
-        self.assertIsNotNone(response.room_rates[0].daily_rates[0].tax)
-        self.assertIsNotNone(response.room_rates[0].daily_rates[0].base_rate)
+        self.assertIsNotNone(response.room_types[0].rates)
+        self.assertIsNotNone(response.room_types[0].rates[0].description)
+        self.assertIsNotNone(response.room_types[0].rates[0].total)
+        self.assertIsNotNone(response.room_types[0].rates[0].total_tax_rate)
+        self.assertIsNotNone(response.room_types[0].rates[0].total_base_rate)
+        self.assertIsNotNone(response.room_types[0].rates[0].daily_rates)
+        self.assertIsNotNone(response.room_types[0].rates[0].daily_rates[0].total)
+        self.assertIsNotNone(response.room_types[0].rates[0].daily_rates[0].tax)
+        self.assertIsNotNone(response.room_types[0].rates[0].daily_rates[0].base_rate)
 
     def test_booking(self):
         customer = Customer(
@@ -64,7 +60,6 @@ class TestStubHotelAdapter(unittest.TestCase):
         room_rate = RoomRate(
             description="King Bed Oceanview Suite",
             additional_detail=list(),
-            rate_plan_type="BA13ZS",
             total_base_rate=Money(526.22, "USD"),
             total_tax_rate=Money(63.29, "USD"),
             total=Money(589.51, "USD"),
@@ -118,7 +113,6 @@ class TestStubHotelAdapter(unittest.TestCase):
         self.assertEqual("Smith", response.reservation.traveler.last_name)
         self.assertEqual(1, response.reservation.traveler.occupancy.adults)
         self.assertEqual("King Bed Oceanview Suite", response.reservation.room_rate.description)
-        self.assertEqual("BA13ZS", response.reservation.room_rate.rate_plan_type)
         self.assertEqual(526.22, response.reservation.room_rate.total_base_rate.amount)
         self.assertEqual(63.29, response.reservation.room_rate.total_tax_rate.amount)
         self.assertEqual(589.51, response.reservation.room_rate.total.amount)

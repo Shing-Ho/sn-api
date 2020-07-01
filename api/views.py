@@ -58,7 +58,9 @@ class HotelSupplierViewset(viewsets.ViewSet):
         checkout = date.fromisoformat(request.GET.get("checkout"))
         num_adults = request.GET.get("num_adults")
 
-        search = HotelSpecificSearch(hotel_code, checkin, checkout, RoomOccupancy(num_adults, 0))
+        search = HotelSpecificSearch(
+            hotel_id=hotel_code, checkin_date=checkin, checkout_date=checkout, occupancy=RoomOccupancy(num_adults, 0)
+        )
         response = self.hotel_service.search_by_id(search)
 
         return Response(HotelSearchResponse.Schema().dump(response))

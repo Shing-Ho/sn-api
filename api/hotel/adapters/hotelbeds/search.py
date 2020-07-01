@@ -160,8 +160,14 @@ class HotelBedsSearchBuilder:
     def build(request: HotelLocationSearch) -> HotelBedsAvailabilityRQ:
         stay = HotelBedsStayRQ(request.checkin_date, request.checkout_date)
         destination = HotelBedsDestinationRQ(request.location_name)
-        occupancy = [HotelBedsOccupancyRQ(request.num_rooms, request.num_adults, request.num_children)]
         language = get_language_mapping(request.language)
+        occupancy = [
+            HotelBedsOccupancyRQ(
+                rooms=request.occupancy.num_rooms,
+                adults=request.occupancy.adults,
+                children=request.occupancy.children,
+            )
+        ]
 
         request = HotelBedsAvailabilityRQ(
             stay=stay,
