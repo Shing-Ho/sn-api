@@ -65,10 +65,11 @@ class supplier_hotels(models.Model):
     country_name = models.CharField(max_length=50)
     destination_name = models.CharField(max_length=50)
     address = models.CharField(max_length=75)
-    postal_code = models.CharField(max_length=10)
+    postal_code = models.CharField(max_length=10, null=True)
     city = models.CharField(max_length=50)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+    state = models.CharField(max_length=2, default="XX")
     provider_name = models.CharField(max_length=50, default="HotelBeds")
 
 
