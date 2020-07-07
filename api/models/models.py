@@ -1,4 +1,5 @@
 from django.db import models, connection
+from django.contrib.postgres.fields import ArrayField
 
 
 USD = 'US Dollars'
@@ -94,3 +95,19 @@ class sn_city_map(models.Model):
     simplenight_city_id = models.IntegerField()
     provider = models.CharField(max_length=50)
     provider_city_name = models.CharField(max_length=50)
+
+class sn_images_map(models.Model):
+    class Meta:
+        app_label= "api"
+    #simplenight_id = models.ForeignKey((supplier_hotels,))
+    simplenight_id = models.ForeignKey((supplier_hotels, on_delete=models.CASCADE()))
+    ip_thumbnail_image = models.CharField()
+    image_url_path = models.ArrayField(ArrayField(models.IntegerField()))
+    image_provider_id = models.CharField()
+
+
+
+# models.ForeignKey((supplier_hotels, on_delete=models.CASCADE()))
+
+
+
