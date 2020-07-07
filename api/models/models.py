@@ -100,14 +100,7 @@ class sn_images_map(models.Model):
     class Meta:
         app_label= "api"
     #simplenight_id = models.ForeignKey((supplier_hotels,))
-    simplenight_id = models.ForeignKey((supplier_hotels, on_delete=models.CASCADE()))
-    ip_thumbnail_image = models.CharField()
-    image_url_path = models.ArrayField(ArrayField(models.IntegerField()))
-    image_provider_id = models.CharField()
-
-
-
-# models.ForeignKey((supplier_hotels, on_delete=models.CASCADE()))
-
-
-
+    simplenight_id = models.ForeignKey(supplier_hotels, on_delete=models.CASCADE)
+    ip_thumbnail_image = models.CharField(max_length=100)
+    image_url_path = ArrayField(models.CharField(max_length=100))
+    image_provider_id = models.CharField(max_length=100)
