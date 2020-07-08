@@ -1,4 +1,8 @@
+import typing
+
+from django.conf import settings
 from django.db import models
+from django.http import HttpRequest
 from rest_framework.throttling import SimpleRateThrottle
 from rest_framework_api_key.models import AbstractAPIKey
 from rest_framework_api_key.permissions import BaseHasAPIKey, KeyParser
@@ -24,6 +28,12 @@ class OrganizationAPIKey(AbstractAPIKey):
 class HasOrganizationAPIKey(BaseHasAPIKey):
     model = OrganizationAPIKey
 
+    def has_permission(self, request: HttpRequest, view: typing.Any) -> bool:
+        if settings.DEBUG:
+            return True
+
+        return super().has_permission(request, view)
+
 
 class OrganizationApiThrottle(SimpleRateThrottle):
     parser = KeyParser()
@@ -35,6 +45,9 @@ class OrganizationApiThrottle(SimpleRateThrottle):
         super().__init__()
 
     def allow_request(self, request, view):
+        if settings.DEBUG:
+            return True
+
         key = self.parser.get_from_authorization(request)
         self.api_key = OrganizationAPIKey.objects.get_from_key(key)
         self.rate = self.api_key.organization.api_daily_limit

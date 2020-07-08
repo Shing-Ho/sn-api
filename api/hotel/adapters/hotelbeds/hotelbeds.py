@@ -1,6 +1,13 @@
+import uuid
 from typing import List, Union, Dict
 
 from api import logger
+from api.hotel.adapters.hotelbeds.booking import (
+    HotelBedsBookingRQ,
+    HotelBedsBookingLeadTraveler,
+    HotelBedsPax,
+    HotelBedsBookingRoom,
+)
 from api.hotel.adapters.hotelbeds.common import get_language_mapping
 from api.hotel.adapters.hotelbeds.details import HotelBedsHotelDetailsRS, HotelBedsHotelDetail
 from api.hotel.adapters.hotelbeds.search import (
@@ -37,13 +44,13 @@ class HotelBeds(HotelAdapter):
     def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponse]:
         availability_results = self._search_by_location(search_request)
         hotel_codes = list(map(lambda x: str(x.code), availability_results.results.hotels))
-        hotel_codes.append("99999999")
-        hotel_details = self.details(hotel_codes, search_request.language)
-        hotel_details_map = self._hotel_details_by_hotel_code(hotel_details)
+        hotel_details = self._details(hotel_codes, search_request.language)
+        hotel_details_map = self._hotel_details_by_hotel_code(hotel_details.hotels)
 
         hotels = []
         for hotel in availability_results.results.hotels:
-            hotel = self._create_hotel(search_request, hotel, hotel_details_map[hotel.code])
+            # TODO: Fix this static hotel code when we have hotel details data available
+            hotel = self._create_hotel(search_request, hotel, hotel_details_map["1"])
             hotels.append(hotel)
 
         return hotels
@@ -87,14 +94,27 @@ class HotelBeds(HotelAdapter):
         pass
 
     def booking(self, book_request: HotelBookingRequest):
-        pass
+        self.transport.get_booking_url()
+
+        lead_traveler = HotelBedsPax(1, "AD", book_request.customer.first_name, book_request.customer.last_name)
+        booking_request = HotelBedsBookingRQ(
+            holder=HotelBedsBookingLeadTraveler(
+                name=book_request.customer.first_name, surname=book_request.customer.last_name
+            ),
+            paxes=[lead_traveler],
+            language=book_request.language,
+            clientReference=book_request.transaction_id,
+            rooms=[HotelBedsBookingRoom(rateKey=book_request.room_rate.rate_key, pax=[lead_traveler])],
+        )
+
+        return self.transport.post(self.transport.get_booking_url(), booking_request)
 
     def get_image_url(self, path):
         return self._get_image_base_url() + path
 
     @staticmethod
-    def _hotel_details_by_hotel_code(hotel_details: List[HotelDetails]) -> Dict[str, HotelDetails]:
-        return {x.hotel_code: x for x in hotel_details}
+    def _hotel_details_by_hotel_code(hotel_details: List[HotelBedsHotelDetail]) -> Dict[str, HotelBedsHotelDetail]:
+        return {str(x.code): x for x in hotel_details}
 
     @staticmethod
     def _get_image_base_url():
@@ -104,19 +124,18 @@ class HotelBeds(HotelAdapter):
         self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail
     ) -> HotelSearchResponse:
 
-        occupancy = RoomOccupancy(adults=search.num_adults, children=search.num_children)
-        room_types = list(map(self._create_room_type, hotel.rooms))
+        room_types = list(map(lambda x: self._create_room_type(search, x), hotel.rooms))
 
         return HotelSearchResponse(
             hotel_id=str(hotel.code),
             checkin_date=search.checkin_date,
             checkout_date=search.checkout_date,
-            occupancy=occupancy,
+            occupancy=search.occupancy,
             room_types=room_types,
             hotel_details=None,
         )
 
-    def _create_room_type(self, search: HotelSpecificSearch, hotelbeds_room: HotelBedsRoomRS):
+    def _create_room_type(self, search: BaseHotelSearch, hotelbeds_room: HotelBedsRoomRS):
         adults = max(x.adults for x in hotelbeds_room.rates)
         children = max(x.children for x in hotelbeds_room.rates)
         occupancy = RoomOccupancy(adults=adults, children=children)
@@ -136,14 +155,18 @@ class HotelBeds(HotelAdapter):
         )
 
     @staticmethod
-    def _create_room_rates(search: HotelSpecificSearch, rate: HotelBedsRoomRateRS):
+    def _create_room_rates(search: BaseHotelSearch, rate: HotelBedsRoomRateRS):
         currency = search.currency
         total_base_rate = Money(float(rate.net), currency)
-        total_taxes = sum(x.amount for x in rate.taxes.taxes)
+        total_taxes = 0
+        if rate.taxes:
+            total_taxes = sum(float(x.amount) for x in rate.taxes.taxes)
+
         total_tax_rate = Money(total_taxes, currency)
         total_rate = Money(total_base_rate.amount + total_tax_rate.amount, currency)
 
         return RoomRate(
+            rate_key=rate.rate_key,
             description="",
             additional_detail=[],
             total_base_rate=total_base_rate,

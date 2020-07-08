@@ -6,7 +6,7 @@ import requests_mock
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
 from api.hotel.adapters.hotelbeds.search import HotelBedsSearchBuilder, HotelBedsPaymentType, HotelBedsRateType
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
-from api.hotel.hotels import HotelLocationSearch, to_json
+from api.hotel.hotels import HotelLocationSearch, to_json, RoomOccupancy
 from api.tests.utils import load_test_resource
 
 
@@ -34,8 +34,7 @@ class TestHotelBeds(unittest.TestCase):
             location_name="SFO",
             checkin_date=date(2020, 1, 1),
             checkout_date=date(2020, 1, 7),
-            num_adults=2,
-            num_children=1,
+            occupancy=RoomOccupancy(adults=2, children=1),
         )
 
         hotelbeds_request = search_builder.build(location_search)
@@ -56,7 +55,12 @@ class TestHotelBeds(unittest.TestCase):
         resource = load_test_resource("hotelbeds/search-by-location-response.json")
         hotelbeds = HotelBeds()
 
-        search = HotelLocationSearch("FOO", date(2020, 1, 1), date(2020, 1, 7))
+        search = HotelLocationSearch(
+            location_name="FOO",
+            checkin_date=date(2020, 1, 1),
+            checkout_date=date(2020, 1, 7),
+            occupancy=RoomOccupancy(adults=1),
+        )
 
         with requests_mock.Mocker() as mocker:
             mocker.post(HotelBedsTransport.get_hotels_url(), text=resource)

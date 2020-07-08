@@ -135,6 +135,7 @@ class DailyRate(BaseSchema):
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class RoomRate(BaseSchema):
+    rate_key: str
     description: str
     additional_detail: List[str]
     total_base_rate: Money
@@ -328,7 +329,7 @@ class HotelBookingRequest(BaseSchema):
     customer: Customer
     traveler: Traveler
     room_rate: RoomRate
-    payment: Payment
+    payment: Optional[Payment] = None
     tracking: Optional[str] = None
     ip_address: Optional[str] = None
 

@@ -41,7 +41,6 @@ class StubHotelAdapter(HotelAdapter):
     def search_by_id(self, search_request: BaseHotelSearch) -> HotelSearchResponse:
         hotel_code = random_string(5).upper()
         room_types = self._generate_room_types(search_request)
-        rate_plans = self._generate_rate_plans()
         response = HotelSearchResponse(
             hotel_id=hotel_code,
             checkin_date=search_request.checkin_date,

@@ -47,11 +47,19 @@ class HotelBedsTransport:
 
     @classmethod
     def get_hotels_url(cls):
-        return f"{cls._get_base_url()}/hotel-api/1.0/hotels"
+        return f"{cls._get_base_booking_api_url()}/hotels"
+
+    @classmethod
+    def get_booking_url(cls):
+        return f"{cls._get_base_booking_api_url()}/bookings"
 
     @classmethod
     def get_hotel_content_url(cls):
         return f"{cls._get_content_base_url()}/hotels"
+
+    @classmethod
+    def _get_base_booking_api_url(cls):
+        return f"{cls._get_base_url()}/hotel-api/1.0"
 
     @classmethod
     def _get_content_base_url(cls):
