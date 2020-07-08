@@ -1,13 +1,10 @@
-from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
-from rest_framework.test import APITestCase, force_authenticate, APIClient
-
 from api.models.models import Geoname, GeonameAlternateName
+from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 
 LOCATION_ENDPOINT = "/api/v1/Locations/"
 
 
-class TestLocationsView(APITestCase):
+class TestLocationsView(SimplenightAPITestCase):
     def setUp(self) -> None:
         geoname_one = self._create_geoname_model(1, "Test One", "US")
         geoname_two = self._create_geoname_model(2, "Test Two", "CA")
@@ -21,11 +18,7 @@ class TestLocationsView(APITestCase):
         response = self.client.get(LOCATION_ENDPOINT)
         self.assertEqual(401, response.status_code)
 
-        user = User(username="tester")
-        user.save()
-        token = Token.objects.get_or_create(user=user)
-
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token[0].key)
+        self.setupCredentials()
         response = self.client.get(LOCATION_ENDPOINT)
 
         self.assertEqual(200, response.status_code)
@@ -36,8 +29,6 @@ class TestLocationsView(APITestCase):
         response = self.client.get(LOCATION_ENDPOINT)
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, len(response.json()))
-        self.assertEqual(1, response.json()[0]["id"])
-        self.assertEqual(2, response.json()[1]["id"])
         self.assertEqual("Test One", response.json()[0]["primary_name"])
         self.assertEqual("Test Two", response.json()[1]["primary_name"])
 
@@ -82,10 +73,3 @@ class TestLocationsView(APITestCase):
 
         alternate_name.save()
         return alternate_name
-
-    def setupCredentials(self):
-        user = User(username="tester")
-        user.save()
-        token = Token.objects.get_or_create(user=user)
-
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token[0].key)

@@ -2,8 +2,8 @@ import unittest
 from datetime import datetime
 from datetime import timedelta
 
-from api.hotel.hotels import HotelSearchRequest, HotelDetailsSearchRequest
-from api.hotel.travelport.travelport import TravelportHotelAdapter
+from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
+from api.hotel.hotels import HotelLocationSearch, HotelDetailsSearchRequest
 
 
 class TestTravelport(unittest.TestCase):
@@ -12,9 +12,9 @@ class TestTravelport(unittest.TestCase):
 
         checkin_date = datetime.now().date() + timedelta(days=30)
         checkout_date = datetime.now().date() + timedelta(days=37)
-        search_request = HotelSearchRequest(location_name="SFO", checkin_date=checkin_date, checkout_date=checkout_date)
+        search_request = HotelLocationSearch(location_name="SFO", checkin_date=checkin_date, checkout_date=checkout_date)
 
-        results = travelport.search(search_request)
+        results = travelport.search_by_location(search_request)
         print(results)
 
     def test_hotel_details(self):

@@ -18,17 +18,16 @@ from django.urls import path, include
 from rest_framework import routers
 
 from api import views
-from .views import HotelsViewset, LocationsViewSet, HotelSupplierViewset
+from .views import LocationsViewSet, HotelSupplierViewset, AuthenticationView
 
 router = routers.SimpleRouter()
 
-router.register(r"Hotels", HotelsViewset)
 router.register(r"Locations", LocationsViewSet)
-router.register(r"Suppliers", HotelSupplierViewset, basename="suppliers")
+router.register(r"hotels", HotelSupplierViewset, basename="hotels")
+router.register(r"authentication", AuthenticationView, basename="authentication")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.index, name="index"),
-    path("Hotels", views.detail, name="Hotels"),
     path("api/v1/", include(router.urls)),
 ]
