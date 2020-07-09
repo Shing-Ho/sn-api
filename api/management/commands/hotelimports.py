@@ -8,6 +8,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         hotels = pd.read_csv("api/FullHotelBedsInventory.csv")
+        hotels = hotels[hotels["Country Name"] ==
+                        "United Kingdom                          "]
 
         print(hotels.columns)
 
@@ -22,26 +24,28 @@ class Command(BaseCommand):
             except:
                 pass
             try:
+                c = hotels.iloc[x]['City'].strip()
+                add = hotels.iloc[x]['Address'].strip()
+                country = hotels.iloc[x]['Country Name'].strip()
+                print(c.lower())
+                print(add.lower())
+                print(country.lower())
                 supplier_hotels.objects.update_or_create(
                     provider_id=0,
                     hotel_codes=hotels.iloc[x]['Hotel Code'],
-                    hotel_name=str(
-                        hotels.iloc[x]['Hotel Name']).replace(" ", ""),
+                    hotel_name=hotels.iloc[x]['Hotel Name'].strip(),
                     rating=rating,
                     chain_name=hotels.iloc[x]['Chain Name'].strip(),
-                    country_name=hotels.iloc[x]['Country Name'],
-                    destination_name=str(
-                        hotels.iloc[x]['Destination Name']).replace(" ", ""),
-                    address=hotels.iloc[x]['Address'],
+                    country_name=country.lower(),
+                    destination_name=hotels.iloc[x]['Destination Name'].strip(
+                    ),
+                    address=add.lower(),
                     postal_code=hotels.iloc[x]['Postal Code'],
-                    city=str(hotels.iloc[x]['City']).replace(" ", ""),
-                    latitude=round(int(str(hotels.iloc[x]['Latitude']
-                                           ).replace(",", ""))/100000, 5),
-                    longitude=round(int(str(hotels.iloc[x]['Longitude']).replace(
-                        ",", ""))/1000000, 5)
+                    city=c.lower()
                 )
             except:
-                print("")
+                print("something went wrong with {}".format(
+                    hotels.iloc[x]['Hotel Code']))
 
 
 # LIST OF HOTELS FROM PROVIDER

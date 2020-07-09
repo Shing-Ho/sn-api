@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
-import requests
-import datetime
-import pandas as pd
-
 from api.models.models import sn_images_map, supplier_hotels
 from requests import Session
 from requests.auth import HTTPBasicAuth
@@ -14,9 +10,6 @@ from zeep.transports import Transport
 from zeep import xsd
 from django.core.management import BaseCommand
 from api.models.models import supplier_hotels, sn_city_map
-import pandas as pd
-
-
 import random
 
 
@@ -27,27 +20,36 @@ class Command(BaseCommand):
         client = Client('http://services.iceportal.com/Service.asmx?WSDL',
                         transport=Transport(session=session))
 
-
-        # get list of all properties from our - do in df
+        # get list of all properties
+        main_dict = {"Ice Portal": {
+            "model": sn_images_map, "name": "Ice Portal"}}
         properties = supplier_hotels.objects.filter(provider_name='Ice Portal')
-
-        # or use pandas
-        #df = pd.DataFrame(list(sn_images_map.object.all().values()))
-        #df = pd.DataFrame(list(sn_images_map.object.all().values('simplenight_id', 'ip_thumbnail_image')))
-        #df = df.to_json()
-        # print(df)
         for hotel in properties:
             print(hotel.hotel_codes)
 
-        # Main image for a particular property plus thumbnail
+        # get list
+        # Main image for a particular property plus thumbnail passed to front end from db
+        # but we must get the image id from the ui
+        '''
+        main_dict = {"iceportal": {
+            "model": sn_images_map, "name": "Ice Portal"}}
+
+        for table in main_dict.keys():
+            for hotel in main_dict[table]["model"].objects.all():
+                if sn_images_map.objects.filter(provider_id=hotel.hotel_codes).count() > 0:
+                    # dont do anything we already have this in the database
+                    print("exists...")
+
+
+        # url(r'url with a value', view.someview, name='image')
+
 
         #main_image = sn_images_map.objects.get(params)
 
 
         #  pass in the ice id from the property to get that main image
-        '''
-        main_dict = {"iceportal": {
-                    "model": sn_images_map, "name": "ICEPORTAL"}}
+        
+       
         if requests.method == 'GET':
         
         if simplenight_city_id = models.ForeignKey((supplier_hotels))

@@ -5,25 +5,34 @@ import pandas as pd
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-
+        supplier_hotels.objects.all().delete()
         hotels = pd.read_csv("iceportaldata.csv")
+        hotels = hotels[hotels['Country'] == "United Kingdom"]
 
-        print(hotels.columns)
+        print(len(hotels))
 
-        for x in range(0, 1025):  # len(hotels)):
-
-            supplier_hotels.objects.update_or_create(
-                provider_id=hotels.iloc[x]["ICEID (don't change)"],
-                hotel_codes=hotels.iloc[x]["ICEID (don't change)"],
-                hotel_name=str(
-                    hotels.iloc[x]['Property Name']).replace(" ", ""),
-                rating=0,
-                chain_name=hotels.iloc[x]['Chain Code'],
-                country_name=hotels.iloc[x]['Country'],
-                destination_name=str(
-                    hotels.iloc[x]['Property Name']).replace(" ", ""),
-                address=hotels.iloc[x]['Address'],
-                postal_code=hotels.iloc[x]['ZipCode'],
-                city=str(hotels.iloc[x]['City']).replace(" ", ""),
-                provider_name="Ice Portal"
-            )
+        for x in range(0, len(hotels)):
+            try:
+                c = hotels.iloc[x]['City'].strip()
+                add = hotels.iloc[x]['Address'].strip()
+                country = hotels.iloc[x]['Country'].strip()
+                print(c.lower())
+                print(add.lower())
+                print(country.lower())
+                supplier_hotels.objects.update_or_create(
+                    provider_id=hotels.iloc[x]["ICEID (don't change)"],
+                    hotel_codes=hotels.iloc[x]["ICEID (don't change)"],
+                    hotel_name=hotels.iloc[x]['Property Name'].strip(),
+                    rating=0,
+                    chain_name=hotels.iloc[x]['Chain Code'],
+                    country_name=country.lower(),
+                    destination_name=hotels.iloc[x]['Property Name'].strip(
+                    ),
+                    address=a.lower(),
+                    postal_code=hotels.iloc[x]['ZipCode'],
+                    city=c.lower(),
+                    provider_name="Ice Portal"
+                )
+            except:
+                print(len(str(
+                    hotels.iloc[x]['Property Name']).replace(" ", "")))

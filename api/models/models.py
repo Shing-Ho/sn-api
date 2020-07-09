@@ -100,6 +100,7 @@ class sn_images_map(models.Model):
     class Meta:
         app_label= "api"
     #simplenight_id = models.ForeignKey((supplier_hotels,))
+    # on_delete.CASCADE: when object is deleted, delete all references to the object
     simplenight_id = models.ForeignKey(supplier_hotels, on_delete=models.CASCADE)
     ip_thumbnail_image = models.CharField(max_length=100)
     image_url_path = ArrayField(models.CharField(max_length=100))

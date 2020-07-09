@@ -1,5 +1,4 @@
 import json
-
 from django.db.models import Prefetch
 from django.http import HttpResponse
 from rest_framework import viewsets
@@ -79,7 +78,6 @@ class HotelBedsMap(viewsets.ModelViewSet):
 
 def index(request):
     return HttpResponse("Hello, World!  This is the index page")
-
 
 class HotelSupplierViewset(viewsets.ViewSet):
     authentication_classes = (TokenAuthSupportQueryString,)
