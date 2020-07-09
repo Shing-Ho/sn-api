@@ -6,6 +6,10 @@ import pandas as pd
 import random
 
 
+def get_sn_id(data):
+    search =
+
+
 class Command(BaseCommand):
     def handle(self, *args, **options):
         random_ids = []
