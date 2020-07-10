@@ -1,10 +1,11 @@
-import random
-from django.core.management import BaseCommand
-from api.models.models import supplier_hotels, sn_hotel_map
-import pandas as pd
-from fuzzywuzzy import fuzz
-import re
 from django.db.models import Q
+import re
+from fuzzywuzzy import fuzz
+import pandas as pd
+from api.models.models import supplier_hotels, sn_hotel_map
+from django.core.management import BaseCommand
+import random
+
 '''
 Must import all models such as hotelbeds as we must check if these is already a key for a specific hotel.
 Search first, to see if we have an existing SN hotel id. If we do apply that to corresponding hotel and provider name

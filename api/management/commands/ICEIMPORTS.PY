@@ -5,7 +5,7 @@ import pandas as pd
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        supplier_hotels.objects.all().delete()
+
         hotels = pd.read_csv("iceportaldata.csv")
         hotels = hotels[hotels['Country'] == "United Kingdom"]
 
