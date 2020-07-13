@@ -1,12 +1,11 @@
-import uuid
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Optional
 
 from api import logger
 from api.hotel.adapters.hotelbeds.booking import (
     HotelBedsBookingRQ,
     HotelBedsBookingLeadTraveler,
     HotelBedsPax,
-    HotelBedsBookingRoom,
+    HotelBedsBookingRoom, HotelBedsBookingRS,
 )
 from api.hotel.adapters.hotelbeds.common import get_language_mapping
 from api.hotel.adapters.hotelbeds.details import HotelBedsHotelDetailsRS, HotelBedsHotelDetail
@@ -93,7 +92,7 @@ class HotelBeds(HotelAdapter):
     def booking_availability(self, search_request: HotelSpecificSearch):
         pass
 
-    def booking(self, book_request: HotelBookingRequest):
+    def booking(self, book_request: HotelBookingRequest) -> Optional[HotelBedsBookingRS]:
         self.transport.get_booking_url()
 
         lead_traveler = HotelBedsPax(1, "AD", book_request.customer.first_name, book_request.customer.last_name)
@@ -101,13 +100,18 @@ class HotelBeds(HotelAdapter):
             holder=HotelBedsBookingLeadTraveler(
                 name=book_request.customer.first_name, surname=book_request.customer.last_name
             ),
-            paxes=[lead_traveler],
-            language=book_request.language,
             clientReference=book_request.transaction_id,
-            rooms=[HotelBedsBookingRoom(rateKey=book_request.room_rate.rate_key, pax=[lead_traveler])],
+            rooms=[HotelBedsBookingRoom(rateKey=book_request.room_rate.rate_key, paxes=[lead_traveler])],
+            remark="Test booking"
         )
 
-        return self.transport.post(self.transport.get_booking_url(), booking_request)
+        response = self.transport.post(self.transport.get_booking_url(), booking_request)
+        if not response.ok:
+            logger.error(f"Error booking HotelBeds room for rate_key {book_request.room_rate.rate_key}")
+            logger.error(response.raw)
+            return None
+
+        return HotelBedsBookingRS.Schema().load(response.json())
 
     def get_image_url(self, path):
         return self._get_image_base_url() + path

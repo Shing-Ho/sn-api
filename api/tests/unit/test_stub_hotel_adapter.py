@@ -58,11 +58,13 @@ class TestStubHotelAdapter(unittest.TestCase):
 
         traveler = Traveler(first_name="Jane", last_name="Smith", occupancy=RoomOccupancy(adults=1, children=0))
         room_rate = RoomRate(
+            rate_key="foo",
             description="King Bed Oceanview Suite",
             additional_detail=list(),
             total_base_rate=Money(526.22, "USD"),
             total_tax_rate=Money(63.29, "USD"),
             total=Money(589.51, "USD"),
+            daily_rates=[],
         )
 
         payment_card_params = PaymentCardParameters(

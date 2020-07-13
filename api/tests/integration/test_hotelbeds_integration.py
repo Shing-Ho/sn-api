@@ -50,7 +50,7 @@ class TestHotelBedsIntegration(unittest.TestCase):
 
         response = self.hotelbeds.search_by_location(search_request)
 
-        rate_key = response[0].room_types[0].rates[0].rate_key
+        rate_key = response[10].room_types[1].rates[1].rate_key
 
         transaction_id = str(uuid.uuid4())[:8]
         booking_request = HotelBookingRequest(
@@ -74,4 +74,4 @@ class TestHotelBedsIntegration(unittest.TestCase):
         )
 
         booking_response = self.hotelbeds.booking(booking_request)
-        print(booking_response.text)
+        print(booking_response)

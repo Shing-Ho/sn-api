@@ -1,13 +1,20 @@
 import dataclasses
 from dataclasses import field
-from datetime import date, datetime
-from enum import Enum
+from datetime import date
 from typing import ClassVar, Type, List, Optional
 
 import marshmallow_dataclass
 from marshmallow import Schema
 
-from api.hotel.adapters.hotelbeds.common import HotelBedsAuditDataRS, get_language_mapping
+from api.hotel.adapters.hotelbeds.common import (
+    HotelBedsAuditDataRS,
+    get_language_mapping,
+    HotelBedsRateType,
+    HotelBedsTaxesRS,
+    HotelBedsPromotionsRS,
+    HotelBedsCancellationPoliciesRS,
+    HotelBedsPaymentType,
+)
 from api.hotel.hotels import HotelLocationSearch, BaseSchema
 
 
@@ -44,56 +51,10 @@ class HotelBedsAvailabilityRQ(BaseSchema):
     Schema: ClassVar[Type[Schema]] = Schema
 
 
-class HotelBedsRateType(Enum):
-    BOOKABLE = "BOOKABLE"
-    RECHECK = "RECHECK"
-
-
-class HotelBedsPaymentType(Enum):
-    AT_HOTEL = "AT_HOTEL"
-    AT_WEB = "AT_WEB"
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsCancellationPoliciesRS(BaseSchema):
-    deadline: datetime = field(metadata=dict(data_key="from"))
-    amount: str = field(metadata=dict(data_key="amount"))
-
-
-class HotelBedsTaxType(Enum):
-    TAX = "TAX"
-    FEE = "FEE"
-    TAXESANDFEE = "TAXESANDFEE"
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsTaxRS(BaseSchema):
-    included: bool
-    amount: str
-    currency: str
-    type: Optional[HotelBedsTaxType]
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsTaxesRS(BaseSchema):
-    taxes: List[HotelBedsTaxRS] = field(metadata=dict(data_key="taxes"))
-    all_included: bool = field(metadata=dict(data_key="allIncluded"))
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsPromotionsRS(BaseSchema):
-    code: str
-    name: str
-
-
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class HotelBedsRoomRateRS(BaseSchema):
-    rate_key: str = field(metadata=dict(data_key="rateKey"))
+    rate_key: Optional[str] = field(metadata=dict(data_key="rateKey"))
     rate_class: str = field(metadata=dict(data_key="rateClass"))
     rate_type: HotelBedsRateType = field(metadata=dict(data_key="rateType"))
     net: str = field(metadata=dict(data_key="net"))
@@ -163,9 +124,7 @@ class HotelBedsSearchBuilder:
         language = get_language_mapping(request.language)
         occupancy = [
             HotelBedsOccupancyRQ(
-                rooms=request.occupancy.num_rooms,
-                adults=request.occupancy.adults,
-                children=request.occupancy.children,
+                rooms=request.occupancy.num_rooms, adults=request.occupancy.adults, children=request.occupancy.children,
             )
         ]
 

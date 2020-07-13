@@ -27,8 +27,7 @@ from api.hotel.hotels import (
     Status,
     Reservation,
     Locator,
-    BaseHotelSearch,
-    RatePlan,
+    RatePlan, BaseHotelSearch,
 )
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
@@ -177,6 +176,7 @@ class StubHotelAdapter(HotelAdapter):
                     total_tax_rate=Money(total_tax_rate, "USD"),
                     total=Money(total_rate, "USD"),
                     daily_rates=daily_rates,
+                    rate_key=random_alphanumeric(5)
                 )
             )
 
@@ -199,16 +199,7 @@ class StubHotelAdapter(HotelAdapter):
         longitude = random.random() * 100
         geolocation = GeoLocation(latitude, longitude)
 
-        return HotelDetails(
-            name=hotel_name,
-            address=hotel_address,
-            chain_code="1A",
-            hotel_code=hotel_code,
-            checkin_time="3PM",
-            checkout_time="12PM",
-            geolocation=geolocation,
-            photos=[],
-        )
+        return HotelDetails(hotel_name, hotel_address, "1A", hotel_code, "3PM", "12PM", [], geolocation)
 
     @staticmethod
     def _generate_address(city=None):

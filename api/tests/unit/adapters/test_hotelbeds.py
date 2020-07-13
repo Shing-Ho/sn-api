@@ -3,10 +3,19 @@ from datetime import date
 
 import requests_mock
 
+from api.hotel.adapters.hotelbeds.common import HotelBedsRateType, HotelBedsPaymentType
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
-from api.hotel.adapters.hotelbeds.search import HotelBedsSearchBuilder, HotelBedsPaymentType, HotelBedsRateType
+from api.hotel.adapters.hotelbeds.search import HotelBedsSearchBuilder
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
-from api.hotel.hotels import HotelLocationSearch, to_json, RoomOccupancy
+from api.hotel.hotels import (
+    HotelLocationSearch,
+    to_json,
+    RoomOccupancy,
+    HotelBookingRequest,
+    Customer,
+    Traveler,
+    RoomRate, Money
+)
 from api.tests.utils import load_test_resource
 
 
@@ -127,3 +136,31 @@ class TestHotelBeds(unittest.TestCase):
             response = hotelbeds.details(["foo", "bar"], "en_US")
 
         self.assertIsNotNone(response)
+
+    def test_hotelbeds_booking(self):
+        booking_request = HotelBookingRequest(
+            api_version=1,
+            transaction_id="tx",
+            hotel_id="123",
+            checkin=date(2020, 1, 1),
+            checkout=date(2020, 1, 2),
+            language="en",
+            customer=Customer("John", "Smith", "5558675309", "john@smith.foo", "US"),
+            traveler=Traveler("John", "Smith", occupancy=RoomOccupancy(adults=1)),
+            room_rate=RoomRate(
+                rate_key="rate-key",
+                description="",
+                total_base_rate=Money(0.0, "USD"),
+                total_tax_rate=Money(0.0, "USD"),
+                total=Money(0.0, "USD"),
+                additional_detail=[],
+            ),
+            payment=None,
+        )
+
+        hotelbeds = HotelBeds()
+        booking_resource = load_test_resource("hotelbeds/booking-confirmation-response.json")
+        with requests_mock.Mocker() as mocker:
+            mocker.post(HotelBedsTransport.get_booking_url(), text=booking_resource)
+            booking_response = hotelbeds.booking(booking_request)
+            print(booking_response)
