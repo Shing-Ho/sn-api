@@ -5,29 +5,36 @@ from requests.auth import HTTPBasicAuth
 from zeep import Client, Transport
 from django.core.management.base import BaseCommand
 from zeep import helpers
-from api.models.models import supplier_hotels, sn_hotel_map
+from api.models.models import supplier_hotels, sn_hotel_map, sn_images_map
 import pandas as pd
 
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        hotels = pd.read_csv("iceportaldata.csv")
-        main_data = hotels[hotels['Country'] == "United Kingdom"]
+
+        main_data = sn_hotel_map.objects.filter(provider="Ice Portal")
         transport = IcePortalTransport()
         service = transport.get_service()
         for x in range(0, len(main_data)):
-            IceId = "ICE"+str(main_data.iloc[x]["ICEID (don't change)"])
-            print(IceId)
+
+            IceId = "ICE"+str(main_data[x].provider_id)
             data = service.GetVisualsV2(
                 _soapheaders=transport.get_auth_header(), MappedID=IceId)
             data_as_dict = helpers.serialize_object(data)
             try:
                 for item in data_as_dict['Property']['MediaGallery']['Pictures']['ImagesV2']['PropertyImageVisualsV2']:
-                    try:
-                        print(item["mediaGalleryUrl"])
-                    except:
-                        pass
+
+                    sn_images_map.objects.update_or_create(
+                        simplenight_id=main_data[x].simplenight_id,
+
+                        image_type=item["Tags"],
+                        image_url_path=item["mediaGalleryUrl"],
+                        image_provider_id="Ice Portal"
+                    )
+
+                    print(item.keys())
+                    print(item["mediaGalleryUrl"])
             except:
                 pass
 
@@ -85,19 +92,19 @@ class IcePortalTransport:
 # for x in (data_as_dict['Property']['MediaGallery']['HD360s'].keys()):
 #     print(x)
 #     print(data_as_dict['Property']['MediaGallery']['HD360s'][x])
-# 20200
-transport = IcePortalTransport()
-service = transport.get_service()
-print(supplier_hotels.objects.filter(provider_name="Ice Portal").count())
-for x in supplier_hotels.objects.filter(provider_name="Ice Portal"):
-    IceId = "ICE"+str(x.provider_id)
-    print(IceId)
-    data = service.GetVisualsV2(
-        _soapheaders=transport.get_auth_header(), MappedID=IceId)
-    data_as_dict = helpers.serialize_object(data)
+# # 20200
+# transport = IcePortalTransport()
+# service = transport.get_service()
+# print(supplier_hotels.objects.filter(provider_name="Ice Portal").count())
+# for x in supplier_hotels.objects.filter(provider_name="Ice Portal"):
+#     IceId = "ICE"+str(x.provider_id)
+#     print(IceId)
+#     data = service.GetVisualsV2(
+#         _soapheaders=transport.get_auth_header(), MappedID=IceId)
+#     data_as_dict = helpers.serialize_object(data)
 
-    for item in data_as_dict['Property']['MediaGallery']['Pictures']['ImagesV2']['PropertyImageVisualsV2']:
-        try:
-            print(item["mediaGalleryUrl"])
-        except:
-            pass
+#     for item in data_as_dict['Property']['MediaGallery']['Pictures']['ImagesV2']['PropertyImageVisualsV2']:
+#         try:
+#             print(item["mediaGalleryUrl"])
+#         except:
+#             pass

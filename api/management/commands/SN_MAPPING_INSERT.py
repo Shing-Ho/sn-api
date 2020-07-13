@@ -48,7 +48,7 @@ class Command(BaseCommand):
             "model": supplier_hotels, "name": "HotelBeds"}}
 
         for table in main_dict.keys():
-            for hotel in main_dict[table]["model"].objects.all():
+            for hotel in main_dict[table]["model"].objects.filter(provider_name="Ice Portal"):
                 temp_sn_id = 0
                 potential_matches = (find_other_properties(
                     hotel.address, hotel.city, hotel.country_name, hotel.provider_name))
@@ -90,4 +90,4 @@ class Command(BaseCommand):
                         provider=hotel.provider_name,
                         provider_id=hotel.hotel_codes
                     )
-                    print("its been added")
+                    print(hotel.provider_name)
