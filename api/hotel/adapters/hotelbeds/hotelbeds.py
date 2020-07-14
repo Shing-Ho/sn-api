@@ -1,12 +1,11 @@
-import uuid
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Optional
 
 from api import logger
 from api.hotel.adapters.hotelbeds.booking import (
     HotelBedsBookingRQ,
     HotelBedsBookingLeadTraveler,
     HotelBedsPax,
-    HotelBedsBookingRoom,
+    HotelBedsBookingRoom, HotelBedsBookingRS,
 )
 from api.hotel.adapters.hotelbeds.common import get_language_mapping
 from api.hotel.adapters.hotelbeds.details import HotelBedsHotelDetailsRS, HotelBedsHotelDetail
@@ -23,7 +22,7 @@ from api.hotel.hotels import (
     HotelBookingRequest,
     HotelSpecificSearch,
     HotelDetails,
-    HotelSearchResponse,
+    HotelSearchResponseHotel,
     HotelLocationSearch,
     Address,
     BaseHotelSearch,
@@ -41,7 +40,7 @@ class HotelBeds(HotelAdapter):
 
         self.transport = transport
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponse]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponseHotel]:
         availability_results = self._search_by_location(search_request)
         hotel_codes = list(map(lambda x: str(x.code), availability_results.results.hotels))
         hotel_details = self._details(hotel_codes, search_request.language)
@@ -65,7 +64,7 @@ class HotelBeds(HotelAdapter):
 
         logger.error(f"Error searching HotelBeds (status_code={response.status_code}): {response.text}")
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponse:
+    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponseHotel:
         pass
 
     def details(self, hotel_codes: Union[List[str], str], language: str) -> List[HotelDetails]:
@@ -93,7 +92,7 @@ class HotelBeds(HotelAdapter):
     def booking_availability(self, search_request: HotelSpecificSearch):
         pass
 
-    def booking(self, book_request: HotelBookingRequest):
+    def booking(self, book_request: HotelBookingRequest) -> Optional[HotelBedsBookingRS]:
         self.transport.get_booking_url()
 
         lead_traveler = HotelBedsPax(1, "AD", book_request.customer.first_name, book_request.customer.last_name)
@@ -101,13 +100,18 @@ class HotelBeds(HotelAdapter):
             holder=HotelBedsBookingLeadTraveler(
                 name=book_request.customer.first_name, surname=book_request.customer.last_name
             ),
-            paxes=[lead_traveler],
-            language=book_request.language,
             clientReference=book_request.transaction_id,
-            rooms=[HotelBedsBookingRoom(rateKey=book_request.room_rate.rate_key, pax=[lead_traveler])],
+            rooms=[HotelBedsBookingRoom(rateKey=book_request.room_rate.rate_key, paxes=[lead_traveler])],
+            remark="Test booking"
         )
 
-        return self.transport.post(self.transport.get_booking_url(), booking_request)
+        response = self.transport.post(self.transport.get_booking_url(), booking_request)
+        if not response.ok:
+            logger.error(f"Error booking HotelBeds room for rate_key {book_request.room_rate.rate_key}")
+            logger.error(response.raw)
+            return None
+
+        return HotelBedsBookingRS.Schema().load(response.json())
 
     def get_image_url(self, path):
         return self._get_image_base_url() + path
@@ -122,14 +126,14 @@ class HotelBeds(HotelAdapter):
 
     def _create_hotel(
         self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail
-    ) -> HotelSearchResponse:
+    ) -> HotelSearchResponseHotel:
 
         room_types = list(map(lambda x: self._create_room_type(search, x), hotel.rooms))
 
-        return HotelSearchResponse(
+        return HotelSearchResponseHotel(
             hotel_id=str(hotel.code),
-            checkin_date=search.checkin_date,
-            checkout_date=search.checkout_date,
+            start_date=search.start_date,
+            end_date=search.end_date,
             occupancy=search.occupancy,
             room_types=room_types,
             hotel_details=None,

@@ -5,13 +5,14 @@ from django.db.models import Prefetch
 from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 from uszipcode import SearchEngine
 
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from api.models.models import Geoname, GeonameAlternateName
 from api.models.models import supplier_hotels
-from . import serializers, api_access
+from . import api_access
 from .api_access import ApiAccessRequest, ApiAccessResponse
 from .auth.models import HasOrganizationAPIKey, OrganizationApiThrottle
 from .hotel.adapters.hotel_service import HotelService
@@ -19,13 +20,12 @@ from .hotel.hotels import (
     HotelLocationSearch,
     HotelSpecificSearch,
     RoomOccupancy,
-    HotelSearchResponse,
+    HotelSearchResponseHotel,
     HotelBookingRequest,
     HotelBookingResponse,
 )
 from .serializers import (
     LocationsSerializer,
-    HotelAdapterHotelSerializer,
 )
 from .serializers import mappingcodesSerializer
 
@@ -97,42 +97,54 @@ class HotelBedsMap(viewsets.ModelViewSet):
 class HotelSupplierViewset(viewsets.ViewSet):
     permission_classes = (HasOrganizationAPIKey,)
     throttle_classes = (OrganizationApiThrottle,)
-    serializer_class = (HotelAdapterHotelSerializer,)
     hotel_adapter = TravelportHotelAdapter()
     hotel_service = HotelService("stub")
 
-    @action(detail=False, methods=["GET"], name="Search Hotels")
-    def search_by_location(self, request):
-        location = request.GET.get("location")
-        checkin = request.GET.get("checkin")
-        checkout = request.GET.get("checkout")
-        num_adults = request.GET.get("num_adults")
-        hotels = self.hotel_adapter.search_by_location(
-            HotelLocationSearch(
+    @action(detail=False, methods=["GET", "POST"], name="Search Hotels")
+    def search_by_location(self, request: Request):
+        if request.data:
+            request = HotelLocationSearch.Schema().load(request.data)
+        else:
+            location = request.GET.get("location")
+            checkin = request.GET.get("checkin")
+            checkout = request.GET.get("checkout")
+            num_adults = request.GET.get("num_adults")
+            num_children = request.GET.get("num_adults")
+
+            request = HotelLocationSearch(
                 location_name=location,
-                checkin_date=checkin,
-                checkout_date=checkout,
-                occupancy=RoomOccupancy(adults=num_adults),
+                start_date=date.fromisoformat(checkin),
+                end_date=date.fromisoformat(checkout),
+                occupancy=RoomOccupancy(adults=num_adults, children=num_children),
+                daily_rates=False,
             )
-        )
 
-        serializer = serializers.HotelAdapterHotelSerializer(instance=hotels, many=True)
+        hotels = self.hotel_service.search_by_location(request)
 
-        return Response(serializer.data)
+        return Response(HotelSearchResponseHotel.Schema(many=True).dump(hotels))
 
-    @action(detail=False, methods=["GET"], name="Search Hotels")
+    @action(detail=False, methods=["GET", "POST"], name="Search Hotels")
     def search_by_id(self, request):
-        hotel_code = request.GET.get("hotel_code")
-        checkin = date.fromisoformat(request.GET.get("checkin"))
-        checkout = date.fromisoformat(request.GET.get("checkout"))
-        num_adults = request.GET.get("num_adults")
+        if request.data:
+            request = HotelSpecificSearch.Schema().load(request.data)
+        else:
+            hotel_code = request.GET.get("location")
+            checkin = request.GET.get("checkin")
+            checkout = request.GET.get("checkout")
+            num_adults = request.GET.get("num_adults")
+            num_children = request.GET.get("num_adults")
 
-        search = HotelSpecificSearch(
-            hotel_id=hotel_code, checkin_date=checkin, checkout_date=checkout, occupancy=RoomOccupancy(num_adults, 0)
-        )
-        response = self.hotel_service.search_by_id(search)
+            request = HotelSpecificSearch(
+                hotel_id=hotel_code,
+                start_date=date.fromisoformat(checkin),
+                end_date=date.fromisoformat(checkout),
+                occupancy=RoomOccupancy(adults=num_adults, children=num_children),
+                daily_rates=False,
+            )
 
-        return Response(HotelSearchResponse.Schema().dump(response))
+        response = self.hotel_service.search_by_id(request)
+
+        return Response(HotelSearchResponseHotel.Schema().dump(response))
 
     @action(detail=False, methods=["POST"], name="Hotel Booking")
     def booking(self, request):

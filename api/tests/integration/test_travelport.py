@@ -12,7 +12,7 @@ class TestTravelport(unittest.TestCase):
 
         checkin_date = datetime.now().date() + timedelta(days=30)
         checkout_date = datetime.now().date() + timedelta(days=37)
-        search_request = HotelLocationSearch(location_name="SFO", checkin_date=checkin_date, checkout_date=checkout_date)
+        search_request = HotelLocationSearch(location_name="SFO", start_date=checkin_date, end_date=checkout_date)
 
         results = travelport.search_by_location(search_request)
         print(results)
@@ -22,9 +22,8 @@ class TestTravelport(unittest.TestCase):
         hotel_details = HotelDetailsSearchRequest(
             chain_code="HY",
             hotel_code="09974",
-            checkin_date=datetime.now().date() + timedelta(days=30),
-            checkout_date=datetime.now().date() + timedelta(days=37),
-
+            start_date=datetime.now().date() + timedelta(days=30),
+            end_date=datetime.now().date() + timedelta(days=37),
         )
 
         response = travelport.details(hotel_details)

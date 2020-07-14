@@ -31,8 +31,8 @@ class RoomOccupancy(BaseSchema):
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class BaseHotelSearch(BaseSchema):
-    checkin_date: date
-    checkout_date: date
+    start_date: date
+    end_date: date
     occupancy: Optional[RoomOccupancy]
     daily_rates: bool = False
     language: Optional[str] = "en"
@@ -58,8 +58,8 @@ class HotelSpecificSearch(BaseHotelSearch):
 class HotelDetailsSearchRequest(BaseSchema):
     chain_code: str
     hotel_code: str
-    checkin_date: date
-    checkout_date: date
+    start_date: date
+    end_date: date
     num_rooms: int = 1
     currency: str = "USD"
     language: str = "en_US"
@@ -263,10 +263,10 @@ class ErrorResponse(BaseSchema):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelSearchResponse(BaseSchema):
+class HotelSearchResponseHotel(BaseSchema):
     hotel_id: str
-    checkin_date: date
-    checkout_date: date
+    start_date: date
+    end_date: date
     occupancy: RoomOccupancy
     room_types: List[RoomType]
     hotel_details: HotelDetails

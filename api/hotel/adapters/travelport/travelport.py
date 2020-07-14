@@ -16,7 +16,7 @@ from api.hotel.hotels import (
     DailyRate,
     RoomRate,
     HotelSpecificSearch,
-    HotelSearchResponse,
+    HotelSearchResponseHotel,
     GeoLocation,
     HotelBookingRequest,
 )
@@ -50,7 +50,7 @@ class TravelportHotelAdapter(HotelAdapter):
 
         return self._parse_details(response)
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponse:
+    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponseHotel:
         pass
 
     def booking_availability(self, search_request: HotelSpecificSearch):

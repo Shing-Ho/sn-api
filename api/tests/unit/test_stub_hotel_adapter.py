@@ -21,8 +21,8 @@ class TestStubHotelAdapter(unittest.TestCase):
     def test_search_by_hotel_id(self):
         search_request = HotelSpecificSearch(
             hotel_id="A1H2J6",
-            checkin_date=date(2020, 1, 20),
-            checkout_date=date(2020, 1, 27),
+            start_date=date(2020, 1, 20),
+            end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(2, 1),
         )
 
@@ -30,8 +30,8 @@ class TestStubHotelAdapter(unittest.TestCase):
         response = stub_adapter.search_by_id(search_request)
 
         self.assertIsNotNone(response.hotel_id)
-        self.assertIsNotNone(response.checkin_date)
-        self.assertIsNotNone(response.checkin_date)
+        self.assertIsNotNone(response.start_date)
+        self.assertIsNotNone(response.start_date)
         self.assertIsNotNone(response.occupancy)
         self.assertIsNotNone(response.room_types)
         self.assertIsNotNone(response.room_types[0].bed_types)
@@ -58,11 +58,13 @@ class TestStubHotelAdapter(unittest.TestCase):
 
         traveler = Traveler(first_name="Jane", last_name="Smith", occupancy=RoomOccupancy(adults=1, children=0))
         room_rate = RoomRate(
+            rate_key="foo",
             description="King Bed Oceanview Suite",
             additional_detail=list(),
             total_base_rate=Money(526.22, "USD"),
             total_tax_rate=Money(63.29, "USD"),
             total=Money(589.51, "USD"),
+            daily_rates=[],
         )
 
         payment_card_params = PaymentCardParameters(

@@ -19,8 +19,8 @@ class TravelportHotelDetailsBuilder:
         hotel_details_builder = TravelportHotelDetailsBuilder()
         hotel_details_builder.chain_code = hotel_details_request.chain_code
         hotel_details_builder.hotel_code = hotel_details_request.hotel_code
-        hotel_details_builder.checkin = hotel_details_request.checkin_date
-        hotel_details_builder.checkout = hotel_details_request.checkout_date
+        hotel_details_builder.checkin = hotel_details_request.start_date
+        hotel_details_builder.checkout = hotel_details_request.end_date
         hotel_details_builder.num_rooms = hotel_details_request.num_rooms
         hotel_details_builder.currency = hotel_details_request.currency
 

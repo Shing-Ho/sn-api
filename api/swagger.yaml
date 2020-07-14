@@ -88,7 +88,31 @@ paths:
               $ref: '#/components/schemas/HotelSearchRequest'
       responses:
         '200':
-          description: List of matching locations
+          description: Matching hotel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotelSearchResponse'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No locations found for input
+
+  /hotels/search-by-location:
+    post:
+      tags:
+        - Hotel
+      summary: Search for hotels in a location
+      description: Using a Simplenight city ID, search for hotels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HotelLocationSearchRequest'
+      responses:
+        '200':
+          description: List of matching Hotels
           content:
             application/json:
               schema:
@@ -258,8 +282,8 @@ components:
       type: object
       required:
         - hotel_Id
-        - checkin_date
-        - checkout_date
+        - start_date
+        - end_date
         - occupancy
         - room_types
         - rate_plans
@@ -270,12 +294,12 @@ components:
           type: string
           example: 12345
           description: A SimpleNights Hotel ID
-        checkin_date:
+        start_date:
           type: string
           example: 2020-01-01
           format: date
           description: Checkin date
-        checkout_date:
+        end_date:
           type: string
           example: 2020-01-07
           format: date
@@ -303,20 +327,57 @@ components:
       type: object
       required:
         - hotel_id
-        - checkin_date
-        - checkout_date
+        - start_date
+        - end_date
         - occupancy
       properties:
         hotel_id:
           type: integer
           example: 123
           description: Simplenight Hotel ID
-        checkin_date:
+        start_date:
           type: string
           format: date
           example: 2021-06-01
           description: The checkin date
-        checkout_date:
+        end_date:
+          type: string
+          format: date
+          example: 2020-06-07
+          description: The checkout date
+        occupancy:
+          $ref: '#/components/schemas/Occupancy'
+        language:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: en
+          description: Optional. ISO-formatted 2-character language code for hotel details
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: USD
+          description: Optional.  ISO-format 3-character currency code
+
+    HotelLocationSearchRequest:
+      type: object
+      required:
+        - location_name
+        - start_date
+        - end_date
+        - occupancy
+      properties:
+        location_name:
+          type: string
+          example: "19823"
+          description: Simplenight Location ID
+        start_date:
+          type: string
+          format: date
+          example: 2021-06-01
+          description: The checkin date
+        end_date:
           type: string
           format: date
           example: 2020-06-07

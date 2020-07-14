@@ -23,8 +23,8 @@ class TestHotelBedsIntegration(unittest.TestCase):
         checkout = datetime.now().date() + timedelta(days=35)
         search_request = HotelLocationSearch(
             location_name="TVL",
-            checkin_date=checkin,
-            checkout_date=checkout,
+            start_date=checkin,
+            end_date=checkout,
             daily_rates=True,
             occupancy=RoomOccupancy(),
         )
@@ -42,15 +42,15 @@ class TestHotelBedsIntegration(unittest.TestCase):
         checkout = datetime.now().date() + timedelta(days=35)
         search_request = HotelLocationSearch(
             location_name="TVL",
-            checkin_date=checkin,
-            checkout_date=checkout,
+            start_date=checkin,
+            end_date=checkout,
             daily_rates=True,
             occupancy=RoomOccupancy(),
         )
 
         response = self.hotelbeds.search_by_location(search_request)
 
-        rate_key = response[0].room_types[0].rates[0].rate_key
+        rate_key = response[10].room_types[1].rates[1].rate_key
 
         transaction_id = str(uuid.uuid4())[:8]
         booking_request = HotelBookingRequest(
@@ -74,4 +74,4 @@ class TestHotelBedsIntegration(unittest.TestCase):
         )
 
         booking_response = self.hotelbeds.booking(booking_request)
-        print(booking_response.text)
+        print(booking_response)
