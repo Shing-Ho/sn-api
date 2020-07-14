@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
 from .hotel.hotels import HotelAdapterHotel, Address, HotelRate
-from .models.models import Geoname
+from .models.models import Geoname, supplier_hotels
 
 
 class mappingcodesSerializer(serializers.ModelSerializer):
     class Meta:
         model = supplier_hotels
-        fields = ('__all__')
+        fields = "__all__"
 
 
 class LocationAlternateNameSerializer(serializers.StringRelatedField):
@@ -20,13 +20,11 @@ class LocationAlternateNameSerializer(serializers.StringRelatedField):
 
 class LocationsSerializer(serializers.ModelSerializer):
     primary_name = serializers.CharField(source="location_name")
-    localization = LocationAlternateNameSerializer(
-        many=True, read_only=True, source="lang")
+    localization = LocationAlternateNameSerializer(many=True, read_only=True, source="lang")
 
     class Meta:
         model = Geoname
-        fields = ("id", "iso_country_code", "primary_name",
-                  "localization", "latitude", "longitude")
+        fields = ("id", "iso_country_code", "primary_name", "localization", "latitude", "longitude")
 
 
 class StringListField(serializers.ListField):

@@ -17,8 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 
-from api import views
-from .views import LocationsViewSet, HotelSupplierViewset, AuthenticationView
+from .views import AuthenticationView
 from .views import LocationsViewSet, HotelSupplierViewset, location_formater, HotelBedsMap
 
 router = routers.SimpleRouter()
