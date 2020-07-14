@@ -22,7 +22,7 @@ from api.hotel.hotels import (
     HotelBookingRequest,
     HotelSpecificSearch,
     HotelDetails,
-    HotelSearchResponse,
+    HotelSearchResponseHotel,
     HotelLocationSearch,
     Address,
     BaseHotelSearch,
@@ -40,7 +40,7 @@ class HotelBeds(HotelAdapter):
 
         self.transport = transport
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponse]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponseHotel]:
         availability_results = self._search_by_location(search_request)
         hotel_codes = list(map(lambda x: str(x.code), availability_results.results.hotels))
         hotel_details = self._details(hotel_codes, search_request.language)
@@ -64,7 +64,7 @@ class HotelBeds(HotelAdapter):
 
         logger.error(f"Error searching HotelBeds (status_code={response.status_code}): {response.text}")
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponse:
+    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponseHotel:
         pass
 
     def details(self, hotel_codes: Union[List[str], str], language: str) -> List[HotelDetails]:
@@ -126,14 +126,14 @@ class HotelBeds(HotelAdapter):
 
     def _create_hotel(
         self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail
-    ) -> HotelSearchResponse:
+    ) -> HotelSearchResponseHotel:
 
         room_types = list(map(lambda x: self._create_room_type(search, x), hotel.rooms))
 
-        return HotelSearchResponse(
+        return HotelSearchResponseHotel(
             hotel_id=str(hotel.code),
-            checkin_date=search.checkin_date,
-            checkout_date=search.checkout_date,
+            start_date=search.start_date,
+            end_date=search.end_date,
             occupancy=search.occupancy,
             room_types=room_types,
             hotel_details=None,

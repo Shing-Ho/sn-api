@@ -8,7 +8,7 @@ from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotels import (
     HotelDetails,
     HotelSpecificSearch,
-    HotelSearchResponse,
+    HotelSearchResponseHotel,
     HotelLocationSearch,
     HotelAdapterHotel,
     HotelDetailsSearchRequest, HotelBookingRequest,
@@ -23,11 +23,14 @@ class HotelService(HotelAdapter):
     def __init__(self, adapters):
         self.adapters = adapters
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelAdapterHotel]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponseHotel]:
         futures = []
         all_hotels = []
+
+        # TODO: Re-add support for multiple adapters
+        adapters = {self.adapters}
         with ThreadPoolExecutor(max_workers=self.MAX_WORKERS) as executor:
-            for adapter in self.adapters:
+            for adapter in adapters:
                 futures.append(executor.submit(HOTEL_ADAPTERS[adapter].search_by_location, search_request))
 
             for future in futures:
@@ -35,7 +38,7 @@ class HotelService(HotelAdapter):
 
         return all_hotels
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponse:
+    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponseHotel:
         return self.get_adapter().search_by_id(search_request)
 
     def details(self, hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:

@@ -21,8 +21,8 @@ class TestStubHotelAdapter(unittest.TestCase):
     def test_search_by_hotel_id(self):
         search_request = HotelSpecificSearch(
             hotel_id="A1H2J6",
-            checkin_date=date(2020, 1, 20),
-            checkout_date=date(2020, 1, 27),
+            start_date=date(2020, 1, 20),
+            end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(2, 1),
         )
 
@@ -30,8 +30,8 @@ class TestStubHotelAdapter(unittest.TestCase):
         response = stub_adapter.search_by_id(search_request)
 
         self.assertIsNotNone(response.hotel_id)
-        self.assertIsNotNone(response.checkin_date)
-        self.assertIsNotNone(response.checkin_date)
+        self.assertIsNotNone(response.start_date)
+        self.assertIsNotNone(response.start_date)
         self.assertIsNotNone(response.occupancy)
         self.assertIsNotNone(response.room_types)
         self.assertIsNotNone(response.room_types[0].bed_types)

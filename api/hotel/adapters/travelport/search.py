@@ -19,8 +19,8 @@ class TravelportHotelSearchBuilder:
     def build(search_request: HotelLocationSearch):
         builder = TravelportHotelSearchBuilder()
         builder.hotel_location = search_request.location_name
-        builder.checkin = search_request.checkin_date
-        builder.checkout = search_request.checkout_date
+        builder.checkin = search_request.start_date
+        builder.checkout = search_request.end_date
         builder.num_rooms = search_request.num_rooms
         builder.num_adults = search_request.num_adults
 

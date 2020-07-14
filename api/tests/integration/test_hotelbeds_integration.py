@@ -23,8 +23,8 @@ class TestHotelBedsIntegration(unittest.TestCase):
         checkout = datetime.now().date() + timedelta(days=35)
         search_request = HotelLocationSearch(
             location_name="TVL",
-            checkin_date=checkin,
-            checkout_date=checkout,
+            start_date=checkin,
+            end_date=checkout,
             daily_rates=True,
             occupancy=RoomOccupancy(),
         )
@@ -42,8 +42,8 @@ class TestHotelBedsIntegration(unittest.TestCase):
         checkout = datetime.now().date() + timedelta(days=35)
         search_request = HotelLocationSearch(
             location_name="TVL",
-            checkin_date=checkin,
-            checkout_date=checkout,
+            start_date=checkin,
+            end_date=checkout,
             daily_rates=True,
             occupancy=RoomOccupancy(),
         )

@@ -119,7 +119,7 @@ class HotelBedsAvailabilityRS(BaseSchema):
 class HotelBedsSearchBuilder:
     @staticmethod
     def build(request: HotelLocationSearch) -> HotelBedsAvailabilityRQ:
-        stay = HotelBedsStayRQ(request.checkin_date, request.checkout_date)
+        stay = HotelBedsStayRQ(request.start_date, request.end_date)
         destination = HotelBedsDestinationRQ(request.location_name)
         language = get_language_mapping(request.language)
         occupancy = [

@@ -4,18 +4,18 @@ from api.hotel.hotels import (
     HotelLocationSearch,
     HotelAdapterHotel,
     HotelSpecificSearch,
-    HotelSearchResponse,
+    HotelSearchResponseHotel,
     HotelDetails, HotelBookingRequest
 )
 
 
 class HotelAdapter(abc.ABC):
     @abc.abstractmethod
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelAdapterHotel]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponseHotel]:
         pass
 
     @abc.abstractmethod
-    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponse:
+    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponseHotel:
         pass
 
     @abc.abstractmethod

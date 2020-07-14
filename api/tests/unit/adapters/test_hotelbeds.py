@@ -41,8 +41,8 @@ class TestHotelBeds(unittest.TestCase):
         search_builder = HotelBedsSearchBuilder()
         location_search = HotelLocationSearch(
             location_name="SFO",
-            checkin_date=date(2020, 1, 1),
-            checkout_date=date(2020, 1, 7),
+            start_date=date(2020, 1, 1),
+            end_date=date(2020, 1, 7),
             occupancy=RoomOccupancy(adults=2, children=1),
         )
 
@@ -66,8 +66,8 @@ class TestHotelBeds(unittest.TestCase):
 
         search = HotelLocationSearch(
             location_name="FOO",
-            checkin_date=date(2020, 1, 1),
-            checkout_date=date(2020, 1, 7),
+            start_date=date(2020, 1, 1),
+            end_date=date(2020, 1, 7),
             occupancy=RoomOccupancy(adults=1),
         )
 

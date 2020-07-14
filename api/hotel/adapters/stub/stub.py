@@ -7,8 +7,7 @@ from typing import List, Type
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotels import (
     HotelLocationSearch,
-    HotelAdapterHotel,
-    HotelSearchResponse,
+    HotelSearchResponseHotel,
     RoomOccupancy,
     RoomType,
     Amenity,
@@ -34,16 +33,17 @@ from common.utils import random_string
 
 
 class StubHotelAdapter(HotelAdapter):
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelAdapterHotel]:
-        pass
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponseHotel]:
+        num_hotels_to_return = random.randint(10, 50)
+        return [self.search_by_id(search_request) for _ in range(num_hotels_to_return)]
 
-    def search_by_id(self, search_request: BaseHotelSearch) -> HotelSearchResponse:
+    def search_by_id(self, search_request: BaseHotelSearch) -> HotelSearchResponseHotel:
         hotel_code = random_string(5).upper()
         room_types = self._generate_room_types(search_request)
-        response = HotelSearchResponse(
+        response = HotelSearchResponseHotel(
             hotel_id=hotel_code,
-            checkin_date=search_request.checkin_date,
-            checkout_date=search_request.checkout_date,
+            start_date=search_request.start_date,
+            end_date=search_request.end_date,
             occupancy=RoomOccupancy(2, 2),
             room_types=room_types,
             hotel_details=self._generate_hotel_details(),
@@ -153,7 +153,7 @@ class StubHotelAdapter(HotelAdapter):
             rate_plan = rate_plan_types[i]
 
             description = f"{room_type.name} {rate_plan.name}"
-            room_nights = (search_request.checkout_date - search_request.checkin_date).days
+            room_nights = (search_request.end_date - search_request.start_date).days
             total_rate = round(random.random() * 1200, 2)
             total_tax_rate = round(total_rate / 10, 2)
             total_base_rate = total_rate - total_tax_rate
@@ -162,7 +162,7 @@ class StubHotelAdapter(HotelAdapter):
 
             daily_rates = []
             for night in range(room_nights):
-                rate_date = search_request.checkin_date + timedelta(days=night)
+                rate_date = search_request.start_date + timedelta(days=night)
                 daily_base_rate = Money(base_rate, "USD")
                 daily_tax_rate = Money(tax_rate, "USD")
                 daily_total_rate = Money(base_rate + tax_rate, "USD")
