@@ -1,6 +1,4 @@
-from django.db import models, connection
-from django.contrib.postgres.fields import ArrayField
-
+from django.db import models
 
 USD = 'US Dollars'
 FRA = 'French Francs'

@@ -18,12 +18,14 @@ from django.urls import path, include
 from rest_framework import routers
 
 from api import views
+from .views import LocationsViewSet, HotelSupplierViewset, AuthenticationView
 from .views import LocationsViewSet, HotelSupplierViewset, location_formater, HotelBedsMap
 
 router = routers.SimpleRouter()
 
 router.register(r"Locations", LocationsViewSet)
-router.register(r"Suppliers", HotelSupplierViewset, basename="suppliers")
+router.register(r"hotels", HotelSupplierViewset, basename="hotels")
+router.register(r"authentication", AuthenticationView, basename="authentication")
 router.register(r"hotelbeds", HotelBedsMap, basename="hotelbeds")
 
 urlpatterns = [

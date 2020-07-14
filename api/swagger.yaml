@@ -1,0 +1,957 @@
+openapi: 3.0.0
+
+servers:
+# Added by API Auto Mocking Plugin
+# Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/LPBS7/SN_HOTEL_API/1.0.0
+  - description: Simplenight Live Sandbox
+    url: https://simplenight-api-278418.ue.r.appspot.com/api/v1/
+info:
+  version: "1.0.0"
+  title: Simplenight Hotel API
+  description: |
+    This OpenAPI Specification describes the Simplenight Hotel API.  In the dropdown below, there are a list of two servers to choose from.  The first is a simple automock server which returns static mock responses.  The second is the Simplenight Live Sandbox server, which returns real data.
+
+    Using the Simplenight Live Sandbox server requires a Bearer token.  This key must be provided by Simplenight.  Once you have obtained a token, you can click the "Authorize" button below, and submit your token.
+tags:
+  - name: Locations
+    description: Location-related data (cities, regions, airports, etc).  Each of these endpoints takes country code and language code as query parameters.
+  - name: Hotel
+    description: Hotel availabilty, hotel details, and hotel booking endpoints
+
+security:
+  - bearerAuth: []
+
+paths:
+  /hotels/booking-availability:
+    post:
+      tags:
+        - Hotel
+      summary: Uncached availability search
+      description: The search endpoints may return cached availability, which may not be up-to-date.  This endpoint peforms an uncached search, to confirm availability and rates before booking.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HotelSearchRequest'
+      responses:
+        '200':
+          description: List of matching locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HotelSearchResponse'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No locations found for input
+
+  /hotels/booking:
+    post:
+      tags:
+        - Hotel
+      summary: Submit a booking request and receive a Reservation in response.
+      description: Collect a customer record, payment information and itinerary for booking and return a Reservation on success.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingRequest'
+      responses:
+        '200':
+          description: Reservation on success, or else an Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal error while completing a booking
+
+  /hotels/search-by-id:
+    post:
+      tags:
+        - Hotel
+      summary: Search for a specific hotel
+      description: Search for a specific hotel, with a Hotel ID, travel dates, and an occupancy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HotelSearchRequest'
+      responses:
+        '200':
+          description: List of matching locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HotelSearchResponse'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No locations found for input
+
+  /locations/cities/:
+    get:
+      tags:
+        - Locations
+      summary: Returns a list of all cities
+      operationId: getAllCities
+      description: |
+        Returns a list of all available cities.  Because the response
+        size is large, this endpoint implements pagination
+      parameters:
+        - in: query
+          name: country
+          description: |
+            ISO-format two character country code.  Optional.
+            Omitting this parameter returns all available cities
+          schema:
+            type: string
+            minimum: 2
+            maximum: 2
+            example: US
+        - in: query
+          name: lang_code
+          description: |
+            ISO-format two character language code.  Returns location name
+            localization for the provided lang_code.  Optional.
+          schema:
+            type: string
+            minimum: 2
+            maximum: 2
+            example: en
+      responses:
+        '200':
+          description: List of matching locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/City'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No locations found for input
+  /locations/airports:
+    get:
+      tags:
+        - Locations
+      summary: Returns a list of all airports
+      operationId: getAllAirports
+      description: |
+        Returns a list of all support airports
+      parameters:
+        - in: query
+          name: country
+          description: |
+            ISO-format two character country code.  Optional.
+            Omitting this parameter returns all available airports
+          schema:
+            type: string
+            minimum: 2
+            maximum: 2
+            example: US
+        - in: query
+          name: lang_code
+          description: |
+            ISO-format two character language code.  Returns airport name
+            localization for the provided lang_code.  Optional.
+          schema:
+            type: string
+            minimum: 2
+            maximum: 2
+            example: en
+      responses:
+        '200':
+          description: List of matching airports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Airport'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No airports found for input
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token <token>
+  schemas:
+    Airport:
+      properties:
+        airport_code:
+          type: string
+          example: "SFO"
+          minLength: 3
+          maxLength: 3
+        iso_country_code:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: en
+        localization:
+          type: object
+          properties:
+            language_code:
+              type: string
+              minLength: 2
+              maxLength: 2
+              example: ja
+            name:
+              type: string
+              example: サンフランシスコ
+        latitude:
+          type: number
+          example: 49.057980
+        longitude:
+          type: number
+          example: -122.252570
+    City:
+      properties:
+        id:
+          type: string
+          example: "123"
+        iso_country_code:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: en
+        primary_name:
+          type: string
+          example: San Francisco
+        admin_district:
+          type: string
+          example: California
+        localization:
+          type: object
+          properties:
+            language_code:
+              type: string
+              minLength: 2
+              maxLength: 2
+              example: ja
+            name:
+              type: string
+              example: サンフランシスコ
+        latitude:
+          type: number
+          example: 49.057980
+        longitude:
+          type: number
+          example: -122.252570
+    HotelSearchResponse:
+      type: object
+      required:
+        - hotel_Id
+        - checkin_date
+        - checkout_date
+        - occupancy
+        - room_types
+        - rate_plans
+        - room_rates
+        - hotel_details
+      properties:
+        hotel_id:
+          type: string
+          example: 12345
+          description: A SimpleNights Hotel ID
+        checkin_date:
+          type: string
+          example: 2020-01-01
+          format: date
+          description: Checkin date
+        checkout_date:
+          type: string
+          example: 2020-01-07
+          format: date
+          description: Checkout date
+        occupancy:
+          $ref: '#/components/schemas/Occupancy'
+        room_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoomType'
+        rate_plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatePlan'
+        room_rates:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoomRate'
+        hotel_details:
+          $ref: '#/components/schemas/HotelDetails'
+        error:
+          $ref: '#/components/schemas/AvailabilityError'
+
+    HotelSearchRequest:
+      type: object
+      required:
+        - hotel_id
+        - checkin_date
+        - checkout_date
+        - occupancy
+      properties:
+        hotel_id:
+          type: integer
+          example: 123
+          description: Simplenight Hotel ID
+        checkin_date:
+          type: string
+          format: date
+          example: 2021-06-01
+          description: The checkin date
+        checkout_date:
+          type: string
+          format: date
+          example: 2020-06-07
+          description: The checkout date
+        occupancy:
+          $ref: '#/components/schemas/Occupancy'
+        language:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: en
+          description: Optional. ISO-formatted 2-character language code for hotel details
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: USD
+          description: Optional.  ISO-format 3-character currency code
+
+    Occupancy:
+      type: object
+      description: The number of adults and children
+      required:
+        - adults
+        - children
+      properties:
+        adults:
+          type: integer
+          example: 2
+          description: The number of adults per room
+        children:
+          type: integer
+          example: 0
+          description: The number of children per room
+
+    Capacity:
+      type: object
+      description: The number of adults and children
+      required:
+        - adults
+        - children
+      properties:
+        adults:
+          type: integer
+          example: 2
+          description: The number of adults per room
+        children:
+          type: integer
+          example: 0
+          description: The number of children per room
+
+    RoomType:
+      type: object
+      description: The types of physical rooms available
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          description: The unique ID for the room type
+          example: H214A
+        name:
+          type: string
+          description: The descriptive name for the room type
+          example: Run of the House
+        description:
+          type: string
+          description: The long description of the room type
+          example: The best available room at the time of checkin
+        basic_amenities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Amenity'
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Photo'
+        capacity:
+          $ref: '#/components/schemas/Capacity'
+        bed_types:
+          $ref: '#/components/schemas/BedTypes'
+        unstructured_policies:
+          type: string
+          description: Textual description of hotel rate policies
+
+
+    Amenity:
+      type: string
+      enum:
+        - free_wifi
+        - free_breakfast
+        - free_parking
+
+    Photo:
+      type: object
+      required:
+        - url
+        - type
+      properties:
+        url:
+          type: string
+          example: 'https://foo.bar/baz.jpg'
+          description: Hotel image URL.  Always in HTTPS.
+        type:
+          type: string
+          example: 'exterior'
+          description: The type of hotel image being returned
+
+    BedTypes:
+      type: object
+      description: The number and type of beds available in the room
+      properties:
+        total_beds:
+          type: integer
+          example: 1
+          description: The total number of beds in the room
+        king_beds:
+          type: integer
+          example: 1
+          description: The total number of king-sized beds in the room
+        queen_beds:
+          type: integer
+          example: 1
+          description: The total number of queen-sized beds in the room
+        double_beds:
+          type: integer
+          example: 1
+          description: The total number of double beds in the room
+        single_or_twin_beds:
+          type: integer
+          example: 1
+          description: The total number of single-sized beds in the room
+        murphy_beds:
+          type: integer
+          example: 1
+          description: The total number of Murphy-style beds in the room
+        sofa_beds:
+          type: integer
+          example: 1
+          description: The total number of convertible sofa beds in the room
+        bunk_beds:
+          type: integer
+          example: 1
+          description: The total number of bunk beds in the room
+        other_beds:
+          type: integer
+          example: 1
+          description: Any other type of beds in the room
+    RatePlan:
+      type: object
+      description: Rate plans corresponding to specific hotel bundles and services
+      required:
+        - code
+        - name
+        - guarantee_type
+        - cancellation_policy
+      properties:
+        code:
+          type: string
+          example: S245GK
+          description: The unique ID for the room rate plan
+        name:
+          type: string
+          example: 5th Night Free
+          description: Textual description of the rate plan
+        description:
+          type: string
+          example: Stay 4 nights and get the 4th night absolutely free
+          description: Long description of the rate plan
+        basic_amenities:
+          $ref: '#/components/schemas/Amenity'
+        cancellation_policy:
+          $ref: '#/components/schemas/CancellationPolicy'
+        unstructured_policies:
+          type: string
+          example: Cancellations after 24 hours incur a 100% charge
+          description: Textual description of hotel policies
+
+    CancellationPolicy:
+      type: object
+      required:
+        - summary
+      properties:
+        summary:
+          $ref: '#/components/schemas/CancellationSummary'
+        cancellation_deadline:
+          type: string
+          format: 'date-time'
+          example: '2020-01-01T12:30:00-0800'
+        unstructed_policy:
+          type: string
+          description: Textual description of the cancellation policy
+
+    CancellationSummary:
+      type: string
+      enum:
+        - UNKNOWN_CANCELLATION_POLICY
+        - FREE_CANCELLATION
+        - NON_REFUNDABLE
+        - PARTIAL_REFUND
+    RoomRate:
+      type: object
+      required:
+        - code
+        - room_type_code
+        - rate_plan_code
+      properties:
+        code:
+          type: string
+          example: R23634J
+          description: The unique identifier for a room rate plan
+        room_type_code:
+          type: string
+          example: S44EJD
+          description: The associated unique identifer for a room type
+        rate_plan_code:
+          type: string
+          example: T23442A
+          description: The associated unique identifier for a rate plan
+        maximum_allowable_occupancy:
+          $ref: '#/components/schemas/Capacity'
+        total_price_at_booking:
+          $ref: '#/components/schemas/Price'
+        total_price_at_checkout:
+          $ref: '#/components/schemas/Price'
+        cancellation_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/CancellationPolicy'
+        unstructured_policies:
+          type: array
+          items:
+            type: string
+            description: Unstructured, textual hotel policies
+        room_count:
+          type: integer
+          description: The number of rooms that can be booked for this room rate
+          example: 3
+
+
+    Price:
+      type: object
+      required:
+        - currency
+        - amount
+      properties:
+        currency:
+          type: string
+          example: USD
+          minLength: 3
+          maxLength: 3
+          description: ISO-format 3-character currency code
+        amount:
+          type: number
+          description: The price
+
+    HotelDetails:
+      type: object
+      required:
+        - name
+        - address
+      properties:
+        name:
+          type: string
+          example: Hotel California
+          description: Name of the hotel
+        address:
+          $ref: '#/components/schemas/Address'
+        geolocation:
+          $ref: '#/components/schemas/GeoLocation'
+        phone_number:
+          type: string
+          example: +1 (555)-867-5309
+          description: Hotel phone number
+        email:
+          type: string
+          example: frontdesk@hotel.com
+          format: email
+          description: The hotel email address
+        homepage_url:
+          type: string
+          example: 'https://www.foobazhotel.com/'
+          description: URL to the website's homepage
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/HotelPolicies'
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Photo'
+
+
+    GeoLocation:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+
+
+    Address:
+      required:
+        - address1
+        - city
+        - province
+        - postal_code
+        - country
+      properties:
+        address1:
+          type: string
+          example: 123 Hotel Way
+          description: The first line of the address.  Required.
+        address2:
+          type: string
+          example: 20th Floor
+          description: The second line of the address.  Optional.
+        address3:
+          type: string
+          example: The Executive Suite
+          description: The third line of the address.  Optional.
+        city:
+          type: string
+          example: San Francisco
+          description: The city of the hotel
+        province:
+          type: string
+          example: California
+          description: The administrative region of the city
+        postal_code:
+          type: string
+          example: 90210
+          description: The postal code of the hotel
+        country:
+          type: string
+          description: ISO-format two-character country code
+          example: US
+
+    HotelPolicies:
+      type: object
+      properties:
+        checkin_time:
+          type: string
+          format: 'date-time'
+          description: The earliest checkin time
+        checkout_time:
+          type: string
+          format: 'date-time'
+          description: The latest checkout time
+        max_child_age:
+          type: integer
+          example: 12
+          description: The maximum age a guest is considered a child
+
+    AvailabilityError:
+      required:
+        - type
+        - message
+      properties:
+        type:
+          $ref: '#/components/schemas/AvailabilityErrorType'
+        message:
+          type: string
+          example: Error while searching hotel supplier foo
+          description: Unstructed, detailed error message
+
+    AvailabilityErrorType:
+      type: object
+      enum:
+        - UNKNOWN_ERROR
+        - API_VERSION_UNSUPPORTED
+        - DATE_SELECTION_INVALID
+        - HOTEL_NOT_FOUND
+        - NETWORK_ERROR
+        - RECOVERABLE_ERROR
+        - REQUEST_DATA_INVALID
+        - REQUEST_INCOMPLETE
+        - REQUEST_NOT_PARSABLE
+        - SUPPLIER_ERROR
+
+    CardType:
+      type: object
+      description: |
+        Card network of the payment card
+        AX = American Express
+        DC = Diner's Club
+        DS = Discovery
+        JC = JCB
+        MC = Mastercard
+        VI = Visa
+      enum:
+        - AX
+        - DC
+        - DS
+        - JC
+        - MC
+        - VI
+
+    BookingRequest:
+      required:
+        - api_version
+        - transaction_id
+        - hotel_id
+        - checkin
+        - checkout
+        - language
+        - customer
+        - traveler
+        - room_rate
+        - payment
+      properties:
+        api_version:
+          type: integer
+          example: 1
+          description: The API version of this booking request message
+        transaction_id:
+          type: string
+          example:
+            3ef11392-a96a-423f-8bc6-4207d957a545
+          description: Unique ID for this booking transaction
+        tracking:
+          $ref: '#/components/schemas/Tracking'
+        hotel_id:
+          type: string
+          example: AHY14Z
+          description: The SimpleNight Hotel ID of the property being booked
+        checkin:
+          type: string
+          format: date
+          description: The start date of the hotel booking
+        checkout:
+          type: string
+          format: date
+          description: The end date of the hotel booking
+        ip_address:
+          type: string
+          example: 1.2.3.4
+          description: The end user IP address, for tracking purposes.  Optional.
+        language:
+          type: string
+          example: en_US
+          description: The language of the request, for hotel details and property descriptions
+        customer:
+          $ref: '#/components/schemas/Customer'
+        traveler:
+          $ref: '#/components/schemas/Traveler'
+        room_rate:
+          $ref: '#/components/schemas/RoomRate'
+        payment:
+          $ref: '#/components/schemas/Payment'
+
+    Tracking:
+      description: Campaign tracking information
+      properties:
+        campaign_id:
+          type: string
+          description: Marketing campaign ID
+          example: CAMPAIGN_ONE
+        pos_url:
+          type: string
+          description: Point of Sale deeplink URL
+
+    Customer:
+      description: The lead traveler, and booking owner
+      required:
+        - first_name
+        - last_name
+        - phone_number
+        - email
+        - country
+      properties:
+        first_name:
+          type: string
+          description: Booking owner given name
+          example: John
+        last_name:
+          type: string
+          description: Booking owner family name
+          example: Smith
+        phone_number:
+          type: string
+          description: Booking owner primary phone contact
+          example: +1 (555) 867-5309
+        email:
+          type: string
+          description: Booking owner primary email address
+          example: johnsmith@gmail.com
+        country:
+          type: string
+          description: Two character ISO country code of the lead traveler
+
+    Traveler:
+      description: The lead traveler of the booking
+      required:
+        - first_name
+        - last_name
+        - occupancy
+      properties:
+        first_name:
+          type: string
+          example: John
+          description: Lead traveler given name
+        last_name:
+          type: string
+          example: Smith
+          description: Lead traveler last name
+        occupancy:
+          $ref: '#/components/schemas/Occupancy'
+
+    Payment:
+      description: Payment information for the booking
+      required:
+        - payment_card_parameters
+        - billing_address
+      properties:
+        payment_card_parameters:
+          $ref: '#/components/schemas/PaymentCardParameters'
+        billing_address:
+          $ref: '#/components/schemas/Address'
+
+    PaymentCardParameters:
+      description: The payment card used for this booking
+      required:
+        - card_type
+        - card_number
+        - cardholder_name
+        - expiration_month
+        - expiration_year
+        - cvv
+      properties:
+        card_type:
+          $ref: '#/components/schemas/CardType'
+        card_number:
+          type: string
+          example: 41111111111111111
+          description: Payment card number
+        cardholder_name:
+          type: string
+          example: John Q. Smith
+          description: The name of the payment card holder
+        expiration_month:
+          type: string
+          example: 06
+          description: Two letter month of the card expiration date
+        expiration_date:
+          type: string
+          example: 2025
+          description: Four letter year of the card expiration date
+        cvv:
+          type: string
+          example: 123
+          description: The payment card verification code
+
+    BookingResponse:
+      type: object
+      description: The booking response for a successful booking
+      required:
+        - api_version
+        - transaction_id
+        - status
+        - reservation
+      properties:
+        api_version:
+          type: integer
+          example: 2
+          description: The API version of the booking response
+        transaction_id:
+          type: string
+          example: 3ef11392-a96a-423f-8bc6-4207d957a545
+          description: Echoed transaction_id response
+        status:
+          $ref: '#/components/schemas/Status'
+        reservation:
+          $ref: '#/components/schemas/Reservation'
+
+    Status:
+      description: Success/Failure indicator for a booking
+      type: object
+      enum:
+        - SUCCESS
+        - FAILURE
+
+    Reservation:
+      type: object
+      description: Confirmation record of the booked itinerary
+      required:
+        - record_locator
+        - hotel_locators
+        - hotel_id
+        - checkin
+        - checkout
+        - customer
+        - traveler
+        - room_rate
+      properties:
+        locator:
+          $ref: '#/components/schemas/Locator'
+        hotel_locators:
+          $ref: '#/components/schemas/Locator'
+        hotel_id:
+          type: string
+          example: A24214
+          description: Echoed Hotel ID of the booked property
+        checkin:
+          type: string
+          format: date
+          description: Echoed checkin date
+        checkout:
+          type: string
+          format: date
+          description: Echoed checkout date
+        customer:
+          $ref: '#/components/schemas/Customer'
+        traveler:
+          $ref: '#/components/schemas/Traveler'
+        room_rate:
+          $ref: '#/components/schemas/RoomRate'
+
+    Locator:
+      type: object
+      description: The record locator
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          example: A398415
+          description: booking reference
+        pin:
+          type: string
+          example: 174225
+          description: PIN code used to access the reservation
+

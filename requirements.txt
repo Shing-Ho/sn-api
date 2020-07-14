@@ -8,3 +8,6 @@ lxml==4.5.1
 google-cloud-secret-manager==1.0.0
 grpcio==1.27.2
 uszipcode==0.2.4
+marshmallow-dataclass[enum,union]
+django-cors-headers
+djangorestframework-api-key
