@@ -32,3 +32,5 @@ class Hotels(models.Model):
     name = models.CharField(max_length=30)
     city = models.CharField(max_length=30)
     stars = models.IntegerField(default=1)
+
+

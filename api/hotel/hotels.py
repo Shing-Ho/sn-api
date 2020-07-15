@@ -39,6 +39,7 @@ class BaseHotelSearch(BaseSchema):
     currency: Optional[str] = "USD"
     checkin_time: Optional[Union[str, datetime]] = None
     checkout_time: Optional[Union[str, datetime]] = None
+    crs: str = "stub"
 
 
 @dataclasses.dataclass
@@ -63,6 +64,7 @@ class HotelDetailsSearchRequest(BaseSchema):
     num_rooms: int = 1
     currency: str = "USD"
     language: str = "en_US"
+    crs: str = "stub"
 
 
 @dataclasses.dataclass
@@ -268,7 +270,7 @@ class HotelSearchResponseHotel(BaseSchema):
     end_date: date
     occupancy: RoomOccupancy
     room_types: List[RoomType]
-    hotel_details: HotelDetails
+    hotel_details: HotelDetails = field(metadata=dict(allow_none=True))
     error: Optional[ErrorResponse] = None
 
 
@@ -332,6 +334,7 @@ class HotelBookingRequest(BaseSchema):
     payment: Optional[Payment] = None
     tracking: Optional[str] = None
     ip_address: Optional[str] = None
+    crs: str = "stub"
 
     Schema: ClassVar[Type[Schema]] = Schema
 

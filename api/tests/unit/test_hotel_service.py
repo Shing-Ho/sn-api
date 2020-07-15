@@ -2,7 +2,7 @@ import unittest
 from datetime import date
 
 from api.hotel.adapters.hotel_service import HotelService
-from api.hotel.hotels import HotelSpecificSearch, RoomOccupancy
+from api.hotel.hotels import HotelSpecificSearch, RoomOccupancy, HotelLocationSearch
 
 
 class TestHotelService(unittest.TestCase):
@@ -16,4 +16,16 @@ class TestHotelService(unittest.TestCase):
 
         hotel_service = HotelService(adapters="stub")
         hotel = hotel_service.search_by_id(search_request)
+        print(hotel)
+
+    def test_search_by_location(self):
+        search_request = HotelLocationSearch(
+            location_name="SFO",
+            start_date=date(2020, 1, 20),
+            end_date=date(2020, 1, 27),
+            occupancy=RoomOccupancy(2, 1),
+        )
+
+        hotel_service = HotelService(adapters="stub")
+        hotel = hotel_service.search_by_location(search_request)
         print(hotel)

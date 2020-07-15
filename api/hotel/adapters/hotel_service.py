@@ -1,6 +1,8 @@
 from concurrent.futures.thread import ThreadPoolExecutor
 from typing import List
 
+from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
+from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.adapters.travelport.transport import TravelportTransport
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
@@ -10,11 +12,15 @@ from api.hotel.hotels import (
     HotelSpecificSearch,
     HotelSearchResponseHotel,
     HotelLocationSearch,
-    HotelAdapterHotel,
-    HotelDetailsSearchRequest, HotelBookingRequest,
+    HotelDetailsSearchRequest,
+    HotelBookingRequest,
 )
 
-HOTEL_ADAPTERS = {"stub": StubHotelAdapter(), "travelport": TravelportHotelAdapter(TravelportTransport())}
+HOTEL_ADAPTERS = {
+    "stub": StubHotelAdapter(),
+    "travelport": TravelportHotelAdapter(TravelportTransport()),
+    "hotelbeds": HotelBeds(HotelBedsTransport()),
+}
 
 
 class HotelService(HotelAdapter):
@@ -27,11 +33,10 @@ class HotelService(HotelAdapter):
         futures = []
         all_hotels = []
 
-        # TODO: Re-add support for multiple adapters
-        adapters = {self.adapters}
+        adapters = self._get_adapters(search_request.crs)
         with ThreadPoolExecutor(max_workers=self.MAX_WORKERS) as executor:
             for adapter in adapters:
-                futures.append(executor.submit(HOTEL_ADAPTERS[adapter].search_by_location, search_request))
+                futures.append(executor.submit(adapter.search_by_location, search_request))
 
             for future in futures:
                 all_hotels.extend(future.result())
@@ -39,16 +44,24 @@ class HotelService(HotelAdapter):
         return all_hotels
 
     def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponseHotel:
-        return self.get_adapter().search_by_id(search_request)
+        adapter = self._get_adapters(search_request.crs)[0]
+        return adapter.search_by_id(search_request)
 
     def details(self, hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:
-        return self.get_adapter().details(hotel_details_req)
+        adapter = self._get_adapters(hotel_details_req.crs)[0]
+        return adapter.details(hotel_details_req)
 
     def booking_availability(self, search_request: HotelSpecificSearch):
-        return self.get_adapter().booking_availability(search_request)
+        adapter = self._get_adapters(search_request.crs)[0]
+        return adapter.booking_availability(search_request)
 
     def booking(self, book_request: HotelBookingRequest):
-        return self.get_adapter().booking(book_request)
+        adapter = self._get_adapters(book_request.crs)[0]
+        return adapter.booking(book_request)
 
-    def get_adapter(self):
-        return HOTEL_ADAPTERS.get(self.adapters)
+    @staticmethod
+    def _get_adapters(crs_name):
+        if crs_name is None:
+            return [HOTEL_ADAPTERS.get("stub")]
+        else:
+            return [HOTEL_ADAPTERS.get(x) for x in crs_name.split(",")]

@@ -36,7 +36,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
     hotel_adapter = TravelportHotelAdapter()
     hotel_service = HotelService("stub")
 
-    @action(detail=False, methods=["GET", "POST"], name="Search Hotels")
+    @action(detail=False, url_path="search-by-location", methods=["GET", "POST"], name="Search Hotels")
     def search_by_location(self, request: Request):
         if request.data:
             request = HotelLocationSearch.Schema().load(request.data)
@@ -46,6 +46,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
             checkout = request.GET.get("checkout")
             num_adults = request.GET.get("num_adults")
             num_children = request.GET.get("num_adults")
+            crs = request.GET.get("crs")
 
             request = HotelLocationSearch(
                 location_name=location,
@@ -53,6 +54,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
                 end_date=date.fromisoformat(checkout),
                 occupancy=RoomOccupancy(adults=num_adults, children=num_children),
                 daily_rates=False,
+                crs=crs
             )
 
         hotels = self.hotel_service.search_by_location(request)
@@ -69,6 +71,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
             checkout = request.GET.get("checkout")
             num_adults = request.GET.get("num_adults")
             num_children = request.GET.get("num_adults")
+            crs = request.GET.get("crs")
 
             request = HotelSpecificSearch(
                 hotel_id=hotel_code,
@@ -76,6 +79,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
                 end_date=date.fromisoformat(checkout),
                 occupancy=RoomOccupancy(adults=num_adults, children=num_children),
                 daily_rates=False,
+                crs=crs
             )
 
         response = self.hotel_service.search_by_id(request)

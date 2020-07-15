@@ -65,8 +65,8 @@ class HotelBedsPromotionsRS(BaseSchema):
 @marshmallow_dataclass.dataclass
 class HotelBedsTaxRS(BaseSchema):
     included: bool
-    amount: str
-    currency: str
+    amount: Optional[str]
+    currency: Optional[str]
     type: Optional[HotelBedsTaxType]
 
 

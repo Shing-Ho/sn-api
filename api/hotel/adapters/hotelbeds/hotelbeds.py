@@ -164,7 +164,7 @@ class HotelBeds(HotelAdapter):
         total_base_rate = Money(float(rate.net), currency)
         total_taxes = 0
         if rate.taxes:
-            total_taxes = sum(float(x.amount) for x in rate.taxes.taxes)
+            total_taxes = sum(float(x.amount) for x in rate.taxes.taxes if x.amount is not None)
 
         total_tax_rate = Money(total_taxes, currency)
         total_rate = Money(total_base_rate.amount + total_tax_rate.amount, currency)

@@ -1,3 +1,4 @@
+import decimal
 import random
 import uuid
 from datetime import datetime, timedelta
@@ -154,11 +155,11 @@ class StubHotelAdapter(HotelAdapter):
 
             description = f"{room_type.name} {rate_plan.name}"
             room_nights = (search_request.end_date - search_request.start_date).days
-            total_rate = round(random.random() * 1200, 2)
-            total_tax_rate = round(total_rate / 10, 2)
-            total_base_rate = total_rate - total_tax_rate
-            base_rate = round(total_rate / room_nights, 2)
-            tax_rate = round(total_tax_rate / room_nights, 2)
+            total_rate = decimal.Decimal(round(random.random() * 1200, 2))
+            total_tax_rate = decimal.Decimal(round(total_rate / 10, 2))
+            total_base_rate = decimal.Decimal(total_rate - total_tax_rate)
+            base_rate = decimal.Decimal(round(total_rate / room_nights, 2))
+            tax_rate = decimal.Decimal(round(total_tax_rate / room_nights, 2))
 
             daily_rates = []
             for night in range(room_nights):
