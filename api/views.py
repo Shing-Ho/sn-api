@@ -59,7 +59,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
 
         return Response(HotelSearchResponseHotel.Schema(many=True).dump(hotels))
 
-    @action(detail=False, methods=["GET", "POST"], name="Search Hotels")
+    @action(detail=False, url_path="search-by-id", methods=["GET", "POST"], name="Search Hotels")
     def search_by_id(self, request):
         if request.data:
             request = HotelSpecificSearch.Schema().load(request.data)
@@ -82,7 +82,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
 
         return Response(HotelSearchResponseHotel.Schema().dump(response))
 
-    @action(detail=False, methods=["POST"], name="Hotel Booking")
+    @action(detail=False, url_path="booking", methods=["POST"], name="Hotel Booking")
     def booking(self, request):
         booking_request = HotelBookingRequest.Schema().load(request.data)
         booking_response = self.hotel_service.booking(booking_request)
