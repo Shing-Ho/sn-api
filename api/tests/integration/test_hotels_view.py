@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List
 
-from api.hotel.hotels import HotelSpecificSearch, RoomOccupancy, HotelSearchResponseHotel, HotelLocationSearch
+from api.hotel.hotels import HotelSpecificSearch, RoomOccupancy, HotelSearchResponseHotel, HotelLocationSearch, to_json
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 
 SEARCH_BY_ID = "/api/v1/hotels/search-by-id/"
@@ -14,10 +14,7 @@ class TestHotelsView(SimplenightAPITestCase):
         checkout = datetime.now().date() + timedelta(days=35)
 
         search = HotelSpecificSearch(start_date=checkin, end_date=checkout, occupancy=RoomOccupancy(adults=1))
-        request_data = HotelSpecificSearch.Schema().dump(search)
-
-        response = self.client.post(path=SEARCH_BY_ID, data=request_data, format="json")
-
+        response = self._post(SEARCH_BY_ID, search)
         self.assertEqual(200, response.status_code)
 
         hotel: HotelSearchResponseHotel = HotelSearchResponseHotel.Schema().load(response.json())
@@ -31,10 +28,7 @@ class TestHotelsView(SimplenightAPITestCase):
             start_date=checkin, end_date=checkout, occupancy=RoomOccupancy(adults=1), location_name="SFO"
         )
 
-        request_data = HotelLocationSearch.Schema().dump(search)
-
-        response = self.client.post(path=SEARCH_BY_LOCATION, data=request_data, format="json")
-
+        response = self._post(SEARCH_BY_LOCATION, search)
         self.assertEqual(200, response.status_code)
 
         hotels: List[HotelSearchResponseHotel] = HotelSearchResponseHotel.Schema(many=True).load(response.json())
@@ -52,10 +46,7 @@ class TestHotelsView(SimplenightAPITestCase):
             crs="hotelbeds,stub",
         )
 
-        request_data = HotelLocationSearch.Schema().dump(search)
-
-        response = self.client.post(path=SEARCH_BY_LOCATION, data=request_data, format="json")
-
+        response = self._post(SEARCH_BY_LOCATION, search)
         self.assertEqual(200, response.status_code)
 
         hotels: List[HotelSearchResponseHotel] = HotelSearchResponseHotel.Schema(many=True).load(response.json())
@@ -63,3 +54,6 @@ class TestHotelsView(SimplenightAPITestCase):
         self.assertIsNotNone(hotels[0].hotel_id)
 
         print(hotels)
+
+    def _post(self, endpoint, data):
+        return self.client.post(path=endpoint, data=to_json(data), format="json")

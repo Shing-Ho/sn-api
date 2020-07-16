@@ -5,16 +5,23 @@ from enum import Enum
 from typing import List, Optional, ClassVar, Type, Union
 
 import marshmallow_dataclass
-from marshmallow import Schema, EXCLUDE
+from marshmallow import Schema, EXCLUDE, post_dump
 
 
 def to_json(obj):
     return obj.Schema().dump(obj)
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class BaseSchema(Schema):
+class RemoveNone:
+    @post_dump
+    def remove_nones(self, data, **kwargs):
+        none_keys = [key for key, value in data.items() if value is None]
+        for key in none_keys:
+            data.pop(key)
+        return data
+
+
+class BaseSchema:
     class Meta:
         ordered = True
         unknown = EXCLUDE
@@ -30,7 +37,7 @@ class RoomOccupancy(BaseSchema):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class BaseHotelSearch(BaseSchema):
+class BaseHotelSearch(BaseSchema, RemoveNone):
     start_date: date
     end_date: date
     occupancy: Optional[RoomOccupancy]
@@ -65,7 +72,6 @@ class HotelDetailsSearchRequest(BaseSchema):
     currency: str = "USD"
     language: str = "en_US"
     crs: str = "stub"
-
 
 
 @dataclasses.dataclass

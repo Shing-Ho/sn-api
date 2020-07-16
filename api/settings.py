@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "api",
-    'django_extensions',
+    "django_extensions",
     "api.auth",
     # Third-party
     "rest_framework",
@@ -81,9 +81,7 @@ WSGI_APPLICATION = "api.wsgi.application"
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer",],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser",],
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
-    ],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny",],
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.TokenAuthentication",],
 }
 # Database
@@ -95,6 +93,7 @@ REST_FRAMEWORK = {
 
 
 DATABASES = {
+    "test": {"ENGINE": "django.db.backends.sqlite3", "NAME": os.path.join(BASE_DIR, "db.sqlite3")},
     "appengine": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": os.getenv("DB_NAME"),
