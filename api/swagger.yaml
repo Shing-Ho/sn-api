@@ -330,8 +330,8 @@ components:
         - occupancy
       properties:
         hotel_id:
-          type: integer
-          example: 123
+          type: string
+          example: SJGH25
           description: Simplenight Hotel ID
         start_date:
           type: string
