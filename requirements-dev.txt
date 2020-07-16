@@ -2,3 +2,6 @@
 pre-commit
 pytest
 freezegun
+tox
+black
+flake8

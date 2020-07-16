@@ -12,3 +12,4 @@ whitelist_externals = pytest
 
 [testenv:py37]
 commands = pytest -p no:cacheprovider -p no:warnings -m 'not (integration)' --cov=src/ tests/
+"""
