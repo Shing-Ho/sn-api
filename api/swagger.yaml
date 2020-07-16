@@ -296,12 +296,10 @@ components:
           description: A SimpleNights Hotel ID
         start_date:
           type: string
-          example: 2020-01-01
           format: date
           description: Checkin date
         end_date:
           type: string
-          example: 2020-01-07
           format: date
           description: Checkout date
         occupancy:
@@ -338,12 +336,10 @@ components:
         start_date:
           type: string
           format: date
-          example: 2021-06-01
           description: The checkin date
         end_date:
           type: string
           format: date
-          example: 2020-06-07
           description: The checkout date
         occupancy:
           $ref: '#/components/schemas/Occupancy'
@@ -375,12 +371,10 @@ components:
         start_date:
           type: string
           format: date
-          example: 2021-06-01
           description: The checkin date
         end_date:
           type: string
           format: date
-          example: 2020-06-07
           description: The checkout date
         occupancy:
           $ref: '#/components/schemas/Occupancy'
@@ -567,7 +561,6 @@ components:
         cancellation_deadline:
           type: string
           format: 'date-time'
-          example: '2020-01-01T12:30:00-0800'
         unstructed_policy:
           type: string
           description: Textual description of the cancellation policy
