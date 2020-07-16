@@ -59,7 +59,7 @@ class paymentsViewSet(viewsets.ModelViewSet):
         amt = self.request.GET.get("amount")
         currency = self.request.GET.get("currency")
         pmt_source_token = self.request.GET.get("pmt_source_token")
-        if amt and if current and if pmt_source_token:
+        if amt and current and pmt_source_token:
             return stripe.Charge.create(amount=amt, currency="USD", source=pmt_source_token, description=booking_id)
         else:
             return Response(serializer.errors,
