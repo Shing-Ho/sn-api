@@ -67,6 +67,7 @@ class HotelDetailsSearchRequest(BaseSchema):
     crs: str = "stub"
 
 
+
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class Address(BaseSchema):

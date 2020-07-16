@@ -24,9 +24,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = "sh%sqjnk#g0_3n@(uo%&023&s6@-@-fxc277y(7+ytn)kuurq^"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["simplenight-api-278418.ue.r.appspot.com", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["*", "simplenight-api-278418.ue.r.appspot.com", "127.0.0.1", "localhost"]
 
 # Application definition
 
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "api",
+    'django_extensions',
     "api.auth",
     # Third-party
     "rest_framework",
@@ -64,6 +65,7 @@ TEMPLATES = [
         "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
+            ""
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
@@ -79,6 +81,9 @@ WSGI_APPLICATION = "api.wsgi.application"
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer",],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser",],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.TokenAuthentication",],
 }
 # Database
@@ -90,7 +95,6 @@ REST_FRAMEWORK = {
 
 
 DATABASES = {
-    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": os.path.join(BASE_DIR, "db.sqlite3")},
     "appengine": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": os.getenv("DB_NAME"),
@@ -98,12 +102,12 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
     },
-    "heroku": {
+    "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "dagbjrr2fhns0i",
-        "USER": "ckojhjnocvghmq",
-        "PASSWORD": "3e47baa681880344d35e3884e7d9691126a5b20f7a5a3e1b33129b8c93fb6804",
-        "HOST": "ec2-54-243-128-95.compute-1.amazonaws.com",
+        "NAME": "d6s8eu0bcmf3s3",
+        "USER": "cvgmhjuvbklqrn",
+        "PASSWORD": "388c4c55c04646648e187d93a554899a69710f97cf8bfe0a3c8dc1a7909af4e5",
+        "HOST": "ec2-34-233-226-84.compute-1.amazonaws.com",
         "PORT": "5432",
     },
     "local": {

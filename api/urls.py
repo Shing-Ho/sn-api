@@ -17,17 +17,18 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 
-from api import views
-from .views import LocationsViewSet, HotelSupplierViewset, AuthenticationView
+from .views import AuthenticationView
+from .views import LocationsViewSet, HotelSupplierViewset, location_formater, HotelBedsMap
 
 router = routers.SimpleRouter()
 
 router.register(r"Locations", LocationsViewSet)
 router.register(r"hotels", HotelSupplierViewset, basename="hotels")
 router.register(r"authentication", AuthenticationView, basename="authentication")
+router.register(r"hotelbeds", HotelBedsMap, basename="hotelbeds")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", views.index, name="index"),
+    path("iata/", location_formater, name="location_formater"),
     path("api/v1/", include(router.urls)),
 ]

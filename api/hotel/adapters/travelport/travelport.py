@@ -21,6 +21,12 @@ from api.hotel.hotels import (
     HotelBookingRequest,
 )
 
+secrets = {
+    "url": "https://americas.universal-api.travelport.com/B2BGateway/connect/uAPI/HotelService",
+    "username": "Universal API/uAPI9027118295-d926ccdb",
+    "password": "qP?34fQ%mC",
+}
+
 
 class TravelportHotelAdapter(HotelAdapter):
     def __init__(self, transport: TravelportTransport = None):
