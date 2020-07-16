@@ -48,7 +48,7 @@ class OrganizationApiThrottle(SimpleRateThrottle):
         if settings.DEBUG:
             return True
 
-        key = self.parser.get_from_authorization(request)
+        key = self.parser.get(request)
         self.api_key = OrganizationAPIKey.objects.get_from_key(key)
         self.rate = self.api_key.organization.api_daily_limit
 

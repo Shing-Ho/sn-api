@@ -1,12 +1,13 @@
 import uuid
 
+from django.test import Client
 from rest_framework.test import APITestCase
 
 
 class SimplenightAPITestCase(APITestCase):
-    def setupCredentials(self):
+    def setUp(self) -> None:
         api_key = self.create_api_key(organization_name=str(uuid.uuid4()))
-        self.client.credentials(HTTP_AUTHORIZATION='Api-Key ' + api_key)
+        self.client = Client(HTTP_X_API_KEY=api_key)
 
     @staticmethod
     def create_api_key(organization_name="anonymous"):

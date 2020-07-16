@@ -9,9 +9,6 @@ SEARCH_BY_LOCATION = "/api/v1/hotels/search-by-location/"
 
 
 class TestHotelsView(SimplenightAPITestCase):
-    def setUp(self):
-        self.setupCredentials()
-
     def test_search_by_id(self):
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)

@@ -1,3 +1,5 @@
+from django.test import Client
+
 from api.models.models import Geoname, GeonameAlternateName
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 
@@ -6,6 +8,7 @@ LOCATION_ENDPOINT = "/api/v1/Locations/"
 
 class TestLocationsView(SimplenightAPITestCase):
     def setUp(self) -> None:
+        super().setUp()
         geoname_one = self._create_geoname_model(1, "Test One", "US")
         geoname_two = self._create_geoname_model(2, "Test Two", "CA")
 
@@ -15,17 +18,16 @@ class TestLocationsView(SimplenightAPITestCase):
         self._create_altname_model(4, geoname_two, "es", "Prueba Two")
 
     def test_authentication_required(self):
-        response = self.client.get(LOCATION_ENDPOINT)
+        client_without_credentials = Client()
+        response = client_without_credentials.get(LOCATION_ENDPOINT)
         self.assertEqual(401, response.status_code)
 
-        self.setupCredentials()
         response = self.client.get(LOCATION_ENDPOINT)
 
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, len(response.json()))
 
     def test_locations_returned(self):
-        self.setupCredentials()
         response = self.client.get(LOCATION_ENDPOINT)
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, len(response.json()))
@@ -33,8 +35,6 @@ class TestLocationsView(SimplenightAPITestCase):
         self.assertEqual("Test Two", response.json()[1]["primary_name"])
 
     def test_country_filtering(self):
-        self.setupCredentials()
-
         # All Countries
         response = self.client.get(LOCATION_ENDPOINT)
         self.assertEqual(2, len(response.json()))

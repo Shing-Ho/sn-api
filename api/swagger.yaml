@@ -21,7 +21,7 @@ tags:
     description: Hotel availabilty, hotel details, and hotel booking endpoints
 
 security:
-  - bearerAuth: []
+  - ApiKeyAuth: []
 
 paths:
   /hotels/booking-availability:
@@ -74,7 +74,7 @@ paths:
         '500':
           description: Internal error while completing a booking
 
-  /hotels/search-by-id:
+  /hotels/search-by-id/:
     post:
       tags:
         - Hotel
@@ -98,7 +98,7 @@ paths:
         '404':
           description: No locations found for input
 
-  /hotels/search-by-location:
+  /hotels/search-by-location/:
     post:
       tags:
         - Hotel
@@ -211,10 +211,10 @@ paths:
           description: No airports found for input
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: Token <token>
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
   schemas:
     Airport:
       properties:
@@ -281,7 +281,7 @@ components:
     HotelSearchResponse:
       type: object
       required:
-        - hotel_Id
+        - hotel_code
         - start_date
         - end_date
         - occupancy
@@ -290,7 +290,7 @@ components:
         - room_rates
         - hotel_details
       properties:
-        hotel_id:
+        hotel_code:
           type: string
           example: 12345
           description: A SimpleNights Hotel ID
