@@ -1,7 +1,13 @@
 from rest_framework import serializers
 
 from .hotel.hotels import HotelAdapterHotel, Address, HotelRate
-from .models.models import Geoname, supplier_hotels
+from .models.models import Geoname, supplier_hotels, pmt_transaction
+
+
+class paymentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = pmt_transaction
+        fields = "__all__"
 
 
 class mappingcodesSerializer(serializers.ModelSerializer):

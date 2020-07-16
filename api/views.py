@@ -1,6 +1,6 @@
 import json
 from datetime import date
-
+import stripe
 from django.db.models import Prefetch
 from django.http import HttpResponse
 from rest_framework import viewsets
@@ -11,7 +11,7 @@ from uszipcode import SearchEngine
 
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from api.models.models import Geoname, GeonameAlternateName
-from api.models.models import supplier_hotels
+from api.models.models import supplier_hotels, pmt_transaction
 from . import api_access
 from .api_access import ApiAccessRequest, ApiAccessResponse
 from .auth.models import HasOrganizationAPIKey, OrganizationApiThrottle
@@ -27,7 +27,10 @@ from .hotel.hotels import (
 from .serializers import (
     LocationsSerializer,
 )
-from .serializers import mappingcodesSerializer
+from .serializers import mappingcodesSerializer, paymentsSerializer
+
+stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
+
 
 data = open("airports.json", encoding="utf-8").read()
 location_dictionary = json.loads(data)
@@ -44,6 +47,23 @@ def location_formater(request):
     if city:
         city_name = search.by_city(city=city, sort_by="population", returns=10)[0].major_city
         return HttpResponse(json.dumps({city_name: location_dictionary[city_name]["iata"]}))
+
+
+class paymentsViewSet(viewsets.ModelViewSet):
+
+    queryset = pmt_transaction.objects.all()
+    serializer_class = paymentsSerializer
+
+    @action(detail=True, methods=['post'])
+    def create_charge(self, request):
+        amt = self.request.GET.get("amount")
+        currency = self.request.GET.get("currency")
+        pmt_source_token = self.request.GET.get("pmt_source_token")
+        if amt and if current and if pmt_source_token:
+            return stripe.Charge.create(amount=amt, currency="USD", source=pmt_source_token, description=booking_id)
+        else:
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class HotelBedsMap(viewsets.ModelViewSet):
