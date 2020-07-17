@@ -54,16 +54,29 @@ class paymentsViewSet(viewsets.ModelViewSet):
     queryset = pmt_transaction.objects.all()
     serializer_class = paymentsSerializer
 
-    @action(detail=True, methods=['post'])
-    def create_charge(self, request):
-        amt = self.request.GET.get("amount")
-        currency = self.request.GET.get("currency")
-        pmt_source_token = self.request.GET.get("pmt_source_token")
-        if amt and currency and pmt_source_token:
-            return stripe.Charge.create(amount=amt, currency="USD", source=pmt_source_token, description=booking_id)
-        else:
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        queryset = self.queryset
+
+        return queryset
+
+    # @action(detail=True, methods=['post', "get"])
+    # def create_charge(self, request):
+    #     amt = self.request.GET.get("amount")
+    #     currency = self.request.GET.get("currency")
+    #     pmt_source_token = self.request.GET.get("pmt_source_token")
+    #     # refund = self.request.GET.get("refund")
+    #     if amt and currency and pmt_source_token:
+    #         return stripe.Charge.create(amount=amt, currency="USD", source="visa_tok", description="booking_id")
+    #     else:
+    #         return Response(serializer.errors,
+    #                         status=status.HTTP_400_BAD_REQUEST)
+
+    # def post(self, request):
+    #     serializer = paymentsSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class HotelBedsMap(viewsets.ModelViewSet):

@@ -3,6 +3,10 @@ from django.contrib.auth.models import User
 
 from django.db import models
 
+import stripe
+
+
+stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
 
 USD = 'US Dollars'
 FRA = 'French Francs'
@@ -76,13 +80,6 @@ class supplier_hotels(models.Model):
     provider_name = models.CharField(max_length=50, default="HotelBeds")
 
 
-# 'ICEID (don't change)', 'Property Name', 'Country', 'State', 'City',
-#     'Address', 'Address2', 'Address3', 'ZipCode', 'Published', 'DID',
-#     'MType Id', 'Chain Code', 'Mapped ID'],
-
-# class ice_hotels(models.Model):
-
-
 class sn_hotel_map(models.Model):
     class Meta:
         app_label = "api"
@@ -102,34 +99,44 @@ class sn_city_map(models.Model):
 class sn_images_map(models.Model):
     class Meta:
         app_label = "api"
-    #simplenight_id = models.ForeignKey((supplier_hotels,))
+    # simplenight_id = models.ForeignKey((supplier_hotels,))
     # on_delete.CASCADE: when object is deleted, delete all references to the object
     simplenight_id = models.CharField(max_length=100, blank=True, null=True)
     image_type = models.TextField(null=True, blank=True)
     image_url_path = models.TextField(null=True, blank=True)
     image_provider_id = models.CharField(max_length=100)
 
+
 class pmt_transaction(models.Model):
     class Meta:
         app_label = "api"
 
-
-
     paid_choices = [
-        ['refunded','refunded'],
-        ['cancelled','cancelled'],
-        ['paid','paid']
+        ['refunded', 'refunded'],
+        ['cancelled', 'cancelled'],
+        ['paid', 'paid']
     ]
     sn_transaction_id = models.IntegerField(null=True)
-    #token returned back from stripe
+    # token returned back from stripe
     stripe_id = models.CharField(max_length=50)
-    transaction_status = models.CharField(choices=paid_choices,max_length=50)
+    transaction_status = models.CharField(choices=paid_choices, max_length=50)
     transaction_amount = models.FloatField()
     currency = models.CharField(max_length=3)
     transaction_time = models.DateTimeField(auto_now_add=True)
-    parent = models.OneToOneField('self',null=True,on_delete=models.SET_NULL,related_name="main_transaction")
+    parent = models.OneToOneField('self', blank=True, null=True,
+                                  on_delete=models.SET_NULL, related_name="main_transaction")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    def charge(self):
+        # try:
+
+        charge = stripe.Charge.create(amount=int(self.transaction_amount) * 100, currency=self.currency,
+                                      source="tok_visa", description="booking_id")
+        print(charge)
+
+        return charge
+        # except:
+        #     return "hello world"
 
     def refund(self):
         if self.main_transaction:

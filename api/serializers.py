@@ -5,8 +5,11 @@ from .models.models import Geoname, supplier_hotels, pmt_transaction
 
 
 class paymentsSerializer(serializers.ModelSerializer):
+    charge = serializers.CharField(max_length=900)
+
     class Meta:
         model = pmt_transaction
+
         fields = "__all__"
 
 
