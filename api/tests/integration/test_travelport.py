@@ -3,7 +3,7 @@ from datetime import datetime
 from datetime import timedelta
 
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
-from api.hotel.hotels import HotelLocationSearch, HotelDetailsSearchRequest
+from api.hotel.hotel_model import HotelLocationSearch, HotelDetailsSearchRequest
 
 
 class TestTravelport(unittest.TestCase):

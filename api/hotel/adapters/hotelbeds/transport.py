@@ -4,7 +4,7 @@ from typing import Dict
 
 import requests
 
-from api.hotel.hotels import BaseSchema, to_json
+from api.common.models import BaseSchema, to_json
 
 
 class HotelBedsTransport:
@@ -52,6 +52,10 @@ class HotelBedsTransport:
     @classmethod
     def get_booking_url(cls):
         return f"{cls._get_base_booking_api_url()}/bookings"
+
+    @classmethod
+    def get_checkrates_url(cls):
+        return f"{cls._get_base_booking_api_url()}/checkrates"
 
     @classmethod
     def get_hotel_content_url(cls):

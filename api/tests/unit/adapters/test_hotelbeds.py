@@ -1,21 +1,16 @@
+import json
 import unittest
-from datetime import date
+from datetime import date, datetime, timedelta
 
 import requests_mock
 
+from api.booking.booking_model import HotelBookingRequest, Customer, Traveler
+from api.common.models import to_json, RoomOccupancy, RateType, RoomRate, Money
 from api.hotel.adapters.hotelbeds.common import HotelBedsRateType, HotelBedsPaymentType
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
 from api.hotel.adapters.hotelbeds.search import HotelBedsSearchBuilder
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
-from api.hotel.hotels import (
-    HotelLocationSearch,
-    to_json,
-    RoomOccupancy,
-    HotelBookingRequest,
-    Customer,
-    Traveler,
-    RoomRate, Money
-)
+from api.hotel.hotel_model import HotelLocationSearch
 from api.tests.utils import load_test_resource
 
 
@@ -149,6 +144,7 @@ class TestHotelBeds(unittest.TestCase):
             traveler=Traveler("John", "Smith", occupancy=RoomOccupancy(adults=1)),
             room_rate=RoomRate(
                 rate_key="rate-key",
+                rate_type=RateType.BOOKABLE,
                 description="",
                 total_base_rate=Money(0.0, "USD"),
                 total_tax_rate=Money(0.0, "USD"),
@@ -164,3 +160,41 @@ class TestHotelBeds(unittest.TestCase):
             mocker.post(HotelBedsTransport.get_booking_url(), text=booking_resource)
             booking_response = hotelbeds.booking(booking_request)
             print(booking_response)
+
+    def test_search_location_with_bad_location(self):
+        response = {
+            "auditData": {
+                "processTime": "2",
+                "timestamp": "2020-07-20 09:47:39.281",
+                "requestHost": "66.201.49.52, 70.132.18.144, 10.185.80.230, 10.185.88.177",
+                "serverId": "ip-10-185-88-234.eu-west-1.compute.internal.node.int-hbg-aws-eu-west-1.discovery",
+                "environment": "[awseuwest1, awseuwest1a, ip_10_185_88_234]",
+                "release": "cf7383046266bc1f203fb637fed444271a3717e7",
+                "token": "5E0FD19A79034FD19D89A8948A5AA697",
+                "internal": "0||UK|01|0|0||||||||||||0||1~1~1~0|0|0||0|ba99fa9f7b504eae563b35b294ef2dcc||||",
+            },
+            "hotels": {"total": 0},
+        }
+
+        hotelbeds_service = HotelBeds(HotelBedsTransport())
+        request = self.create_location_search("foo")
+        with requests_mock.Mocker() as mocker:
+            mocker.post(HotelBedsTransport.get_hotels_url(), text=json.dumps(response))
+            mocker.get(HotelBedsTransport.get_hotel_content_url())
+            results = hotelbeds_service.search_by_location(request)
+
+        assert len(results) == 0
+
+    @staticmethod
+    def create_location_search(location_name="TVL"):
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=35)
+        search_request = HotelLocationSearch(
+            location_name=location_name,
+            start_date=checkin,
+            end_date=checkout,
+            daily_rates=True,
+            occupancy=RoomOccupancy(),
+        )
+
+        return search_request

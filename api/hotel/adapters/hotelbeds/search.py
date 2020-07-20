@@ -1,10 +1,9 @@
 import dataclasses
 from dataclasses import field
 from datetime import date
-from typing import ClassVar, Type, List, Optional
+from typing import List, Optional
 
 import marshmallow_dataclass
-from marshmallow import Schema
 
 from api.hotel.adapters.hotelbeds.common import (
     HotelBedsAuditDataRS,
@@ -15,7 +14,7 @@ from api.hotel.adapters.hotelbeds.common import (
     HotelBedsCancellationPoliciesRS,
     HotelBedsPaymentType,
 )
-from api.hotel.hotels import HotelLocationSearch, BaseSchema
+from api.hotel.hotel_model import HotelLocationSearch, BaseSchema
 
 
 @dataclasses.dataclass
@@ -48,8 +47,6 @@ class HotelBedsAvailabilityRQ(BaseSchema):
     daily_rates: bool = field(metadata=dict(data_key="dailyRate"), default=False)
     language: str = field(metadata=dict(data_key="language"), default="ENG")
 
-    Schema: ClassVar[Type[Schema]] = Schema
-
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
@@ -58,7 +55,7 @@ class HotelBedsRoomRateRS(BaseSchema):
     rate_class: str = field(metadata=dict(data_key="rateClass"))
     rate_type: HotelBedsRateType = field(metadata=dict(data_key="rateType"))
     net: str = field(metadata=dict(data_key="net"))
-    allotment: int = field(metadata=dict(data_key="allotment"))
+    allotment: Optional[int] = field(metadata=dict(data_key="allotment"))
     payment_type: HotelBedsPaymentType = field(metadata=dict(data_key="paymentType", by_value=True))
     packaging: bool = field(metadata=dict(data_key="packaging"))
     rooms: int = field(metadata=dict(data_key="rooms"))
@@ -95,25 +92,44 @@ class HotelBedsHotel(BaseSchema):
     latitude: str = field(metadata=dict(data_key="latitude"))
     longitude: str = field(metadata=dict(data_key="longitude"))
     rooms: List[HotelBedsRoomRS] = field(metadata=dict(data_key="rooms"))
-    min_rate: str = field(metadata=dict(data_key="minRate"))
-    max_rate: str = field(metadata=dict(data_key="maxRate"))
+    min_rate: Optional[str] = field(metadata=dict(data_key="minRate"))
+    max_rate: Optional[str] = field(metadata=dict(data_key="maxRate"))
     currency: Optional[str] = field(metadata=dict(data_key="currency"))
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class HotelBedsHotelRS(BaseSchema):
-    checkin: date = field(metadata=dict(data_key="checkIn"))
-    checkout: date = field(metadata=dict(data_key="checkOut"))
+    checkin: Optional[date] = field(metadata=dict(data_key="checkIn"))
+    checkout: Optional[date] = field(metadata=dict(data_key="checkOut"))
     total: int = field(metadata=dict(data_key="total"))
-    hotels: List[HotelBedsHotel] = field(default_factory=list)
+    hotels: Optional[List[HotelBedsHotel]] = field(default_factory=list)
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class HotelBedsAvailabilityRS(BaseSchema):
     audit_data: HotelBedsAuditDataRS = field(metadata=dict(data_key="auditData"))
-    results: HotelBedsHotelRS = field(metadata=dict(data_key="hotels"))
+    results: Optional[HotelBedsHotelRS] = field(default=None, metadata=dict(data_key="hotels"))
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class HotelBedsCheckRatesRoom:
+    rate_key: str = field(metadata=dict(data_key="rateKey"))
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class HotelBedsCheckRatesRQ(BaseSchema):
+    rooms: List[HotelBedsCheckRatesRoom]
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class HotelBedsCheckRatesRS:
+    audit_data: HotelBedsAuditDataRS = field(metadata=dict(data_key="auditData"))
+    hotel: HotelBedsHotel
 
 
 class HotelBedsSearchBuilder:

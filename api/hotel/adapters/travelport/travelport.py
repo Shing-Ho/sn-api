@@ -1,25 +1,23 @@
 from datetime import date, timedelta
 from typing import List, Optional
 
+from api.booking.booking_model import HotelBookingRequest
 from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBuilder
 from api.hotel.adapters.travelport.search import TravelportHotelSearchBuilder
 from api.hotel.adapters.travelport.transport import TravelportTransport
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotels import (
+from api.hotel.hotel_model import (
     HotelLocationSearch,
     HotelAdapterHotel,
     Address,
     HotelRate,
     HotelDetailsSearchRequest,
     HotelDetails,
-    Money,
-    DailyRate,
-    RoomRate,
     HotelSpecificSearch,
     HotelSearchResponseHotel,
     GeoLocation,
-    HotelBookingRequest,
 )
+from api.common.models import RoomRate, DailyRate, Money, RateType
 
 secrets = {
     "url": "https://americas.universal-api.travelport.com/B2BGateway/connect/uAPI/HotelService",
@@ -29,6 +27,8 @@ secrets = {
 
 
 class TravelportHotelAdapter(HotelAdapter):
+    CRS_NAME = "travelport"
+
     def __init__(self, transport: TravelportTransport = None):
         if transport is None:
             self.transport = TravelportTransport()
@@ -51,6 +51,9 @@ class TravelportHotelAdapter(HotelAdapter):
         return self._parse_details(response)
 
     def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponseHotel:
+        pass
+
+    def recheck(self, search, hotel: HotelSearchResponseHotel) -> HotelSearchResponseHotel:
         pass
 
     def booking_availability(self, search_request: HotelSpecificSearch):
@@ -110,7 +113,7 @@ class TravelportHotelAdapter(HotelAdapter):
         checkin_time = next(x["Text"] for x in details if x["Name"] == "CheckInTime")[0]
         checkout_time = next(x["Text"] for x in details if x["Name"] == "CheckOutTime")[0]
 
-        room_type_rates = list(map(self._parse_rate_detail, hotel["HotelRateDetail"]))
+        # room_type_rates = list(map(self._parse_rate_detail, hotel["HotelRateDetail"]))
 
         geolocation = GeoLocation(0.0, 0.0)
         address = self._parse_hotel_address(hotel_property)
@@ -122,7 +125,6 @@ class TravelportHotelAdapter(HotelAdapter):
             hotel_code=hotel_code,
             checkin_time=checkin_time,
             checkout_time=checkout_time,
-            hotel_rates=room_type_rates,
             geolocation=geolocation,
             phone_number=None,
             email=None,
@@ -138,7 +140,7 @@ class TravelportHotelAdapter(HotelAdapter):
 
         total_base_rate = self._parse_money(rate_detail["Base"])
         total_tax_rate = self._parse_money(rate_detail["Tax"])
-        total_total_rate = self._parse_money(rate_detail["Total"])
+        total = self._parse_money(rate_detail["Total"])
 
         hotel_rates_by_date = []
         for hotel_rate_by_date in rate_detail["HotelRateByDate"]:
@@ -159,13 +161,14 @@ class TravelportHotelAdapter(HotelAdapter):
                 hotel_rates_by_date.append(rate_detail)
 
         return RoomRate(
-            room_description,
-            additional_description,
-            rate_plan_type,
-            total_base_rate,
-            total_tax_rate,
-            total_total_rate,
-            hotel_rates_by_date,
+            rate_key=rate_plan_type,
+            rate_type=RateType.BOOKABLE,
+            description=room_description,
+            additional_detail=additional_description,
+            total_base_rate=total_base_rate,
+            total_tax_rate=total_tax_rate,
+            total=total,
+            daily_rates=hotel_rates_by_date,
         )
 
     @staticmethod

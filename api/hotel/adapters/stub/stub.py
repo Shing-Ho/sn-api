@@ -5,8 +5,9 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Type
 
+from api.booking.booking_model import Reservation, HotelBookingRequest, HotelBookingResponse, Locator, Status
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotels import (
+from api.hotel.hotel_model import (
     HotelLocationSearch,
     HotelSearchResponseHotel,
     RoomOccupancy,
@@ -19,21 +20,17 @@ from api.hotel.hotels import (
     HotelDetails,
     Address,
     GeoLocation,
-    RoomRate,
-    Money,
-    DailyRate,
-    HotelBookingRequest,
-    HotelBookingResponse,
-    Status,
-    Reservation,
-    Locator,
-    RatePlan, BaseHotelSearch,
+    RatePlan,
+    BaseHotelSearch,
 )
+from api.common.models import RateType, RoomRate, DailyRate, Money
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
 
 
 class StubHotelAdapter(HotelAdapter):
+    CRS_NAME = "stub"
+
     def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponseHotel]:
         num_hotels_to_return = random.randint(10, 50)
         return [self.search_by_id(search_request) for _ in range(num_hotels_to_return)]
@@ -42,6 +39,7 @@ class StubHotelAdapter(HotelAdapter):
         hotel_code = random_string(5).upper()
         room_types = self._generate_room_types(search_request)
         response = HotelSearchResponseHotel(
+            crs=self.CRS_NAME,
             hotel_id=hotel_code,
             start_date=search_request.start_date,
             end_date=search_request.end_date,
@@ -51,6 +49,9 @@ class StubHotelAdapter(HotelAdapter):
         )
 
         return response
+
+    def recheck(self, search, hotel: HotelSearchResponseHotel) -> HotelSearchResponseHotel:
+        pass
 
     def details(self, *args):
         pass
@@ -177,7 +178,8 @@ class StubHotelAdapter(HotelAdapter):
                     total_tax_rate=Money(total_tax_rate, "USD"),
                     total=Money(total_rate, "USD"),
                     daily_rates=daily_rates,
-                    rate_key=random_alphanumeric(5)
+                    rate_key=random_alphanumeric(5),
+                    rate_type=RateType.BOOKABLE,
                 )
             )
 

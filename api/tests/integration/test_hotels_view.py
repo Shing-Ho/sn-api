@@ -1,7 +1,13 @@
 from datetime import datetime, timedelta
 from typing import List
 
-from api.hotel.hotels import HotelSpecificSearch, RoomOccupancy, HotelSearchResponseHotel, HotelLocationSearch, to_json
+from api.hotel.hotel_model import (
+    HotelSpecificSearch,
+    RoomOccupancy,
+    HotelSearchResponseHotel,
+    HotelLocationSearch,
+    to_json,
+)
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 
 SEARCH_BY_ID = "/api/v1/hotels/search-by-id/"

@@ -13,20 +13,18 @@ from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from api.models.models import Geoname, GeonameAlternateName
 from api.models.models import supplier_hotels
 from . import api_access
-from .api_access import ApiAccessRequest, ApiAccessResponse
+from .api_access import ApiAccessRequest
 from .auth.models import HasOrganizationAPIKey, OrganizationApiThrottle
+from .booking.booking_model import HotelBookingRequest
+from .common.models import to_json
 from .hotel.adapters.hotel_service import HotelService
-from .hotel.hotels import (
+from .hotel.hotel_model import (
     HotelLocationSearch,
     HotelSpecificSearch,
     RoomOccupancy,
     HotelSearchResponseHotel,
-    HotelBookingRequest,
-    HotelBookingResponse,
 )
-from .serializers import (
-    LocationsSerializer,
-)
+from .serializers import LocationsSerializer
 from .serializers import mappingcodesSerializer
 
 data = open("airports.json", encoding="utf-8").read()
@@ -55,8 +53,6 @@ class HotelBedsMap(viewsets.ModelViewSet):
         city = self.request.GET.get("city")
         provider_id = self.request.GET.get("provider_id")
         hotel_codes = self.request.GET.get("hotel_codes")
-        hotel_name = self.request.GET.get("hotel_name")
-        rating = self.request.GET.get("rating")
         category_name = self.request.GET.get("category_name")
         chain_name = self.request.GET.get("chain_name")
         country_name = self.request.GET.get("country_name")
@@ -118,7 +114,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
                 end_date=date.fromisoformat(checkout),
                 occupancy=RoomOccupancy(adults=num_adults, children=num_children),
                 daily_rates=False,
-                crs=crs
+                crs=crs,
             )
 
         hotels = self.hotel_service.search_by_location(request)
@@ -143,7 +139,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
                 end_date=date.fromisoformat(checkout),
                 occupancy=RoomOccupancy(adults=num_adults, children=num_children),
                 daily_rates=False,
-                crs=crs
+                crs=crs,
             )
 
         response = self.hotel_service.search_by_id(request)
@@ -155,7 +151,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
         booking_request = HotelBookingRequest.Schema().load(request.data)
         booking_response = self.hotel_service.booking(booking_request)
 
-        return _response(booking_response, HotelBookingResponse)
+        return _response(booking_response)
 
 
 class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -190,8 +186,8 @@ class AuthenticationView(viewsets.ViewSet):
             return Response(status=400)
 
         response = api_access.create_anonymous_api_user(request)
-        return _response(response, ApiAccessResponse)
+        return _response(response)
 
 
-def _response(obj, cls):
-    return Response(cls.Schema().dump(obj))
+def _response(obj):
+    return Response(to_json(obj))

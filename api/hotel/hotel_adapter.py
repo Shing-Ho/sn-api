@@ -1,11 +1,13 @@
 import abc
 from typing import List
-from api.hotel.hotels import (
+
+from api.booking.booking_model import HotelBookingRequest
+from api.hotel.hotel_model import (
     HotelLocationSearch,
-    HotelAdapterHotel,
     HotelSpecificSearch,
     HotelSearchResponseHotel,
-    HotelDetails, HotelBookingRequest
+    HotelDetails,
+    BaseHotelSearch,
 )
 
 
@@ -28,4 +30,8 @@ class HotelAdapter(abc.ABC):
 
     @abc.abstractmethod
     def booking(self, book_request: HotelBookingRequest):
+        pass
+
+    @abc.abstractmethod
+    def recheck(self, search: BaseHotelSearch, rate_key: str) -> HotelSearchResponseHotel:
         pass

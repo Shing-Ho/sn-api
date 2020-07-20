@@ -12,9 +12,10 @@ from api.hotel.adapters.hotelbeds.common import (
     HotelBedsAuditDataRS,
     HotelBedsPaymentType,
     HotelBedsTaxesRS,
-    HotelBedsPromotionsRS, HotelBedsCancellationPoliciesRS
+    HotelBedsPromotionsRS,
+    HotelBedsCancellationPoliciesRS,
 )
-from api.hotel.hotels import BaseSchema
+from api.hotel.hotel_model import BaseSchema
 
 
 @dataclasses.dataclass

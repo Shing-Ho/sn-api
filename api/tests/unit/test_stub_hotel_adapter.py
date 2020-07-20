@@ -2,28 +2,19 @@ import unittest
 import uuid
 from datetime import date
 
+from api.booking.booking_model import Customer, Traveler, PaymentCardParameters, CardType, Payment, HotelBookingRequest
 from api.hotel.adapters.stub.stub import StubHotelAdapter
-from api.hotel.hotels import (
+from api.hotel.hotel_model import (
     HotelSpecificSearch,
     RoomOccupancy,
-    HotelBookingRequest,
-    Customer,
-    Traveler,
-    RoomRate,
-    Payment,
-    Money,
-    PaymentCardParameters,
-    CardType, Address,
 )
+from api.common.models import RateType, RoomRate, Money, Address
 
 
 class TestStubHotelAdapter(unittest.TestCase):
     def test_search_by_hotel_id(self):
         search_request = HotelSpecificSearch(
-            hotel_id="A1H2J6",
-            start_date=date(2020, 1, 20),
-            end_date=date(2020, 1, 27),
-            occupancy=RoomOccupancy(2, 1),
+            hotel_id="A1H2J6", start_date=date(2020, 1, 20), end_date=date(2020, 1, 27), occupancy=RoomOccupancy(2, 1),
         )
 
         stub_adapter = StubHotelAdapter()
@@ -59,12 +50,13 @@ class TestStubHotelAdapter(unittest.TestCase):
         traveler = Traveler(first_name="Jane", last_name="Smith", occupancy=RoomOccupancy(adults=1, children=0))
         room_rate = RoomRate(
             rate_key="foo",
-            description="King Bed Oceanview Suite",
+            description="King Bed Ocean View Suite",
             additional_detail=list(),
             total_base_rate=Money(526.22, "USD"),
             total_tax_rate=Money(63.29, "USD"),
             total=Money(589.51, "USD"),
             daily_rates=[],
+            rate_type=RateType.BOOKABLE,
         )
 
         payment_card_params = PaymentCardParameters(
@@ -91,7 +83,7 @@ class TestStubHotelAdapter(unittest.TestCase):
             room_rate=room_rate,
             payment=payment,
             tracking=str(uuid.uuid4()),
-            ip_address="1.1.1.1"
+            ip_address="1.1.1.1",
         )
 
         stub_adapter = StubHotelAdapter()
@@ -114,7 +106,7 @@ class TestStubHotelAdapter(unittest.TestCase):
         self.assertEqual("Jane", response.reservation.traveler.first_name)
         self.assertEqual("Smith", response.reservation.traveler.last_name)
         self.assertEqual(1, response.reservation.traveler.occupancy.adults)
-        self.assertEqual("King Bed Oceanview Suite", response.reservation.room_rate.description)
+        self.assertEqual("King Bed Ocean View Suite", response.reservation.room_rate.description)
         self.assertEqual(526.22, response.reservation.room_rate.total_base_rate.amount)
         self.assertEqual(63.29, response.reservation.room_rate.total_tax_rate.amount)
         self.assertEqual(589.51, response.reservation.room_rate.total.amount)

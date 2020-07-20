@@ -1,13 +1,15 @@
 from typing import List, Union, Dict, Optional
 
 from api import logger
+from api.booking.booking_model import HotelBookingRequest
 from api.hotel.adapters.hotelbeds.booking import (
     HotelBedsBookingRQ,
     HotelBedsBookingLeadTraveler,
     HotelBedsPax,
-    HotelBedsBookingRoom, HotelBedsBookingRS,
+    HotelBedsBookingRoom,
+    HotelBedsBookingRS,
 )
-from api.hotel.adapters.hotelbeds.common import get_language_mapping
+from api.hotel.adapters.hotelbeds.common import get_language_mapping, HotelBedsRateType
 from api.hotel.adapters.hotelbeds.details import HotelBedsHotelDetailsRS, HotelBedsHotelDetail
 from api.hotel.adapters.hotelbeds.search import (
     HotelBedsSearchBuilder,
@@ -15,11 +17,13 @@ from api.hotel.adapters.hotelbeds.search import (
     HotelBedsHotel,
     HotelBedsRoomRS,
     HotelBedsRoomRateRS,
+    HotelBedsCheckRatesRQ,
+    HotelBedsCheckRatesRoom,
+    HotelBedsCheckRatesRS,
 )
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotels import (
-    HotelBookingRequest,
+from api.hotel.hotel_model import (
     HotelSpecificSearch,
     HotelDetails,
     HotelSearchResponseHotel,
@@ -28,12 +32,13 @@ from api.hotel.hotels import (
     BaseHotelSearch,
     RoomOccupancy,
     RoomType,
-    RoomRate,
-    Money,
 )
+from api.common.models import RateType, RoomRate, Money
 
 
 class HotelBeds(HotelAdapter):
+    CRS_NAME = "hotelbeds"
+
     def __init__(self, transport=None):
         if transport is None:
             transport = HotelBedsTransport()
@@ -42,6 +47,9 @@ class HotelBeds(HotelAdapter):
 
     def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponseHotel]:
         availability_results = self._search_by_location(search_request)
+        if availability_results.results.total == 0:
+            return []
+
         hotel_codes = list(map(lambda x: str(x.code), availability_results.results.hotels))
         hotel_details = self._details(hotel_codes, search_request.language)
         hotel_details_map = self._hotel_details_by_hotel_code(hotel_details.hotels)
@@ -60,7 +68,8 @@ class HotelBeds(HotelAdapter):
         response = self.transport.post(endpoint, request)
 
         if response.ok:
-            return HotelBedsAvailabilityRS.Schema().load(response.json())
+            results = response.json()
+            return HotelBedsAvailabilityRS.Schema().load(results)
 
         logger.error(f"Error searching HotelBeds (status_code={response.status_code}): {response.text}")
 
@@ -89,6 +98,15 @@ class HotelBeds(HotelAdapter):
 
         logger.error(f"Error retrieving hotel details (status_code={response.status_code}): {response.text}")
 
+    def recheck(self, search: BaseHotelSearch, rate_key: str) -> HotelBedsHotel:
+        request = HotelBedsCheckRatesRQ(rooms=[HotelBedsCheckRatesRoom(rate_key)])
+        url = self.transport.get_checkrates_url()
+
+        response = self.transport.post(url, request)
+        if response.ok:
+            hotel: HotelBedsCheckRatesRS = HotelBedsCheckRatesRS.Schema().load(response.json())
+            return hotel.hotel
+
     def booking_availability(self, search_request: HotelSpecificSearch):
         pass
 
@@ -102,7 +120,7 @@ class HotelBeds(HotelAdapter):
             ),
             clientReference=book_request.transaction_id,
             rooms=[HotelBedsBookingRoom(rateKey=book_request.room_rate.rate_key, paxes=[lead_traveler])],
-            remark="Test booking"
+            remark="Test booking",
         )
 
         response = self.transport.post(self.transport.get_booking_url(), booking_request)
@@ -131,6 +149,7 @@ class HotelBeds(HotelAdapter):
         room_types = list(map(lambda x: self._create_room_type(search, x), hotel.rooms))
 
         return HotelSearchResponseHotel(
+            crs=self.CRS_NAME,
             hotel_id=str(hotel.code),
             start_date=search.start_date,
             end_date=search.end_date,
@@ -158,8 +177,7 @@ class HotelBeds(HotelAdapter):
             rates=rates,
         )
 
-    @staticmethod
-    def _create_room_rates(search: BaseHotelSearch, rate: HotelBedsRoomRateRS):
+    def _create_room_rates(self, search: BaseHotelSearch, rate: HotelBedsRoomRateRS):
         currency = search.currency
         total_base_rate = Money(float(rate.net), currency)
         total_taxes = 0
@@ -171,12 +189,20 @@ class HotelBeds(HotelAdapter):
 
         return RoomRate(
             rate_key=rate.rate_key,
+            rate_type=self._get_rate_type(rate.rate_type),
             description="",
             additional_detail=[],
             total_base_rate=total_base_rate,
             total_tax_rate=total_tax_rate,
             total=total_rate,
         )
+
+    @staticmethod
+    def _get_rate_type(rate_type: HotelBedsRateType):
+        if rate_type == HotelBedsRateType.RECHECK:
+            return RateType.RECHECK
+
+        return RateType.BOOKABLE
 
     @staticmethod
     def _create_hotel_details(detail: HotelBedsHotelDetail) -> HotelDetails:

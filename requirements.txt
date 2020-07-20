@@ -11,3 +11,4 @@ uszipcode==0.2.4
 marshmallow-dataclass[enum,union]
 django-cors-headers
 djangorestframework-api-key
+django_extensions

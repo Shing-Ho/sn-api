@@ -1,2 +1,2 @@
-class foo:
+class Foo:
     foo = "bar"

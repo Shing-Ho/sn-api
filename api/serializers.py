@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .hotel.hotels import HotelAdapterHotel, Address, HotelRate
+from .hotel.hotel_model import HotelAdapterHotel, Address, HotelRate
 from .models.models import Geoname, supplier_hotels
 
 
