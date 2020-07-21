@@ -2,16 +2,16 @@ from typing import List, Union, Dict, Optional
 
 from api import logger
 from api.booking.booking_model import HotelBookingRequest
-from api.hotel.adapters.hotelbeds.booking import (
+from api.hotel.adapters.hotelbeds.booking_models import (
     HotelBedsBookingRQ,
     HotelBedsBookingLeadTraveler,
     HotelBedsPax,
     HotelBedsBookingRoom,
     HotelBedsBookingRS,
 )
-from api.hotel.adapters.hotelbeds.common import get_language_mapping, HotelBedsRateType
-from api.hotel.adapters.hotelbeds.details import HotelBedsHotelDetailsRS, HotelBedsHotelDetail
-from api.hotel.adapters.hotelbeds.search import (
+from api.hotel.adapters.hotelbeds.common_models import get_language_mapping, HotelBedsRateType
+from api.hotel.adapters.hotelbeds.details_models import HotelBedsHotelDetailsRS, HotelBedsHotelDetail
+from api.hotel.adapters.hotelbeds.search_models import (
     HotelBedsSearchBuilder,
     HotelBedsAvailabilityRS,
     HotelBedsHotel,
@@ -57,7 +57,11 @@ class HotelBeds(HotelAdapter):
         hotels = []
         for hotel in availability_results.results.hotels:
             # TODO: Fix this static hotel code when we have hotel details data available
-            hotel = self._create_hotel(search_request, hotel, hotel_details_map["1"])
+            hotel_details = None
+            if hotel.code in hotel_details_map:
+                hotel_details = hotel_details_map[hotel.code]
+
+            hotel = self._create_hotel(search_request, hotel, hotel_details)
             hotels.append(hotel)
 
         return hotels
@@ -135,8 +139,8 @@ class HotelBeds(HotelAdapter):
         return self._get_image_base_url() + path
 
     @staticmethod
-    def _hotel_details_by_hotel_code(hotel_details: List[HotelBedsHotelDetail]) -> Dict[str, HotelBedsHotelDetail]:
-        return {str(x.code): x for x in hotel_details}
+    def _hotel_details_by_hotel_code(hotel_details: List[HotelBedsHotelDetail]) -> Dict[int, HotelBedsHotelDetail]:
+        return {x.code: x for x in hotel_details}
 
     @staticmethod
     def _get_image_base_url():

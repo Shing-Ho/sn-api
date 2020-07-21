@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
 from typing import List
 
+from api.common.models import to_json
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     RoomOccupancy,
     HotelSearchResponseHotel,
     HotelLocationSearch,
-    to_json,
 )
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 

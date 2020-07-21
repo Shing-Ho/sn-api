@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Optional
 
 import marshmallow_dataclass
+from marshmallow import validates_schema
 
 from api.common.models import BaseSchema, RoomOccupancy, Address, RoomRate
 
@@ -35,6 +36,11 @@ class CardType(Enum):
     VI = "Visa"
 
 
+class PaymentMethod(Enum):
+    PAYMENT_TOKEN = "PAYMENT_TOKEN"
+    CREDIT_CARD = "CREDIT_CARD"
+
+
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class PaymentCardParameters(BaseSchema):
@@ -49,8 +55,21 @@ class PaymentCardParameters(BaseSchema):
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class Payment(BaseSchema):
-    payment_card_parameters: PaymentCardParameters
     billing_address: Address
+    payment_card_parameters: Optional[PaymentCardParameters] = None
+    payment_token: Optional[str] = None
+    payment_method: Optional[PaymentMethod] = None
+
+    # noinspection PyUnusedLocal
+    @validates_schema
+    def validate(self, data, *args, **kwargs):
+        if data["payment_method"] == PaymentMethod.PAYMENT_TOKEN and not data["payment_token"]:
+            raise ValueError(f"Must set payment_token when payment_method is {PaymentMethod.PAYMENT_TOKEN.value}")
+
+        if data["payment_method"] == PaymentMethod.CREDIT_CARD and not data["payment_card_parameters"]:
+            raise ValueError(
+                f"Must set payment_card_parameters when payment_method is {PaymentMethod.CREDIT_CARD.value}"
+            )
 
 
 @dataclasses.dataclass

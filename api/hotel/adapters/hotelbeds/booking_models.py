@@ -8,7 +8,7 @@ from typing import List, Optional
 import marshmallow_dataclass
 from marshmallow import EXCLUDE
 
-from api.hotel.adapters.hotelbeds.common import (
+from api.hotel.adapters.hotelbeds.common_models import (
     HotelBedsAuditDataRS,
     HotelBedsPaymentType,
     HotelBedsTaxesRS,

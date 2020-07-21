@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import marshmallow_dataclass
 
-from api.hotel.adapters.hotelbeds.common import (
+from api.hotel.adapters.hotelbeds.common_models import (
     HotelBedsAuditDataRS,
     get_language_mapping,
     HotelBedsRateType,

@@ -4,7 +4,7 @@ from typing import List, Optional
 import marshmallow_dataclass
 from dataclasses import field
 
-from api.hotel.adapters.hotelbeds.common import HotelBedsAuditDataRS, HotelBedsCoordinates
+from api.hotel.adapters.hotelbeds.common_models import HotelBedsAuditDataRS, HotelBedsCoordinates
 from api.hotel.hotel_model import BaseSchema
 
 

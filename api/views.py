@@ -15,9 +15,10 @@ from api.models.models import supplier_hotels
 from . import api_access
 from .api_access import ApiAccessRequest
 from .auth.models import HasOrganizationAPIKey, OrganizationApiThrottle
+from .booking import booking_service
 from .booking.booking_model import HotelBookingRequest
 from .common.models import to_json
-from .hotel.adapters.hotel_service import HotelService
+from .hotel.adapters import hotel_service
 from .hotel.hotel_model import (
     HotelLocationSearch,
     HotelSpecificSearch,
@@ -35,7 +36,7 @@ def index(request):
     return HttpResponse(status=404)
 
 
-def location_formater(request):
+def location_formatter(request):
     city = request.GET.get("city")
     search = SearchEngine()
 
@@ -94,7 +95,6 @@ class HotelSupplierViewset(viewsets.ViewSet):
     permission_classes = (HasOrganizationAPIKey,)
     throttle_classes = (OrganizationApiThrottle,)
     hotel_adapter = TravelportHotelAdapter()
-    hotel_service = HotelService("stub")
 
     @action(detail=False, url_path="search-by-location", methods=["GET", "POST"], name="Search Hotels")
     def search_by_location(self, request: Request):
@@ -117,7 +117,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
                 crs=crs,
             )
 
-        hotels = self.hotel_service.search_by_location(request)
+        hotels = hotel_service.search_by_location(request)
 
         return Response(HotelSearchResponseHotel.Schema(many=True).dump(hotels))
 
@@ -142,14 +142,14 @@ class HotelSupplierViewset(viewsets.ViewSet):
                 crs=crs,
             )
 
-        response = self.hotel_service.search_by_id(request)
+        response = hotel_service.search_by_id(request)
 
         return Response(HotelSearchResponseHotel.Schema().dump(response))
 
     @action(detail=False, url_path="booking", methods=["POST"], name="Hotel Booking")
     def booking(self, request):
         booking_request = HotelBookingRequest.Schema().load(request.data)
-        booking_response = self.hotel_service.booking(booking_request)
+        booking_response = booking_service.book(booking_request)
 
         return _response(booking_response)
 

@@ -3,6 +3,8 @@ import uuid
 from django.test import Client
 from rest_framework.test import APITestCase, APIClient
 
+from api.common.models import to_json, to_jsons
+
 
 class SimplenightAPITestCase(APITestCase):
     def setUp(self) -> None:
@@ -21,3 +23,7 @@ class SimplenightAPITestCase(APITestCase):
         api_key, key = OrganizationAPIKey.objects.create_key(name="test-key", organization=organization)
 
         return key
+
+    def post(self, endpoint, obj, content_type="application/json"):
+        data = to_jsons(obj)
+        return self.client.post(endpoint, data=data, content_type=content_type)

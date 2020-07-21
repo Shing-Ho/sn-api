@@ -1,12 +1,16 @@
 #!/usr/bin/env python
+import uuid
+from datetime import datetime
+from enum import Enum
+
 from django.contrib.auth.models import User
 
 from django.db import models
 
 
-USD = 'US Dollars'
-FRA = 'French Francs'
-ENG = 'English'
+USD = "US Dollars"
+FRA = "French Francs"
+ENG = "English"
 
 
 class Geoname(models.Model):
@@ -36,19 +40,20 @@ class GeonameAlternateName(models.Model):
 
 
 class bookingrequest(models.Model):
-
     class Meta:
         app_label = "api"
 
-    currency_list = [(USD, 'US DOLLARS'), ]
-    language_list = [(ENG, 'ENGLISH'), ]
+    currency_list = [
+        (USD, "US DOLLARS"),
+    ]
+    language_list = [
+        (ENG, "ENGLISH"),
+    ]
     # userid = models.CharField(max_length=30)
     checkindate = models.DateField(auto_now=True)
     checkoutdate = models.DateField(auto_now=True)
-    currency = models.CharField(
-        max_length=30, choices=currency_list, default=USD)
-    language = models.CharField(
-        max_length=10, choices=language_list, default=USD)
+    currency = models.CharField(max_length=30, choices=currency_list, default=USD)
+    language = models.CharField(max_length=10, choices=language_list, default=USD)
     occupancy = models.IntegerField(1, default=1)
     snpropertyid = models.CharField(max_length=10, default="AAA")  # <--
     package = models.BooleanField(default=False)  # <--
@@ -56,7 +61,6 @@ class bookingrequest(models.Model):
 
 
 class supplier_hotels(models.Model):
-
     class Meta:
         app_label = "api"
 
@@ -86,6 +90,7 @@ class supplier_hotels(models.Model):
 class sn_hotel_map(models.Model):
     class Meta:
         app_label = "api"
+
     simplenight_id = models.IntegerField()
     provider = models.CharField(max_length=50)
     provider_id = models.IntegerField()
@@ -94,6 +99,7 @@ class sn_hotel_map(models.Model):
 class sn_city_map(models.Model):
     class Meta:
         app_label = "api"
+
     simplenight_city_id = models.IntegerField()
     provider = models.CharField(max_length=50)
     provider_city_name = models.CharField(max_length=50)
@@ -102,34 +108,29 @@ class sn_city_map(models.Model):
 class sn_images_map(models.Model):
     class Meta:
         app_label = "api"
-    #simplenight_id = models.ForeignKey((supplier_hotels,))
+
+    # simplenight_id = models.ForeignKey((supplier_hotels,))
     # on_delete.CASCADE: when object is deleted, delete all references to the object
     simplenight_id = models.CharField(max_length=100, blank=True, null=True)
     image_type = models.TextField(null=True, blank=True)
     image_url_path = models.TextField(null=True, blank=True)
     image_provider_id = models.CharField(max_length=100)
 
+
 class pmt_transaction(models.Model):
     class Meta:
         app_label = "api"
 
-
-
-    paid_choices = [
-        ['refunded','refunded'],
-        ['cancelled','cancelled'],
-        ['paid','paid']
-    ]
+    paid_choices = [["refunded", "refunded"], ["cancelled", "cancelled"], ["paid", "paid"]]
     sn_transaction_id = models.IntegerField(null=True)
-    #token returned back from stripe
+    # token returned back from stripe
     stripe_id = models.CharField(max_length=50)
-    transaction_status = models.CharField(choices=paid_choices,max_length=50)
+    transaction_status = models.CharField(choices=paid_choices, max_length=50)
     transaction_amount = models.FloatField()
     currency = models.CharField(max_length=3)
     transaction_time = models.DateTimeField(auto_now_add=True)
-    parent = models.OneToOneField('self',null=True,on_delete=models.SET_NULL,related_name="main_transaction")
+    parent = models.OneToOneField("self", null=True, on_delete=models.SET_NULL, related_name="main_transaction")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
 
     def refund(self):
         if self.main_transaction:
@@ -140,7 +141,7 @@ class pmt_transaction(models.Model):
             self.transaction_amount *= -1
             self.currency = self.currency
             self.parent_id = id
-            self.transaction_status = 'refunded'
+            self.transaction_status = "refunded"
             self.save()
 
     def cancel(self):
@@ -152,5 +153,56 @@ class pmt_transaction(models.Model):
             self.transaction_amount *= -1
             self.currency = self.currency
             self.parent_id = id
-            self.transaction_status = 'cancelled'
+            self.transaction_status = "cancelled"
             self.save()
+
+
+class Traveler(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "traveler"
+
+    traveler_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    first_name = models.TextField()
+    last_name = models.TextField()
+    email_address = models.TextField()
+    phone_number = models.TextField()
+    city = models.TextField(null=True)
+    province = models.TextField(null=True)
+    country = models.CharField(max_length=2, null=True)
+    address_line_1 = models.TextField(null=True)
+    address_line_2 = models.TextField(null=True)
+
+
+class BookingStatus(Enum):
+    BOOKED = "booked"
+    CANCELLED = "cancelled"
+    PENDING = "pending"
+
+
+class Booking(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "bookings"
+
+    booking_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    transaction_id = models.TextField()
+    booking_date = models.DateTimeField(auto_now_add=True)
+    booking_status = models.CharField(max_length=32, choices=[(x.value, x.value) for x in BookingStatus])
+    lead_traveler = models.ForeignKey(Traveler, on_delete=models.CASCADE)
+
+
+class HotelBooking(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "hotel_bookings"
+
+    hotel_booking_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    created_date = models.DateTimeField(auto_now_add=True)
+    hotel_name = models.TextField()
+    crs_name = models.TextField()
+    hotel_code = models.TextField()
+    record_locator = models.TextField()
+    total_price = models.DecimalField(decimal_places=2, max_digits=8)
+    currency = models.CharField(max_length=3)

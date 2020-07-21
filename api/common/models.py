@@ -18,6 +18,10 @@ def to_json(obj):
     return obj.Schema().dump(obj)
 
 
+def to_jsons(obj):
+    return obj.Schema().dumps(obj)
+
+
 # noinspection PyUnusedLocal
 class RemoveNone:
     @post_dump

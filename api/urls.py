@@ -18,7 +18,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 from .views import AuthenticationView
-from .views import LocationsViewSet, HotelSupplierViewset, location_formater, HotelBedsMap
+from .views import LocationsViewSet, HotelSupplierViewset, location_formatter, HotelBedsMap
 
 router = routers.SimpleRouter()
 
@@ -29,6 +29,6 @@ router.register(r"hotelbeds", HotelBedsMap, basename="hotelbeds")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("iata/", location_formater, name="location_formater"),
+    path("iata/", location_formatter, name="location_formater"),
     path("api/v1/", include(router.urls)),
 ]

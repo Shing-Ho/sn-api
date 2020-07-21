@@ -1,15 +1,17 @@
-import unittest
 from datetime import date
 
 import pytest
+from django.test import TestCase
 
 from api.booking import booking_service
 from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod
 from api.common.models import RoomOccupancy, RoomRate, Money, RateType, Address
 from api.hotel.adapters.stub.stub import StubHotelAdapter
+from api.models import models
+from api.models.models import Booking, BookingStatus
 
 
-class TestBookingService(unittest.TestCase):
+class TestBookingService(TestCase):
     def test_booking_request_validation(self):
         address = {
             "city": "San Francisco",
@@ -62,3 +64,34 @@ class TestBookingService(unittest.TestCase):
         )
 
         response = booking_service.book(booking_request)
+
+        self.assertEqual(1, response.api_version)
+        self.assertIsNotNone(response.transaction_id)
+        self.assertTrue(response.status.success)
+        self.assertEqual("Success", response.status.message)
+        self.assertEqual("ABC123", response.reservation.hotel_id)
+        self.assertIsNotNone(response.reservation.locator)
+        self.assertEqual("2020-01-01", str(response.reservation.checkin))
+        self.assertEqual("2020-01-01", str(response.reservation.checkout))
+        self.assertEqual("John", response.reservation.customer.first_name)
+        self.assertEqual("Doe", response.reservation.customer.last_name)
+        self.assertEqual("5558675309", response.reservation.customer.phone_number)
+
+        booking = Booking.objects.get(transaction_id=response.transaction_id)
+        self.assertEqual(response.transaction_id, booking.transaction_id)
+        self.assertIsNotNone(booking.booking_id)
+        self.assertEqual(BookingStatus.BOOKED.value, booking.booking_status)
+
+        self.assertEqual("John", booking.lead_traveler.first_name)
+        self.assertEqual("Doe", booking.lead_traveler.last_name)
+        self.assertEqual("US", booking.lead_traveler.country)
+        self.assertEqual("john@doe.foo", booking.lead_traveler.email_address)
+        self.assertEqual("5558675309", booking.lead_traveler.phone_number)
+
+        hotel_booking = models.HotelBooking.objects.get(booking__booking_id=booking.booking_id)
+        self.assertEqual("Hotel Name", hotel_booking.hotel_name)
+        self.assertEqual("stub", hotel_booking.crs_name)
+        self.assertEqual("ABC123", hotel_booking.hotel_code)
+        self.assertIsNotNone("foo", hotel_booking.record_locator)
+        self.assertEqual(120.99, hotel_booking.total_price)
+        self.assertEqual("USD", hotel_booking.currency)

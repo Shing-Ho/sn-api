@@ -6,9 +6,9 @@ import requests_mock
 
 from api.booking.booking_model import HotelBookingRequest, Customer, Traveler
 from api.common.models import to_json, RoomOccupancy, RateType, RoomRate, Money
-from api.hotel.adapters.hotelbeds.common import HotelBedsRateType, HotelBedsPaymentType
+from api.hotel.adapters.hotelbeds.common_models import HotelBedsRateType, HotelBedsPaymentType
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
-from api.hotel.adapters.hotelbeds.search import HotelBedsSearchBuilder
+from api.hotel.adapters.hotelbeds.search_models import HotelBedsSearchBuilder
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_model import HotelLocationSearch
 from api.tests.utils import load_test_resource
