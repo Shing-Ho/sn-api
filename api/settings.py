@@ -186,6 +186,6 @@ CORS_ALLOW_HEADERS = list(corsheaders.defaults.default_headers) + [
 ]
 
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
-APPEND_SLASH = False
+APPEND_SLASH = True
 
 API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY"

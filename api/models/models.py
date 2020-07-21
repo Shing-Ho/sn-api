@@ -7,6 +7,10 @@ from django.contrib.auth.models import User
 
 from django.db import models
 
+import stripe
+
+
+stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
 
 USD = "US Dollars"
 FRA = "French Francs"
@@ -80,13 +84,6 @@ class supplier_hotels(models.Model):
     provider_name = models.CharField(max_length=50, default="HotelBeds")
 
 
-# 'ICEID (don't change)', 'Property Name', 'Country', 'State', 'City',
-#     'Address', 'Address2', 'Address3', 'ZipCode', 'Published', 'DID',
-#     'MType Id', 'Chain Code', 'Mapped ID'],
-
-# class ice_hotels(models.Model):
-
-
 class sn_hotel_map(models.Model):
     class Meta:
         app_label = "api"
@@ -129,8 +126,19 @@ class pmt_transaction(models.Model):
     transaction_amount = models.FloatField()
     currency = models.CharField(max_length=3)
     transaction_time = models.DateTimeField(auto_now_add=True)
-    parent = models.OneToOneField("self", null=True, on_delete=models.SET_NULL, related_name="main_transaction")
+    parent = models.OneToOneField("self", blank=True,null=True, on_delete=models.SET_NULL, related_name="main_transaction")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def charge(self):
+        # try:
+
+        charge = stripe.Charge.create(amount=int(self.transaction_amount) * 100, currency=self.currency,
+                                      source="tok_visa", description="booking_id")
+        print(charge)
+
+        return charge
+        # except:
+        #     return "hello world"
 
     def refund(self):
         if self.main_transaction:

@@ -18,10 +18,10 @@ from django.urls import path, include
 from rest_framework import routers
 
 from .views import AuthenticationView
-from .views import LocationsViewSet, HotelSupplierViewset, location_formatter, HotelBedsMap
+from .views import LocationsViewSet, HotelSupplierViewset, location_formatter, HotelBedsMap, paymentsViewSet
 
 router = routers.SimpleRouter()
-
+router.register(r"payment", paymentsViewSet, basename="payments")
 router.register(r"Locations", LocationsViewSet)
 router.register(r"hotels", HotelSupplierViewset, basename="hotels")
 router.register(r"authentication", AuthenticationView, basename="authentication")
