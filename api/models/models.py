@@ -168,7 +168,7 @@ class pmt_transaction(models.Model):
 class Traveler(models.Model):
     class Meta:
         app_label = "api"
-        db_table = "traveler"
+        db_table = "api_traveler"
 
     traveler_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     first_name = models.TextField()
@@ -191,7 +191,7 @@ class BookingStatus(Enum):
 class Booking(models.Model):
     class Meta:
         app_label = "api"
-        db_table = "bookings"
+        db_table = "api_bookings"
 
     booking_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     transaction_id = models.TextField()
@@ -203,7 +203,7 @@ class Booking(models.Model):
 class HotelBooking(models.Model):
     class Meta:
         app_label = "api"
-        db_table = "hotel_bookings"
+        db_table = "api_hotel_bookings"
 
     hotel_booking_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)

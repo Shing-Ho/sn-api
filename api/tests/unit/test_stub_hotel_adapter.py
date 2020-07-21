@@ -69,7 +69,7 @@ class TestStubHotelAdapter(unittest.TestCase):
         )
 
         address = Address("San Francisco", "CA", "94111", "US", "120 Market Street")
-        payment = Payment(payment_card_params, billing_address=address)
+        payment = Payment(billing_address=address, payment_card_parameters=payment_card_params)
 
         booking_request = HotelBookingRequest(
             api_version=1,
