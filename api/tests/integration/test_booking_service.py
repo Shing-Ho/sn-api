@@ -1,3 +1,4 @@
+import decimal
 from datetime import date
 
 import pytest
@@ -93,5 +94,5 @@ class TestBookingService(TestCase):
         self.assertEqual("stub", hotel_booking.crs_name)
         self.assertEqual("ABC123", hotel_booking.hotel_code)
         self.assertIsNotNone("foo", hotel_booking.record_locator)
-        self.assertEqual(120.99, hotel_booking.total_price)
+        self.assertEqual(decimal.Decimal("120.99"), hotel_booking.total_price)
         self.assertEqual("USD", hotel_booking.currency)
