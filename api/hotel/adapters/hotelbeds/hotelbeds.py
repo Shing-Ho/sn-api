@@ -1,7 +1,9 @@
+import json
 from typing import List, Union, Dict, Optional
 
 from api import logger
 from api.booking.booking_model import HotelBookingRequest
+from api.common.models import RateType, RoomRate, Money
 from api.hotel.adapters.hotelbeds.booking_models import (
     HotelBedsBookingRQ,
     HotelBedsBookingLeadTraveler,
@@ -9,8 +11,13 @@ from api.hotel.adapters.hotelbeds.booking_models import (
     HotelBedsBookingRoom,
     HotelBedsBookingRS,
 )
-from api.hotel.adapters.hotelbeds.common_models import get_language_mapping, HotelBedsRateType
-from api.hotel.adapters.hotelbeds.details_models import HotelBedsHotelDetailsRS, HotelBedsHotelDetail
+from api.hotel.adapters.hotelbeds.common_models import (
+    get_language_mapping,
+    HotelBedsRateType,
+    HotelBedsException,
+    HOTELBEDS_AMENITY_MAPPING,
+)
+from api.hotel.adapters.hotelbeds.details_models import HotelBedsHotelDetailsRS, HotelBedsHotelDetail, HotelBedsAmenity
 from api.hotel.adapters.hotelbeds.search_models import (
     HotelBedsSearchBuilder,
     HotelBedsAvailabilityRS,
@@ -33,7 +40,6 @@ from api.hotel.hotel_model import (
     RoomOccupancy,
     RoomType,
 )
-from api.common.models import RateType, RoomRate, Money
 
 
 class HotelBeds(HotelAdapter):
@@ -84,13 +90,28 @@ class HotelBeds(HotelAdapter):
         hotel_details_response = self._details(hotel_codes, language)
         return list(map(self._create_hotel_details, hotel_details_response.hotels))
 
+    def get_facilities_types(self):
+        endpoint = self.transport.get_facilities_types_url()
+        params = {
+            "fields": "all",
+            "from": 1,
+            "to": 500,
+        }
+
+        response = self.transport.get(endpoint, params)
+        if response.ok:
+            return response.json()
+
+        logger.error(response.text)
+        raise HotelBedsException(f"Could not find facilities types ({response.status_code})")
+
     def _details(self, hotel_codes: Union[List[str], str], language: str) -> HotelBedsHotelDetailsRS:
         if isinstance(hotel_codes, list):
             hotel_codes = str.join(",", hotel_codes)
 
         params = {
             "language": get_language_mapping(language),
-            "codes": str.join(",", hotel_codes),
+            "codes": hotel_codes,
             "fields": "all",
         }
 
@@ -98,6 +119,9 @@ class HotelBeds(HotelAdapter):
         response = self.transport.get(url, params)
 
         if response.ok:
+            with open("/Users/jmorton/amen.json", "w") as f:
+                json.dump(response.json(), f, indent=2)
+
             return HotelBedsHotelDetailsRS.Schema().load(response.json())
 
         logger.error(f"Error retrieving hotel details (status_code={response.status_code}): {response.text}")
@@ -110,9 +134,6 @@ class HotelBeds(HotelAdapter):
         if response.ok:
             hotel: HotelBedsCheckRatesRS = HotelBedsCheckRatesRS.Schema().load(response.json())
             return hotel.hotel
-
-    def booking_availability(self, search_request: HotelSpecificSearch):
-        pass
 
     def booking(self, book_request: HotelBookingRequest) -> Optional[HotelBedsBookingRS]:
         self.transport.get_booking_url()
@@ -159,7 +180,7 @@ class HotelBeds(HotelAdapter):
             end_date=search.end_date,
             occupancy=search.occupancy,
             room_types=room_types,
-            hotel_details=None,
+            hotel_details=self._create_hotel_details(detail),
         )
 
     def _create_room_type(self, search: BaseHotelSearch, hotelbeds_room: HotelBedsRoomRS):
@@ -209,7 +230,16 @@ class HotelBeds(HotelAdapter):
         return RateType.BOOKABLE
 
     @staticmethod
-    def _create_hotel_details(detail: HotelBedsHotelDetail) -> HotelDetails:
+    def _create_hotel_details(detail: HotelBedsHotelDetail) -> Optional[HotelDetails]:
+        if detail is None:
+            return None
+
+        facility_codes = set(x.facility_code for x in detail.amenities or {})
+        amenities = set()
+        for amenity, code in HOTELBEDS_AMENITY_MAPPING.items():
+            if any(x for x in code if x in facility_codes):
+                amenities.add(amenity)
+
         address = Address(
             city=detail.city.content,
             province=detail.state_code,
@@ -225,4 +255,10 @@ class HotelBeds(HotelAdapter):
             hotel_code=str(detail.code),
             checkin_time=None,
             checkout_time=None,
+            amenities=list(amenities),
         )
+
+    @staticmethod
+    def _get_matching_amenities(hotelbeds_amenities: List[HotelBedsAmenity]):
+        facility_codes = set(x.facility_code for x in hotelbeds_amenities or [])
+        return {amenity for amenity, code in HOTELBEDS_AMENITY_MAPPING.items() if code in facility_codes}

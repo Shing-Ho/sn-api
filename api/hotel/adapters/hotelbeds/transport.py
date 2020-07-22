@@ -25,7 +25,8 @@ class HotelBedsTransport:
     def post(self, url, request: BaseSchema, **kwargs):
         return requests.post(url, json=to_json(request), headers=self.get_headers(**kwargs))
 
-    def get(self, url, params: Dict):
+    def get(self, url, params: Dict, **kwargs):
+        params.update(kwargs)
         return requests.get(url, params=params, headers=self.get_headers())
 
     def _get_default_headers(self):
@@ -47,32 +48,33 @@ class HotelBedsTransport:
 
     @classmethod
     def get_hotels_url(cls):
-        return f"{cls._get_base_booking_api_url()}/hotels"
+        return f"{cls._get_base_booking_url()}/hotels"
 
     @classmethod
     def get_booking_url(cls):
-        return f"{cls._get_base_booking_api_url()}/bookings"
+        return f"{cls._get_base_booking_url()}/bookings"
 
     @classmethod
     def get_checkrates_url(cls):
-        return f"{cls._get_base_booking_api_url()}/checkrates"
+        return f"{cls._get_base_booking_url()}/checkrates"
 
     @classmethod
     def get_hotel_content_url(cls):
-        return f"{cls._get_content_base_url()}/hotels"
+        return f"{cls._get_base_content_url()}/hotels"
 
     @classmethod
-    def _get_base_booking_api_url(cls):
+    def get_facilities_types_url(cls):
+        return f"{cls._get_base_content_url()}/types/facilities"
+
+    @classmethod
+    def _get_base_booking_url(cls):
         return f"{cls._get_base_url()}/hotel-api/1.0"
 
     @classmethod
-    def _get_content_base_url(cls):
+    def _get_base_content_url(cls):
         return f"{cls._get_base_url()}/hotel-content-api/1.0"
 
     @classmethod
     def _get_base_url(cls):
-        return f"https://{cls._get_hostname()}"
+        return "https://api.test.hotelbeds.com"
 
-    @staticmethod
-    def _get_hostname():
-        return "api.test.hotelbeds.com"

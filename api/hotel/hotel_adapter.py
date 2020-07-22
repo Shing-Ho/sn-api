@@ -25,10 +25,6 @@ class HotelAdapter(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def booking_availability(self, search_request: HotelSpecificSearch):
-        pass
-
-    @abc.abstractmethod
     def booking(self, book_request: HotelBookingRequest):
         pass
 

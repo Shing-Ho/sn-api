@@ -73,6 +73,9 @@ class TestHotelBedsIntegration(unittest.TestCase):
         response = self.hotelbeds.recheck(search_request, hotels[0].room_types[0].rates[0].rate_key)
         print(response)
 
+    def test_hotelbeds_facilities_types(self):
+        print(self.hotelbeds.get_facilities_types())
+
     @staticmethod
     def create_location_search(location_name="TVL", checkin=None, checkout=None):
         if checkin is None:

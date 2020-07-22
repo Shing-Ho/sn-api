@@ -7,7 +7,7 @@ from api.hotel.hotel_model import HotelLocationSearch, HotelDetailsSearchRequest
 
 
 class TestTravelport(unittest.TestCase):
-    def test_search(self):
+    def _test_search(self):
         travelport = TravelportHotelAdapter()
 
         checkin_date = datetime.now().date() + timedelta(days=30)
@@ -17,7 +17,7 @@ class TestTravelport(unittest.TestCase):
         results = travelport.search_by_location(search_request)
         print(results)
 
-    def test_hotel_details(self):
+    def _test_hotel_details(self):
         travelport = TravelportHotelAdapter()
         hotel_details = HotelDetailsSearchRequest(
             chain_code="HY",

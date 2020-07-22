@@ -4,7 +4,7 @@ from api import logger
 from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse
 from api.hotel.adapters import adapter_service
 from api.models import models
-from api.models.models import Booking, BookingStatus, Traveler
+from api.models.models import BookingStatus, Traveler
 from api.payments import payment_service
 from common.exceptions import AppException
 
@@ -23,23 +23,20 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
         logger.error(f"Could not book request: {book_request}")
         raise AppException("Error during booking")
 
-    traveler = Traveler(
-        first_name=response.reservation.customer.first_name,
-        last_name=response.reservation.customer.last_name,
-        phone_number=response.reservation.customer.phone_number,
-        email_address=response.reservation.customer.email,
-        country=response.reservation.customer.country,
-    )
-    traveler.save()
+    persist_reservation(book_request, response)
 
-    booking = models.Booking(
-        booking_status=BookingStatus.BOOKED.value,
-        transaction_id=response.transaction_id,
-        booking_date=datetime.now(),
-        lead_traveler=traveler,
-    )
-    booking.save()
+    return response
 
+
+def persist_reservation(book_request, response):
+    traveler = _persist_traveler(response)
+    booking = _persist_booking_record(response, traveler)
+    _persist_hotel(book_request, booking, response)
+
+    return booking
+
+
+def _persist_hotel(book_request, booking, response):
     hotel_booking = models.HotelBooking(
         booking=booking,
         created_date=datetime.now(),
@@ -50,6 +47,31 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
         total_price=response.reservation.room_rate.total.amount,
         currency=response.reservation.room_rate.total.currency,
     )
-    hotel_booking.save()
 
-    return response
+    hotel_booking.save()
+    return hotel_booking
+
+
+def _persist_booking_record(response, traveler):
+    booking = models.Booking(
+        booking_status=BookingStatus.BOOKED.value,
+        transaction_id=response.transaction_id,
+        booking_date=datetime.now(),
+        lead_traveler=traveler,
+    )
+
+    booking.save()
+    return booking
+
+
+def _persist_traveler(response):
+    traveler = Traveler(
+        first_name=response.reservation.customer.first_name,
+        last_name=response.reservation.customer.last_name,
+        phone_number=response.reservation.customer.phone_number,
+        email_address=response.reservation.customer.email,
+        country=response.reservation.customer.country,
+    )
+
+    traveler.save()
+    return traveler

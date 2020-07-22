@@ -10,8 +10,8 @@ from api.hotel.adapters.hotelbeds.common_models import HotelBedsRateType, HotelB
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
 from api.hotel.adapters.hotelbeds.search_models import HotelBedsSearchBuilder
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
-from api.hotel.hotel_model import HotelLocationSearch
-from api.tests.utils import load_test_resource
+from api.hotel.hotel_model import HotelLocationSearch, SimplenightAmenities
+from api.tests.utils import load_test_resource, load_test_json_resource
 
 
 class TestHotelBeds(unittest.TestCase):
@@ -131,6 +131,7 @@ class TestHotelBeds(unittest.TestCase):
             response = hotelbeds.details(["foo", "bar"], "en_US")
 
         self.assertIsNotNone(response)
+        print(response)
 
     def test_hotelbeds_booking(self):
         booking_request = HotelBookingRequest(
@@ -184,6 +185,28 @@ class TestHotelBeds(unittest.TestCase):
             results = hotelbeds_service.search_by_location(request)
 
         assert len(results) == 0
+
+    def test_hotelbeds_amenity_mappings(self):
+        resource = load_test_json_resource("hotelbeds/hotel-details-single-hotel.json")
+        with requests_mock.Mocker() as mocker:
+            mocker.get(HotelBedsTransport.get_hotel_content_url(), json=resource)
+            hotelbeds = HotelBeds(HotelBedsTransport())
+            details = hotelbeds.details([], "ENG")
+
+        self.assertEqual(1, len(details))
+
+        hotel_detail = details[0]
+        self.assertEquals(10, len(hotel_detail.amenities))
+        self.assertIn(SimplenightAmenities.RESTAURANT, hotel_detail.amenities)
+        self.assertIn(SimplenightAmenities.POOL, hotel_detail.amenities)
+        self.assertIn(SimplenightAmenities.PARKING, hotel_detail.amenities)
+        self.assertIn(SimplenightAmenities.BAR, hotel_detail.amenities)
+        self.assertIn(SimplenightAmenities.GYM, hotel_detail.amenities)
+        self.assertIn(SimplenightAmenities.BREAKFAST, hotel_detail.amenities)
+        self.assertIn(SimplenightAmenities.AIR_CONDITIONING, hotel_detail.amenities)
+        self.assertIn(SimplenightAmenities.PET_FRIENDLY, hotel_detail.amenities)
+        self.assertIn(SimplenightAmenities.RESTAURANT, hotel_detail.amenities)
+        self.assertIn(SimplenightAmenities.WASHER_DRYER, hotel_detail.amenities)
 
     @staticmethod
     def create_location_search(location_name="TVL"):

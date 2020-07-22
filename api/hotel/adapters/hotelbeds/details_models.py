@@ -33,6 +33,13 @@ class HotelBedsImage(BaseSchema):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
+class HotelBedsAmenity(BaseSchema):
+    facility_code: int = field(metadata=dict(data_key="facilityCode"))
+    facility_group_code: int = field(metadata=dict(data_key="facilityGroupCode"))
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
 class HotelBedsHotelDetail(BaseSchema):
     code: int = field(metadata=dict(data_key="code"))
     name: HotelBedsContent = field(metadata=dict(data_key="name"))
@@ -41,6 +48,7 @@ class HotelBedsHotelDetail(BaseSchema):
     state_code: str = field(metadata=dict(data_key="stateCode"))
     coordinates: HotelBedsCoordinates = field(metadata=dict(data_key="coordinates"))
     chain_code: Optional[str] = field(metadata=dict(data_key="chainCode"))
+    amenities: Optional[List[HotelBedsAmenity]] = field(metadata=dict(data_key="facilities"))
     accommodation_type: str = field(metadata=dict(data_key="accommodationTypeCode"))
     address: HotelBedsContent = field(metadata=dict(data_key="address"))
     postal_code: Optional[str] = field(metadata=dict(data_key="postalCode"))

@@ -10,6 +10,30 @@ from marshmallow import EXCLUDE
 from api.common.models import BaseSchema, RemoveNone, RoomOccupancy, Address, HotelRate, RoomRate
 
 
+class SimplenightAmenities(Enum):
+    POOL = "Pool"
+    FREE_PARKING = "Free Parking"
+    PARKING = "Parking"
+    BREAKFAST = "Breakfast"
+    WIFI = "Free Wi-Fi"
+    AIRPORT_SHUTTLE = "Free Airport Shuttle"
+    KITCHEN = "Kitchen"
+    PET_FRIENDLY = "Pet Friendly"
+    AIR_CONDITIONING = "Air Conditioned"
+    CASINO = "Casino"
+    WATER_PARK = "Water Park"
+    ALL_INCLUSIVE = "All Inclusive"
+    SPA = "Spa"
+    WASHER_DRYER = "Washer and Dryer"
+    LAUNDRY_SERVICES = "Laundry Services"
+    HOT_TUB = "Hot Tub"
+    BAR = "Bar"
+    MINIBAR = "Mini Bar"
+    GYM = "Health Club or Gym"
+    RESTAURANT = "Restaurant"
+    SAUNA = "Sauna"
+
+
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class BaseHotelSearch(BaseSchema, RemoveNone):
@@ -162,6 +186,7 @@ class HotelDetails(BaseSchema):
     checkin_time: Optional[str]
     checkout_time: Optional[str]
     photos: List[Image] = field(default_factory=list)
+    amenities: Optional[List[SimplenightAmenities]] = field(default_factory=list)
     geolocation: Optional[GeoLocation] = None
     phone_number: Optional[str] = None
     email: Optional[str] = None
