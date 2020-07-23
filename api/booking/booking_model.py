@@ -1,7 +1,7 @@
 import dataclasses
 from datetime import date
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 import marshmallow_dataclass
 from marshmallow import validates_schema
@@ -83,7 +83,7 @@ class HotelBookingRequest(BaseSchema):
     language: str
     customer: Customer
     traveler: Traveler
-    room_rate: RoomRate
+    room_rates: List[RoomRate] = dataclasses.field(default_factory=list)
     payment: Optional[Payment] = None
     tracking: Optional[str] = None
     ip_address: Optional[str] = None

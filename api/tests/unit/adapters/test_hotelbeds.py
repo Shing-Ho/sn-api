@@ -5,12 +5,13 @@ from datetime import date, datetime, timedelta
 import requests_mock
 
 from api.booking.booking_model import HotelBookingRequest, Customer, Traveler
-from api.common.models import to_json, RoomOccupancy, RateType, RoomRate, Money
+from api.common.models import to_json, RoomOccupancy, RateType, RoomRate
 from api.hotel.adapters.hotelbeds.common_models import HotelBedsRateType, HotelBedsPaymentType
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
 from api.hotel.adapters.hotelbeds.search_models import HotelBedsSearchBuilder
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_model import HotelLocationSearch, SimplenightAmenities
+from api.tests import to_money
 from api.tests.utils import load_test_resource, load_test_json_resource
 
 
@@ -93,8 +94,8 @@ class TestHotelBeds(unittest.TestCase):
         self.assertEqual("-119.94413940701634", hotel.longitude)
         self.assertEqual(9, len(hotel.rooms))
 
-        self.assertEqual("100.17", hotel.min_rate)
-        self.assertEqual("1001.66", hotel.max_rate)
+        self.assertEqual("100.17", str(hotel.min_rate))
+        self.assertEqual("1001.66", str(hotel.max_rate))
         self.assertEqual("EUR", hotel.currency)
 
         room = hotel.rooms[0]
@@ -110,7 +111,7 @@ class TestHotelBeds(unittest.TestCase):
         self.assertEqual(expected_rate_key, rate.rate_key)
         self.assertEqual(9, rate.allotment)
         self.assertEqual("NOR", rate.rate_class)
-        self.assertEqual("100.17", rate.net)
+        self.assertEqual("100.17", str(rate.net))
         self.assertEqual(HotelBedsRateType.RECHECK, rate.rate_type)
         self.assertEqual(HotelBedsPaymentType.AT_WEB, rate.payment_type)
         self.assertFalse(rate.packaging)
@@ -134,6 +135,16 @@ class TestHotelBeds(unittest.TestCase):
         print(response)
 
     def test_hotelbeds_booking(self):
+        room_rate = RoomRate(
+            rate_key="rate-key",
+            rate_type=RateType.BOOKABLE,
+            description="",
+            total_base_rate=to_money("0.0"),
+            total_tax_rate=to_money("0.0"),
+            total=to_money("0.0"),
+            additional_detail=[],
+        )
+
         booking_request = HotelBookingRequest(
             api_version=1,
             transaction_id="tx",
@@ -143,15 +154,7 @@ class TestHotelBeds(unittest.TestCase):
             language="en",
             customer=Customer("John", "Smith", "5558675309", "john@smith.foo", "US"),
             traveler=Traveler("John", "Smith", occupancy=RoomOccupancy(adults=1)),
-            room_rate=RoomRate(
-                rate_key="rate-key",
-                rate_type=RateType.BOOKABLE,
-                description="",
-                total_base_rate=Money(0.0, "USD"),
-                total_tax_rate=Money(0.0, "USD"),
-                total=Money(0.0, "USD"),
-                additional_detail=[],
-            ),
+            room_rates=[room_rate],
             payment=None,
         )
 
@@ -207,6 +210,33 @@ class TestHotelBeds(unittest.TestCase):
         self.assertIn(SimplenightAmenities.PET_FRIENDLY, hotel_detail.amenities)
         self.assertIn(SimplenightAmenities.RESTAURANT, hotel_detail.amenities)
         self.assertIn(SimplenightAmenities.WASHER_DRYER, hotel_detail.amenities)
+
+    def test_hotelbeds_recheck(self):
+        search_request = self.create_location_search(location_name="SFO")
+
+        avail_response = load_test_resource("hotelbeds/recheck/availability.json")
+        details_response = load_test_resource("hotelbeds/recheck/details.json")
+        recheck_response = load_test_resource("hotelbeds/recheck/recheck.json")
+
+        hotel_details_url = "https://api.test.hotelbeds.com/hotel-content-api/1.0/hotels?language=ENG"
+
+        hotelbeds = HotelBeds(HotelBedsTransport())
+        with requests_mock.Mocker() as mocker:
+            mocker.post(HotelBedsTransport.get_hotels_url(), text=avail_response)
+            mocker.get(hotel_details_url, text=details_response)
+            mocker.post(HotelBedsTransport.get_checkrates_url(), text=recheck_response)
+
+            hotels = hotelbeds.search_by_location(search_request)
+            assert len(hotels) > 0
+
+            availability_room_rates = hotels[0].room_types[0].rates[:2]
+            recheck_response = hotelbeds.recheck(availability_room_rates)
+            self.assertTrue(recheck_response.is_exact_price)
+
+            availability_room_rates[0].total = to_money("75.00", "USD")
+            recheck_response = hotelbeds.recheck(availability_room_rates)
+            self.assertFalse(recheck_response.is_exact_price)
+            self.assertEqual("-24.89", str(recheck_response.price_difference))
 
     @staticmethod
     def create_location_search(location_name="TVL"):

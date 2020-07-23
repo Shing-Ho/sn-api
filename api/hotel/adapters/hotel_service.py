@@ -2,6 +2,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from typing import List
 
 from api.booking.booking_model import HotelBookingRequest
+from api.common.models import RoomRate
 from api.hotel.adapters import adapter_service
 from api.hotel.hotel_model import (
     HotelDetails,
@@ -9,7 +10,6 @@ from api.hotel.hotel_model import (
     HotelSearchResponseHotel,
     HotelLocationSearch,
     HotelDetailsSearchRequest,
-    BaseHotelSearch,
 )
 
 MAX_WORKERS = 5
@@ -40,14 +40,9 @@ def details(hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:
     return adapter.details(hotel_details_req)
 
 
-def recheck(crs: str, search: BaseHotelSearch, rate_key: str) -> HotelSearchResponseHotel:
+def recheck(crs: str, room_rate: RoomRate) -> HotelSearchResponseHotel:
     adapter = adapter_service.get_adapters(crs)[0]
-    return adapter.recheck(search, rate_key)
-
-
-def booking_availability(search_request: HotelSpecificSearch):
-    adapter = adapter_service.get_adapters(search_request.crs)[0]
-    return adapter.booking_availability(search_request)
+    return adapter.recheck(room_rate)
 
 
 def booking(book_request: HotelBookingRequest):

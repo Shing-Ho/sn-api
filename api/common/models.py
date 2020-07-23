@@ -1,4 +1,5 @@
 import dataclasses
+import decimal
 from dataclasses import field
 from datetime import date
 from enum import Enum
@@ -45,11 +46,11 @@ class RoomOccupancy(BaseSchema):
 class Address(BaseSchema):
     city: str
     province: str
-    postal_code: str
     country: str
     address1: str
     address2: Optional[str] = None
     address3: Optional[str] = None
+    postal_code: Optional[str] = None
 
 
 @dataclasses.dataclass
@@ -75,7 +76,7 @@ class RateType(Enum):
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class Money(BaseSchema):
-    amount: float
+    amount: decimal.Decimal = field(metadata=dict(as_string=True))
     currency: str
 
 

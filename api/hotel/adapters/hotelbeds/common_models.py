@@ -1,4 +1,5 @@
 import dataclasses
+import decimal
 from dataclasses import field
 from datetime import datetime
 from enum import Enum
@@ -69,7 +70,7 @@ class HotelBedsPromotionsRS(BaseSchema):
 @marshmallow_dataclass.dataclass
 class HotelBedsTaxRS(BaseSchema):
     included: bool
-    amount: Optional[str]
+    amount: Optional[decimal.Decimal] = field(metadata=dict(as_string=True))
     currency: Optional[str]
     type: Optional[HotelBedsTaxType]
 

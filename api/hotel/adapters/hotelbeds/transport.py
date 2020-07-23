@@ -1,36 +1,18 @@
 import hashlib
 import time
-from typing import Dict
 
-import requests
-
-from api.common.models import BaseSchema, to_json
+from api.hotel.adapters.transport import Transport
 
 
-class HotelBedsTransport:
-    def __init__(self):
-        self._headers = {
-            "Accept-Encoding": "gzip",
-            "Content-Type": "application/json",
-            "Api-Key": self._get_apikey(),
-        }
-
+class HotelBedsTransport(Transport):
     def get_headers(self, **kwargs):
         headers = self._get_default_headers()
+        headers["Content-Type"] = "application/json"
+        headers["Api-Key"] = self._get_apikey()
         headers["X-Signature"] = self._get_xsignature()
         headers.update(kwargs)
 
         return headers
-
-    def post(self, url, request: BaseSchema, **kwargs):
-        return requests.post(url, json=to_json(request), headers=self.get_headers(**kwargs))
-
-    def get(self, url, params: Dict, **kwargs):
-        params.update(kwargs)
-        return requests.get(url, params=params, headers=self.get_headers())
-
-    def _get_default_headers(self):
-        return self._headers.copy()
 
     @staticmethod
     def _get_apikey():
@@ -77,4 +59,3 @@ class HotelBedsTransport:
     @classmethod
     def _get_base_url(cls):
         return "https://api.test.hotelbeds.com"
-

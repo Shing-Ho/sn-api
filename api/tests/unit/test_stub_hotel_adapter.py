@@ -3,12 +3,13 @@ import uuid
 from datetime import date
 
 from api.booking.booking_model import Customer, Traveler, PaymentCardParameters, CardType, Payment, HotelBookingRequest
+from api.common.models import RateType, RoomRate, Address
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     RoomOccupancy,
 )
-from api.common.models import RateType, RoomRate, Money, Address
+from api.tests import to_money
 
 
 class TestStubHotelAdapter(unittest.TestCase):
@@ -52,9 +53,9 @@ class TestStubHotelAdapter(unittest.TestCase):
             rate_key="foo",
             description="King Bed Ocean View Suite",
             additional_detail=list(),
-            total_base_rate=Money(526.22, "USD"),
-            total_tax_rate=Money(63.29, "USD"),
-            total=Money(589.51, "USD"),
+            total_base_rate=to_money("526.22"),
+            total_tax_rate=to_money("63.29"),
+            total=to_money("589.51"),
             daily_rates=[],
             rate_type=RateType.BOOKABLE,
         )
@@ -80,7 +81,7 @@ class TestStubHotelAdapter(unittest.TestCase):
             language="en_US",
             customer=customer,
             traveler=traveler,
-            room_rate=room_rate,
+            room_rates=[room_rate],
             payment=payment,
             tracking=str(uuid.uuid4()),
             ip_address="1.1.1.1",
@@ -106,7 +107,7 @@ class TestStubHotelAdapter(unittest.TestCase):
         self.assertEqual("Jane", response.reservation.traveler.first_name)
         self.assertEqual("Smith", response.reservation.traveler.last_name)
         self.assertEqual(1, response.reservation.traveler.occupancy.adults)
-        self.assertEqual("King Bed Ocean View Suite", response.reservation.room_rate.description)
-        self.assertEqual(526.22, response.reservation.room_rate.total_base_rate.amount)
-        self.assertEqual(63.29, response.reservation.room_rate.total_tax_rate.amount)
-        self.assertEqual(589.51, response.reservation.room_rate.total.amount)
+        self.assertEqual("King Bed Ocean View Suite", response.reservation.room_rate[0].description)
+        self.assertEqual("526.22", str(response.reservation.room_rate[0].total_base_rate.amount))
+        self.assertEqual("63.29", str(response.reservation.room_rate[0].total_tax_rate.amount))
+        self.assertEqual("589.51", str(response.reservation.room_rate[0].total.amount))

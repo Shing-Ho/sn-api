@@ -1,3 +1,4 @@
+import decimal
 import json
 from typing import List, Union, Dict, Optional
 
@@ -39,6 +40,7 @@ from api.hotel.hotel_model import (
     BaseHotelSearch,
     RoomOccupancy,
     RoomType,
+    HotelPriceChange,
 )
 
 
@@ -90,21 +92,6 @@ class HotelBeds(HotelAdapter):
         hotel_details_response = self._details(hotel_codes, language)
         return list(map(self._create_hotel_details, hotel_details_response.hotels))
 
-    def get_facilities_types(self):
-        endpoint = self.transport.get_facilities_types_url()
-        params = {
-            "fields": "all",
-            "from": 1,
-            "to": 500,
-        }
-
-        response = self.transport.get(endpoint, params)
-        if response.ok:
-            return response.json()
-
-        logger.error(response.text)
-        raise HotelBedsException(f"Could not find facilities types ({response.status_code})")
-
     def _details(self, hotel_codes: Union[List[str], str], language: str) -> HotelBedsHotelDetailsRS:
         if isinstance(hotel_codes, list):
             hotel_codes = str.join(",", hotel_codes)
@@ -126,33 +113,85 @@ class HotelBeds(HotelAdapter):
 
         logger.error(f"Error retrieving hotel details (status_code={response.status_code}): {response.text}")
 
-    def recheck(self, search: BaseHotelSearch, rate_key: str) -> HotelBedsHotel:
-        request = HotelBedsCheckRatesRQ(rooms=[HotelBedsCheckRatesRoom(rate_key)])
-        url = self.transport.get_checkrates_url()
+    def get_facilities_types(self):
+        endpoint = self.transport.get_facilities_types_url()
+        params = {
+            "fields": "all",
+            "from": 1,
+            "to": 500,
+        }
 
-        response = self.transport.post(url, request)
+        response = self.transport.get(endpoint, params)
         if response.ok:
-            hotel: HotelBedsCheckRatesRS = HotelBedsCheckRatesRS.Schema().load(response.json())
-            return hotel.hotel
+            return response.json()
+
+        logger.error(response.text)
+        raise HotelBedsException(f"Could not find facilities types ({response.status_code})")
+
+    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelPriceChange:
+        verified_hotel = self._recheck_request(room_rates)
+        if not verified_hotel or not verified_hotel.hotel.rooms:
+            logger.error({"message": "Could not recheck price.  No Rates found", "hotel": verified_hotel})
+            raise HotelBedsException("Could not recheck price for booking.  No rates found.")
+
+        original_total = sum(x.total.amount for x in room_rates)
+        verified_rates_by_rate_key = {x.rate_key: x for x in verified_hotel.hotel.rooms[0].rates}
+
+        total_verified_rate = decimal.Decimal(0)
+        verified_room_rates = []
+        for room_rate in room_rates:
+            if room_rate.rate_key not in verified_rates_by_rate_key:
+                message = "Could not find rate key in recheck response"
+                logger.error({"message": message, "verified_rates": verified_rates_by_rate_key})
+                raise HotelBedsException(message)
+
+            verified_rate = self._create_room_rate(verified_rates_by_rate_key[room_rate.rate_key], None)
+            total_verified_rate += verified_rate.total.amount
+            verified_room_rates.append(verified_rate)
+
+        matches_price = original_total == total_verified_rate
+        return HotelPriceChange(
+            is_exact_price=matches_price,
+            room_rates=verified_room_rates,
+            original_total=original_total,
+            recheck_total=total_verified_rate,
+            price_difference=original_total - total_verified_rate,
+        )
+
+    def _recheck_request(self, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelBedsCheckRatesRS:
+        rooms_to_check = list(HotelBedsCheckRatesRoom(rate_key=x.rate_key) for x in room_rates)
+        request = HotelBedsCheckRatesRQ(rooms=rooms_to_check)
+
+        response = self.transport.post(self.transport.get_checkrates_url(), request)
+
+        if not response.ok:
+            raise HotelBedsException("Could not recheck price for booking")
+
+        return HotelBedsCheckRatesRS.Schema().load(response.json())
 
     def booking(self, book_request: HotelBookingRequest) -> Optional[HotelBedsBookingRS]:
         self.transport.get_booking_url()
 
         lead_traveler = HotelBedsPax(1, "AD", book_request.customer.first_name, book_request.customer.last_name)
+
+        rooms_to_book = []
+        for room_rate in book_request.room_rates:
+            booking_room = HotelBedsBookingRoom(rateKey=room_rate.rate_key, paxes=[lead_traveler])
+            rooms_to_book.append(booking_room)
+
         booking_request = HotelBedsBookingRQ(
             holder=HotelBedsBookingLeadTraveler(
                 name=book_request.customer.first_name, surname=book_request.customer.last_name
             ),
             clientReference=book_request.transaction_id,
-            rooms=[HotelBedsBookingRoom(rateKey=book_request.room_rate.rate_key, paxes=[lead_traveler])],
-            remark="Test booking",
+            rooms=rooms_to_book,
         )
 
         response = self.transport.post(self.transport.get_booking_url(), booking_request)
         if not response.ok:
-            logger.error(f"Error booking HotelBeds room for rate_key {book_request.room_rate.rate_key}")
+            logger.error({"message": "Error booking HotelBeds", "request": booking_request})
             logger.error(response.raw)
-            return None
+            raise HotelBedsException(f"Error During Booking: {response.raw}")
 
         return HotelBedsBookingRS.Schema().load(response.json())
 
@@ -188,7 +227,7 @@ class HotelBeds(HotelAdapter):
         children = max(x.children for x in hotelbeds_room.rates)
         occupancy = RoomOccupancy(adults=adults, children=children)
 
-        rates = list(map(lambda x: self._create_room_rates(search, x), hotelbeds_room.rates))
+        rates = list(map(lambda x: self._create_room_rate(x, search.currency), hotelbeds_room.rates))
 
         return RoomType(
             code=hotelbeds_room.code,
@@ -202,12 +241,11 @@ class HotelBeds(HotelAdapter):
             rates=rates,
         )
 
-    def _create_room_rates(self, search: BaseHotelSearch, rate: HotelBedsRoomRateRS):
-        currency = search.currency
-        total_base_rate = Money(float(rate.net), currency)
+    def _create_room_rate(self, rate: HotelBedsRoomRateRS, currency=None):
+        total_base_rate = Money(rate.net, currency)
         total_taxes = 0
         if rate.taxes:
-            total_taxes = sum(float(x.amount) for x in rate.taxes.taxes if x.amount is not None)
+            total_taxes = sum(x.amount for x in rate.taxes.taxes if x.amount is not None)
 
         total_tax_rate = Money(total_taxes, currency)
         total_rate = Money(total_base_rate.amount + total_tax_rate.amount, currency)

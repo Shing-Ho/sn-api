@@ -119,8 +119,8 @@ class HotelBedsBookingDetailRS:
     status: HotelBedsBookingStatus
     modification_policies: HotelBedsBookingModificationPolicy = field(metadata=dict(data_key="modificationPolicies"))
     hotel: HotelBedsBookingHotel
-    pending_amount: decimal.Decimal = field(metadata=dict(data_key="pendingAmount"))
-    total_net: decimal.Decimal = field(metadata=dict(data_key="totalNet"))
+    pending_amount: decimal.Decimal = field(metadata=dict(data_key="pendingAmount", as_string=True))
+    total_net: decimal.Decimal = field(metadata=dict(data_key="totalNet", as_string=True))
     holder: HotelBedsBookingLeadTraveler
     remark: str
 

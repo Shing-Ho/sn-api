@@ -49,7 +49,7 @@ class TestHotelsView(SimplenightAPITestCase):
             end_date=checkout,
             occupancy=RoomOccupancy(adults=1),
             location_name="SFO",
-            crs="hotelbeds,stub",
+            crs="hotelbeds",
         )
 
         response = self._post(SEARCH_BY_LOCATION, search)

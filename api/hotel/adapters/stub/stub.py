@@ -3,9 +3,10 @@ import random
 import uuid
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import List, Type
+from typing import List, Type, Union
 
 from api.booking.booking_model import Reservation, HotelBookingRequest, HotelBookingResponse, Locator, Status
+from api.common.models import RateType, RoomRate, DailyRate, Money
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelLocationSearch,
@@ -22,8 +23,8 @@ from api.hotel.hotel_model import (
     GeoLocation,
     RatePlan,
     BaseHotelSearch,
+    HotelPriceChange,
 )
-from api.common.models import RateType, RoomRate, DailyRate, Money
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
 
@@ -50,7 +51,7 @@ class StubHotelAdapter(HotelAdapter):
 
         return response
 
-    def recheck(self, search, hotel: HotelSearchResponseHotel) -> HotelSearchResponseHotel:
+    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelPriceChange:
         pass
 
     def details(self, *args):
@@ -68,7 +69,7 @@ class StubHotelAdapter(HotelAdapter):
             checkout=book_request.checkout,
             customer=book_request.customer,
             traveler=book_request.traveler,
-            room_rate=book_request.room_rate,
+            room_rate=book_request.room_rates,
         )
 
         return HotelBookingResponse(

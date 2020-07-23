@@ -1,4 +1,5 @@
 import dataclasses
+import decimal
 from dataclasses import field
 from datetime import date, datetime
 from enum import Enum
@@ -63,7 +64,6 @@ class HotelSpecificSearch(BaseHotelSearch):
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class HotelDetailsSearchRequest(BaseSchema):
-    chain_code: str
     hotel_code: str
     start_date: date
     end_date: date
@@ -71,6 +71,7 @@ class HotelDetailsSearchRequest(BaseSchema):
     currency: str = "USD"
     language: str = "en_US"
     crs: str = "stub"
+    chain_code: Optional[str] = None
 
 
 @dataclasses.dataclass
@@ -181,7 +182,6 @@ class GeoLocation(BaseSchema):
 class HotelDetails(BaseSchema):
     name: str
     address: Address
-    chain_code: str
     hotel_code: str
     checkin_time: Optional[str]
     checkout_time: Optional[str]
@@ -191,6 +191,7 @@ class HotelDetails(BaseSchema):
     phone_number: Optional[str] = None
     email: Optional[str] = None
     homepage_url: Optional[str] = None
+    chain_code: Optional[str] = None
 
 
 @dataclasses.dataclass
@@ -211,3 +212,13 @@ class HotelSearchResponseHotel(BaseSchema):
     room_types: List[RoomType]
     hotel_details: HotelDetails = field(metadata=dict(allow_none=True))
     error: Optional[ErrorResponse] = None
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class HotelPriceChange(BaseSchema):
+    is_exact_price: bool
+    room_rates: List[RoomRate]
+    original_total: decimal.Decimal = field(metadata=dict(as_string=True))
+    recheck_total: decimal.Decimal = field(metadata=dict(as_string=True))
+    price_difference: decimal.Decimal = field(metadata=dict(as_string=True))

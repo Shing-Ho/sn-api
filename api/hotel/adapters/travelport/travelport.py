@@ -1,7 +1,8 @@
 from datetime import date, timedelta
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from api.booking.booking_model import HotelBookingRequest
+from api.common.models import RoomRate, DailyRate, Money, RateType
 from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBuilder
 from api.hotel.adapters.travelport.search import TravelportHotelSearchBuilder
 from api.hotel.adapters.travelport.transport import TravelportTransport
@@ -16,8 +17,8 @@ from api.hotel.hotel_model import (
     HotelSpecificSearch,
     HotelSearchResponseHotel,
     GeoLocation,
+    HotelPriceChange,
 )
-from api.common.models import RoomRate, DailyRate, Money, RateType
 
 secrets = {
     "url": "https://americas.universal-api.travelport.com/B2BGateway/connect/uAPI/HotelService",
@@ -53,7 +54,7 @@ class TravelportHotelAdapter(HotelAdapter):
     def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponseHotel:
         pass
 
-    def recheck(self, search, hotel: HotelSearchResponseHotel) -> HotelSearchResponseHotel:
+    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelPriceChange:
         pass
 
     def booking_availability(self, search_request: HotelSpecificSearch):

@@ -1,4 +1,5 @@
 import dataclasses
+import decimal
 from dataclasses import field
 from datetime import date
 from typing import List, Optional
@@ -54,7 +55,7 @@ class HotelBedsRoomRateRS(BaseSchema):
     rate_key: Optional[str] = field(metadata=dict(data_key="rateKey"))
     rate_class: str = field(metadata=dict(data_key="rateClass"))
     rate_type: HotelBedsRateType = field(metadata=dict(data_key="rateType"))
-    net: str = field(metadata=dict(data_key="net"))
+    net: decimal.Decimal = field(metadata=dict(data_key="net", as_string=True))
     allotment: Optional[int] = field(metadata=dict(data_key="allotment"))
     payment_type: HotelBedsPaymentType = field(metadata=dict(data_key="paymentType", by_value=True))
     packaging: bool = field(metadata=dict(data_key="packaging"))
