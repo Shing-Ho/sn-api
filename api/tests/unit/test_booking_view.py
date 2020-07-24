@@ -5,7 +5,7 @@ import requests_mock
 
 from api.common.models import RoomOccupancy
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
-from api.hotel.hotel_model import HotelLocationSearch, HotelSearchResponseHotel
+from api.hotel.hotel_model import HotelLocationSearch, Hotel
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 from api.tests.utils import load_test_resource
 
@@ -33,7 +33,7 @@ class TestBookingView(SimplenightAPITestCase):
 
         print(json.dumps(response.data, indent=2))
 
-        hotels = HotelSearchResponseHotel.Schema(many=True).load(response.data)
+        hotels = Hotel.Schema(many=True).load(response.data)
         assert len(hotels) == 24
 
     def test_hotelbeds_booking(self):

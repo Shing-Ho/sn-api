@@ -1,4 +1,3 @@
-import decimal
 import json
 from typing import List, Union, Dict, Optional
 
@@ -34,13 +33,12 @@ from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     HotelDetails,
-    HotelSearchResponseHotel,
+    Hotel,
     HotelLocationSearch,
     Address,
     BaseHotelSearch,
     RoomOccupancy,
     RoomType,
-    HotelPriceChange,
 )
 
 
@@ -53,7 +51,7 @@ class HotelBeds(HotelAdapter):
 
         self.transport = transport
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponseHotel]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[Hotel]:
         availability_results = self._search_by_location(search_request)
         if availability_results.results.total == 0:
             return []
@@ -85,7 +83,7 @@ class HotelBeds(HotelAdapter):
 
         logger.error(f"Error searching HotelBeds (status_code={response.status_code}): {response.text}")
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponseHotel:
+    def search_by_id(self, search_request: HotelSpecificSearch) -> Hotel:
         pass
 
     def details(self, hotel_codes: Union[List[str], str], language: str) -> List[HotelDetails]:
@@ -128,35 +126,9 @@ class HotelBeds(HotelAdapter):
         logger.error(response.text)
         raise HotelBedsException(f"Could not find facilities types ({response.status_code})")
 
-    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelPriceChange:
+    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
         verified_hotel = self._recheck_request(room_rates)
-        if not verified_hotel or not verified_hotel.hotel.rooms:
-            logger.error({"message": "Could not recheck price.  No Rates found", "hotel": verified_hotel})
-            raise HotelBedsException("Could not recheck price for booking.  No rates found.")
-
-        original_total = sum(x.total.amount for x in room_rates)
-        verified_rates_by_rate_key = {x.rate_key: x for x in verified_hotel.hotel.rooms[0].rates}
-
-        total_verified_rate = decimal.Decimal(0)
-        verified_room_rates = []
-        for room_rate in room_rates:
-            if room_rate.rate_key not in verified_rates_by_rate_key:
-                message = "Could not find rate key in recheck response"
-                logger.error({"message": message, "verified_rates": verified_rates_by_rate_key})
-                raise HotelBedsException(message)
-
-            verified_rate = self._create_room_rate(verified_rates_by_rate_key[room_rate.rate_key], None)
-            total_verified_rate += verified_rate.total.amount
-            verified_room_rates.append(verified_rate)
-
-        matches_price = original_total == total_verified_rate
-        return HotelPriceChange(
-            is_exact_price=matches_price,
-            room_rates=verified_room_rates,
-            original_total=original_total,
-            recheck_total=total_verified_rate,
-            price_difference=original_total - total_verified_rate,
-        )
+        return list(map(self._create_room_rate, verified_hotel.hotel.rooms[0].rates))
 
     def _recheck_request(self, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelBedsCheckRatesRS:
         rooms_to_check = list(HotelBedsCheckRatesRoom(rate_key=x.rate_key) for x in room_rates)
@@ -208,11 +180,11 @@ class HotelBeds(HotelAdapter):
 
     def _create_hotel(
         self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail
-    ) -> HotelSearchResponseHotel:
+    ) -> Hotel:
 
         room_types = list(map(lambda x: self._create_room_type(search, x), hotel.rooms))
 
-        return HotelSearchResponseHotel(
+        return Hotel(
             crs=self.CRS_NAME,
             hotel_id=str(hotel.code),
             start_date=search.start_date,

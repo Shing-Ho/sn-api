@@ -7,7 +7,7 @@ from api.hotel.adapters import adapter_service
 from api.hotel.hotel_model import (
     HotelDetails,
     HotelSpecificSearch,
-    HotelSearchResponseHotel,
+    Hotel,
     HotelLocationSearch,
     HotelDetailsSearchRequest, HotelPriceChange,
 )
@@ -15,7 +15,7 @@ from api.hotel.hotel_model import (
 MAX_WORKERS = 5
 
 
-def search_by_location(search_request: HotelLocationSearch) -> List[HotelSearchResponseHotel]:
+def search_by_location(search_request: HotelLocationSearch) -> List[Hotel]:
     futures = []
     all_hotels = []
 
@@ -30,7 +30,7 @@ def search_by_location(search_request: HotelLocationSearch) -> List[HotelSearchR
     return all_hotels
 
 
-def search_by_id(search_request: HotelSpecificSearch) -> HotelSearchResponseHotel:
+def search_by_id(search_request: HotelSpecificSearch) -> Hotel:
     adapter = adapter_service.get_adapters(search_request.crs)[0]
     return adapter.search_by_id(search_request)
 

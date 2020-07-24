@@ -10,7 +10,7 @@ from api.common.models import RateType, RoomRate, DailyRate, Money
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelLocationSearch,
-    HotelSearchResponseHotel,
+    Hotel,
     RoomOccupancy,
     RoomType,
     Amenity,
@@ -23,7 +23,6 @@ from api.hotel.hotel_model import (
     GeoLocation,
     RatePlan,
     BaseHotelSearch,
-    HotelPriceChange,
 )
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
@@ -32,14 +31,14 @@ from common.utils import random_string
 class StubHotelAdapter(HotelAdapter):
     CRS_NAME = "stub"
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelSearchResponseHotel]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[Hotel]:
         num_hotels_to_return = random.randint(10, 50)
         return [self.search_by_id(search_request) for _ in range(num_hotels_to_return)]
 
-    def search_by_id(self, search_request: BaseHotelSearch) -> HotelSearchResponseHotel:
+    def search_by_id(self, search_request: BaseHotelSearch) -> Hotel:
         hotel_code = random_string(5).upper()
         room_types = self._generate_room_types(search_request)
-        response = HotelSearchResponseHotel(
+        response = Hotel(
             crs=self.CRS_NAME,
             hotel_id=hotel_code,
             start_date=search_request.start_date,
@@ -51,7 +50,7 @@ class StubHotelAdapter(HotelAdapter):
 
         return response
 
-    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelPriceChange:
+    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
         pass
 
     def details(self, *args):
@@ -203,7 +202,17 @@ class StubHotelAdapter(HotelAdapter):
         longitude = random.random() * 100
         geolocation = GeoLocation(latitude, longitude)
 
-        return HotelDetails(hotel_name, hotel_address, "1A", hotel_code, "3PM", "12PM", [], geolocation)
+        return HotelDetails(
+            name=hotel_name,
+            address=hotel_address,
+            chain_code="1A",
+            hotel_code=hotel_code,
+            checkin_time="3PM",
+            checkout_time="12PM",
+            geolocation=geolocation,
+            photos=[],
+            amenities=[],
+        )
 
     @staticmethod
     def _generate_address(city=None):

@@ -15,9 +15,8 @@ from api.hotel.hotel_model import (
     HotelDetailsSearchRequest,
     HotelDetails,
     HotelSpecificSearch,
-    HotelSearchResponseHotel,
+    Hotel,
     GeoLocation,
-    HotelPriceChange,
 )
 
 secrets = {
@@ -51,10 +50,10 @@ class TravelportHotelAdapter(HotelAdapter):
 
         return self._parse_details(response)
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> HotelSearchResponseHotel:
+    def search_by_id(self, search_request: HotelSpecificSearch) -> Hotel:
         pass
 
-    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelPriceChange:
+    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
         pass
 
     def booking_availability(self, search_request: HotelSpecificSearch):
@@ -81,7 +80,7 @@ class TravelportHotelAdapter(HotelAdapter):
         address_list = hotel_property["PropertyAddress"]["Address"]
         if len(address_list) >= 5:
             address, city, state, postal_code, country = address_list
-            return Address(city, state, postal_code, country, address1=address)
+            return Address(city, state, postal_code, country, address)
         else:
             address, city, *_ = address_list
 

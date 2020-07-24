@@ -23,7 +23,7 @@ from .hotel.hotel_model import (
     HotelLocationSearch,
     HotelSpecificSearch,
     RoomOccupancy,
-    HotelSearchResponseHotel,
+    Hotel,
 )
 from .serializers import LocationsSerializer
 from .serializers import mappingcodesSerializer, paymentsSerializer
@@ -151,7 +151,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
 
         hotels = hotel_service.search_by_location(request)
 
-        return Response(HotelSearchResponseHotel.Schema(many=True).dump(hotels))
+        return Response(Hotel.Schema(many=True).dump(hotels))
 
     @action(detail=False, url_path="search-by-id", methods=["GET", "POST"], name="Search Hotels")
     def search_by_id(self, request):
@@ -176,7 +176,7 @@ class HotelSupplierViewset(viewsets.ViewSet):
 
         response = hotel_service.search_by_id(request)
 
-        return Response(HotelSearchResponseHotel.Schema().dump(response))
+        return Response(Hotel.Schema().dump(response))
 
     @action(detail=False, url_path="booking", methods=["POST"], name="Hotel Booking")
     def booking(self, request):

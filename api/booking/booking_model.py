@@ -124,3 +124,10 @@ class HotelBookingResponse(BaseSchema):
     transaction_id: str
     status: Status
     reservation: Reservation
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class HotelPriceVerificationHolder:
+    original_room_rates: List[RoomRate]
+    verified_room_rates: List[RoomRate]

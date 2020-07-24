@@ -203,22 +203,25 @@ class ErrorResponse(BaseSchema):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelSearchResponseHotel(BaseSchema):
+class Hotel(BaseSchema):
     crs: str
     hotel_id: str
     start_date: date
     end_date: date
     occupancy: RoomOccupancy
     room_types: List[RoomType]
-    hotel_details: HotelDetails = field(metadata=dict(allow_none=True))
+    hotel_details: Optional[HotelDetails]
     error: Optional[ErrorResponse] = None
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class HotelPriceChange(BaseSchema):
+class HotelPriceVerification(BaseSchema):
+    is_allowed_change: bool
     is_exact_price: bool
     room_rates: List[RoomRate]
     original_total: decimal.Decimal = field(metadata=dict(as_string=True))
     recheck_total: decimal.Decimal = field(metadata=dict(as_string=True))
     price_difference: decimal.Decimal = field(metadata=dict(as_string=True))
+
+
