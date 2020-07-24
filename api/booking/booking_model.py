@@ -114,7 +114,7 @@ class Reservation(BaseSchema):
     checkout: date
     customer: Customer
     traveler: Traveler
-    room_rate: RoomRate
+    room_rate: List[RoomRate]
 
 
 @dataclasses.dataclass

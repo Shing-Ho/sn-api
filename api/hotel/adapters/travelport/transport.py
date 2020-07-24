@@ -5,21 +5,21 @@ from requests import Session
 from requests.auth import HTTPBasicAuth
 from zeep import Client, Transport
 
-from api import settings
+from api import settings, logger
+from api.common.decorators import cached_property
 
 
 class TravelportTransport:
-    def __init__(self):
-        self.secrets = self._get_secrets()
-        self.session = self._create_wsdl_session()
-        self.client = self._get_wsdl_client()
-
     def create_service(self, binding_name):
         hotel_service_url = self.secrets["url"]
         target_namespace = "http://www.travelport.com/service/hotel_v50_0"
         service_binding = f"{{{target_namespace}}}{binding_name}"
 
         return self.client.create_service(service_binding, hotel_service_url)
+
+    @cached_property
+    def client(self):
+        return self._get_wsdl_client()
 
     def create_hotel_search_service(self):
         return self.create_service("HotelSuperShopperServiceBinding")
@@ -45,5 +45,13 @@ class TravelportTransport:
 
     @staticmethod
     def _get_secrets():
-        with open(f"{settings.SITE_ROOT}/secrets/travelport.json") as f:
-            return json.load(f)
+        secrets_file = f"{settings.SITE_ROOT}/secrets/travelport.json"
+        try:
+            with open(secrets_file) as f:
+                return json.load(f)
+        except FileNotFoundError:
+            logger.error(f"Could not load Travelport secrets from {secrets_file}")
+
+    def _initialize(self):
+        self.secrets = self._get_secrets()
+        self.session = self._create_wsdl_session()
