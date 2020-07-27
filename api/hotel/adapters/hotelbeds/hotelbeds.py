@@ -104,9 +104,6 @@ class HotelBeds(HotelAdapter):
         response = self.transport.get(url, params)
 
         if response.ok:
-            with open("/Users/jmorton/amen.json", "w") as f:
-                json.dump(response.json(), f, indent=2)
-
             return HotelBedsHotelDetailsRS.Schema().load(response.json())
 
         logger.error(f"Error retrieving hotel details (status_code={response.status_code}): {response.text}")
