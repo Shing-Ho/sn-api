@@ -3,7 +3,7 @@ from typing import List
 
 from api import logger
 from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse
-from api.common.models import RoomRate
+from api.common.models import RoomRate, Money
 from api.hotel.adapters import adapter_service
 from api.models import models
 from api.models.models import BookingStatus, Traveler
@@ -13,9 +13,8 @@ from common.exceptions import AppException
 
 def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
     adapter = adapter_service.get_adapter(book_request.crs)
-    auth_response = payment_service.authorize_payment(
-        amount=book_request.room_rates.total, payment=book_request.payment
-    )
+    total_payment_amount = _get_payment_amount(book_request)
+    auth_response = payment_service.authorize_payment(amount=total_payment_amount, payment=book_request.payment)
 
     if not auth_response:
         logger.error(f"Could not authorize payment for booking: {book_request}")
@@ -32,6 +31,13 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
     return response
 
 
+def _get_payment_amount(book_request: HotelBookingRequest):
+    # TODO: Validate these payment amounts better
+    # TODO: Validate currency
+    total_payment_amount = sum(x.total.amount for x in book_request.room_rates)
+    return Money(total_payment_amount, book_request.room_rates[0].total.currency)
+
+
 def _price_verification(rooms: List[RoomRate]):
     pass
 
@@ -45,19 +51,19 @@ def persist_reservation(book_request, response):
 
 
 def _persist_hotel(book_request, booking, response):
-    hotel_booking = models.HotelBooking(
-        booking=booking,
-        created_date=datetime.now(),
-        hotel_name="Hotel Name",
-        crs_name=book_request.crs,
-        hotel_code=book_request.hotel_id,
-        record_locator=response.reservation.locator.id,
-        total_price=response.reservation.room_rates.total.amount,
-        currency=response.reservation.room_rates.total.currency,
-    )
+    for rate in response.reservation.room_rates:
+        hotel_booking = models.HotelBooking(
+            booking=booking,
+            created_date=datetime.now(),
+            hotel_name="Hotel Name",
+            crs_name=book_request.crs,
+            hotel_code=book_request.hotel_id,
+            record_locator=response.reservation.locator.id,
+            total_price=rate.total.amount,
+            currency=rate.total.currency,
+        )
 
-    hotel_booking.save()
-    return hotel_booking
+        hotel_booking.save()
 
 
 def _persist_booking_record(response, traveler):

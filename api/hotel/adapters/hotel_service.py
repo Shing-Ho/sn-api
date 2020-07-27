@@ -9,7 +9,7 @@ from api.hotel.hotel_model import (
     HotelSpecificSearch,
     Hotel,
     HotelLocationSearch,
-    HotelDetailsSearchRequest, HotelPriceChange,
+    HotelDetailsSearchRequest
 )
 
 MAX_WORKERS = 5
@@ -40,7 +40,7 @@ def details(hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:
     return adapter.details(hotel_details_req)
 
 
-def recheck(crs: str, room_rate: List[RoomRate]) -> HotelPriceChange:
+def recheck(crs: str, room_rate: List[RoomRate]) -> List[RoomRate]:
     adapter = adapter_service.get_adapters(crs)[0]
     return adapter.recheck(room_rate)
 

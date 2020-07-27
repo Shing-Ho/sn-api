@@ -68,7 +68,7 @@ class StubHotelAdapter(HotelAdapter):
             checkout=book_request.checkout,
             customer=book_request.customer,
             traveler=book_request.traveler,
-            room_rate=book_request.room_rates,
+            room_rates=book_request.room_rates,
         )
 
         return HotelBookingResponse(

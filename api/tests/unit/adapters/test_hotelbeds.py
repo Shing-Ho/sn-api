@@ -1,6 +1,7 @@
 import json
 import unittest
 from datetime import date, datetime, timedelta
+from decimal import Decimal
 
 import requests_mock
 
@@ -231,12 +232,9 @@ class TestHotelBeds(unittest.TestCase):
 
             availability_room_rates = hotels[0].room_types[0].rates[:2]
             recheck_response = hotelbeds.recheck(availability_room_rates)
-            self.assertTrue(recheck_response.is_exact_price)
 
-            availability_room_rates[0].total = to_money("75.00", "USD")
-            recheck_response = hotelbeds.recheck(availability_room_rates)
-            self.assertFalse(recheck_response.is_exact_price)
-            self.assertEqual("-24.89", str(recheck_response.price_difference))
+            self.assertEqual(Decimal("99.89"), availability_room_rates[0].total.amount)
+            self.assertEqual(Decimal("149.84"), recheck_response[0].total.amount)
 
     @staticmethod
     def create_location_search(location_name="TVL"):

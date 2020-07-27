@@ -122,7 +122,7 @@ class HotelBedsBookingDetailRS:
     pending_amount: decimal.Decimal = field(metadata=dict(data_key="pendingAmount", as_string=True))
     total_net: decimal.Decimal = field(metadata=dict(data_key="totalNet", as_string=True))
     holder: HotelBedsBookingLeadTraveler
-    remark: str
+    remark: Optional[str]
 
 
 @dataclasses.dataclass

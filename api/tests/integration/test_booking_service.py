@@ -6,10 +6,11 @@ from django.test import TestCase
 
 from api.booking import booking_service
 from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod
-from api.common.models import RoomOccupancy, RoomRate, Money, RateType, Address
+from api.common.models import RoomOccupancy, RoomRate, RateType, Address
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.models import models
 from api.models.models import Booking, BookingStatus
+from api.tests import to_money
 
 
 class TestBookingService(TestCase):
@@ -44,16 +45,18 @@ class TestBookingService(TestCase):
                 first_name="John", last_name="Doe", phone_number="5558675309", email="john@doe.foo", country="US"
             ),
             traveler=Traveler("John", "Doe", occupancy=RoomOccupancy(adults=1)),
-            room_rate=RoomRate(
-                "foo-rate-key",
-                RateType.BOOKABLE,
-                description="Room Booking",
-                additional_detail=[],
-                total_base_rate=Money(100.99, "USD"),
-                total_tax_rate=Money(20.00, "USD"),
-                total=Money(120.99, "USD"),
-                daily_rates=[],
-            ),
+            room_rates=[
+                RoomRate(
+                    "foo-rate-key",
+                    RateType.BOOKABLE,
+                    description="Room Booking",
+                    additional_detail=[],
+                    total_base_rate=to_money("100.99"),
+                    total_tax_rate=to_money("20.00"),
+                    total=to_money("120.99"),
+                    daily_rates=[],
+                )
+            ],
             payment=Payment(
                 billing_address=Address(
                     city="San Francisco", province="CA", postal_code="94111", country="US", address1="One Market Street"
@@ -89,10 +92,11 @@ class TestBookingService(TestCase):
         self.assertEqual("john@doe.foo", booking.lead_traveler.email_address)
         self.assertEqual("5558675309", booking.lead_traveler.phone_number)
 
-        hotel_booking = models.HotelBooking.objects.get(booking__booking_id=booking.booking_id)
-        self.assertEqual("Hotel Name", hotel_booking.hotel_name)
-        self.assertEqual("stub", hotel_booking.crs_name)
-        self.assertEqual("ABC123", hotel_booking.hotel_code)
-        self.assertIsNotNone("foo", hotel_booking.record_locator)
-        self.assertEqual(decimal.Decimal("120.99"), hotel_booking.total_price)
-        self.assertEqual("USD", hotel_booking.currency)
+        hotel_bookings = models.HotelBooking.objects.filter(booking__booking_id=booking.booking_id)
+
+        self.assertEqual("Hotel Name", hotel_bookings[0].hotel_name)
+        self.assertEqual("stub", hotel_bookings[0].crs_name)
+        self.assertEqual("ABC123", hotel_bookings[0].hotel_code)
+        self.assertIsNotNone("foo", hotel_bookings[0].record_locator)
+        self.assertEqual(decimal.Decimal("120.99"), hotel_bookings[0].total_price)
+        self.assertEqual("USD", hotel_bookings[0].currency)
