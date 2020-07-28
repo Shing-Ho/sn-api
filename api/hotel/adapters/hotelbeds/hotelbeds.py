@@ -1,4 +1,3 @@
-import json
 from typing import List, Union, Dict, Optional
 
 from api import logger

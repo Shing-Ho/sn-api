@@ -1,5 +1,6 @@
 import json
 from datetime import date
+
 import stripe
 from django.db.models import Prefetch
 from django.http import HttpResponse
@@ -18,7 +19,8 @@ from .auth.models import HasOrganizationAPIKey, OrganizationApiThrottle
 from .booking import booking_service
 from .booking.booking_model import HotelBookingRequest
 from .common.models import to_json
-from .hotel.adapters import hotel_service
+from .hotel.adapters import hotel_service, translate
+from .hotel.adapters.translate.google.models import GoogleHotelSearchRequest, GoogleHotelApiResponse
 from .hotel.hotel_model import (
     HotelLocationSearch,
     HotelSpecificSearch,
@@ -155,6 +157,29 @@ class HotelSupplierViewset(viewsets.ViewSet):
 
     @action(detail=False, url_path="search-by-id", methods=["GET", "POST"], name="Search Hotels")
     def search_by_id(self, request):
+        response = self._search_by_id(request)
+        return Response(Hotel.Schema().dump(response))
+
+    @action(detail=False, url_path="google-search-by-id", methods=["GET", "POST"], name="Search Hotels Google API")
+    def search_by_id_google(self, request):
+        google_search_request: GoogleHotelSearchRequest = GoogleHotelSearchRequest.Schema().load(request.data)
+        request = HotelSpecificSearch(
+            hotel_id=google_search_request.hotel_id,
+            start_date=google_search_request.start_date,
+            end_date=google_search_request.end_date,
+            occupancy=RoomOccupancy(
+                adults=google_search_request.party.adults, children=len(google_search_request.party.children)
+            ),
+            daily_rates=False,
+            crs="stub",
+        )
+
+        response = hotel_service.search_by_id(request)
+        google_response = translate.google.translate.translate_hotel_response(google_search_request, response)
+
+        return Response(GoogleHotelApiResponse.Schema().dump(google_response))
+
+    def _search_by_id(self, request):
         if request.data:
             request = HotelSpecificSearch.Schema().load(request.data)
         else:

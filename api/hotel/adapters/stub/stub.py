@@ -22,7 +22,7 @@ from api.hotel.hotel_model import (
     Address,
     GeoLocation,
     RatePlan,
-    BaseHotelSearch,
+    BaseHotelSearch, HotelSpecificSearch,
 )
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
@@ -33,10 +33,14 @@ class StubHotelAdapter(HotelAdapter):
 
     def search_by_location(self, search_request: HotelLocationSearch) -> List[Hotel]:
         num_hotels_to_return = random.randint(10, 50)
+
         return [self.search_by_id(search_request) for _ in range(num_hotels_to_return)]
 
-    def search_by_id(self, search_request: BaseHotelSearch) -> Hotel:
+    def search_by_id(self, search_request: Union[BaseHotelSearch, HotelSpecificSearch]) -> Hotel:
         hotel_code = random_string(5).upper()
+        if isinstance(search_request, HotelSpecificSearch):
+            hotel_code = search_request.hotel_id
+
         room_types = self._generate_room_types(search_request)
         response = Hotel(
             crs=self.CRS_NAME,
@@ -228,7 +232,7 @@ class StubHotelAdapter(HotelAdapter):
 
         random_street_address = f"{random_address} {random_name} {random_type}"
 
-        return Address(city, "NA", "12345", "US", random_street_address)
+        return Address(city=city, province="CA", country="US", postal_code="12345", address1=random_street_address)
 
     @staticmethod
     def _sample_enum(cls: Type[Enum]):

@@ -1,5 +1,6 @@
 import dataclasses
 import decimal
+import uuid
 from dataclasses import field
 from datetime import date, datetime
 from enum import Enum
@@ -8,7 +9,7 @@ from typing import List, Optional, Union
 import marshmallow_dataclass
 from marshmallow import EXCLUDE
 
-from api.common.models import BaseSchema, RemoveNone, RoomOccupancy, Address, HotelRate, RoomRate
+from api.common.models import BaseSchema, RemoveNone, RoomOccupancy, Address, HotelRate, RoomRate, Money
 
 
 class SimplenightAmenities(Enum):
@@ -156,7 +157,7 @@ class RoomType(BaseSchema):
 @marshmallow_dataclass.dataclass
 class CancellationPolicy(BaseSchema):
     summary: str
-    deadline: datetime
+    cancellation_deadline: datetime
     unstructured_policy: str
 
 
@@ -223,5 +224,3 @@ class HotelPriceVerification(BaseSchema):
     original_total: decimal.Decimal = field(metadata=dict(as_string=True))
     recheck_total: decimal.Decimal = field(metadata=dict(as_string=True))
     price_difference: decimal.Decimal = field(metadata=dict(as_string=True))
-
-
