@@ -1,3 +1,4 @@
+import uuid
 from decimal import Decimal
 from typing import List
 
@@ -21,6 +22,12 @@ from api.hotel.hotel_model import Hotel, SimplenightAmenities, Image
 
 
 def translate_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Hotel) -> GoogleHotelApiResponse:
+    room_types = _get_room_types(hotel, search_request.language)
+    rate_plans = _get_rate_plans(hotel, search_request.language)
+
+    room_type_code = room_types[0].code
+    rate_plan_code = rate_plans[0].code
+
     return GoogleHotelApiResponse(
         api_version=1,
         transaction_id=search_request.transaction_id,
@@ -28,9 +35,9 @@ def translate_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Ho
         start_date=search_request.start_date,
         end_date=search_request.end_date,
         party=search_request.party,
-        room_types=_get_room_types(hotel, search_request.language),
-        rate_plans=_get_rate_plans(hotel, search_request.language),
-        room_rates=_get_room_rates(hotel),
+        room_types=room_types,
+        rate_plans=rate_plans,
+        room_rates=_get_room_rates(hotel, room_type_code, rate_plan_code),
         hotel_details=_get_hotel_details(hotel),
     )
 
@@ -89,15 +96,15 @@ def _get_google_cancellation_policy(hotel: Hotel, language):
     )
 
 
-def _get_room_rates(hotel: Hotel) -> List[GoogleRoomRate]:
+def _get_room_rates(hotel: Hotel, room_type_code, rate_plan_code) -> List[GoogleRoomRate]:
     room_rates = []
     room_type = hotel.room_types[0]
     for room_rate in room_type.rates:
         room_rates.append(
             GoogleRoomRate(
-                code="foo",
-                room_type_code="foo",
-                rate_plan_code="foo",
+                code=str(uuid.uuid4()),
+                room_type_code=room_type_code,
+                rate_plan_code=rate_plan_code,
                 maximum_allowed_occupancy=RoomCapacity(room_type.capacity.adults, room_type.capacity.children),
                 total_price_at_booking=room_type.rates[0].total,
                 total_price_at_checkout=Money(Decimal("0.00"), room_type.rates[0].total.currency),
