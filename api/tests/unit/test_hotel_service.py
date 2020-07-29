@@ -2,14 +2,11 @@ import unittest
 import uuid
 from datetime import date
 
-from api.hotel.adapters import hotel_service, translate
-from api.hotel.adapters.translate.google.models import (
-    GoogleHotelSearchRequest,
-    ApiVersion,
-    RoomParty,
-    GoogleHotelApiResponse
-)
+from api.hotel import translate
+from api.hotel.adapters import hotel_service
 from api.hotel.hotel_model import HotelSpecificSearch, RoomOccupancy, HotelLocationSearch
+from api.hotel.translate.google import GoogleHotelSearchRequest, GoogleHotelApiResponse
+from api.hotel.translate.google_models import RoomParty
 
 
 class TestHotelService(unittest.TestCase):
@@ -56,6 +53,6 @@ class TestHotelService(unittest.TestCase):
         )
 
         hotel = hotel_service.search_by_id(search_request)
-        google_hotel = translate.google.translate.translate_hotel_response(google_search_request, hotel)
+        google_hotel = translate.google.translate_hotel_response(google_search_request, hotel)
 
         print(GoogleHotelApiResponse.Schema().dumps(google_hotel, indent=2))

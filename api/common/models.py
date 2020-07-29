@@ -3,7 +3,7 @@ import decimal
 from dataclasses import field
 from datetime import date
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Dict, Any, TypeVar, Type
 
 import marshmallow_dataclass
 from marshmallow import EXCLUDE, post_dump
@@ -21,6 +21,17 @@ def to_json(obj):
 
 def to_jsons(obj):
     return obj.Schema().dumps(obj)
+
+
+T = TypeVar("T")
+
+
+def from_json(obj: Dict[Any, Any], cls: Type[T]) -> T:
+    return cls.Schema().load(obj)
+
+
+def from_jsons(obj: Dict[Any, Any], cls: Type[T]) -> T:
+    return cls.Schema().loads(obj)
 
 
 # noinspection PyUnusedLocal

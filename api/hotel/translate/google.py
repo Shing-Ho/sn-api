@@ -2,8 +2,10 @@ import uuid
 from decimal import Decimal
 from typing import List
 
-from api.common.models import Money
-from api.hotel.adapters.translate.google.models import (
+from api.booking.booking_model import HotelBookingRequest, Traveler, Payment, PaymentCardParameters
+from api.common.models import Money, RoomOccupancy, RoomRate, RateType
+from api.hotel.hotel_model import Hotel, SimplenightAmenities, Image, HotelSpecificSearch
+from api.hotel.translate.google_models import (
     GoogleHotelApiResponse,
     GoogleHotelSearchRequest,
     GoogleRoomType,
@@ -16,9 +18,83 @@ from api.hotel.adapters.translate.google.models import (
     GoogleCancellationPolicy,
     GoogleRoomRate,
     RoomRateLineItem,
-    LineItemType, GoogleHotelDetails, CancellationSummary,
+    LineItemType,
+    GoogleHotelDetails,
+    CancellationSummary,
+    GoogleBookingSubmitRequest,
+    GoogleTraveler,
 )
-from api.hotel.hotel_model import Hotel, SimplenightAmenities, Image
+from api.tests import to_money
+
+
+def translate_hotel_specific_search(google_search_request: GoogleHotelSearchRequest) -> HotelSpecificSearch:
+    return HotelSpecificSearch(
+        hotel_id=google_search_request.hotel_id,
+        start_date=google_search_request.start_date,
+        end_date=google_search_request.end_date,
+        occupancy=RoomOccupancy(
+            adults=google_search_request.party.adults, children=len(google_search_request.party.children)
+        ),
+        daily_rates=False,
+    )
+
+
+def translate_booking_request(google_booking_request: GoogleBookingSubmitRequest) -> HotelBookingRequest:
+    def traveler(traveler: GoogleTraveler):
+        return Traveler(
+            first_name=traveler.first_name,
+            last_name=traveler.last_name,
+            occupancy=RoomOccupancy(traveler.occupancy.adults, children=len(traveler.occupancy.children)),
+        )
+
+    google_room_rate = google_booking_request.room_rate
+
+    total_price = Decimal()
+    if google_room_rate.total_price_at_checkout:
+        total_price += google_room_rate.total_price_at_checkout.amount
+
+    if google_room_rate.total_price_at_booking:
+        total_price += google_room_rate.total_price_at_booking.amount
+
+    room_rate = RoomRate(
+        rate_key=google_booking_request.room_rate.code,
+        rate_type=RateType.BOOKABLE,
+        description="",
+        additional_detail=[],
+        total_base_rate=Money(total_price, "USD"),
+        total_tax_rate=to_money("0"),
+        total=Money(total_price, "USD"),
+    )
+
+    google_payment = google_booking_request.payment
+    payment = Payment(
+        billing_address=google_payment.billing_address,
+        payment_card_parameters=PaymentCardParameters(
+            card_type=google_payment.payment_card_parameters.card_type,
+            card_number=google_payment.payment_card_parameters.card_number,
+            cardholder_name=google_payment.payment_card_parameters.cardholder_name,
+            expiration_month=google_payment.payment_card_parameters.expiration_month,
+            expiration_year=google_payment.payment_card_parameters.expiration_year,
+            cvv=google_payment.payment_card_parameters.cvc,
+        ),
+        payment_method=google_payment.type,
+        payment_token=google_payment.payment_token,
+    )
+
+    return HotelBookingRequest(
+        api_version=google_booking_request.api_version,
+        transaction_id=google_booking_request.transaction_id,
+        hotel_id=google_booking_request.hotel_id,
+        checkin=google_booking_request.start_date,
+        checkout=google_booking_request.end_date,
+        language=google_booking_request.language,
+        customer=google_booking_request.customer,
+        traveler=traveler(google_booking_request.traveler),
+        room_rates=[room_rate],
+        payment=payment,
+        tracking=google_booking_request.tracking.campaign_id,
+        ip_address=google_booking_request.ip_address
+    )
 
 
 def translate_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Hotel) -> GoogleHotelApiResponse:

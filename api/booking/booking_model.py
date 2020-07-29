@@ -39,6 +39,7 @@ class CardType(Enum):
 class PaymentMethod(Enum):
     PAYMENT_TOKEN = "PAYMENT_TOKEN"
     CREDIT_CARD = "CREDIT_CARD"
+    PAYMENT_CARD = "PAYMENT_CARD"
 
 
 @dataclasses.dataclass
