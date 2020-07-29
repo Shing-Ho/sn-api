@@ -1,34 +1,17 @@
 import json
-from datetime import date
 
 import stripe
-from django.db.models import Prefetch
 from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.request import Request
 from rest_framework.response import Response
 from uszipcode import SearchEngine
 
-from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
-from api.models.models import Geoname, GeonameAlternateName
+from api import api_access
+from api.api_access import ApiAccessRequest
+from api.common.models import to_json
 from api.models.models import supplier_hotels, pmt_transaction
-from . import api_access
-from .api_access import ApiAccessRequest
-from .auth.models import HasOrganizationAPIKey, OrganizationApiThrottle
-from .booking import booking_service
-from .booking.booking_model import HotelBookingRequest
-from .common.models import to_json
-from .hotel.adapters import hotel_service, translate
-from .hotel.adapters.translate.google.models import GoogleHotelSearchRequest, GoogleHotelApiResponse
-from .hotel.hotel_model import (
-    HotelLocationSearch,
-    HotelSpecificSearch,
-    RoomOccupancy,
-    Hotel,
-)
-from .serializers import LocationsSerializer
-from .serializers import mappingcodesSerializer, paymentsSerializer
+from api.serializers import mappingcodesSerializer, payments_serializer
 
 stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
 
@@ -49,34 +32,15 @@ def location_formatter(request):
         return HttpResponse(json.dumps({city_name: location_dictionary[city_name]["iata"]}))
 
 
-class paymentsViewSet(viewsets.ModelViewSet):
+class PaymentsViewSet(viewsets.ModelViewSet):
 
     queryset = pmt_transaction.objects.all()
-    serializer_class = paymentsSerializer
+    serializer_class = payments_serializer
 
     def get_queryset(self):
         queryset = self.queryset
 
         return queryset
-
-    # @action(detail=True, methods=['post', "get"])
-    # def create_charge(self, request):
-    #     amt = self.request.GET.get("amount")
-    #     currency = self.request.GET.get("currency")
-    #     pmt_source_token = self.request.GET.get("pmt_source_token")
-    #     # refund = self.request.GET.get("refund")
-    #     if amt and currency and pmt_source_token:
-    #         return stripe.Charge.create(amount=amt, currency="USD", source="visa_tok", description="booking_id")
-    #     else:
-    #         return Response(serializer.errors,
-    #                         status=status.HTTP_400_BAD_REQUEST)
-
-    # def post(self, request):
-    #     serializer = paymentsSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class HotelBedsMap(viewsets.ModelViewSet):
@@ -122,116 +86,6 @@ class HotelBedsMap(viewsets.ModelViewSet):
             # hotels beds id - - > sn_id - 4
             # other provider ids > send provider id to corresponding provider
             # -- get data back and display what we want to users
-        return queryset
-
-
-class HotelSupplierViewset(viewsets.ViewSet):
-    permission_classes = (HasOrganizationAPIKey,)
-    throttle_classes = (OrganizationApiThrottle,)
-    hotel_adapter = TravelportHotelAdapter()
-
-    @action(detail=False, url_path="search-by-location", methods=["GET", "POST"], name="Search Hotels")
-    def search_by_location(self, request: Request):
-        if request.data:
-            request = HotelLocationSearch.Schema().load(request.data)
-        else:
-            location = request.GET.get("location")
-            checkin = request.GET.get("checkin")
-            checkout = request.GET.get("checkout")
-            num_adults = request.GET.get("num_adults")
-            num_children = request.GET.get("num_adults")
-            crs = request.GET.get("crs")
-
-            request = HotelLocationSearch(
-                location_name=location,
-                start_date=date.fromisoformat(checkin),
-                end_date=date.fromisoformat(checkout),
-                occupancy=RoomOccupancy(adults=num_adults, children=num_children),
-                daily_rates=False,
-                crs=crs,
-            )
-
-        hotels = hotel_service.search_by_location(request)
-
-        return Response(Hotel.Schema(many=True).dump(hotels))
-
-    @action(detail=False, url_path="search-by-id", methods=["GET", "POST"], name="Search Hotels")
-    def search_by_id(self, request):
-        response = self._search_by_id(request)
-        return Response(Hotel.Schema().dump(response))
-
-    @action(detail=False, url_path="google-search-by-id", methods=["GET", "POST"], name="Search Hotels Google API")
-    def search_by_id_google(self, request):
-        google_search_request: GoogleHotelSearchRequest = GoogleHotelSearchRequest.Schema().load(request.data)
-        request = HotelSpecificSearch(
-            hotel_id=google_search_request.hotel_id,
-            start_date=google_search_request.start_date,
-            end_date=google_search_request.end_date,
-            occupancy=RoomOccupancy(
-                adults=google_search_request.party.adults, children=len(google_search_request.party.children)
-            ),
-            daily_rates=False,
-            crs="stub",
-        )
-
-        response = hotel_service.search_by_id(request)
-        google_response = translate.google.translate.translate_hotel_response(google_search_request, response)
-
-        return Response(GoogleHotelApiResponse.Schema().dump(google_response))
-
-    def _search_by_id(self, request):
-        if request.data:
-            request = HotelSpecificSearch.Schema().load(request.data)
-        else:
-            hotel_code = request.GET.get("location")
-            checkin = request.GET.get("checkin")
-            checkout = request.GET.get("checkout")
-            num_adults = request.GET.get("num_adults")
-            num_children = request.GET.get("num_adults")
-            crs = request.GET.get("crs")
-
-            request = HotelSpecificSearch(
-                hotel_id=hotel_code,
-                start_date=date.fromisoformat(checkin),
-                end_date=date.fromisoformat(checkout),
-                occupancy=RoomOccupancy(adults=num_adults, children=num_children),
-                daily_rates=False,
-                crs=crs,
-            )
-
-        response = hotel_service.search_by_id(request)
-
-        return Response(Hotel.Schema().dump(response))
-
-    @action(detail=False, url_path="booking", methods=["POST"], name="Hotel Booking")
-    def booking(self, request):
-        booking_request = HotelBookingRequest.Schema().load(request.data)
-        booking_response = booking_service.book(booking_request)
-
-        return _response(booking_response)
-
-
-class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Geoname.objects.all()
-    serializer_class = LocationsSerializer
-    permission_classes = (HasOrganizationAPIKey,)
-    throttle_classes = (OrganizationApiThrottle,)
-
-    def get_queryset(self):
-        queryset = self.queryset
-        lang_code = self.request.GET.get("lang_code", "en")
-        country = self.request.GET.get("country")
-
-        if lang_code.lower() != "all":
-            lang_filter = GeonameAlternateName.objects.filter(iso_language_code=lang_code)
-            queryset = queryset.prefetch_related(Prefetch("lang", lang_filter))
-            queryset = queryset.filter(lang__iso_language_code=lang_code)
-        else:
-            queryset = queryset.prefetch_related("lang")
-
-        if country:
-            queryset = queryset.filter(iso_country_code=country)
-
         return queryset
 
 

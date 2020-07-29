@@ -4,7 +4,7 @@ from .hotel.hotel_model import HotelAdapterHotel, Address, HotelRate
 from .models.models import Geoname, supplier_hotels, pmt_transaction
 
 
-class paymentsSerializer(serializers.ModelSerializer):
+class payments_serializer(serializers.ModelSerializer):
     charge = serializers.CharField(max_length=900)
 
     class Meta:
