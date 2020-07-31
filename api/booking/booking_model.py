@@ -6,7 +6,7 @@ from typing import Optional, List
 import marshmallow_dataclass
 from marshmallow import validates_schema
 
-from api.common.models import BaseSchema, RoomOccupancy, Address, RoomRate
+from api.common.models import BaseSchema, RoomOccupancy, Address, RoomRate, RemoveNone
 
 
 @dataclasses.dataclass
@@ -100,7 +100,7 @@ class Status(BaseSchema):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class Locator(BaseSchema):
+class Locator(BaseSchema, RemoveNone):
     id: str
     pin: Optional[str] = None
 

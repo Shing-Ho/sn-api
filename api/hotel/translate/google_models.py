@@ -11,8 +11,8 @@ from typing import List, Optional
 import marshmallow_dataclass
 from marshmallow import EXCLUDE, validates_schema
 
-from api.booking.booking_model import Customer, PaymentMethod, CardType
-from api.common.models import BaseSchema, Address, Money, RemoveNone
+from api.booking.booking_model import Customer, PaymentMethod, CardType, Status, Reservation, Locator, Traveler
+from api.common.models import BaseSchema, Address, Money, RemoveNone, RoomRate
 from api.hotel.hotel_model import GeoLocation, BedTypes
 
 
@@ -290,3 +290,30 @@ class GoogleBookingSubmitRequest(BaseSchema):
     payment: Optional[GooglePayment] = None
     tracking: Optional[GoogleTracking] = None
     ip_address: Optional[str] = None
+
+
+class GoogleStatus(Enum):
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class GoogleReservation(BaseSchema):
+    locator: Locator
+    hotel_locators: List[Locator]
+    hotel_id: str
+    start_date: date
+    end_date: date
+    customer: Customer
+    traveler: GoogleTraveler
+    room_rate: GoogleRoomRate
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class GoogleBookingResponse(BaseSchema):
+    api_version: int
+    transaction_id: str
+    status: GoogleStatus
+    reservation: GoogleReservation

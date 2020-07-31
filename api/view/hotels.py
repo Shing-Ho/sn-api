@@ -55,4 +55,4 @@ class HotelViewSet(viewsets.ViewSet):
         booking_request = translate.google.translate_booking_request(google_booking_request)
         booking_response = booking_service.book(booking_request)
 
-        return _response(booking_response)
+        return _response(translate.google.translate_booking_response(google_booking_request, booking_response))
