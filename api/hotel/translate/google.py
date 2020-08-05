@@ -223,7 +223,8 @@ def _get_room_rates(hotel: Hotel, room_type_code, rate_plan_code) -> List[Google
                 maximum_allowed_occupancy=RoomCapacity(room_type.capacity.adults, room_type.capacity.children),
                 total_price_at_booking=room_type.rates[0].total,
                 total_price_at_checkout=Money(Decimal("0.00"), room_type.rates[0].total.currency),
-                line_items=[]
+                line_items=[],
+                partner_data=[],
             )
         )
 
