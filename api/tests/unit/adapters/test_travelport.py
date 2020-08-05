@@ -106,5 +106,3 @@ class TestTravelport(unittest.TestCase):
         self.assertEqual(118.75, hotel_details.hotel_rates[0].daily_rates[4].base_rate.amount)
         self.assertEqual(118.75, hotel_details.hotel_rates[0].daily_rates[5].base_rate.amount)
         self.assertEqual(118.75, hotel_details.hotel_rates[0].daily_rates[6].base_rate.amount)
-
-        print(hotel_details.hotel_rates)

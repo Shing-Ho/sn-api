@@ -11,8 +11,8 @@ from typing import List, Optional
 import marshmallow_dataclass
 from marshmallow import EXCLUDE, validates_schema
 
-from api.booking.booking_model import Customer, PaymentMethod, CardType, Status, Reservation, Locator, Traveler
-from api.common.models import BaseSchema, Address, Money, RemoveNone, RoomRate
+from api.booking.booking_model import Customer, PaymentMethod, CardType, Locator
+from api.common.models import BaseSchema, Address, Money, RemoveNone
 from api.hotel.hotel_model import GeoLocation, BedTypes
 
 
@@ -136,6 +136,7 @@ class BaseGoogleRoomRate(BaseSchema):
     maximum_allowed_occupancy: RoomCapacity
     total_price_at_booking: Optional[Money]
     total_price_at_checkout: Optional[Money]
+    partner_data: Optional[List[str]]
 
 
 @dataclasses.dataclass
@@ -307,7 +308,7 @@ class GoogleReservation(BaseSchema):
     end_date: date
     customer: Customer
     traveler: GoogleTraveler
-    room_rate: GoogleRoomRate
+    room_rate: GoogleBookingRoomRate
 
 
 @dataclasses.dataclass

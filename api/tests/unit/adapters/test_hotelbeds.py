@@ -133,7 +133,6 @@ class TestHotelBeds(unittest.TestCase):
             response = hotelbeds.details(["foo", "bar"], "en_US")
 
         self.assertIsNotNone(response)
-        print(response)
 
     def test_hotelbeds_booking(self):
         room_rate = RoomRate(
@@ -164,7 +163,8 @@ class TestHotelBeds(unittest.TestCase):
         with requests_mock.Mocker() as mocker:
             mocker.post(HotelBedsTransport.get_booking_url(), text=booking_resource)
             booking_response = hotelbeds.booking(booking_request)
-            print(booking_response)
+
+        self.assertIsNotNone(booking_response)
 
     def test_search_location_with_bad_location(self):
         response = {

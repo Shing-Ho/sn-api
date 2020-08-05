@@ -1,4 +1,3 @@
-import json
 from datetime import date
 
 import requests_mock
@@ -30,8 +29,6 @@ class TestBookingView(SimplenightAPITestCase):
             mocker.post(HotelBedsTransport.get_hotels_url(), text=hotelbeds_location_response)
             mocker.get(HotelBedsTransport.get_hotel_content_url(), text=hotelbeds_content_response)
             response = self.post(SEARCH_BY_LOCATION, search_request)
-
-        print(json.dumps(response.data, indent=2))
 
         hotels = Hotel.Schema(many=True).load(response.data)
         assert len(hotels) == 24

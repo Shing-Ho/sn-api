@@ -23,8 +23,6 @@ from api.hotel.translate.google_models import (
     GuaranteeType,
     GoogleCancellationPolicy,
     GoogleRoomRate,
-    RoomRateLineItem,
-    LineItemType,
     GoogleHotelDetails,
     CancellationSummary,
     GoogleBookingSubmitRequest,
@@ -114,20 +112,6 @@ def translate_booking_response(
     if booking_response.status.success:
         status = GoogleStatus.SUCCESS
 
-    room_rate = booking_response.reservation.room_rates[0]
-    google_room_rate = GoogleRoomRate(
-        code=booking_request.room_rate.code,
-        room_type_code="",
-        rate_plan_code="",
-        maximum_allowed_occupancy=RoomCapacity(2, 0),
-        total_price_at_booking=room_rate.total,
-        total_price_at_checkout=Money(Decimal("0.00"), room_rate.total.currency),
-        line_items=[
-            RoomRateLineItem(room_rate.total_base_rate, LineItemType.BASE_RATE, False),
-            RoomRateLineItem(room_rate.total_tax_rate, LineItemType.UNKNOWN_TAXES, False),
-        ],
-    )
-
     return GoogleBookingResponse(
         api_version=booking_response.api_version,
         transaction_id=booking_response.transaction_id,
@@ -147,7 +131,7 @@ def translate_booking_response(
                     children=booking_request.traveler.occupancy.children,
                 ),
             ),
-            room_rate=google_room_rate,
+            room_rate=booking_request.room_rate,
         ),
     )
 
@@ -239,10 +223,7 @@ def _get_room_rates(hotel: Hotel, room_type_code, rate_plan_code) -> List[Google
                 maximum_allowed_occupancy=RoomCapacity(room_type.capacity.adults, room_type.capacity.children),
                 total_price_at_booking=room_type.rates[0].total,
                 total_price_at_checkout=Money(Decimal("0.00"), room_type.rates[0].total.currency),
-                line_items=[
-                    RoomRateLineItem(room_rate.total_base_rate, LineItemType.BASE_RATE, False),
-                    RoomRateLineItem(room_rate.total_tax_rate, LineItemType.UNKNOWN_TAXES, False),
-                ],
+                line_items=[]
             )
         )
 

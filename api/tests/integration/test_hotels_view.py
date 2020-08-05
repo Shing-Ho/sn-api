@@ -59,7 +59,5 @@ class TestHotelsView(SimplenightAPITestCase):
         self.assertTrue(len(hotels) > 1)
         self.assertIsNotNone(hotels[0].hotel_id)
 
-        print(hotels)
-
     def _post(self, endpoint, data):
         return self.client.post(path=endpoint, data=to_json(data), format="json")

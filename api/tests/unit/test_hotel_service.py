@@ -5,7 +5,7 @@ from datetime import date
 from api.hotel import translate
 from api.hotel.adapters import hotel_service
 from api.hotel.hotel_model import HotelSpecificSearch, RoomOccupancy, HotelLocationSearch
-from api.hotel.translate.google import GoogleHotelSearchRequest, GoogleHotelApiResponse
+from api.hotel.translate.google import GoogleHotelSearchRequest
 from api.hotel.translate.google_models import RoomParty
 
 
@@ -20,7 +20,7 @@ class TestHotelService(unittest.TestCase):
         )
 
         hotel = hotel_service.search_by_id(search_request)
-        print(hotel)
+        self.assertIsNotNone(hotel)
 
     def test_search_by_location(self):
         search_request = HotelLocationSearch(
@@ -32,7 +32,7 @@ class TestHotelService(unittest.TestCase):
         )
 
         hotel = hotel_service.search_by_location(search_request)
-        print(hotel)
+        self.assertIsNotNone(hotel)
 
     def test_search_by_hotel_id_google(self):
         search_request = HotelSpecificSearch(
@@ -55,4 +55,4 @@ class TestHotelService(unittest.TestCase):
         hotel = hotel_service.search_by_id(search_request)
         google_hotel = translate.google.translate_hotel_response(google_search_request, hotel)
 
-        print(GoogleHotelApiResponse.Schema().dumps(google_hotel, indent=2))
+        self.assertIsNotNone(google_hotel)

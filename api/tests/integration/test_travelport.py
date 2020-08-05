@@ -2,6 +2,7 @@ import unittest
 from datetime import datetime
 from datetime import timedelta
 
+from api.common.models import RoomOccupancy
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from api.hotel.hotel_model import HotelLocationSearch, HotelDetailsSearchRequest
 
@@ -12,10 +13,15 @@ class TestTravelport(unittest.TestCase):
 
         checkin_date = datetime.now().date() + timedelta(days=30)
         checkout_date = datetime.now().date() + timedelta(days=37)
-        search_request = HotelLocationSearch(location_name="SFO", start_date=checkin_date, end_date=checkout_date)
+        search_request = HotelLocationSearch(
+            location_name="SFO",
+            start_date=checkin_date,
+            end_date=checkout_date,
+            occupancy=RoomOccupancy(adults=1, children=2),
+        )
 
         results = travelport.search_by_location(search_request)
-        print(results)
+        self.assertIsNotNone(results)
 
     def _test_hotel_details(self):
         travelport = TravelportHotelAdapter()
@@ -27,4 +33,4 @@ class TestTravelport(unittest.TestCase):
         )
 
         response = travelport.details(hotel_details)
-        print(response)
+        self.assertIsNotNone(response)

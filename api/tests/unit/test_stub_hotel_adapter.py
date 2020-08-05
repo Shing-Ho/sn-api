@@ -89,7 +89,6 @@ class TestStubHotelAdapter(unittest.TestCase):
 
         stub_adapter = StubHotelAdapter()
         response = stub_adapter.booking(booking_request)
-        print(response)
 
         self.assertEqual(1, response.api_version)
         self.assertIsNotNone(response.transaction_id)

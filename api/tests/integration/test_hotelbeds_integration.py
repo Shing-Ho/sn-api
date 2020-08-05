@@ -20,8 +20,7 @@ class TestHotelBedsIntegration(unittest.TestCase):
 
     def test_location_search(self):
         search_request = self.create_location_search()
-        response = self.hotelbeds.search_by_location(search_request)
-        print(response)
+        self.hotelbeds.search_by_location(search_request)
 
     def test_location_search_bad_location(self):
         search_request = self.create_location_search(location_name="XXX")
@@ -30,8 +29,7 @@ class TestHotelBedsIntegration(unittest.TestCase):
 
     def test_hotel_details(self):
         hotel_codes = ["123456", "654321"]
-        response = self.hotelbeds.details(hotel_codes, "en_US")
-        print(response)
+        self.hotelbeds.details(hotel_codes, "en_US")
 
     def test_hotel_booking(self):
         checkin = datetime.now().date() + timedelta(days=30)
@@ -67,7 +65,7 @@ class TestHotelBedsIntegration(unittest.TestCase):
         )
 
         booking_response = self.hotelbeds.booking(booking_request)
-        print(booking_response)
+        self.assertIsNotNone(booking_response)
 
     # TODO: Re-enable test
     def _test_multi_room_hotel_booking(self):
@@ -105,10 +103,11 @@ class TestHotelBedsIntegration(unittest.TestCase):
         )
 
         booking_response = self.hotelbeds.booking(booking_request)
-        print(booking_response)
+        self.assertIsNotNone(booking_response)
 
     def test_hotelbeds_facilities_types(self):
-        print(self.hotelbeds.get_facilities_types())
+        response = self.hotelbeds.get_facilities_types()
+        self.assertTrue(len(response) > 0)
 
     @staticmethod
     def create_location_search(location_name="TVL", checkin=None, checkout=None):
