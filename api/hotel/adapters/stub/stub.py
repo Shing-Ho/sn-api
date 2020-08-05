@@ -40,7 +40,7 @@ class StubHotelAdapter(HotelAdapter):
 
     def search_by_id(self, search_request: Union[BaseHotelSearch, HotelSpecificSearch]) -> Hotel:
         hotel_code = random_string(5).upper()
-        if isinstance(search_request, HotelSpecificSearch):
+        if isinstance(search_request, HotelSpecificSearch) and search_request.hotel_id:
             hotel_code = search_request.hotel_id
 
         room_types = self._generate_room_types(search_request)
@@ -49,7 +49,7 @@ class StubHotelAdapter(HotelAdapter):
             hotel_id=hotel_code,
             start_date=search_request.start_date,
             end_date=search_request.end_date,
-            occupancy=RoomOccupancy(2, 2),
+            occupancy=RoomOccupancy(adults=2, children=2),
             room_types=room_types,
             hotel_details=self._generate_hotel_details(),
         )
@@ -117,7 +117,7 @@ class StubHotelAdapter(HotelAdapter):
                 description=description,
                 amenities=amenities,
                 photos=photos,
-                capacity=RoomOccupancy(random.randint(2, 3), random.randint(0, 2)),
+                capacity=RoomOccupancy(adults=random.randint(0, 2), children=2),
                 bed_types=bed_types[bed_type],
             )
 

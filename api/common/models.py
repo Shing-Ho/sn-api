@@ -47,7 +47,6 @@ class RemoveNone:
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class RoomOccupancy(BaseSchema):
-    child_ages: Optional[List[int]] = field(default_factory=list)
     adults: Optional[int] = 1
     children: Optional[int] = 0
     num_rooms: Optional[int] = 1

@@ -15,7 +15,7 @@ class ApiConfig(AppConfig):
     label = "api"
 
     def ready(self):
-        decimal.getcontext().prec = 2
+        decimal.getcontext().prec = 10
         decimal.getcontext().rounding = decimal.ROUND_HALF_DOWN
 
 

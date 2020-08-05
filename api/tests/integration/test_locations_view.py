@@ -3,7 +3,7 @@ from django.test import Client
 from api.models.models import Geoname, GeonameAlternateName
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 
-LOCATION_ENDPOINT = "/api/v1/Locations/"
+LOCATION_ENDPOINT = "/api/v1/locations/"
 
 
 class TestLocationsView(SimplenightAPITestCase):
