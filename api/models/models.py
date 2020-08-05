@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 import uuid
-from datetime import datetime
 from enum import Enum
 
-from django.contrib.auth.models import User
-
-from django.db import models
-
 import stripe
-
+from django.db import models
 
 stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
 
@@ -114,55 +109,18 @@ class sn_images_map(models.Model):
     image_provider_id = models.CharField(max_length=100)
 
 
-class pmt_transaction(models.Model):
+class PaymentTransaction(models.Model):
     class Meta:
         app_label = "api"
+        db_table = "pmt_transaction"
 
-    paid_choices = [["refunded", "refunded"], ["cancelled", "cancelled"], ["paid", "paid"]]
     sn_transaction_id = models.IntegerField(null=True)
-    # token returned back from stripe
-    stripe_id = models.CharField(max_length=50)
-    transaction_status = models.CharField(choices=paid_choices, max_length=50)
+    provider_name = models.CharField(max_length=32)
+    charge_id = models.CharField(max_length=50)
+    transaction_status = models.CharField(max_length=50)
     transaction_amount = models.FloatField()
     currency = models.CharField(max_length=3)
     transaction_time = models.DateTimeField(auto_now_add=True)
-    parent = models.OneToOneField("self", blank=True,null=True, on_delete=models.SET_NULL, related_name="main_transaction")
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    def charge(self):
-        # try:
-
-        charge = stripe.Charge.create(amount=int(self.transaction_amount) * 100, currency=self.currency,
-                                      source="tok_visa", description="booking_id")
-        print(charge)
-
-        return charge
-        # except:
-        #     return "hello world"
-
-    def refund(self):
-        if self.main_transaction:
-            raise Exception("Transaction already refunded")
-        with pmt_transaction.atomic():
-            id = self.pk
-            self.pk = None
-            self.transaction_amount *= -1
-            self.currency = self.currency
-            self.parent_id = id
-            self.transaction_status = "refunded"
-            self.save()
-
-    def cancel(self):
-        if self.main_transaction:
-            raise Exception("Transaction cancelled")
-        with pmt_transaction.atomic():
-            id = self.pk
-            self.pk = None
-            self.transaction_amount *= -1
-            self.currency = self.currency
-            self.parent_id = id
-            self.transaction_status = "cancelled"
-            self.save()
 
 
 class Traveler(models.Model):

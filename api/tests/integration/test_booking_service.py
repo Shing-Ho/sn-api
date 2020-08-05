@@ -1,5 +1,6 @@
 import decimal
 from datetime import date
+from unittest.mock import patch
 
 import pytest
 from django.test import TestCase
@@ -67,7 +68,8 @@ class TestBookingService(TestCase):
             crs=StubHotelAdapter.CRS_NAME,
         )
 
-        response = booking_service.book(booking_request)
+        with patch("api.payments.payment_service.authorize_payment"):
+            response = booking_service.book(booking_request)
 
         self.assertEqual(1, response.api_version)
         self.assertIsNotNone(response.transaction_id)

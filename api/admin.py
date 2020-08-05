@@ -1,5 +1,5 @@
 from django.contrib import admin
-from api.models.models import supplier_hotels, sn_hotel_map, pmt_transaction
+from api.models.models import supplier_hotels, sn_hotel_map, PaymentTransaction
 
 
 class HotelbedsAdmin(admin.ModelAdmin):
@@ -17,6 +17,6 @@ class pmt_transactionadmin(admin.ModelAdmin):
     list_per_page = 100
 
 
-admin.site.register(pmt_transaction, pmt_transactionadmin)
+admin.site.register(PaymentTransaction, pmt_transactionadmin)
 admin.site.register(supplier_hotels, HotelbedsAdmin)
 admin.site.register(sn_hotel_map, sn_hotel_mapAdmin)

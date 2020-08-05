@@ -7,14 +7,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from uszipcode import SearchEngine
 
-from api import api_access
-from api.api_access import ApiAccessRequest
-from api.common.models import to_json
-from api.models.models import supplier_hotels, pmt_transaction
-from api.serializers import mappingcodesSerializer, payments_serializer
+from api.models.models import supplier_hotels
+from . import api_access
+from .api_access import ApiAccessRequest
+from .common.models import to_json
+from .serializers import mappingcodesSerializer
 
 stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
-
 data = open("airports.json", encoding="utf-8").read()
 location_dictionary = json.loads(data)
 
@@ -23,24 +22,13 @@ def index(request):
     return HttpResponse(status=404)
 
 
-def location_formatter(request):
+def location_formater(request):
     city = request.GET.get("city")
     search = SearchEngine()
 
     if city:
         city_name = search.by_city(city=city, sort_by="population", returns=10)[0].major_city
         return HttpResponse(json.dumps({city_name: location_dictionary[city_name]["iata"]}))
-
-
-class PaymentsViewSet(viewsets.ModelViewSet):
-
-    queryset = pmt_transaction.objects.all()
-    serializer_class = payments_serializer
-
-    def get_queryset(self):
-        queryset = self.queryset
-
-        return queryset
 
 
 class HotelBedsMap(viewsets.ModelViewSet):

@@ -1,16 +1,8 @@
 from rest_framework import serializers
 
-from .hotel.hotel_model import HotelAdapterHotel, Address, HotelRate
-from .models.models import Geoname, supplier_hotels, pmt_transaction
-
-
-class payments_serializer(serializers.ModelSerializer):
-    charge = serializers.CharField(max_length=900)
-
-    class Meta:
-        model = pmt_transaction
-
-        fields = "__all__"
+from .common.models import Address, HotelRate
+from .hotel.hotel_model import HotelAdapterHotel
+from .models.models import Geoname, supplier_hotels
 
 
 class mappingcodesSerializer(serializers.ModelSerializer):

@@ -14,7 +14,11 @@ from common.exceptions import AppException
 def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
     adapter = adapter_service.get_adapter(book_request.crs)
     total_payment_amount = _get_payment_amount(book_request)
-    auth_response = payment_service.authorize_payment(amount=total_payment_amount, payment=book_request.payment)
+    auth_response = payment_service.authorize_payment(
+        amount=total_payment_amount,
+        payment=book_request.payment,
+        description=f"Simplenight Hotel Booking {book_request.hotel_id}",
+    )
 
     if not auth_response:
         logger.error(f"Could not authorize payment for booking: {book_request}")
