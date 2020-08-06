@@ -1,9 +1,9 @@
 import decimal
-from datetime import date
+from datetime import date, timedelta, datetime
 from typing import Union
 
-from api.booking.booking_model import Customer, Traveler
-from api.common.models import RoomRate, RateType, RoomOccupancy
+from api.booking.booking_model import Customer, Traveler, Payment, PaymentCardParameters, CardType
+from api.common.models import RoomRate, RateType, RoomOccupancy, Address
 from api.hotel.hotel_model import Hotel
 from api.tests import to_money
 
@@ -42,5 +42,33 @@ def customer(first_name="John", last_name="Simp"):
     )
 
 
-def traveler(first_name="John", last_name="Simp"):
+def address():
+    return Address(
+        address1="123 Market St",
+        city="San Francisco",
+        province="CA",
+        country="US",
+        postal_code="94111"
+    )
+
+
+def traveler(first_name="John", last_name="Simpnight"):
     return Traveler(first_name=first_name, last_name=last_name, occupancy=RoomOccupancy(adults=1, children=0))
+
+
+def payment(card_number=None):
+    if card_number is None:
+        card_number = "4242424242424242"
+
+    exp_date = datetime.now().date() + timedelta(days=365)
+    return Payment(
+        billing_address=address(),
+        payment_card_parameters=PaymentCardParameters(
+            card_type=CardType.VI,
+            card_number=card_number,
+            cardholder_name="John Q. Simpnight",
+            expiration_month=str(exp_date.month),
+            expiration_year=str(exp_date.year),
+            cvv="123"
+        )
+    )

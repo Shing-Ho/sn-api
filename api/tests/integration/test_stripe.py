@@ -1,11 +1,9 @@
-from datetime import datetime, timedelta
-
 import pytest
-import stripe
 from django.test import TestCase
 
 from api.payments import stripe_service
 from api.payments.payment_models import PaymentException, PaymentError
+from api.tests import test_objects
 
 
 class TestStripe(TestCase):
@@ -30,18 +28,16 @@ class TestStripe(TestCase):
         assert e.value.error_type == PaymentError.GENERAL
         assert "Your card was declined" in e.value.detail
 
+    def test_charge_card_without_token(self):
+        payment = test_objects.payment("4242424242424242")
+        response = stripe_service.charge_card(payment, 100, "USD", "Test charge")
+
+        assert response.charge_id is not None
+        assert response.provider_name == "stripe"
+        assert response.transaction_amount == 1.00
+        assert response.currency == "USD"
+
 
 def create_test_token(card_num):
-    tokenize_request = _test_tokenize_request(card_num)
-    response = stripe.Token.create(api_key=stripe_service.STRIPE_API_KEY, card=tokenize_request)
-    return response["id"]
-
-
-def _test_tokenize_request(card_num):
-    exp_date = datetime.now().date() + timedelta(days=365)
-    return {
-        "number": card_num,
-        "exp_month": exp_date.month,
-        "exp_year": exp_date.year,
-        "cvc": "314",
-    }
+    payment = test_objects.payment(card_num)
+    return stripe_service.tokenize(payment)
