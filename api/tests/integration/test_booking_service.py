@@ -6,12 +6,13 @@ import pytest
 from django.test import TestCase
 
 from api.booking import booking_service
-from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod
+from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod, SubmitErrorType
 from api.common.models import RoomOccupancy, RoomRate, RateType, Address
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.models import models
 from api.models.models import Booking, BookingStatus
-from api.tests import to_money
+from api.view.exceptions import PaymentException
+from api.tests import to_money, test_objects
 
 
 class TestBookingService(TestCase):
@@ -102,3 +103,12 @@ class TestBookingService(TestCase):
         self.assertIsNotNone("foo", hotel_bookings[0].record_locator)
         self.assertEqual(decimal.Decimal("120.99"), hotel_bookings[0].total_price)
         self.assertEqual("USD", hotel_bookings[0].currency)
+
+    def test_stub_booking_with_invalid_payment(self):
+        invalid_card_number_payment = test_objects.payment("4000000000000002")
+        booking_request = test_objects.booking_request(payment_obj=invalid_card_number_payment)
+
+        with pytest.raises(PaymentException) as e:
+            booking_service.book(booking_request)
+
+        assert e.value.error_type == SubmitErrorType.PAYMENT_DECLINED

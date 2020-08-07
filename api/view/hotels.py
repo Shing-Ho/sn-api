@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from api.auth.models import HasOrganizationAPIKey, OrganizationApiThrottle
 from api.booking import booking_service
 from api.booking.booking_model import HotelBookingRequest
-from api.common.models import RoomOccupancy
 from api.hotel import translate
 from api.hotel.adapters import hotel_service
 from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch, Hotel

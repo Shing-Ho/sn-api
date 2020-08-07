@@ -1,6 +1,5 @@
 import dataclasses
 import decimal
-import uuid
 from dataclasses import field
 from datetime import date, datetime
 from enum import Enum
@@ -9,7 +8,7 @@ from typing import List, Optional, Union
 import marshmallow_dataclass
 from marshmallow import EXCLUDE
 
-from api.common.models import BaseSchema, RemoveNone, RoomOccupancy, Address, HotelRate, RoomRate, Money
+from api.common.models import BaseSchema, RemoveNone, RoomOccupancy, Address, HotelRate, RoomRate
 
 
 class SimplenightAmenities(Enum):

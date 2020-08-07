@@ -8,10 +8,12 @@ from api.hotel.hotel_model import (
     Hotel,
     HotelLocationSearch,
 )
+from api.tests import test_objects
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 
 SEARCH_BY_ID = "/api/v1/hotels/search-by-id/"
 SEARCH_BY_LOCATION = "/api/v1/hotels/search-by-location/"
+BOOKING = "/api/v1/hotels/booking/"
 
 
 class TestHotelsView(SimplenightAPITestCase):
@@ -58,6 +60,18 @@ class TestHotelsView(SimplenightAPITestCase):
         hotels: List[Hotel] = Hotel.Schema(many=True).load(response.json())
         self.assertTrue(len(hotels) > 1)
         self.assertIsNotNone(hotels[0].hotel_id)
+
+    def test_booking_invalid_payment(self):
+        invalid_card_number_payment = test_objects.payment("4000000000000002")
+        booking_request = test_objects.booking_request(payment_obj=invalid_card_number_payment)
+
+        response = self.post(endpoint=BOOKING, obj=booking_request)
+
+        self.assertEqual(500, response.status_code)
+        self.assertIn("error", response.json())
+        self.assertIn("Your card was declined", response.json()["error"]["message"])
+        self.assertEqual("PAYMENT_DECLINED", response.json()["error"]["type"])
+        print(response.json())
 
     def _post(self, endpoint, data):
         return self.client.post(path=endpoint, data=to_json(data), format="json")

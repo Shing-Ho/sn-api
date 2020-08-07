@@ -1,11 +1,14 @@
 from decimal import Decimal
 
+import pytest
 from django.test import TestCase
 
-from api.booking.booking_model import Payment, PaymentMethod
+from api.booking.booking_model import Payment, PaymentMethod, SubmitErrorType
 from api.common.models import Money, Address
 from api.models.models import PaymentTransaction
 from api.payments import payment_service
+from api.view.exceptions import PaymentException
+from api.tests import test_objects
 from api.tests.integration import test_stripe
 
 
@@ -30,4 +33,26 @@ class TestPaymentService(TestCase):
 
         retrieved_transaction = PaymentTransaction.objects.filter(charge_id=result.charge_id).first()
         assert retrieved_transaction.charge_id == result.charge_id
-        assert retrieved_transaction.transaction_amount == 1.00
+        assert retrieved_transaction.transaction_amount == Decimal("1.00")
+
+    def test_authorize_payment_card(self):
+        payment = test_objects.payment("4000000000000077")
+        payment_description = "Test Payment"
+        amount = Money(Decimal("1.05"), "USD")
+
+        result = payment_service.authorize_payment(amount, payment, payment_description)
+        assert result.charge_id is not None
+        assert result.payment_token is not None
+        assert result.payment_token.startswith("tok_")
+        assert result.transaction_amount == Decimal("1.05")
+
+    def test_invalid_payment(self):
+        payment = test_objects.payment("4000000000000002")  # Card fails
+        payment_description = "Failing Payment"
+        amount = Money(Decimal("1.10"), "USD")
+
+        with pytest.raises(PaymentException) as e:
+            payment_service.authorize_payment(amount, payment, payment_description)
+
+        assert e.value.error_type == SubmitErrorType.PAYMENT_DECLINED
+        assert "Your card was declined" in e.value.detail

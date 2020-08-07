@@ -1,11 +1,11 @@
 from typing import Optional
 
 from api import logger
-from api.booking.booking_model import Payment, PaymentMethod
+from api.booking.booking_model import Payment, PaymentMethod, SubmitErrorType
 from api.common.models import Money
 from api.models.models import PaymentTransaction
 from api.payments import stripe_service
-from api.payments.payment_models import PaymentException, PaymentError
+from api.view.exceptions import PaymentException
 from common import utils
 
 
@@ -15,7 +15,7 @@ def authorize_payment(amount: Money, payment: Payment, description: str) -> Opti
     elif payment.payment_method == PaymentMethod.PAYMENT_TOKEN:
         return _authorize_payment_token(amount, payment, description)
 
-    raise PaymentException(PaymentError.INVALID_PAYMENT, "Payment method unsupported")
+    raise PaymentException(SubmitErrorType.PAYMENT_PROCESSOR_ERROR, "Payment method unsupported")
 
 
 def _authorize_credit_card(amount: Money, payment: Payment, description: str):

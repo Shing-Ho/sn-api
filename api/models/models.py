@@ -117,10 +117,12 @@ class PaymentTransaction(models.Model):
     sn_transaction_id = models.IntegerField(null=True)
     provider_name = models.CharField(max_length=32)
     charge_id = models.CharField(max_length=50)
+    transaction_type = models.CharField(max_length=12)
     transaction_status = models.CharField(max_length=50)
     transaction_amount = models.FloatField()
     currency = models.CharField(max_length=3)
     transaction_time = models.DateTimeField(auto_now_add=True)
+    payment_token = models.CharField(max_length=128)
 
 
 class Traveler(models.Model):
