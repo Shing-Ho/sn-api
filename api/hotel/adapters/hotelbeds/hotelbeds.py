@@ -122,6 +122,21 @@ class HotelBeds(HotelAdapter):
         logger.error(response.text)
         raise HotelBedsException(f"Could not find facilities types ({response.status_code})")
 
+    def get_categories(self):
+        endpoint = self.transport.get_categories_types_url()
+        params = {
+            "fields": "all",
+            "from": 1,
+            "to": 500,
+        }
+
+        response = self.transport.get(endpoint, params)
+        if response.ok:
+            return response.json()
+
+        logger.error(response.text)
+        raise HotelBedsException(f"Could not find categories ({response.status_code})")
+
     def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
         verified_hotel = self._recheck_request(room_rates)
         return list(map(self._create_room_rate, verified_hotel.hotel.rooms[0].rates))
@@ -174,9 +189,7 @@ class HotelBeds(HotelAdapter):
     def _get_image_base_url():
         return "http://photos.hotelbeds.com/giata/bigger/"
 
-    def _create_hotel(
-        self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail
-    ) -> Hotel:
+    def _create_hotel(self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail) -> Hotel:
 
         room_types = list(map(lambda x: self._create_room_type(search, x), hotel.rooms))
 
@@ -262,7 +275,24 @@ class HotelBeds(HotelAdapter):
             checkin_time=None,
             checkout_time=None,
             amenities=list(amenities),
+            star_rating=HotelBeds._get_star_rating(detail.category_code),
+            property_description=detail.description.content,
         )
+
+    @staticmethod
+    def _get_star_rating(category_code):
+        return {
+            "1EST": 1,
+            "2EST": 2,
+            "3EST": 3,
+            "4EST": 4,
+            "5EST": 5,
+            "6EST": 6,
+            "H1_5": 1.5,
+            "H2_5": 2.5,
+            "H3_5": 3.5,
+            "H4_5": 4.5,
+        }.get(category_code, None)
 
     @staticmethod
     def _get_matching_amenities(hotelbeds_amenities: List[HotelBedsAmenity]):

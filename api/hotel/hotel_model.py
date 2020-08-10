@@ -192,6 +192,8 @@ class HotelDetails(BaseSchema):
     email: Optional[str] = None
     homepage_url: Optional[str] = None
     chain_code: Optional[str] = None
+    star_rating: Optional[float] = None
+    property_description: Optional[str] = None
 
 
 @dataclasses.dataclass

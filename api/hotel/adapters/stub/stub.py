@@ -22,7 +22,8 @@ from api.hotel.hotel_model import (
     Address,
     GeoLocation,
     RatePlan,
-    BaseHotelSearch, HotelSpecificSearch,
+    BaseHotelSearch,
+    HotelSpecificSearch,
 )
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
@@ -208,6 +209,8 @@ class StubHotelAdapter(HotelAdapter):
         longitude = random.random() * 100
         geolocation = GeoLocation(latitude, longitude)
 
+        star_rating = random.choice([2, 2.5, 3, 3.5, 4, 4.5, 5])
+
         return HotelDetails(
             name=hotel_name,
             address=hotel_address,
@@ -218,6 +221,8 @@ class StubHotelAdapter(HotelAdapter):
             geolocation=geolocation,
             photos=[],
             amenities=[],
+            star_rating=star_rating,
+            property_description=self._get_property_description(),
         )
 
     @staticmethod
@@ -249,3 +254,14 @@ class StubHotelAdapter(HotelAdapter):
             photos.append(Image(url, ImageType.ROOM))
 
         return photos
+
+    @staticmethod
+    def _get_property_description():
+        return (
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore "
+            "et dolore magna aliqua. Eros in cursus turpis massa. Libero nunc consequat interdum varius sit amet "
+            "mattis vulputate. Tristique magna sit amet purus gravida. Fermentum posuere urna nec tincidunt "
+            "praesent semper. Vitae semper quis lectus nulla. Dui nunc mattis enim ut tellus elementum sagittis "
+            "vitae et. Purus viverra accumsan in nisl. Pharetra sit amet aliquam id diam. Vulputate sapien nec "
+            "sagittis aliquam malesuada. Bibendum enim facilisis gravida neque. "
+        )

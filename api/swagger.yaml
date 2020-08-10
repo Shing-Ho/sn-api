@@ -640,6 +640,13 @@ components:
           description: Name of the hotel
         address:
           $ref: '#/components/schemas/Address'
+        description:
+          type: string
+          example: The long descriptive test of a hotel
+        star_rating:
+          type: number
+          format: float
+          example: 3.5
         geolocation:
           $ref: '#/components/schemas/GeoLocation'
         phone_number:

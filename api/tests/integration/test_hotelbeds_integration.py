@@ -109,6 +109,10 @@ class TestHotelBedsIntegration(unittest.TestCase):
         response = self.hotelbeds.get_facilities_types()
         self.assertTrue(len(response) > 0)
 
+    def test_hotelbeds_cateogies(self):
+        response = self.hotelbeds.get_categories()
+        print(response)
+
     @staticmethod
     def create_location_search(location_name="TVL", checkin=None, checkout=None):
         if checkin is None:

@@ -44,6 +44,7 @@ class HotelBedsHotelDetail(BaseSchema):
     code: int = field(metadata=dict(data_key="code"))
     name: HotelBedsContent = field(metadata=dict(data_key="name"))
     description: HotelBedsContent = field(metadata=dict(data_key="description"))
+    category_code: str = field(metadata=dict(data_key="categoryCode"))
     country_code: str = field(metadata=dict(data_key="countryCode"))
     state_code: str = field(metadata=dict(data_key="stateCode"))
     coordinates: HotelBedsCoordinates = field(metadata=dict(data_key="coordinates"))
