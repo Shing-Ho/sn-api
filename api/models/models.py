@@ -174,3 +174,5 @@ class HotelBooking(models.Model):
     record_locator = models.TextField()
     total_price = models.DecimalField(decimal_places=2, max_digits=8)
     currency = models.CharField(max_length=3)
+    crs_total_price = models.DecimalField(decimal_places=2, max_digits=8)
+    crs_currency = models.CharField(max_length=3)

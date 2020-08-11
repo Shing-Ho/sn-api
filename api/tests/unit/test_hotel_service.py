@@ -1,15 +1,18 @@
-import unittest
 import uuid
 from datetime import date
 
-from api.hotel import translate
+from django.test import TestCase
+
+from api.common import cache_storage
+from api.common.models import RoomRate
+from api.hotel import converter
 from api.hotel.adapters import hotel_service
+from api.hotel.converter.google import GoogleHotelSearchRequest
+from api.hotel.converter.google_models import RoomParty
 from api.hotel.hotel_model import HotelSpecificSearch, RoomOccupancy, HotelLocationSearch
-from api.hotel.translate.google import GoogleHotelSearchRequest
-from api.hotel.translate.google_models import RoomParty
 
 
-class TestHotelService(unittest.TestCase):
+class TestHotelService(TestCase):
     def test_search_by_hotel_id(self):
         search_request = HotelSpecificSearch(
             hotel_id="A1H2J6",
@@ -53,6 +56,25 @@ class TestHotelService(unittest.TestCase):
         )
 
         hotel = hotel_service.search_by_id(search_request)
-        google_hotel = translate.google.translate_hotel_response(google_search_request, hotel)
+        google_hotel = converter.google.convert_hotel_response(google_search_request, hotel)
 
         self.assertIsNotNone(google_hotel)
+
+    def test_markups_applied_and_stored_in_cache(self):
+        search_request = HotelLocationSearch(
+            location_name="SFO",
+            start_date=date(2020, 1, 20),
+            end_date=date(2020, 1, 27),
+            occupancy=RoomOccupancy(2, 1),
+            crs="stub",
+        )
+
+        hotels = hotel_service.search_by_location(search_request)
+
+        room_rates = [x for hotel in hotels for room_type in hotel.room_types for x in room_type.rates]
+        assert len(room_rates) > 10
+
+        for room_rate in room_rates:
+            crs_rate: RoomRate = cache_storage.get(room_rate.rate_key)
+            assert crs_rate is not None
+            assert crs_rate.total.amount < room_rate.total.amount

@@ -3,6 +3,7 @@ from typing import List
 
 from api import logger
 from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse
+from api.common import cache_storage
 from api.common.models import RoomRate, Money
 from api.hotel.adapters import adapter_service
 from api.models import models
@@ -24,13 +25,18 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
         logger.error(f"Could not authorize payment for booking: {book_request}")
         raise AppException("Error authorizing payment")
 
+    # Save Simplenight Internal Room Rates
+    # Lookup CRS Rates in Cache
+    room_rates = book_request.room_rates
+    crs_rates = list(map(_get_crs_rate, book_request.room_rates))
+    book_request.room_rates = crs_rates
     response = adapter.booking(book_request)
 
     if not response or not response.reservation.locator:
         logger.error(f"Could not book request: {book_request}")
         raise AppException("Error during booking")
 
-    persist_reservation(book_request, response)
+    persist_reservation(book_request, room_rates, response)
 
     return response
 
@@ -46,16 +52,18 @@ def _price_verification(rooms: List[RoomRate]):
     pass
 
 
-def persist_reservation(book_request, response):
+def persist_reservation(book_request, room_rates, response):
     traveler = _persist_traveler(response)
     booking = _persist_booking_record(response, traveler)
-    _persist_hotel(book_request, booking, response)
+    _persist_hotel(book_request, room_rates, booking, response)
 
     return booking
 
 
-def _persist_hotel(book_request, booking, response):
-    for rate in response.reservation.room_rates:
+def _persist_hotel(book_request, room_rates, booking, response):
+    # Takes the original room rates as a parameter
+    # Persists both the CRS rate (on book_request) and the original rates
+    for crs_rate, rate in zip(response.reservation.room_rates, room_rates):
         hotel_booking = models.HotelBooking(
             booking=booking,
             created_date=datetime.now(),
@@ -65,6 +73,8 @@ def _persist_hotel(book_request, booking, response):
             record_locator=response.reservation.locator.id,
             total_price=rate.total.amount,
             currency=rate.total.currency,
+            crs_total_price=crs_rate.total.amount,
+            crs_currency=crs_rate.total.currency,
         )
 
         hotel_booking.save()
@@ -93,3 +103,11 @@ def _persist_traveler(response):
 
     traveler.save()
     return traveler
+
+
+def _get_crs_rate(room_rate: RoomRate) -> RoomRate:
+    crs_rate = cache_storage.get(room_rate.rate_key)
+    if not crs_rate:
+        raise RuntimeError(f"Could not find CRS Rate for Rate Key {room_rate.rate_key}")
+
+    return crs_rate

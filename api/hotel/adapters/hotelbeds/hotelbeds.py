@@ -1,4 +1,4 @@
-from typing import List, Union, Dict, Optional
+from typing import List, Union, Optional
 
 from api import logger
 from api.booking.booking_model import HotelBookingRequest
@@ -32,7 +32,7 @@ from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     HotelDetails,
-    Hotel,
+    CrsHotel,
     HotelLocationSearch,
     Address,
     BaseHotelSearch,
@@ -50,14 +50,14 @@ class HotelBeds(HotelAdapter):
 
         self.transport = transport
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[Hotel]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[CrsHotel]:
         availability_results = self._search_by_location(search_request)
         if availability_results.results.total == 0:
             return []
 
         hotel_codes = list(map(lambda x: str(x.code), availability_results.results.hotels))
         hotel_details = self._details(hotel_codes, search_request.language)
-        hotel_details_map = self._hotel_details_by_hotel_code(hotel_details.hotels)
+        hotel_details_map = {x.code: x for x in hotel_details.hotels}
 
         hotels = []
         for hotel in availability_results.results.hotels:
@@ -82,7 +82,7 @@ class HotelBeds(HotelAdapter):
 
         logger.error(f"Error searching HotelBeds (status_code={response.status_code}): {response.text}")
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> Hotel:
+    def search_by_id(self, search_request: HotelSpecificSearch) -> CrsHotel:
         pass
 
     def details(self, hotel_codes: Union[List[str], str], language: str) -> List[HotelDetails]:
@@ -182,18 +182,14 @@ class HotelBeds(HotelAdapter):
         return self._get_image_base_url() + path
 
     @staticmethod
-    def _hotel_details_by_hotel_code(hotel_details: List[HotelBedsHotelDetail]) -> Dict[int, HotelBedsHotelDetail]:
-        return {x.code: x for x in hotel_details}
-
-    @staticmethod
     def _get_image_base_url():
         return "http://photos.hotelbeds.com/giata/bigger/"
 
-    def _create_hotel(self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail) -> Hotel:
+    def _create_hotel(self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail) -> CrsHotel:
 
         room_types = list(map(lambda x: self._create_room_type(search, x), hotel.rooms))
 
-        return Hotel(
+        return CrsHotel(
             crs=self.CRS_NAME,
             hotel_id=str(hotel.code),
             start_date=search.start_date,

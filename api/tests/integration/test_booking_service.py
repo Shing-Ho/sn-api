@@ -1,5 +1,5 @@
 import decimal
-from datetime import date
+from datetime import date, datetime, timedelta
 from unittest.mock import patch
 
 import pytest
@@ -7,12 +7,15 @@ from django.test import TestCase
 
 from api.booking import booking_service
 from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod, SubmitErrorType
+from api.common import cache_storage
 from api.common.models import RoomOccupancy, RoomRate, RateType, Address
+from api.hotel.adapters import hotel_service
 from api.hotel.adapters.stub.stub import StubHotelAdapter
+from api.hotel.hotel_model import HotelLocationSearch
 from api.models import models
-from api.models.models import Booking, BookingStatus
-from api.view.exceptions import PaymentException
+from api.models.models import Booking, BookingStatus, HotelBooking
 from api.tests import to_money, test_objects
+from api.view.exceptions import PaymentException
 
 
 class TestBookingService(TestCase):
@@ -35,7 +38,7 @@ class TestBookingService(TestCase):
 
         self.assertIn("Must set payment_token when payment_method is PAYMENT_TOKEN", str(e))
 
-    def test_hotelbeds_booking(self):
+    def test_stub_booking(self):
         booking_request = HotelBookingRequest(
             api_version=1,
             transaction_id="foo",
@@ -112,3 +115,31 @@ class TestBookingService(TestCase):
             booking_service.book(booking_request)
 
         assert e.value.error_type == SubmitErrorType.PAYMENT_DECLINED
+
+    def test_hotelbeds_booking(self):
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=35)
+        search = HotelLocationSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=RoomOccupancy(adults=1),
+            location_name="SFO",
+            crs="hotelbeds",
+        )
+
+        availability_response = hotel_service.search_by_location(search)
+        room_types = [room_type for hotel in availability_response for room_type in hotel.room_types]
+        room_rates = [rate for room_type in room_types for rate in room_type.rates]
+        bookable_rates = [rate for rate in room_rates if rate.rate_type == RateType.BOOKABLE]
+
+        room_rate_to_book = bookable_rates[0]
+
+        booking_request = test_objects.booking_request(rate=room_rate_to_book)
+        booking_response = booking_service.book(booking_request)
+
+        crs_rate: RoomRate = cache_storage.get(room_rate_to_book.rate_key)
+        assert booking_response.reservation.room_rates[0].rate_key == crs_rate.rate_key
+
+        hotel_booking = HotelBooking.objects.filter(record_locator=booking_response.reservation.locator.id).first()
+        assert hotel_booking.crs_total_price == crs_rate.total.amount
+        assert hotel_booking.total_price == room_rate_to_book.total.amount

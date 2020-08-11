@@ -205,7 +205,7 @@ class ErrorResponse(BaseSchema):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class Hotel(BaseSchema):
+class CrsHotel(BaseSchema):
     crs: str
     hotel_id: str
     start_date: date
@@ -213,6 +213,18 @@ class Hotel(BaseSchema):
     occupancy: RoomOccupancy
     room_types: List[RoomType]
     hotel_details: Optional[HotelDetails]
+    error: Optional[ErrorResponse] = None
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class Hotel(BaseSchema):
+    hotel_id: str
+    start_date: date
+    end_date: date
+    occupancy: RoomOccupancy
+    hotel_details: Optional[HotelDetails]
+    room_types: Optional[List[RoomType]] = None
     error: Optional[ErrorResponse] = None
 
 

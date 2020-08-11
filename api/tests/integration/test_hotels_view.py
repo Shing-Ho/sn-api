@@ -5,7 +5,7 @@ from api.common.models import to_json
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     RoomOccupancy,
-    Hotel,
+    CrsHotel,
     HotelLocationSearch,
 )
 from api.tests import test_objects
@@ -25,7 +25,7 @@ class TestHotelsView(SimplenightAPITestCase):
         response = self._post(SEARCH_BY_ID, search)
         self.assertEqual(200, response.status_code)
 
-        hotel: Hotel = Hotel.Schema().load(response.json())
+        hotel: CrsHotel = CrsHotel.Schema().load(response.json())
 
         self.assertIsNotNone(hotel.hotel_id)
 
@@ -39,7 +39,7 @@ class TestHotelsView(SimplenightAPITestCase):
         response = self._post(SEARCH_BY_LOCATION, search)
         self.assertEqual(200, response.status_code)
 
-        hotels: List[Hotel] = Hotel.Schema(many=True).load(response.json())
+        hotels: List[CrsHotel] = CrsHotel.Schema(many=True).load(response.json())
         self.assertTrue(len(hotels) > 1)
         self.assertIsNotNone(hotels[0].hotel_id)
 
@@ -57,7 +57,7 @@ class TestHotelsView(SimplenightAPITestCase):
         response = self._post(SEARCH_BY_LOCATION, search)
         self.assertEqual(200, response.status_code)
 
-        hotels: List[Hotel] = Hotel.Schema(many=True).load(response.json())
+        hotels: List[CrsHotel] = CrsHotel.Schema(many=True).load(response.json())
         self.assertTrue(len(hotels) > 1)
         self.assertIsNotNone(hotels[0].hotel_id)
 

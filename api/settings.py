@@ -86,7 +86,6 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "api.view.exceptions.handler",
 }
 
-
 DATABASES = {
     "test": {"ENGINE": "django.db.backends.sqlite3", "NAME": os.path.join(BASE_DIR, "db.sqlite3")},
     "appengine": {
@@ -187,7 +186,11 @@ APPEND_SLASH = True
 API_KEY_CUSTOM_HEADER = "HTTP_X_API_KEY"
 
 CACHES = {
-    "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache", "LOCATION": "unique-snowflake"},
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+        "OPTIONS": {"MAX_ENTRIES": "50000"},
+    },
 }
 
 CACHE_TIMEOUT = 900

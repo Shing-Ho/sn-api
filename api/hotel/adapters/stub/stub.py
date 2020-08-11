@@ -10,7 +10,7 @@ from api.common.models import RateType, RoomRate, DailyRate, Money
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelLocationSearch,
-    Hotel,
+    CrsHotel,
     RoomOccupancy,
     RoomType,
     Amenity,
@@ -34,18 +34,18 @@ class StubHotelAdapter(HotelAdapter):
 
     CRS_NAME = "stub"
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[Hotel]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[CrsHotel]:
         num_hotels_to_return = random.randint(10, 50)
 
         return [self.search_by_id(search_request) for _ in range(num_hotels_to_return)]
 
-    def search_by_id(self, search_request: Union[BaseHotelSearch, HotelSpecificSearch]) -> Hotel:
+    def search_by_id(self, search_request: Union[BaseHotelSearch, HotelSpecificSearch]) -> CrsHotel:
         hotel_code = random_string(5).upper()
         if isinstance(search_request, HotelSpecificSearch) and search_request.hotel_id:
             hotel_code = search_request.hotel_id
 
         room_types = self._generate_room_types(search_request)
-        response = Hotel(
+        response = CrsHotel(
             crs=self.CRS_NAME,
             hotel_id=hotel_code,
             start_date=search_request.start_date,

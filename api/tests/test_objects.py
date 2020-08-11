@@ -13,12 +13,12 @@ from api.booking.booking_model import (
     HotelBookingRequest,
 )
 from api.common.models import RoomRate, RateType, RoomOccupancy, Address
-from api.hotel.hotel_model import Hotel
+from api.hotel.hotel_model import CrsHotel
 from api.tests import to_money
 
 
 def hotel():
-    return Hotel(
+    return CrsHotel(
         crs="stub",
         hotel_id="100",
         start_date=date(2020, 1, 1),
@@ -78,9 +78,12 @@ def payment(card_number=None):
     )
 
 
-def booking_request(payment_obj=None):
+def booking_request(payment_obj=None, rate=None):
     if payment_obj is None:
-        payment_obj = payment("4242424242424242")
+        payment_obj = payment(card_number="4242424242424242")
+
+    if rate is None:
+        rate = room_rate("rate_key", "1.00")
 
     checkin = datetime.now().date() + timedelta(days=5)
     checkout = datetime.now().date() + timedelta(days=7)
@@ -94,6 +97,6 @@ def booking_request(payment_obj=None):
         language="en_US",
         customer=customer(),
         traveler=traveler(),
-        room_rates=[room_rate("rate_key", "1.00")],
+        room_rates=[rate],
         payment=payment_obj,
     )

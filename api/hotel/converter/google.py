@@ -10,8 +10,8 @@ from api.booking.booking_model import (
     HotelBookingResponse,
 )
 from api.common.models import Money, RoomOccupancy, RoomRate, RateType
-from api.hotel.hotel_model import Hotel, SimplenightAmenities, Image, HotelSpecificSearch
-from api.hotel.translate.google_models import (
+from api.hotel.hotel_model import CrsHotel, SimplenightAmenities, Image, HotelSpecificSearch
+from api.hotel.converter.google_models import (
     GoogleHotelApiResponse,
     GoogleHotelSearchRequest,
     GoogleRoomType,
@@ -35,7 +35,7 @@ from api.hotel.translate.google_models import (
 from api.tests import to_money
 
 
-def translate_hotel_specific_search(google_search_request: GoogleHotelSearchRequest) -> HotelSpecificSearch:
+def convert_hotel_specific_search(google_search_request: GoogleHotelSearchRequest) -> HotelSpecificSearch:
     return HotelSpecificSearch(
         hotel_id=google_search_request.hotel_id,
         start_date=google_search_request.start_date,
@@ -47,7 +47,7 @@ def translate_hotel_specific_search(google_search_request: GoogleHotelSearchRequ
     )
 
 
-def translate_booking_request(google_booking_request: GoogleBookingSubmitRequest) -> HotelBookingRequest:
+def convert_booking_request(google_booking_request: GoogleBookingSubmitRequest) -> HotelBookingRequest:
     google_room_rate = google_booking_request.room_rate
 
     total_price = Decimal()
@@ -105,7 +105,7 @@ def translate_booking_request(google_booking_request: GoogleBookingSubmitRequest
     )
 
 
-def translate_booking_response(
+def convert_booking_response(
     booking_request: GoogleBookingSubmitRequest, booking_response: HotelBookingResponse
 ) -> GoogleBookingResponse:
     status = GoogleStatus.FAILURE
@@ -136,7 +136,7 @@ def translate_booking_response(
     )
 
 
-def translate_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Hotel) -> GoogleHotelApiResponse:
+def convert_hotel_response(search_request: GoogleHotelSearchRequest, hotel: CrsHotel) -> GoogleHotelApiResponse:
     room_types = _get_room_types(hotel, search_request.language)
     rate_plans = _get_rate_plans(hotel, search_request.language)
 
@@ -158,7 +158,7 @@ def translate_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Ho
 
 
 # TODO: Actually implement rate plan logic
-def _get_rate_plans(hotel: Hotel, language: str) -> List[GoogleRatePlan]:
+def _get_rate_plans(hotel: CrsHotel, language: str) -> List[GoogleRatePlan]:
     rate_plan = GoogleRatePlan(
         code="foo",
         name=DisplayString("Rate Plan", language),
@@ -172,7 +172,7 @@ def _get_rate_plans(hotel: Hotel, language: str) -> List[GoogleRatePlan]:
 
 
 # TODO: Integrate photos into room types
-def _get_room_types(hotel: Hotel, language="en") -> List[GoogleRoomType]:
+def _get_room_types(hotel: CrsHotel, language="en") -> List[GoogleRoomType]:
     room_types = []
     for room_type in hotel.room_types:
         room_types.append(
@@ -211,7 +211,7 @@ def _get_google_cancellation_policy(language):
     )
 
 
-def _get_room_rates(hotel: Hotel, room_type_code, rate_plan_code) -> List[GoogleRoomRate]:
+def _get_room_rates(hotel: CrsHotel, room_type_code, rate_plan_code) -> List[GoogleRoomRate]:
     room_rates = []
     room_type = hotel.room_types[0]
     for room_rate in room_type.rates:
@@ -231,7 +231,7 @@ def _get_room_rates(hotel: Hotel, room_type_code, rate_plan_code) -> List[Google
     return room_rates
 
 
-def _get_hotel_details(hotel: Hotel) -> GoogleHotelDetails:
+def _get_hotel_details(hotel: CrsHotel) -> GoogleHotelDetails:
     return GoogleHotelDetails(
         name=hotel.hotel_details.name,
         address=hotel.hotel_details.address,
