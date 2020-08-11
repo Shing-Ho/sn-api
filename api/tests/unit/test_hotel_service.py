@@ -1,15 +1,20 @@
 import uuid
 from datetime import date
 
+import pytest
+import requests_mock
 from django.test import TestCase
 
 from api.common import cache_storage
 from api.common.models import RoomRate
 from api.hotel import converter
 from api.hotel.adapters import hotel_service
+from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.converter.google import GoogleHotelSearchRequest
 from api.hotel.converter.google_models import RoomParty
 from api.hotel.hotel_model import HotelSpecificSearch, RoomOccupancy, HotelLocationSearch
+from api.tests.utils import load_test_resource
+from api.view.exceptions import AvailabilityException
 
 
 class TestHotelService(TestCase):
@@ -78,3 +83,20 @@ class TestHotelService(TestCase):
             crs_rate: RoomRate = cache_storage.get(room_rate.rate_key)
             assert crs_rate is not None
             assert crs_rate.total.amount < room_rate.total.amount
+
+    def test_error_in_api_response(self):
+        error_response = load_test_resource("hotelbeds/error-response.json")
+        with requests_mock.Mocker() as mocker:
+            mocker.post(HotelBedsTransport.get_hotels_url(), text=error_response)
+            search_request = HotelLocationSearch(
+                location_name="SFO",
+                start_date=date(2020, 1, 20),
+                end_date=date(2020, 1, 27),
+                occupancy=RoomOccupancy(2, 1),
+                crs="hotelbeds",
+            )
+
+            with pytest.raises(AvailabilityException) as e:
+                hotel_service.search_by_location(search_request)
+
+            assert "The check-in must be in the future" in e.value.detail

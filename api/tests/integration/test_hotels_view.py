@@ -1,7 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import List
 
+import requests_mock
+
 from api.common.models import to_json
+from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     RoomOccupancy,
@@ -10,6 +13,7 @@ from api.hotel.hotel_model import (
 )
 from api.tests import test_objects
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
+from api.tests.utils import load_test_resource
 
 SEARCH_BY_ID = "/api/v1/hotels/search-by-id/"
 SEARCH_BY_LOCATION = "/api/v1/hotels/search-by-location/"
@@ -72,6 +76,24 @@ class TestHotelsView(SimplenightAPITestCase):
         self.assertIn("Your card was declined", response.json()["error"]["message"])
         self.assertEqual("PAYMENT_DECLINED", response.json()["error"]["type"])
         print(response.json())
+
+    def test_availability_error_included_in_api_rest(self):
+        error_response = load_test_resource("hotelbeds/error-response.json")
+        with requests_mock.Mocker() as mocker:
+            mocker.post(HotelBedsTransport.get_hotels_url(), text=error_response)
+            search_request = HotelLocationSearch(
+                location_name="SFO",
+                start_date=date(2020, 1, 20),
+                end_date=date(2020, 1, 27),
+                occupancy=RoomOccupancy(2, 1),
+                crs="hotelbeds",
+            )
+
+            response = self.post(endpoint=SEARCH_BY_LOCATION, obj=search_request)
+            body = response.json()
+            assert body is not None
+            assert body["detail"] == "Invalid data. The check-in must be in the future."
+            assert body["status_code"] == 500
 
     def _post(self, endpoint, data):
         return self.client.post(path=endpoint, data=to_json(data), format="json")

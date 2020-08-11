@@ -39,6 +39,7 @@ from api.hotel.hotel_model import (
     RoomOccupancy,
     RoomType,
 )
+from api.view.exceptions import AvailabilityException
 
 
 class HotelBeds(HotelAdapter):
@@ -52,8 +53,9 @@ class HotelBeds(HotelAdapter):
 
     def search_by_location(self, search_request: HotelLocationSearch) -> List[CrsHotel]:
         availability_results = self._search_by_location(search_request)
-        if availability_results.results.total == 0:
-            return []
+
+        if availability_results.error or availability_results.results.total == 0:
+            raise AvailabilityException(detail=availability_results.error.message, code=1)
 
         hotel_codes = list(map(lambda x: str(x.code), availability_results.results.hotels))
         hotel_details = self._details(hotel_codes, search_request.language)
@@ -76,11 +78,8 @@ class HotelBeds(HotelAdapter):
         endpoint = self.transport.get_hotels_url()
         response = self.transport.post(endpoint, request)
 
-        if response.ok:
-            results = response.json()
-            return HotelBedsAvailabilityRS.Schema().load(results)
-
-        logger.error(f"Error searching HotelBeds (status_code={response.status_code}): {response.text}")
+        results = response.json()
+        return HotelBedsAvailabilityRS.Schema().load(results)
 
     def search_by_id(self, search_request: HotelSpecificSearch) -> CrsHotel:
         pass

@@ -20,11 +20,19 @@ def handler(exc, context):
     return response
 
 
-class BookingException(AppException):
+class SimplenightApiException(AppException):
     def __init__(self, error_type, detail):
         super().__init__()
         self.error_type = error_type
         self.detail = detail
+
+
+class AvailabilityException(AppException):
+    pass
+
+
+class BookingException(SimplenightApiException):
+    pass
 
 
 class PaymentException(BookingException):

@@ -109,9 +109,17 @@ class HotelBedsHotelRS(BaseSchema):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
+class HotelBedsError(BaseSchema):
+    code: str
+    message: str
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
 class HotelBedsAvailabilityRS(BaseSchema):
     audit_data: HotelBedsAuditDataRS = field(metadata=dict(data_key="auditData"))
     results: Optional[HotelBedsHotelRS] = field(default=None, metadata=dict(data_key="hotels"))
+    error: Optional[HotelBedsError] = field(default=None, metadata=dict(data_key="error"))
 
 
 @dataclasses.dataclass
