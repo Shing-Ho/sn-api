@@ -289,6 +289,9 @@ components:
         - rate_plans
         - room_rates
         - hotel_details
+        - average_nightly_rate
+        - average_nightly_tax
+        - average_nightly_base
       properties:
         hotel_code:
           type: string
@@ -318,6 +321,16 @@ components:
             $ref: '#/components/schemas/RoomRate'
         hotel_details:
           $ref: '#/components/schemas/HotelDetails'
+        average_nightly_rate:
+          type: number
+          description: The minimum total nightly rate.  Equal to minimum rate total / room_nights
+          example: 107.29
+        average_nightly_tax:
+          type: number
+          description: The minimum total nightly taxes.  Equal to the minimum tax total / room_nights
+        average_nightly_base:
+          type: number
+          description: The minimum total nightly taxes.  Equal to the minimum base total / room_nights
         error:
           $ref: '#/components/schemas/AvailabilityError'
 

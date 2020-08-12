@@ -1,7 +1,6 @@
 import decimal
 import uuid
 from datetime import date, timedelta, datetime
-from typing import Union
 
 from api.booking.booking_model import (
     Customer,
@@ -13,7 +12,7 @@ from api.booking.booking_model import (
     HotelBookingRequest,
 )
 from api.common.models import RoomRate, RateType, RoomOccupancy, Address
-from api.hotel.hotel_model import CrsHotel
+from api.hotel.hotel_model import CrsHotel, RoomType
 from api.tests import to_money
 
 
@@ -29,15 +28,40 @@ def hotel():
     )
 
 
-def room_rate(rate_key: str, amount: Union[decimal.Decimal, str]):
+def room_rate(rate_key: str, total, base_rate=None, tax_rate=None):
+    if isinstance(total, str):
+        total = to_money(total)
+
+    if base_rate is None:
+        base_rate = total.amount * decimal.Decimal("0.85")
+
+    if tax_rate is None:
+        tax_rate = total.amount * decimal.Decimal("0.15")
+
     return RoomRate(
         rate_key=rate_key,
         rate_type=RateType.BOOKABLE,
         description="Test Room Rate",
         additional_detail=[],
-        total_base_rate=to_money("0"),
-        total_tax_rate=to_money("0"),
-        total=to_money(amount),
+        total_base_rate=to_money(base_rate),
+        total_tax_rate=to_money(tax_rate),
+        total=total,
+    )
+
+
+def room_type(rates=None):
+    if rates is None:
+        rates = [room_rate("rate-key", "100")]
+
+    return RoomType(
+        code=str(uuid.uuid4),
+        name=f"Test Rate {str(uuid.uuid4())[:4]}",
+        description="Test Description",
+        amenities=[],
+        photos=[],
+        capacity=RoomOccupancy(adults=2),
+        bed_types=None,
+        rates=rates,
     )
 
 

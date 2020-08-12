@@ -225,6 +225,9 @@ class Hotel(BaseSchema):
     occupancy: RoomOccupancy
     hotel_details: Optional[HotelDetails]
     room_types: Optional[List[RoomType]] = None
+    average_nightly_rate: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
+    average_nightly_base: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
+    average_nightly_tax: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
     error: Optional[ErrorResponse] = None
 
 

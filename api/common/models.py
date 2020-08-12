@@ -16,10 +16,16 @@ class BaseSchema:
 
 
 def to_json(obj):
+    if isinstance(obj, list):
+        return obj[0].Schema(many=True).dump(obj)
+
     return obj.Schema().dump(obj)
 
 
 def to_jsons(obj):
+    if isinstance(obj, list):
+        return obj[0].Schema(many=True).dumps(obj)
+
     return obj.Schema().dumps(obj)
 
 

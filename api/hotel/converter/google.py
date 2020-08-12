@@ -10,7 +10,6 @@ from api.booking.booking_model import (
     HotelBookingResponse,
 )
 from api.common.models import Money, RoomOccupancy, RoomRate, RateType
-from api.hotel.hotel_model import CrsHotel, SimplenightAmenities, Image, HotelSpecificSearch
 from api.hotel.converter.google_models import (
     GoogleHotelApiResponse,
     GoogleHotelSearchRequest,
@@ -32,6 +31,7 @@ from api.hotel.converter.google_models import (
     GoogleReservation,
     RoomParty,
 )
+from api.hotel.hotel_model import SimplenightAmenities, Image, HotelSpecificSearch, Hotel
 from api.tests import to_money
 
 
@@ -136,7 +136,7 @@ def convert_booking_response(
     )
 
 
-def convert_hotel_response(search_request: GoogleHotelSearchRequest, hotel: CrsHotel) -> GoogleHotelApiResponse:
+def convert_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Hotel) -> GoogleHotelApiResponse:
     room_types = _get_room_types(hotel, search_request.language)
     rate_plans = _get_rate_plans(hotel, search_request.language)
 
@@ -158,7 +158,7 @@ def convert_hotel_response(search_request: GoogleHotelSearchRequest, hotel: CrsH
 
 
 # TODO: Actually implement rate plan logic
-def _get_rate_plans(hotel: CrsHotel, language: str) -> List[GoogleRatePlan]:
+def _get_rate_plans(hotel: Hotel, language: str) -> List[GoogleRatePlan]:
     rate_plan = GoogleRatePlan(
         code="foo",
         name=DisplayString("Rate Plan", language),
@@ -172,7 +172,7 @@ def _get_rate_plans(hotel: CrsHotel, language: str) -> List[GoogleRatePlan]:
 
 
 # TODO: Integrate photos into room types
-def _get_room_types(hotel: CrsHotel, language="en") -> List[GoogleRoomType]:
+def _get_room_types(hotel: Hotel, language="en") -> List[GoogleRoomType]:
     room_types = []
     for room_type in hotel.room_types:
         room_types.append(
@@ -211,10 +211,10 @@ def _get_google_cancellation_policy(language):
     )
 
 
-def _get_room_rates(hotel: CrsHotel, room_type_code, rate_plan_code) -> List[GoogleRoomRate]:
+def _get_room_rates(hotel: Hotel, room_type_code, rate_plan_code) -> List[GoogleRoomRate]:
     room_rates = []
     room_type = hotel.room_types[0]
-    for room_rate in room_type.rates:
+    for _ in room_type.rates:
         room_rates.append(
             GoogleRoomRate(
                 code=str(uuid.uuid4()),
@@ -231,7 +231,7 @@ def _get_room_rates(hotel: CrsHotel, room_type_code, rate_plan_code) -> List[Goo
     return room_rates
 
 
-def _get_hotel_details(hotel: CrsHotel) -> GoogleHotelDetails:
+def _get_hotel_details(hotel: Hotel) -> GoogleHotelDetails:
     return GoogleHotelDetails(
         name=hotel.hotel_details.name,
         address=hotel.hotel_details.address,

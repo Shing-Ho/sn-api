@@ -2,8 +2,7 @@ import decimal
 import random
 import uuid
 from datetime import datetime, timedelta
-from enum import Enum
-from typing import List, Type, Union
+from typing import List, Union
 
 from api.booking.booking_model import Reservation, HotelBookingRequest, HotelBookingResponse, Locator, Status
 from api.common.models import RateType, RoomRate, DailyRate, Money
@@ -24,6 +23,7 @@ from api.hotel.hotel_model import (
     RatePlan,
     BaseHotelSearch,
     HotelSpecificSearch,
+    SimplenightAmenities,
 )
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
@@ -107,7 +107,7 @@ class StubHotelAdapter(HotelAdapter):
             bed_type = random.choice([x for x in bed_types.keys()])
             category = random.choice(room_category)
             room_type_name = f"{bed_type} Bed {category}"
-            amenities = self._sample_enum(Amenity)
+            amenities = random.sample(list(SimplenightAmenities), random.randint(1, 2))
             photos = self._get_photos(code)
 
             description = f"{category} room with a {bed_type.lower()} bed"
@@ -211,6 +211,8 @@ class StubHotelAdapter(HotelAdapter):
 
         star_rating = random.choice([2, 2.5, 3, 3.5, 4, 4.5, 5])
 
+        amenities = random.sample(list(SimplenightAmenities), random.randint(3, 10))
+
         return HotelDetails(
             name=hotel_name,
             address=hotel_address,
@@ -220,7 +222,7 @@ class StubHotelAdapter(HotelAdapter):
             checkout_time="12PM",
             geolocation=geolocation,
             photos=[],
-            amenities=[],
+            amenities=amenities,
             star_rating=star_rating,
             property_description=self._get_property_description(),
         )
@@ -240,11 +242,6 @@ class StubHotelAdapter(HotelAdapter):
         random_street_address = f"{random_address} {random_name} {random_type}"
 
         return Address(city=city, province="CA", country="US", postal_code="12345", address1=random_street_address)
-
-    @staticmethod
-    def _sample_enum(cls: Type[Enum]):
-        members = [name for name in cls]
-        return random.sample(members, random.randint(1, len(members)))
 
     @staticmethod
     def _get_photos(code):

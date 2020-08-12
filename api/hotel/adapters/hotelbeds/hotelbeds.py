@@ -55,7 +55,10 @@ class HotelBeds(HotelAdapter):
         availability_results = self._search_by_location(search_request)
 
         if availability_results.error or availability_results.results.total == 0:
-            raise AvailabilityException(detail=availability_results.error.message, code=1)
+            if availability_results.error:
+                raise AvailabilityException(detail=availability_results.error.message, code=1)
+            else:
+                return []
 
         hotel_codes = list(map(lambda x: str(x.code), availability_results.results.hotels))
         hotel_details = self._details(hotel_codes, search_request.language)
@@ -88,7 +91,7 @@ class HotelBeds(HotelAdapter):
         hotel_details_response = self._details(hotel_codes, language)
         return list(map(self._create_hotel_details, hotel_details_response.hotels))
 
-    def _details(self, hotel_codes: Union[List[str], str], language: str) -> HotelBedsHotelDetailsRS:
+    def _details(self, hotel_codes: Union[List[str], str], language: str) -> Optional[HotelBedsHotelDetailsRS]:
         if isinstance(hotel_codes, list):
             hotel_codes = str.join(",", hotel_codes)
 

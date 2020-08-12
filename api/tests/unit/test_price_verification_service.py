@@ -11,8 +11,8 @@ class TestPriceVerificationService(unittest.TestCase):
         """Tests price verification with the default comparison model"""
 
         hotel = test_objects.hotel()
-        original_room_rates = [test_objects.room_rate(rate_key="key1", amount="100")]
-        verified_room_rates = [test_objects.room_rate(rate_key="key1", amount="100")]
+        original_room_rates = [test_objects.room_rate(rate_key="key1", total="100")]
+        verified_room_rates = [test_objects.room_rate(rate_key="key1", total="100")]
 
         mock_adapter = MagicMock()
         mock_adapter.recheck.return_value = verified_room_rates
@@ -24,11 +24,11 @@ class TestPriceVerificationService(unittest.TestCase):
         assert price_change.is_allowed_change is True
 
     def test_price_verification_default_model_price_change(self):
-        "Tests the default price verification model when a price change occurs"
+        """Tests the default price verification model when a price change occurs"""
 
         hotel = test_objects.hotel()
-        original_room_rates = [test_objects.room_rate(rate_key="key1", amount="100")]
-        verified_room_rates = [test_objects.room_rate(rate_key="key1", amount="125.50")]
+        original_room_rates = [test_objects.room_rate(rate_key="key1", total="100")]
+        verified_room_rates = [test_objects.room_rate(rate_key="key1", total="125.50")]
 
         mock_adapter = MagicMock()
         mock_adapter.recheck.return_value = verified_room_rates

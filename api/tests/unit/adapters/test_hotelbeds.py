@@ -1,9 +1,8 @@
-import json
-import unittest
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 import requests_mock
+from django.test import TestCase
 
 from api.booking.booking_model import HotelBookingRequest, Customer, Traveler
 from api.common.models import to_json, RoomOccupancy, RateType, RoomRate
@@ -16,7 +15,7 @@ from api.tests import to_money
 from api.tests.utils import load_test_resource, load_test_json_resource
 
 
-class TestHotelBeds(unittest.TestCase):
+class TestHotelBeds(TestCase):
     def test_default_headers_in_transport(self):
         transport = HotelBedsTransport()
         default_headers = transport.get_headers()
@@ -184,7 +183,7 @@ class TestHotelBeds(unittest.TestCase):
         hotelbeds_service = HotelBeds(HotelBedsTransport())
         request = self.create_location_search("foo")
         with requests_mock.Mocker() as mocker:
-            mocker.post(HotelBedsTransport.get_hotels_url(), text=json.dumps(response))
+            mocker.post(HotelBedsTransport.get_hotels_url(), json=response)
             mocker.get(HotelBedsTransport.get_hotel_content_url())
             results = hotelbeds_service.search_by_location(request)
 

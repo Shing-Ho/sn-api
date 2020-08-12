@@ -1,5 +1,7 @@
 import uuid
 from datetime import date
+from decimal import Decimal
+from unittest.mock import patch
 
 import pytest
 import requests_mock
@@ -10,9 +12,11 @@ from api.common.models import RoomRate
 from api.hotel import converter
 from api.hotel.adapters import hotel_service
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
+from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.converter.google import GoogleHotelSearchRequest
 from api.hotel.converter.google_models import RoomParty
 from api.hotel.hotel_model import HotelSpecificSearch, RoomOccupancy, HotelLocationSearch
+from api.tests import test_objects
 from api.tests.utils import load_test_resource
 from api.view.exceptions import AvailabilityException
 
@@ -41,6 +45,39 @@ class TestHotelService(TestCase):
 
         hotel = hotel_service.search_by_location(search_request)
         self.assertIsNotNone(hotel)
+        self.assertEqual("2020-01-20", str(hotel[0].start_date))
+        self.assertEqual("2020-01-27", str(hotel[0].end_date))
+        self.assertTrue(len(hotel[0].hotel_details.amenities) >= 3)
+
+    def test_min_nightly_rates_included_in_response(self):
+        search_request = HotelLocationSearch(
+            location_name="SFO",
+            start_date=date(2020, 1, 20),
+            end_date=date(2020, 1, 22),
+            occupancy=RoomOccupancy(2, 1),
+            crs="stub",
+        )
+
+        room_rate = test_objects.room_rate(rate_key="foo", total="100", base_rate="80", tax_rate="20")
+        room_type = test_objects.room_type(rates=[room_rate])
+
+        hotel = test_objects.hotel()
+        hotel.start_date = date(2020, 1, 1)
+        hotel.end_date = date(2020, 1, 3)  # Two room nights
+        hotel.room_types = [room_type]
+
+        stub_adapter = StubHotelAdapter()
+        stub_adapter.search_by_location = lambda x: [hotel]
+
+        with patch("api.hotel.adapters.adapter_service.get_adapters") as mock_adapter_service:
+            mock_adapter_service.return_value = [stub_adapter]
+            hotels = hotel_service.search_by_location(search_request)
+
+        # Two Room Nights, So average nightly rate is 0.5 Total
+        # Average is applied after default markup of 18%
+        self.assertEqual(Decimal("59.00"), hotels[0].average_nightly_rate)
+        self.assertEqual(Decimal("47.20"), hotels[0].average_nightly_base)
+        self.assertEqual(Decimal("11.80"), hotels[0].average_nightly_tax)
 
     def test_search_by_hotel_id_google(self):
         search_request = HotelSpecificSearch(
@@ -100,3 +137,37 @@ class TestHotelService(TestCase):
                 hotel_service.search_by_location(search_request)
 
             assert "The check-in must be in the future" in e.value.detail
+
+    def test_calculate_min_nightly_tate(self):
+        rate_one = test_objects.room_rate(rate_key="one", total="200", tax_rate="40", base_rate="160")
+        rate_two = test_objects.room_rate(rate_key="two", total="500", tax_rate="350", base_rate="85")
+        rate_three = test_objects.room_rate(rate_key="three", total="100", tax_rate="15", base_rate="85")
+        rate_four = test_objects.room_rate(rate_key="four", total="120", tax_rate="25", base_rate="95")
+
+        room_type_one = test_objects.room_type(rates=[rate_one, rate_two])
+        room_type_two = test_objects.room_type(rates=[rate_three, rate_four])
+
+        hotel = test_objects.hotel()
+        hotel.start_date = date(2020, 1, 1)
+        hotel.end_date = date(2020, 1, 2)
+        hotel.room_types = [room_type_one, room_type_two]
+
+        # Room Nights = 1
+        min_nightly_base, min_nightly_tax, min_nightly_total = hotel_service._calculate_min_nightly_rates(hotel)
+        assert min_nightly_base == 85
+        assert min_nightly_tax == 15
+        assert min_nightly_total == 100
+
+        # Room Nights = 2
+        hotel.end_date = date(2020, 1, 3)
+        min_nightly_base, min_nightly_tax, min_nightly_total = hotel_service._calculate_min_nightly_rates(hotel)
+        assert min_nightly_base == 42.5
+        assert min_nightly_tax == 7.50
+        assert min_nightly_total == 50
+
+        # Same Date, Room Nights = 1
+        hotel.end_date = date(2020, 1, 1)
+        min_nightly_base, min_nightly_tax, min_nightly_total = hotel_service._calculate_min_nightly_rates(hotel)
+        assert min_nightly_base == 85
+        assert min_nightly_tax == 15
+        assert min_nightly_total == 100

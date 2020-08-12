@@ -6,7 +6,7 @@ from api.tests import test_objects
 
 
 def test_markup_room_rates():
-    room_rate = test_objects.room_rate(rate_key="foo", amount="100")
+    room_rate = test_objects.room_rate(rate_key="foo", total="100")
 
     with patch("uuid.uuid4", return_value="new-rate-key"):
         marked_up_rate = markups.markup_rate(room_rate)
