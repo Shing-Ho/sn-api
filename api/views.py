@@ -1,11 +1,7 @@
-import json
-
-import stripe
 from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from uszipcode import SearchEngine
 
 from api.models.models import supplier_hotels
 from . import api_access
@@ -13,22 +9,9 @@ from .api_access import ApiAccessRequest
 from .common.models import to_json
 from .serializers import mappingcodesSerializer
 
-stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
-data = open("airports.json", encoding="utf-8").read()
-location_dictionary = json.loads(data)
-
 
 def index(request):
     return HttpResponse(status=404)
-
-
-def location_formater(request):
-    city = request.GET.get("city")
-    search = SearchEngine()
-
-    if city:
-        city_name = search.by_city(city=city, sort_by="population", returns=10)[0].major_city
-        return HttpResponse(json.dumps({city_name: location_dictionary[city_name]["iata"]}))
 
 
 class HotelBedsMap(viewsets.ModelViewSet):
@@ -89,4 +72,4 @@ class AuthenticationView(viewsets.ViewSet):
 
 
 def _response(obj):
-    return Response(to_json(obj))
+    return Response(to_json(obj), content_type="application/json")

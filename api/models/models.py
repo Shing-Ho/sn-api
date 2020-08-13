@@ -18,9 +18,12 @@ class Geoname(models.Model):
 
     geoname_id = models.IntegerField(unique=True)
     iso_country_code = models.CharField(max_length=2)
+    province_code = models.CharField(max_length=20)
     location_name = models.TextField()
     latitude = models.DecimalField(decimal_places=6, max_digits=11)
     longitude = models.DecimalField(decimal_places=6, max_digits=10)
+    timezone = models.CharField(max_length=40)
+    population = models.IntegerField()
 
 
 class GeonameAlternateName(models.Model):

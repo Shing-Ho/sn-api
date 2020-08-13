@@ -1,9 +1,8 @@
 import uuid
 
-from django.test import Client
 from rest_framework.test import APITestCase, APIClient
 
-from api.common.models import to_json, to_jsons
+from api.common.models import to_jsons
 
 
 class SimplenightAPITestCase(APITestCase):
@@ -27,3 +26,6 @@ class SimplenightAPITestCase(APITestCase):
     def post(self, endpoint, obj, content_type="application/json"):
         data = to_jsons(obj)
         return self.client.post(endpoint, data=data, content_type=content_type)
+
+    def get(self, endpoint, **kwargs):
+        return self.client.get(endpoint, data=kwargs)

@@ -9,7 +9,7 @@ from api.views import HotelBedsMap, AuthenticationView
 router = routers.SimpleRouter()
 
 
-router.register(r"locations", LocationsViewSet)
+router.register(r"locations", LocationsViewSet, basename="locations")
 router.register(r"hotels", HotelViewSet, basename="hotels")
 router.register(r"authentication", AuthenticationView, basename="authentication")
 router.register(r"hotelbeds", HotelBedsMap, basename="hotelbeds")

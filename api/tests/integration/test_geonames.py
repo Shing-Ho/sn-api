@@ -2,8 +2,8 @@ import decimal
 
 from django.test import TestCase
 
-from api.management.commands import geonames
-from api.management.commands.geonames import GeonameSettings
+from api.locations import geonames
+from api.locations.geonames import GeonameSettings
 from api.models.models import Geoname, GeonameAlternateName
 from api.tests.utils import get_test_resource_path
 
@@ -27,10 +27,15 @@ class TestGeonamesCommand(TestCase):
         self.assertEqual(4, Geoname.objects.count())
         self.assertEqual(32, GeonameAlternateName.objects.count())
 
-        model = Geoname.objects.get(geoname_id="5391959")
-        self.assertEqual("San Francisco", model.location_name)
-        self.assertEqual(decimal.Decimal("37.774930"), model.latitude)
-        self.assertEqual(decimal.Decimal("-122.419420"), model.longitude)
+        location = Geoname.objects.get(geoname_id="5391959")
+        self.assertEqual("San Francisco", location.location_name)
+        self.assertEqual("CA", location.province_code)
+        self.assertEqual("US", location.iso_country_code)
+        self.assertEqual("San Francisco", location.location_name)
+        self.assertEqual(decimal.Decimal("37.774930"), location.latitude)
+        self.assertEqual(decimal.Decimal("-122.419420"), location.longitude)
+        self.assertEqual(864816, location.population)
+        self.assertEqual("America/Los_Angeles", location.timezone)
 
         Geoname.objects.prefetch_related("lang").filter(geoname_id=5391959).first()
 

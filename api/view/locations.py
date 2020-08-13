@@ -1,30 +1,28 @@
-from django.db.models import Prefetch
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.request import Request
 
 from api.auth.models import OrganizationApiThrottle, HasOrganizationAPIKey
-from api.models.models import Geoname, GeonameAlternateName
-from api.serializers import LocationsSerializer
+from api.locations import location_service
+from api.views import _response
 
 
-class LocationsViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Geoname.objects.all()
-    serializer_class = LocationsSerializer
+class LocationsViewSet(viewsets.ViewSet):
     permission_classes = (HasOrganizationAPIKey,)
     throttle_classes = (OrganizationApiThrottle,)
 
-    def get_queryset(self):
-        queryset = self.queryset
-        lang_code = self.request.GET.get("lang_code", "en")
-        country = self.request.GET.get("country")
+    @action(detail=False, url_path="prefix", methods=["GET"], name="Search Locations by Prefix")
+    def find_by_prefix(self, request: Request):
+        lang_code = request.GET.get("lang_code", "en")
+        prefix = request.GET.get("prefix")
 
-        if lang_code.lower() != "all":
-            lang_filter = GeonameAlternateName.objects.filter(iso_language_code=lang_code)
-            queryset = queryset.prefetch_related(Prefetch("lang", lang_filter))
-            queryset = queryset.filter(lang__iso_language_code=lang_code)
-        else:
-            queryset = queryset.prefetch_related("lang")
+        locations = location_service.find_by_prefix(prefix, lang_code)
+        return _response(locations)
 
-        if country:
-            queryset = queryset.filter(iso_country_code=country)
+    @action(detail=False, url_path="id", methods=["GET"], name="Search Locations by Prefix")
+    def find_by_id(self, request: Request):
+        lang_code = request.GET.get("lang_code", "en")
+        geoname_id = request.GET.get("location_id")
 
-        return queryset
+        locations = location_service.find_by_id(geoname_id, lang_code)
+        return _response(locations)

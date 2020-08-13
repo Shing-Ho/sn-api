@@ -17,6 +17,8 @@ class BaseSchema:
 
 def to_json(obj):
     if isinstance(obj, list):
+        if not obj:
+            return []
         return obj[0].Schema(many=True).dump(obj)
 
     return obj.Schema().dump(obj)
