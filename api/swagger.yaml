@@ -74,7 +74,7 @@ paths:
         '500':
           description: Internal error while completing a booking
 
-  /hotels/search-by-id/:
+  /hotels/search-by-id:
     post:
       tags:
         - Hotel
@@ -98,7 +98,7 @@ paths:
         '404':
           description: No locations found for input
 
-  /hotels/search-by-location/:
+  /hotels/search-by-location:
     post:
       tags:
         - Hotel
@@ -124,7 +124,7 @@ paths:
         '404':
           description: No locations found for input
 
-  /locations/cities/:
+  /locations/cities:
     get:
       tags:
         - Locations
@@ -209,6 +209,74 @@ paths:
           description: bad input parameter
         '404':
           description: No airports found for input
+  /locations/id:
+    get:
+      tags:
+        - Locations
+      summary: Returns a location for a particular ID
+      operationId: getLocationsByPrefix
+      description: |
+        Given a Simplenight Location ID, return the location.  If lang_code is passed, return the localized name.
+      parameters:
+        - in: query
+          name: id
+          description: Simplenight location ID
+          schema:
+            type: string
+            example: San
+        - in: query
+          name: lang_code
+          description: |
+            ISO-format two character language code.  Returns location name
+            localization for the provided lang_code.  Optional.
+          schema:
+            type: string
+            minimum: 2
+            maximum: 2
+            example: en
+      responses:
+        '200':
+          description: List of matching locations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/City'
+  /locations/prefix:
+    get:
+      tags:
+        - Locations
+      summary: Returns a list of all cities, countris, and airports matching a prefix string
+      operationId: getLocationsByPrefix
+      description: |
+        Returns a list of locations which match a prefix string.  Supports prefix search on primary name, or localized
+        name when lang_code is passed as a query parameter.
+      parameters:
+        - in: query
+          name: prefix
+          description: |
+            Location prefix string. For example, "San Fran" matches "San Francisco."
+          schema:
+            type: string
+            example: San
+        - in: query
+          name: lang_code
+          description: |
+            ISO-format two character language code.  Returns location name
+            localization for the provided lang_code.  Optional.
+          schema:
+            type: string
+            minimum: 2
+            maximum: 2
+            example: en
+      responses:
+        '200':
+          description: List of matching locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/City'
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -247,31 +315,25 @@ components:
           example: -122.252570
     City:
       properties:
-        id:
+        location_id:
           type: string
           example: "123"
+        language_code:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: ja
+        location_name:
+          type: string
+          example: サンフランシスコ
+        province_code:
+          type: string
+          example: CA
         iso_country_code:
           type: string
           minLength: 2
           maxLength: 2
           example: en
-        primary_name:
-          type: string
-          example: San Francisco
-        admin_district:
-          type: string
-          example: California
-        localization:
-          type: object
-          properties:
-            language_code:
-              type: string
-              minLength: 2
-              maxLength: 2
-              example: ja
-            name:
-              type: string
-              example: サンフランシスコ
         latitude:
           type: number
           example: 49.057980

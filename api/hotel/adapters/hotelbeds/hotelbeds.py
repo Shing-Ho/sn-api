@@ -175,7 +175,7 @@ class HotelBeds(HotelAdapter):
         response = self.transport.post(self.transport.get_booking_url(), booking_request)
         if not response.ok:
             logger.error({"message": "Error booking HotelBeds", "request": booking_request})
-            logger.error(response.raw)
+            logger.error(response.text)
             raise HotelBedsException(f"Error During Booking: {response.raw}")
 
         return HotelBedsBookingRS.Schema().load(response.json())

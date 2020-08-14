@@ -6,7 +6,7 @@ from api.view.hotels import HotelViewSet
 from api.view.locations import LocationsViewSet
 from api.views import HotelBedsMap, AuthenticationView
 
-router = routers.SimpleRouter()
+router = routers.SimpleRouter(trailing_slash=False)
 
 
 router.register(r"locations", LocationsViewSet, basename="locations")

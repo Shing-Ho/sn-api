@@ -3,8 +3,8 @@ from django.test import Client
 from api.tests.integration import test_models
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 
-LOCATION_BY_PREFIX_ENDPOINT = "/api/v1/locations/prefix/"
-LOCATION_BY_ID_ENDPOINT = "/api/v1/locations/id/"
+LOCATION_BY_PREFIX_ENDPOINT = "/api/v1/locations/prefix"
+LOCATION_BY_ID_ENDPOINT = "/api/v1/locations/id"
 
 
 class TestLocationsView(SimplenightAPITestCase):
@@ -33,6 +33,8 @@ class TestLocationsView(SimplenightAPITestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, len(response.json()))
         self.assertEqual("Test One", response.json()[0]["location_name"])
+        self.assertEqual(50.0, response.json()[0]["latitude"])
+        self.assertEqual(50.0, response.json()[0]["longitude"])
         self.assertEqual("Test Two", response.json()[1]["location_name"])
 
         response = self.get(LOCATION_BY_PREFIX_ENDPOINT, prefix="Prueba Uno", lang_code="es")

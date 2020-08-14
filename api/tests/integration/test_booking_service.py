@@ -72,6 +72,8 @@ class TestBookingService(TestCase):
             crs=StubHotelAdapter.CRS_NAME,
         )
 
+        cache_storage.set("foo-rate-key", booking_request.room_rates[0])
+
         with patch("api.payments.payment_service.authorize_payment"):
             response = booking_service.book(booking_request)
 

@@ -144,7 +144,7 @@ class RoomType(BaseSchema):
     code: str
     name: str
     description: Optional[str]
-    amenities: List[Amenity]
+    amenities: List[SimplenightAmenities]
     photos: List[Image]
     capacity: RoomOccupancy
     bed_types: Optional[BedTypes]

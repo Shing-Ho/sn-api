@@ -8,16 +8,15 @@ from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     RoomOccupancy,
-    CrsHotel,
-    HotelLocationSearch,
+    HotelLocationSearch, Hotel,
 )
 from api.tests import test_objects
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 from api.tests.utils import load_test_resource
 
-SEARCH_BY_ID = "/api/v1/hotels/search-by-id/"
-SEARCH_BY_LOCATION = "/api/v1/hotels/search-by-location/"
-BOOKING = "/api/v1/hotels/booking/"
+SEARCH_BY_ID = "/api/v1/hotels/search-by-id"
+SEARCH_BY_LOCATION = "/api/v1/hotels/search-by-location"
+BOOKING = "/api/v1/hotels/booking"
 
 
 class TestHotelsView(SimplenightAPITestCase):
@@ -29,7 +28,7 @@ class TestHotelsView(SimplenightAPITestCase):
         response = self._post(SEARCH_BY_ID, search)
         self.assertEqual(200, response.status_code)
 
-        hotel: CrsHotel = CrsHotel.Schema().load(response.json())
+        hotel: Hotel = Hotel.Schema().load(response.json())
 
         self.assertIsNotNone(hotel.hotel_id)
 
@@ -43,7 +42,7 @@ class TestHotelsView(SimplenightAPITestCase):
         response = self._post(SEARCH_BY_LOCATION, search)
         self.assertEqual(200, response.status_code)
 
-        hotels: List[CrsHotel] = CrsHotel.Schema(many=True).load(response.json())
+        hotels: List[Hotel] = Hotel.Schema(many=True).load(response.json())
         self.assertTrue(len(hotels) > 1)
         self.assertIsNotNone(hotels[0].hotel_id)
 
@@ -61,7 +60,7 @@ class TestHotelsView(SimplenightAPITestCase):
         response = self._post(SEARCH_BY_LOCATION, search)
         self.assertEqual(200, response.status_code)
 
-        hotels: List[CrsHotel] = CrsHotel.Schema(many=True).load(response.json())
+        hotels: List[Hotel] = Hotel.Schema(many=True).load(response.json())
         self.assertTrue(len(hotels) > 1)
         self.assertIsNotNone(hotels[0].hotel_id)
 

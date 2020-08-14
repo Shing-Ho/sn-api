@@ -2,7 +2,7 @@ from django.test import Client
 
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 
-LOCATION_ENDPOINT = "/api/v1/locations/"
+LOCATION_ENDPOINT = "/api/v1/locations/cities"
 
 
 class TestAuth(SimplenightAPITestCase):

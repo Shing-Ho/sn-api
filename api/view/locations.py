@@ -11,6 +11,13 @@ class LocationsViewSet(viewsets.ViewSet):
     permission_classes = (HasOrganizationAPIKey,)
     throttle_classes = (OrganizationApiThrottle,)
 
+    @action(detail=False, url_path="cities", methods=["GET"], name="Search Locations by Prefix")
+    def find_all(self, request: Request):
+        lang_code = request.GET.get("lang_code")
+        country_code = request.GET.get("country_code")
+
+        return _response(location_service.find_all(country_code=country_code, language_code=lang_code))
+
     @action(detail=False, url_path="prefix", methods=["GET"], name="Search Locations by Prefix")
     def find_by_prefix(self, request: Request):
         lang_code = request.GET.get("lang_code", "en")

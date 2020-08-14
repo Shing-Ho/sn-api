@@ -41,27 +41,6 @@ class GeonameAlternateName(models.Model):
     )
 
 
-class bookingrequest(models.Model):
-    class Meta:
-        app_label = "api"
-
-    currency_list = [
-        (USD, "US DOLLARS"),
-    ]
-    language_list = [
-        (ENG, "ENGLISH"),
-    ]
-    # userid = models.CharField(max_length=30)
-    checkindate = models.DateField(auto_now=True)
-    checkoutdate = models.DateField(auto_now=True)
-    currency = models.CharField(max_length=30, choices=currency_list, default=USD)
-    language = models.CharField(max_length=10, choices=language_list, default=USD)
-    occupancy = models.IntegerField(1, default=1)
-    snpropertyid = models.CharField(max_length=10, default="AAA")  # <--
-    package = models.BooleanField(default=False)  # <--
-    Standalone = models.BooleanField(default=True)
-
-
 class supplier_hotels(models.Model):
     class Meta:
         app_label = "api"
@@ -80,6 +59,38 @@ class supplier_hotels(models.Model):
     longitude = models.FloatField(blank=True, null=True)
     state = models.CharField(max_length=2, default="XX")
     provider_name = models.CharField(max_length=50, default="HotelBeds")
+
+
+def default_uuid_8():
+    return str(uuid.uuid4())[:8]
+
+
+def default_uuid_12():
+    return str(uuid.uuid4())[-12:]
+
+
+class Provider(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "providers"
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=32)
+
+
+class CrsCity(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "crs_cities"
+
+    id = models.AutoField(primary_key=True)
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_code = models.TextField()
+    location_name = models.TextField()
+    province_code = models.TextField()
+    country_code = models.CharField(max_length=2)
+    latitude = models.DecimalField(decimal_places=6, max_digits=11)
+    longitude = models.DecimalField(decimal_places=6, max_digits=11)
 
 
 class sn_hotel_map(models.Model):

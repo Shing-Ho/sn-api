@@ -8,8 +8,8 @@ from api.hotel.hotel_model import HotelLocationSearch, Hotel
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
 from api.tests.utils import load_test_resource
 
-BOOKING_ENDPOINT = "/api/v1/hotels/booking/"
-SEARCH_BY_LOCATION = "/api/v1/hotels/search-by-location/"
+BOOKING_ENDPOINT = "/api/v1/hotels/booking"
+SEARCH_BY_LOCATION = "/api/v1/hotels/search-by-location"
 
 
 class TestBookingView(SimplenightAPITestCase):
