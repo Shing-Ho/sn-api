@@ -13,28 +13,33 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        main_data = sn_hotel_map.objects.filter(provider="Ice Portal")
+        main_data = pd.read_csv(r"C:\Users\tony\Downloads\with_iceportal.csv")
+        main_data = main_data[main_data["provider"] == "IcePortal"]
+        print(len(main_data))
         transport = IcePortalTransport()
         service = transport.get_service()
         for x in range(0, len(main_data)):
 
-            IceId = "ICE"+str(main_data[x].provider_id)
+            IceId = "ICE" + str(main_data.iloc[x]["hotelid"])
             data = service.GetVisualsV2(
                 _soapheaders=transport.get_auth_header(), MappedID=IceId)
             data_as_dict = helpers.serialize_object(data)
             try:
                 for item in data_as_dict['Property']['MediaGallery']['Pictures']['ImagesV2']['PropertyImageVisualsV2']:
 
-                    sn_images_map.objects.update_or_create(
-                        simplenight_id=main_data[x].simplenight_id,
+                    try:
+                        sn_images_map.objects.update_or_create(
+                            simplenight_id=main_data.iloc[x]["sn_id"],
 
-                        image_type=item["Tags"],
-                        image_url_path=item["mediaGalleryUrl"],
-                        image_provider_id="Ice Portal"
-                    )
+                            image_type=item["Tags"],
+                            image_url_path=item["mediaGalleryUrl"],
+                            image_provider_id="Ice Portal"
+                        )
 
-                    print(item.keys())
-                    print(item["mediaGalleryUrl"])
+                        print(item.keys())
+                        print(item["mediaGalleryUrl"])
+                    except:
+                        pass
             except:
                 pass
 
@@ -97,7 +102,7 @@ class IcePortalTransport:
 # service = transport.get_service()
 # print(supplier_hotels.objects.filter(provider_name="Ice Portal").count())
 # for x in supplier_hotels.objects.filter(provider_name="Ice Portal"):
-#     IceId = "ICE"+str(x.provider_id)
+#     IceId = "ICE" + str(x.provider_id)
 #     print(IceId)
 #     data = service.GetVisualsV2(
 #         _soapheaders=transport.get_auth_header(), MappedID=IceId)

@@ -1,25 +1,46 @@
 
 from django.core.management import BaseCommand
-from api.models.models import supplier_hotels, sn_hotel_map
+from api.models.models import supplier_hotels, sn_hotel_map, hotel_listing
 import pandas as pd
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
 
-        hotels = pd.read_csv("api/FullHotelBedsInventory.csv")
-        hotels = hotels[hotels["Country Name"] ==
-                        "United Kingdom                          "]
+        main_data = pd.read_csv(r"C:\Users\tony\Downloads\with_iceportal.csv")
+        print(main_data.head())
+        stars = ['3', '0', '4', '2', '6', '1', '5', '3.5', '2.5', '4.5', '1.5', '5.5']
+        main_data["stars"] = main_data.stars.str.replace("+", ".5")
+        main_data["stars"] = main_data.stars.str.replace(" ", "")
+        main_data["stars"] = main_data.stars.str.replace("ANDAHALF", ".5")
+        main_data["stars"] = main_data.stars.str.replace("star", "")
+        main_data["stars"] = main_data.stars.str.replace("LUXURY", "")
+        main_data["stars"] = main_data.stars.str.replace(" ", "0")
 
-        # print(hotels.columns)
+        # main_data = main_data[main_data.isin(stars)]
+        # main_data["stars"] = main_data["stars"].astype("float64")
 
-        data = supplier_hotels.objects.all()
-        for x in data:
-            count = sn_hotel_map.objects.filter(
-                provider_id=x.hotel_codes).count()
-            if count > 1:
-                print(data.hotel_name)
-
+        print(main_data["stars"].value_counts())
+        # print(main_data["stars"].value_counts().index)
+        for i in range(0, len(main_data)):
+            if i in [100, 1000, 20000, 100000, 200000, 400000]:
+                print(i)
+            try:
+                stars = int(main_data.iloc[i]["stars"])
+            except:
+                stars = 0
+            hotel_listing.objects.update_or_create(
+                provider=main_data.iloc[i]["provider"],
+                simplenight_id=main_data.iloc[i]["sn_id"],
+                address=main_data.iloc[i]["address"],
+                city=main_data.iloc[i]["city_names"],
+                hotelid=main_data.iloc[i]["hotelid"],
+                zipcode=main_data.iloc[i]["zipcode"],
+                stars=stars,
+                countrycode=main_data.iloc[i]["countrycode"]
+            )
+            # except:
+            # print(main_data.iloc[i])
         # for x in range(0, len(hotels)):
         #     try:
         #         if "HALF" in (str(hotels.iloc[x]['Category Name']).replace("STARS", "")):
@@ -54,5 +75,4 @@ class Command(BaseCommand):
         #         print("something went wrong with {}".format(
         #             hotels.iloc[x]['Hotel Code']))
 
-
-# LIST OF HOTELS FROM PROVIDER
+        # LIST OF HOTELS FROM PROVIDER

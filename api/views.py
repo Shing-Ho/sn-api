@@ -3,11 +3,26 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api.models.models import supplier_hotels
+from api.models.models import supplier_hotels, hotel_listing
 from . import api_access
 from .api_access import ApiAccessRequest
 from .common.models import to_json
-from .serializers import mappingcodesSerializer
+from .serializers import mappingcodesSerializer, HotelListingSerializer
+
+
+class HotellistView(viewsets.ModelViewSet):
+    queryset = hotel_listing.objects.all()
+    serializer_class = HotelListingSerializer
+
+    def get_queryset(self):
+
+        queryset = self.queryset
+        snid = self.request.GET.get("snid")
+
+        if snid:
+            queryset.filter(simplenight_id=snid)
+
+        return queryset
 
 
 def index(request):
@@ -54,9 +69,7 @@ class HotelBedsMap(viewsets.ModelViewSet):
             queryset = queryset.filter(latitude=latitude)
         if longitude:
             queryset = queryset.filter(longitude=longitude)
-            # hotels beds id - - > sn_id - 4
-            # other provider ids > send provider id to corresponding provider
-            # -- get data back and display what we want to users
+
         return queryset
 
 

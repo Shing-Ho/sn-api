@@ -36,9 +36,7 @@ class Migration(migrations.Migration):
                 'db_table': 'providers',
             },
         ),
-        migrations.DeleteModel(
-            name='bookingrequest',
-        ),
+
         migrations.AddField(
             model_name='crscity',
             name='provider',

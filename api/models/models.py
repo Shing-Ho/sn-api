@@ -41,24 +41,34 @@ class GeonameAlternateName(models.Model):
     )
 
 
-class supplier_hotels(models.Model):
+class hotel_listing(models.Model):
     class Meta:
         app_label = "api"
 
-    provider_id = models.IntegerField()
-    hotel_codes = models.IntegerField(default=1)
-    hotel_name = models.CharField(max_length=50)
-    rating = models.FloatField(blank=True)
-    chain_name = models.CharField(max_length=50)
-    country_name = models.CharField(max_length=50)
-    destination_name = models.CharField(max_length=50)
-    address = models.CharField(max_length=75)
-    postal_code = models.CharField(max_length=10, null=True)
-    city = models.CharField(max_length=50)
-    latitude = models.FloatField(blank=True, null=True)
-    longitude = models.FloatField(blank=True, null=True)
-    state = models.CharField(max_length=2, default="XX")
-    provider_name = models.CharField(max_length=50, default="HotelBeds")
+    provider = models.TextField(null=True, blank=True)
+    hotelid = models.TextField(null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    hotelname = models.TextField(null=True, blank=True)
+    zipcode = models.TextField(null=True, blank=True)
+    stars = models.FloatField(null=True, blank=True)
+    countrycode = models.TextField(null=True, blank=True)
+    city = models.TextField(null=True, blank=True)
+    simplenight_id = models.IntegerField(null=True)
+
+    def image(self):
+        try:
+            image = sn_images_map.objects.filter(simplenight_id=self.hotelid).image_url_path
+
+        except:
+            image = None
+
+        return image
+
+    # def images():
+    #     images = []
+    #     for item in images.objects.filter(this="that"):
+    #         images.append(item.image_url_path)
+    #     return images
 
 
 def default_uuid_8():
@@ -190,3 +200,23 @@ class HotelBooking(models.Model):
     currency = models.CharField(max_length=3)
     crs_total_price = models.DecimalField(decimal_places=2, max_digits=8)
     crs_currency = models.CharField(max_length=3)
+
+
+class supplier_hotels(models.Model):
+    class Meta:
+        app_label = "api"
+
+    provider_id = models.IntegerField()
+    hotel_codes = models.IntegerField(default=1)
+    hotel_name = models.CharField(max_length=50)
+    rating = models.FloatField(blank=True)
+    chain_name = models.CharField(max_length=50)
+    country_name = models.CharField(max_length=50)
+    destination_name = models.CharField(max_length=50)
+    address = models.CharField(max_length=75)
+    postal_code = models.CharField(max_length=10, null=True)
+    city = models.CharField(max_length=50)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+    state = models.CharField(max_length=2, default="X")
+    provider_name = models.CharField(max_length=50, default="HotelBeds")
