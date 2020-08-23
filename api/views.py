@@ -11,7 +11,7 @@ from .serializers import mappingcodesSerializer, HotelListingSerializer
 
 
 class HotellistView(viewsets.ModelViewSet):
-    queryset = hotel_listing.objects.filter(city="Boston")
+    queryset = hotel_listing.objects.all()
     serializer_class = HotelListingSerializer
 
     def get_queryset(self):

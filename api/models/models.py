@@ -56,19 +56,12 @@ class hotel_listing(models.Model):
     simplenight_id = models.IntegerField(null=True)
 
     def image(self):
-        try:
-            image = sn_images_map.objects.filter(simplenight_id=self.hotelid).image_url_path
-
-        except:
+        if sn_images_map.objects.filter(simplenight_id=self.simplenight_id).count() == 0:
             image = None
+        else:
+            image = sn_images_map.objects.filter(simplenight_id=self.simplenight_id)[0].image_url_path
 
         return image
-
-    # def images():
-    #     images = []
-    #     for item in images.objects.filter(this="that"):
-    #         images.append(item.image_url_path)
-    #     return images
 
 
 def default_uuid_8():
