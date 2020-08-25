@@ -13,7 +13,7 @@ class LocationResponse:
     location_id: int
     language_code: str
     location_name: str
-    province_code: str
+    province: str
     iso_country_code: str
     latitude: Decimal
     longitude: Decimal

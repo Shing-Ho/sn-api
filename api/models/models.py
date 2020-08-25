@@ -18,7 +18,7 @@ class Geoname(models.Model):
 
     geoname_id = models.IntegerField(unique=True)
     iso_country_code = models.CharField(max_length=2)
-    province_code = models.CharField(max_length=20)
+    province = models.CharField(max_length=20)
     location_name = models.TextField()
     latitude = models.DecimalField(decimal_places=6, max_digits=11)
     longitude = models.DecimalField(decimal_places=6, max_digits=10)
@@ -78,7 +78,7 @@ class Provider(models.Model):
         db_table = "providers"
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=32)
+    name = models.CharField(max_length=32, unique=True)
 
 
 class CrsCity(models.Model):
@@ -86,14 +86,23 @@ class CrsCity(models.Model):
         app_label = "api"
         db_table = "crs_cities"
 
-    id = models.AutoField(primary_key=True)
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
-    provider_code = models.TextField()
+    provider_code = models.TextField(unique=True)
     location_name = models.TextField()
-    province_code = models.TextField()
+    province = models.TextField()
     country_code = models.CharField(max_length=2)
     latitude = models.DecimalField(decimal_places=6, max_digits=11)
     longitude = models.DecimalField(decimal_places=6, max_digits=11)
+
+
+class CityMap(models.Model):
+    class Meta:
+        app_label = "api"
+
+    id = models.AutoField(primary_key=True)
+    simplenight_city_id = models.IntegerField()
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_city_id = models.TextField()
 
 
 class sn_hotel_map(models.Model):
@@ -103,15 +112,6 @@ class sn_hotel_map(models.Model):
     simplenight_id = models.IntegerField()
     provider = models.CharField(max_length=50)
     provider_id = models.IntegerField()
-
-
-class sn_city_map(models.Model):
-    class Meta:
-        app_label = "api"
-
-    simplenight_city_id = models.IntegerField()
-    provider = models.CharField(max_length=50)
-    provider_city_name = models.CharField(max_length=50)
 
 
 class sn_images_map(models.Model):

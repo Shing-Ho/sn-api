@@ -9,24 +9,24 @@ from api.tests.integration import test_models
 class TestLocationService(TestCase):
     def setUp(self) -> None:
         super().setUp()
-        geoname_sfo = test_models.create_geoname_model(1, "San Francisco", "CA", "US", population=100)
-        geoname_sea = test_models.create_geoname_model(2, "Seattle", "WA", "US", population=5000)
-        geoname_nyc = test_models.create_geoname_model(3, "New York", "NY", "US", population=10000)
-        geoname_san = test_models.create_geoname_model(4, "San Diego", "CA", "US", population=50)
-        geoname_sat = test_models.create_geoname_model(5, "San Antonio", "TX", "US", population=500)
+        geoname_sfo = test_models.create_geoname(1, "San Francisco", "CA", "US", population=100)
+        geoname_sea = test_models.create_geoname(2, "Seattle", "WA", "US", population=5000)
+        geoname_nyc = test_models.create_geoname(3, "New York", "NY", "US", population=10000)
+        geoname_san = test_models.create_geoname(4, "San Diego", "CA", "US", population=50)
+        geoname_sat = test_models.create_geoname(5, "San Antonio", "TX", "US", population=500)
 
-        geoname_lon = test_models.create_geoname_model(6, "London", "LON", "UK", population=200)
-        geoname_man = test_models.create_geoname_model(7, "Manchester", "MAN", "UK", population=500)
+        geoname_lon = test_models.create_geoname(6, "London", "LON", "UK", population=200)
+        geoname_man = test_models.create_geoname(7, "Manchester", "MAN", "UK", population=500)
 
-        test_models.create_altname_model(1, geoname_sfo, "en", "San Francisco")
-        test_models.create_altname_model(1, geoname_sfo, "jp", "サンフランシスコ")
-        test_models.create_altname_model(2, geoname_sea, "en", "Seattle")
-        test_models.create_altname_model(3, geoname_nyc, "en", "New York City")
-        test_models.create_altname_model(4, geoname_san, "en", "San Diego")
-        test_models.create_altname_model(5, geoname_sat, "en", "San Antonio")
+        test_models.create_geoname_altname(1, geoname_sfo, "en", "San Francisco")
+        test_models.create_geoname_altname(1, geoname_sfo, "jp", "サンフランシスコ")
+        test_models.create_geoname_altname(2, geoname_sea, "en", "Seattle")
+        test_models.create_geoname_altname(3, geoname_nyc, "en", "New York City")
+        test_models.create_geoname_altname(4, geoname_san, "en", "San Diego")
+        test_models.create_geoname_altname(5, geoname_sat, "en", "San Antonio")
 
-        test_models.create_altname_model(6, geoname_lon, "en", "London")
-        test_models.create_altname_model(7, geoname_man, "en", "Manchester")
+        test_models.create_geoname_altname(6, geoname_lon, "en", "London")
+        test_models.create_geoname_altname(7, geoname_man, "en", "Manchester")
 
     def test_find_by_prefix(self):
         cities = location_service.find_by_prefix("San ")
@@ -34,7 +34,7 @@ class TestLocationService(TestCase):
 
         self.assertEqual(5, cities[0].location_id)
         self.assertEqual("San Antonio", cities[0].location_name)
-        self.assertEqual("TX", cities[0].province_code)
+        self.assertEqual("TX", cities[0].province)
         self.assertEqual("US", cities[0].iso_country_code)
         self.assertEqual("en", cities[0].language_code)
         self.assertEqual(Decimal("50.000000"), cities[0].latitude)
@@ -42,7 +42,7 @@ class TestLocationService(TestCase):
 
         self.assertEqual(1, cities[1].location_id)
         self.assertEqual("San Francisco", cities[1].location_name)
-        self.assertEqual("CA", cities[1].province_code)
+        self.assertEqual("CA", cities[1].province)
         self.assertEqual("US", cities[1].iso_country_code)
         self.assertEqual("en", cities[1].language_code)
         self.assertEqual(Decimal("50.000000"), cities[1].latitude)
@@ -51,7 +51,7 @@ class TestLocationService(TestCase):
         self.assertEqual(4, cities[2].location_id)
         self.assertEqual("San Diego", cities[2].location_name)
         self.assertEqual("en", cities[2].language_code)
-        self.assertEqual("CA", cities[2].province_code)
+        self.assertEqual("CA", cities[2].province)
         self.assertEqual("US", cities[2].iso_country_code)
         self.assertEqual(Decimal("50.000000"), cities[2].latitude)
         self.assertEqual(Decimal("50.000000"), cities[2].longitude)
@@ -73,7 +73,7 @@ class TestLocationService(TestCase):
         cities = location_service.find_by_id(1)
         self.assertEqual(1, cities.location_id)
         self.assertEqual("San Francisco", cities.location_name)
-        self.assertEqual("CA", cities.province_code)
+        self.assertEqual("CA", cities.province)
         self.assertEqual("US", cities.iso_country_code)
         self.assertEqual("en", cities.language_code)
 
@@ -81,7 +81,7 @@ class TestLocationService(TestCase):
         cities = location_service.find_by_id(1, language_code="jp")
         self.assertEqual(1, cities.location_id)
         self.assertEqual("サンフランシスコ", cities.location_name)
-        self.assertEqual("CA", cities.province_code)
+        self.assertEqual("CA", cities.province)
         self.assertEqual("US", cities.iso_country_code)
         self.assertEqual("jp", cities.language_code)
 

@@ -27,7 +27,7 @@ class PricelineCityParser:
             provider=self.provider,
             provider_code=row["cityid_ppn"],
             location_name=row["city"],
-            province_code=row["state_code"],
+            province=row["state_code"],
             country_code=row["country_code"],
             latitude=row["latitude"],
             longitude=row["longitude"],

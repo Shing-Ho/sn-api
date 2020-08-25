@@ -61,6 +61,7 @@ def _process_hotels(crs_hotels: Union[List[CrsHotel], CrsHotel]) -> Union[Hotel,
     return list(map(_calculate_and_convert_hotel, crs_hotels))
 
 
+
 def _calculate_and_convert_hotel(crs_hotel: CrsHotel) -> Hotel:
     """Given a CRS Hotel, calculate markups, mininimum nightly rates
     and return a Hotel object suitable for the API view layer

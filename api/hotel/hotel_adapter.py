@@ -1,7 +1,7 @@
 import abc
 from typing import List, Union
 
-from api.booking.booking_model import HotelBookingRequest, HotelPriceVerificationHolder
+from api.booking.booking_model import HotelBookingRequest
 from api.common.models import RoomRate
 from api.hotel.hotel_model import (
     HotelLocationSearch,

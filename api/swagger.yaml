@@ -7,6 +7,8 @@ servers:
     url: https://virtserver.swaggerhub.com/LPBS7/SN_HOTEL_API/1.0.0
   - description: Simplenight Live Sandbox
     url: https://simplenight-api-278418.ue.r.appspot.com/api/v1/
+  - description: Localhost
+    url: http://localhost:8000/api/v1/x
 info:
   version: "1.0.0"
   title: Simplenight Hotel API
@@ -326,7 +328,7 @@ components:
         location_name:
           type: string
           example: サンフランシスコ
-        province_code:
+        province:
           type: string
           example: CA
         iso_country_code:

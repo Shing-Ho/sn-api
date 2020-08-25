@@ -49,7 +49,7 @@ def _geoname_to_location_response(geoname: Geoname, language_code: str):
         location_id=geoname.geoname_id,
         language_code=displayed_language_code,
         location_name=displayed_location_name,
-        province_code=geoname.province_code,
+        province=geoname.province,
         iso_country_code=geoname.iso_country_code,
         latitude=geoname.latitude,
         longitude=geoname.longitude
