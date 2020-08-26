@@ -57,11 +57,15 @@ def convert_booking_request(google_booking_request: GoogleBookingSubmitRequest) 
     if google_room_rate.total_price_at_booking:
         total_price += google_room_rate.total_price_at_booking.amount
 
+    google_room_occupancy = google_booking_request.room_rate.maximum_allowed_occupancy
+    room_occupancy = RoomOccupancy(adults=google_room_occupancy.adults, children=google_room_occupancy.children)
+
     room_rate = RoomRate(
-        rate_key=google_booking_request.room_rate.code,
+        code=google_booking_request.room_rate.code,
+        rate_plan_code=google_booking_request.room_rate.rate_plan_code,
+        room_type_code=google_booking_request.room_rate.room_type_code,
+        maximum_allowed_occupancy=room_occupancy,
         rate_type=RateType.BOOKABLE,
-        description="",
-        additional_detail=[],
         total_base_rate=Money(total_price, "USD"),
         total_tax_rate=to_money("0"),
         total=Money(total_price, "USD"),
@@ -140,9 +144,6 @@ def convert_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Hote
     room_types = _get_room_types(hotel, search_request.language)
     rate_plans = _get_rate_plans(hotel, search_request.language)
 
-    room_type_code = room_types[0].code
-    rate_plan_code = rate_plans[0].code
-
     return GoogleHotelApiResponse(
         api_version=1,
         transaction_id=search_request.transaction_id,
@@ -152,7 +153,7 @@ def convert_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Hote
         party=search_request.party,
         room_types=room_types,
         rate_plans=rate_plans,
-        room_rates=_get_room_rates(hotel, room_type_code, rate_plan_code),
+        room_rates=_get_room_rates(hotel),
         hotel_details=_get_hotel_details(hotel),
     )
 
@@ -211,18 +212,18 @@ def _get_google_cancellation_policy(language):
     )
 
 
-def _get_room_rates(hotel: Hotel, room_type_code, rate_plan_code) -> List[GoogleRoomRate]:
+def _get_room_rates(hotel: Hotel) -> List[GoogleRoomRate]:
     room_rates = []
-    room_type = hotel.room_types[0]
-    for _ in room_type.rates:
+    for room_rate in hotel.room_rates:
+        capacity = room_rate.maximum_allowed_occupancy
         room_rates.append(
             GoogleRoomRate(
                 code=str(uuid.uuid4()),
-                room_type_code=room_type_code,
-                rate_plan_code=rate_plan_code,
-                maximum_allowed_occupancy=RoomCapacity(room_type.capacity.adults, room_type.capacity.children),
-                total_price_at_booking=room_type.rates[0].total,
-                total_price_at_checkout=Money(Decimal("0.00"), room_type.rates[0].total.currency),
+                room_type_code=room_rate.room_type_code,
+                rate_plan_code=room_rate.rate_plan_code,
+                maximum_allowed_occupancy=RoomCapacity(capacity.adults, capacity.children),
+                total_price_at_booking=room_rate.total,
+                total_price_at_checkout=Money(Decimal("0.00"), room_rate.total.currency),
                 line_items=[],
                 partner_data=[],
             )

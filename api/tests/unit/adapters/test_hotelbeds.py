@@ -5,13 +5,13 @@ import requests_mock
 from django.test import TestCase
 
 from api.booking.booking_model import HotelBookingRequest, Customer, Traveler
-from api.common.models import to_json, RoomOccupancy, RateType, RoomRate
+from api.common.models import to_json, RoomOccupancy
 from api.hotel.adapters.hotelbeds.common_models import HotelBedsRateType, HotelBedsPaymentType
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
 from api.hotel.adapters.hotelbeds.search_models import HotelBedsSearchBuilder
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_model import HotelLocationSearch, SimplenightAmenities
-from api.tests import to_money
+from api.tests import test_objects
 from api.tests.utils import load_test_resource, load_test_json_resource
 
 
@@ -134,15 +134,7 @@ class TestHotelBeds(TestCase):
         self.assertIsNotNone(response)
 
     def test_hotelbeds_booking(self):
-        room_rate = RoomRate(
-            rate_key="rate-key",
-            rate_type=RateType.BOOKABLE,
-            description="",
-            total_base_rate=to_money("0.0"),
-            total_tax_rate=to_money("0.0"),
-            total=to_money("0.0"),
-            additional_detail=[],
-        )
+        room_rate = test_objects.room_rate(rate_key="rate-key", total="0")
 
         booking_request = HotelBookingRequest(
             api_version=1,
@@ -229,7 +221,7 @@ class TestHotelBeds(TestCase):
             hotels = hotelbeds.search_by_location(search_request)
             assert len(hotels) > 0
 
-            availability_room_rates = hotels[0].room_types[0].rates[:2]
+            availability_room_rates = hotels[0].room_rates[:2]
             recheck_response = hotelbeds.recheck(availability_room_rates)
 
             self.assertEqual(Decimal("99.89"), availability_room_rates[0].total.amount)

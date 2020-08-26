@@ -111,11 +111,13 @@ class DailyRate(BaseSchema):
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class RoomRate(BaseSchema):
-    rate_key: str
-    rate_type: RateType
-    description: str
-    additional_detail: List[str]
+    code: str
+    room_type_code: str
+    rate_plan_code: str
+    maximum_allowed_occupancy: RoomOccupancy
     total_base_rate: Money
     total_tax_rate: Money
     total: Money
-    daily_rates: Optional[List[DailyRate]] = field(default_factory=list)
+    rate_type: RateType
+    daily_rates: Optional[List[DailyRate]] = None
+    partner_data: Optional[List[str]] = None

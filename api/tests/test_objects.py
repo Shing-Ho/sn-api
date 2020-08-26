@@ -16,14 +16,19 @@ from api.hotel.hotel_model import CrsHotel, RoomType
 from api.tests import to_money
 
 
-def hotel():
+def hotel(room_rates=None):
+    if room_rates is None:
+        room_rates = []
+
     return CrsHotel(
         crs="stub",
         hotel_id="100",
         start_date=date(2020, 1, 1),
         end_date=date(2020, 2, 1),
         occupancy=RoomOccupancy(adults=1),
+        room_rates=room_rates,
         room_types=[],
+        rate_plans=[],
         hotel_details=None,
     )
 
@@ -39,20 +44,18 @@ def room_rate(rate_key: str, total, base_rate=None, tax_rate=None):
         tax_rate = total.amount * decimal.Decimal("0.15")
 
     return RoomRate(
-        rate_key=rate_key,
+        code=rate_key,
+        rate_plan_code="foo",
+        room_type_code="foo",
         rate_type=RateType.BOOKABLE,
-        description="Test Room Rate",
-        additional_detail=[],
         total_base_rate=to_money(base_rate),
         total_tax_rate=to_money(tax_rate),
         total=total,
+        maximum_allowed_occupancy=RoomOccupancy(adults=2),
     )
 
 
-def room_type(rates=None):
-    if rates is None:
-        rates = [room_rate("rate-key", "100")]
-
+def room_type():
     return RoomType(
         code=str(uuid.uuid4),
         name=f"Test Rate {str(uuid.uuid4())[:4]}",
@@ -61,7 +64,6 @@ def room_type(rates=None):
         photos=[],
         capacity=RoomOccupancy(adults=2),
         bed_types=None,
-        rates=rates,
     )
 
 

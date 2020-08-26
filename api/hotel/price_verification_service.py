@@ -60,7 +60,8 @@ def get_price_verification_model(
 
 
 def recheck(hotel: CrsHotel, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelPriceVerification:
-    """Verify room prices with a particular HotelAdapter.  Detect price changes
+    """
+    Verify room prices with a particular HotelAdapter.  Detect price changes
     between the room rates.  Apply a validator to determine if the price change is allowed.
     If price change is not allowed, return an error.
     """
@@ -76,4 +77,4 @@ def recheck(hotel: CrsHotel, room_rates: Union[RoomRate, List[RoomRate]]) -> Hot
 
 
 def _rates_by_rate_key(room_rates: List[RoomRate]) -> Dict[str, RoomRate]:
-    return {x.rate_key: x for x in room_rates}
+    return {x.code: x for x in room_rates}

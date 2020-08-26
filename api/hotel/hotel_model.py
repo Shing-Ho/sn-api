@@ -148,16 +148,22 @@ class RoomType(BaseSchema):
     photos: List[Image]
     capacity: RoomOccupancy
     bed_types: Optional[BedTypes]
-    rates: List[RoomRate] = field(default_factory=list)
     unstructured_policies: Optional[str] = None
+
+
+class CancellationSummary(Enum):
+    UNKNOWN_CANCELLATION_POLICY = "UNKNOWN_CANCELLATION_POLICY"
+    FREE_CANCELLATION = "FREE_CANCELLATION"
+    NON_REFUNDABLE = "NON_REFUNDABLE"
+    PARTIAL_REFUND = "PARTIAL_REFUND"
 
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class CancellationPolicy(BaseSchema):
-    summary: str
-    cancellation_deadline: datetime
-    unstructured_policy: str
+    summary: CancellationSummary
+    cancellation_deadline: Optional[date] = None
+    unstructured_policy: Optional[str] = None
 
 
 @dataclasses.dataclass
@@ -166,7 +172,7 @@ class RatePlan(BaseSchema):
     code: str
     name: str
     description: str
-    basic_amenities: List[Amenity]
+    amenities: List[SimplenightAmenities]
     cancellation_policy: CancellationPolicy
 
 
@@ -212,7 +218,9 @@ class CrsHotel(BaseSchema):
     end_date: date
     occupancy: RoomOccupancy
     room_types: List[RoomType]
-    hotel_details: Optional[HotelDetails]
+    rate_plans: Optional[List[RatePlan]] = None
+    room_rates: Optional[List[RoomRate]] = None
+    hotel_details: Optional[HotelDetails] = None
     error: Optional[ErrorResponse] = None
 
 
@@ -225,6 +233,8 @@ class Hotel(BaseSchema):
     occupancy: RoomOccupancy
     hotel_details: Optional[HotelDetails]
     room_types: Optional[List[RoomType]] = None
+    room_rates: Optional[List[RoomRate]] = None
+    rate_plans: Optional[List[RatePlan]] = None
     average_nightly_rate: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
     average_nightly_base: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
     average_nightly_tax: decimal.Decimal = field(metadata=dict(as_string=True), default=None)

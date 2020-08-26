@@ -59,9 +59,9 @@ class TestHotelService(TestCase):
         )
 
         room_rate = test_objects.room_rate(rate_key="foo", total="100", base_rate="80", tax_rate="20")
-        room_type = test_objects.room_type(rates=[room_rate])
+        room_type = test_objects.room_type()
 
-        hotel = test_objects.hotel()
+        hotel = test_objects.hotel(room_rates=[room_rate])
         hotel.start_date = date(2020, 1, 1)
         hotel.end_date = date(2020, 1, 3)  # Two room nights
         hotel.room_types = [room_type]
@@ -112,12 +112,11 @@ class TestHotelService(TestCase):
         )
 
         hotels = hotel_service.search_by_location(search_request)
-
-        room_rates = [x for hotel in hotels for room_type in hotel.room_types for x in room_type.rates]
+        room_rates = [room_rate for hotel in hotels for room_rate in hotel.room_rates]
         assert len(room_rates) > 10
 
         for room_rate in room_rates:
-            crs_rate: RoomRate = cache_storage.get(room_rate.rate_key)
+            crs_rate: RoomRate = cache_storage.get(room_rate.code)
             assert crs_rate is not None
             assert crs_rate.total.amount < room_rate.total.amount
 
@@ -138,16 +137,16 @@ class TestHotelService(TestCase):
 
             assert "The check-in must be in the future" in e.value.detail
 
-    def test_calculate_min_nightly_tate(self):
+    def test_calculate_min_nightly_rate(self):
         rate_one = test_objects.room_rate(rate_key="one", total="200", tax_rate="40", base_rate="160")
         rate_two = test_objects.room_rate(rate_key="two", total="500", tax_rate="350", base_rate="85")
         rate_three = test_objects.room_rate(rate_key="three", total="100", tax_rate="15", base_rate="85")
         rate_four = test_objects.room_rate(rate_key="four", total="120", tax_rate="25", base_rate="95")
 
-        room_type_one = test_objects.room_type(rates=[rate_one, rate_two])
-        room_type_two = test_objects.room_type(rates=[rate_three, rate_four])
+        room_type_one = test_objects.room_type()
+        room_type_two = test_objects.room_type()
 
-        hotel = test_objects.hotel()
+        hotel = test_objects.hotel(room_rates=[rate_one, rate_two, rate_three, rate_four])
         hotel.start_date = date(2020, 1, 1)
         hotel.end_date = date(2020, 1, 2)
         hotel.room_types = [room_type_one, room_type_two]

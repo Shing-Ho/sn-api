@@ -55,18 +55,18 @@ def booking(book_request: HotelBookingRequest):
 
 
 def _process_hotels(crs_hotels: Union[List[CrsHotel], CrsHotel]) -> Union[Hotel, List[Hotel]]:
-    if isinstance(crs_hotels, CrsHotel):
-        return _calculate_and_convert_hotel(crs_hotels)
-
-    return list(map(_calculate_and_convert_hotel, crs_hotels))
-
-
-
-def _calculate_and_convert_hotel(crs_hotel: CrsHotel) -> Hotel:
-    """Given a CRS Hotel, calculate markups, mininimum nightly rates
+    """
+    Given a CRS Hotel, calculate markups, minimum nightly rates
     and return a Hotel object suitable for the API view layer
     """
 
+    if isinstance(crs_hotels, CrsHotel):
+        return __process_hotels(crs_hotels)
+
+    return list(map(__process_hotels, crs_hotels))
+
+
+def __process_hotels(crs_hotel: CrsHotel) -> Hotel:
     _markup_room_rates(crs_hotel)
     average_nightly_base, average_nightly_tax, average_nightly_rate = _calculate_min_nightly_rates(crs_hotel)
     return Hotel(
@@ -76,6 +76,8 @@ def _calculate_and_convert_hotel(crs_hotel: CrsHotel) -> Hotel:
         occupancy=crs_hotel.occupancy,
         hotel_details=crs_hotel.hotel_details,
         room_types=crs_hotel.room_types,
+        room_rates=crs_hotel.room_rates,
+        rate_plans=crs_hotel.rate_plans,
         average_nightly_rate=average_nightly_rate,
         average_nightly_base=average_nightly_base,
         average_nightly_tax=average_nightly_tax
@@ -83,22 +85,18 @@ def _calculate_and_convert_hotel(crs_hotel: CrsHotel) -> Hotel:
 
 
 def _markup_room_rates(hotel: CrsHotel):
-    for room_type in hotel.room_types:
-        room_rates = []
+    room_rates = []
+    for crs_room_rate in hotel.room_rates:
+        markup_rate = markups.markup_rate(crs_room_rate)
+        cache_storage.set(markup_rate.code, crs_room_rate)
+        room_rates.append(markup_rate)
 
-        for crs_rate in room_type.rates:
-            markup_rate = markups.markup_rate(crs_rate)
-            cache_storage.set(markup_rate.rate_key, crs_rate)
-            room_rates.append(markup_rate)
-
-        room_type.rates = room_rates
+    hotel.room_rates = room_rates
 
 
 def _calculate_min_nightly_rates(hotel: CrsHotel) -> Tuple[Decimal, Decimal, Decimal]:
-    rates = [rate for room_type in hotel.room_types for rate in room_type.rates]
     room_nights = max((hotel.end_date - hotel.start_date).days, 1)
-
-    least_cost_rate = min(rates, key=lambda x: x.total.amount)
+    least_cost_rate = min(hotel.room_rates, key=lambda x: x.total.amount)
 
     def get_nightly_rate(amount: Decimal):
         return Decimal(round(amount / room_nights, 2))
