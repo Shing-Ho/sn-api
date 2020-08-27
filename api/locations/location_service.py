@@ -1,7 +1,9 @@
+from decimal import Decimal
 from typing import List, Optional
 
-from api.locations.models import LocationResponse
-from api.models.models import Geoname
+from api.locations import airports
+from api.locations.models import LocationResponse, LocationType
+from api.models.models import Geoname, Airport
 
 
 def find_by_prefix(prefix: str, language_code="en", limit=10) -> List[LocationResponse]:
@@ -9,15 +11,29 @@ def find_by_prefix(prefix: str, language_code="en", limit=10) -> List[LocationRe
         return []
 
     language_code = language_code.lower()
-    matching_cities = Geoname.objects.filter(lang__name__startswith=prefix, lang__iso_language_code=language_code)
+    matching_cities = Geoname.objects.filter(lang__name__istartswith=prefix, lang__iso_language_code=language_code)
     matching_cities = matching_cities.order_by("-population")
     matching_cities = matching_cities.distinct()
     matching_cities.prefetch_related("lang")
 
-    return list(_geoname_to_location_response(city, language_code) for city in matching_cities[:limit])
+    city_matches = list(_geoname_to_location_response(city, language_code) for city in matching_cities[:limit])
+    airport_matches = {
+        _airport_to_location_response(airport): None for airport in airports.find_by_prefix(name_prefix=prefix)
+    }
+
+    # Sort airport code exact match to the top,
+    airport_code_match = airports.find_by_airport_code(prefix)
+    if airport_code_match:
+        airport_code_match = _airport_to_location_response(airport_code_match)
+        if airport_code_match in airport_matches:
+            del airport_matches[airport_code_match]
+
+        return [airport_code_match] + list(city_matches) + list(airport_matches.keys())
+
+    return list(city_matches) + list(airport_matches.keys())
 
 
-def find_by_id(geoname_id: int, language_code="en") -> Optional[LocationResponse]:
+def find_city_by_geoname_id(geoname_id: int, language_code="en") -> Optional[LocationResponse]:
     matching_locations = Geoname.objects.filter(geoname_id=geoname_id, lang__iso_language_code=language_code)
     if not matching_locations:
         return None
@@ -25,7 +41,7 @@ def find_by_id(geoname_id: int, language_code="en") -> Optional[LocationResponse
     return _geoname_to_location_response(matching_locations.first(), language_code)
 
 
-def find_all(country_code=None, language_code="en") -> List[LocationResponse]:
+def find_all_cities(country_code=None, language_code="en") -> List[LocationResponse]:
     locations = Geoname.objects.filter(lang__iso_language_code=language_code)
     if country_code:
         locations = locations.filter(iso_country_code=country_code)
@@ -46,11 +62,25 @@ def _geoname_to_location_response(geoname: Geoname, language_code: str):
         displayed_location_name = geoname.location_name
 
     return LocationResponse(
-        location_id=geoname.geoname_id,
+        location_id=str(geoname.geoname_id),
         language_code=displayed_language_code,
         location_name=displayed_location_name,
         province=geoname.province,
         iso_country_code=geoname.iso_country_code,
         latitude=geoname.latitude,
-        longitude=geoname.longitude
+        longitude=geoname.longitude,
+        location_type=LocationType.CITY,
+    )
+
+
+def _airport_to_location_response(airport: Airport):
+    return LocationResponse(
+        location_id=airport.airport_code,
+        language_code="en",
+        location_name=airport.airport_name,
+        province=None,
+        iso_country_code=airport.iso_country_code,
+        latitude=Decimal(airport.latitude),
+        longitude=Decimal(airport.longitude),
+        location_type=LocationType.AIRPORT,
     )

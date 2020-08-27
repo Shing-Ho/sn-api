@@ -16,7 +16,7 @@ class LocationsViewSet(viewsets.ViewSet):
         lang_code = request.GET.get("lang_code")
         country_code = request.GET.get("country_code")
 
-        return _response(location_service.find_all(country_code=country_code, language_code=lang_code))
+        return _response(location_service.find_all_cities(country_code=country_code, language_code=lang_code))
 
     @action(detail=False, url_path="prefix", methods=["GET"], name="Search Locations by Prefix")
     def find_by_prefix(self, request: Request):
@@ -31,5 +31,5 @@ class LocationsViewSet(viewsets.ViewSet):
         lang_code = request.GET.get("lang_code", "en")
         geoname_id = request.GET.get("location_id")
 
-        locations = location_service.find_by_id(geoname_id, lang_code)
+        locations = location_service.find_city_by_geoname_id(geoname_id, lang_code)
         return _response(locations)

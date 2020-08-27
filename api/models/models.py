@@ -15,6 +15,9 @@ ENG = "English"
 class Geoname(models.Model):
     class Meta:
         app_label = "api"
+        indexes = [
+            models.Index(fields=["location_name"]),
+        ]
 
     geoname_id = models.IntegerField(unique=True)
     iso_country_code = models.CharField(max_length=2)
@@ -29,6 +32,9 @@ class Geoname(models.Model):
 class GeonameAlternateName(models.Model):
     class Meta:
         app_label = "api"
+        indexes = [
+            models.Index(fields=["name"]),
+        ]
 
     alternate_name_id = models.IntegerField()
     iso_language_code = models.CharField(max_length=2)
@@ -38,6 +44,27 @@ class GeonameAlternateName(models.Model):
 
     geoname = models.ForeignKey(
         Geoname, to_field="geoname_id", on_delete=models.CASCADE, null=True, related_name="lang"
+    )
+
+
+class Airport(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "airports"
+        indexes = [
+            models.Index(fields=["airport_name", "airport_code"]),
+        ]
+
+    airport_id = models.IntegerField()
+    airport_name = models.TextField()
+    city_name = models.TextField()
+    iso_country_code = models.TextField()
+    airport_code = models.CharField(max_length=3)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    timezone = models.TextField()
+    geoname = models.ForeignKey(
+        Geoname, to_field="geoname_id", related_name="geoname", null=True, on_delete=models.SET_NULL
     )
 
 
