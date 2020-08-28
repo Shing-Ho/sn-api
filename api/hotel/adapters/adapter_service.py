@@ -23,3 +23,5 @@ def get_adapters(crs_name) -> List[HotelAdapter]:
         return [HOTEL_ADAPTERS.get("stub")]
     else:
         return [HOTEL_ADAPTERS.get(x) for x in crs_name.split(",")]
+
+

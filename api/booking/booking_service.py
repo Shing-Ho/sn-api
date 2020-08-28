@@ -106,8 +106,8 @@ def _persist_traveler(response):
 
 
 def _get_crs_rate(room_rate: RoomRate) -> RoomRate:
-    crs_rate = cache_storage.get(room_rate.rate_key)
+    crs_rate = cache_storage.get(room_rate.code)
     if not crs_rate:
-        raise RuntimeError(f"Could not find CRS Rate for Rate Key {room_rate.rate_key}")
+        raise RuntimeError(f"Could not find CRS Rate for Rate Key {room_rate.code}")
 
     return crs_rate

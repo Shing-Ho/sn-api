@@ -18,20 +18,20 @@ from api.tests.utils import load_test_resource, load_test_json_resource
 class TestHotelBeds(TestCase):
     def test_default_headers_in_transport(self):
         transport = HotelBedsTransport()
-        default_headers = transport.get_headers()
+        default_headers = transport._get_headers()
         self.assertIn("Api-Key", default_headers)
         self.assertIn("X-Signature", default_headers)
         self.assertEqual("gzip", default_headers["Accept-Encoding"])
         self.assertEqual("application/json", default_headers["Content-Type"])
 
-        headers = transport.get_headers(foo="bar")
+        headers = transport._get_headers(foo="bar")
         self.assertIn("Api-Key", headers)
         self.assertEqual("bar", headers["foo"])
 
     def test_headers_return_copy(self):
         transport = HotelBedsTransport()
-        transport.get_headers()["foo"] = "bar"
-        self.assertNotIn("foo", transport.get_headers())
+        transport._get_headers()["foo"] = "bar"
+        self.assertNotIn("foo", transport._get_headers())
 
     def test_build_search_request(self):
         search_builder = HotelBedsSearchBuilder()

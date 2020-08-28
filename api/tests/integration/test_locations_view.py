@@ -18,16 +18,6 @@ class TestLocationsView(SimplenightAPITestCase):
         test_models.create_geoname_altname(3, geoname_two, "en", "Test Two")
         test_models.create_geoname_altname(4, geoname_two, "es", "Prueba Dos")
 
-    def test_authentication_required(self):
-        client_without_credentials = Client()
-        response = client_without_credentials.get(LOCATION_BY_PREFIX_ENDPOINT)
-        self.assertEqual(401, response.status_code)
-
-        response = self.get(LOCATION_BY_PREFIX_ENDPOINT, prefix="Test")
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(2, len(response.json()))
-
     def test_locations_by_prefix(self):
         response = self.get(LOCATION_BY_PREFIX_ENDPOINT, prefix="Test")
         self.assertEqual(200, response.status_code)

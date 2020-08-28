@@ -8,9 +8,6 @@ from api.views import _response
 
 
 class LocationsViewSet(viewsets.ViewSet):
-    permission_classes = (HasOrganizationAPIKey,)
-    throttle_classes = (OrganizationApiThrottle,)
-
     @action(detail=False, url_path="cities", methods=["GET"], name="Search Locations by Prefix")
     def find_all(self, request: Request):
         lang_code = request.GET.get("lang_code")

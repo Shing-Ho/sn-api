@@ -9,8 +9,7 @@ from django.test import TestCase
 
 from api.common import cache_storage
 from api.common.models import RoomRate
-from api.hotel import converter
-from api.hotel.adapters import hotel_service
+from api.hotel import converter, hotel_service
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.converter.google import GoogleHotelSearchRequest

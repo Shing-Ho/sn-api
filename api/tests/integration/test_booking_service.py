@@ -9,7 +9,7 @@ from api.booking import booking_service
 from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod, SubmitErrorType
 from api.common import cache_storage
 from api.common.models import RoomOccupancy, RoomRate, RateType, Address
-from api.hotel.adapters import hotel_service
+from api.hotel import hotel_service
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.hotel_model import HotelLocationSearch
 from api.models import models
