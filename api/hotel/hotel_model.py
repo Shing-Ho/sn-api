@@ -8,7 +8,7 @@ from typing import List, Optional, Union
 import marshmallow_dataclass
 from marshmallow import EXCLUDE
 
-from api.common.models import BaseSchema, RemoveNone, RoomOccupancy, Address, HotelRate, RoomRate
+from api.common.models import BaseSchema, RemoveNone, RoomOccupancy, Address, HotelRate, RoomRate, Money
 
 
 class SimplenightAmenities(Enum):
@@ -149,6 +149,7 @@ class RoomType(BaseSchema):
     capacity: RoomOccupancy
     bed_types: Optional[BedTypes]
     unstructured_policies: Optional[str] = None
+    avg_nightly_rate: Optional[Money] = None
 
 
 class CancellationSummary(Enum):

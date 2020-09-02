@@ -69,6 +69,8 @@ def _process_hotels(crs_hotels: Union[List[CrsHotel], CrsHotel]) -> Union[Hotel,
 def __process_hotels(crs_hotel: CrsHotel) -> Hotel:
     _markup_room_rates(crs_hotel)
     average_nightly_base, average_nightly_tax, average_nightly_rate = _calculate_min_nightly_rates(crs_hotel)
+    _calculate_and_set_room_type_min_rate(crs_hotel)
+
     return Hotel(
         hotel_id=crs_hotel.hotel_id,
         start_date=crs_hotel.start_date,
@@ -106,3 +108,10 @@ def _calculate_min_nightly_rates(hotel: CrsHotel) -> Tuple[Decimal, Decimal, Dec
     min_nightly_base = get_nightly_rate(least_cost_rate.total_base_rate.amount)
 
     return min_nightly_base, min_nightly_tax, min_nightly_total
+
+
+def _calculate_and_set_room_type_min_rate(hotel: CrsHotel):
+    for room_type in hotel.room_types:
+        matching_room_rates = list(rate.total for rate in hotel.room_rates if rate.room_type_code == room_type.code)
+        minimum_room_rate = min(matching_room_rates, key=lambda rate: rate.amount)
+        room_type.avg_nightly_rate = minimum_room_rate

@@ -1,3 +1,5 @@
+import uuid
+
 from django.http import HttpRequest
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework_api_key.permissions import KeyParser
@@ -11,6 +13,7 @@ class RequestContextMiddleware(MiddlewareMixin):
     def process_request(cls, request: HttpRequest):
         request_cache = get_request_cache()
         request_cache.set("organization", cls.get_organization_from_api_key_in_request(request))
+        request_cache.set("request_id", str(uuid.uuid4()))
 
     @classmethod
     def get_organization_from_api_key_in_request(cls, request: HttpRequest):

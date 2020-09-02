@@ -8,6 +8,7 @@ _request_cache = {}
 _installed_middleware = False
 
 
+# Just used for type hinting
 class CacheStorageTypeHint:
     def get(self, name: str):
         pass

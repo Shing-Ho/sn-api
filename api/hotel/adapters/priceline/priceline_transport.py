@@ -12,7 +12,7 @@ class PricelineTransport(Transport):
         HOTEL_DETAILS = "/hotel/getHotelDetails"
 
     CREDENTIALS = {
-        "refid": "10045",
+        "refid": "10046",
         "api_key": "990b98b0a0efaa7acf461ff6a60cf726",
     }
 
@@ -26,7 +26,11 @@ class PricelineTransport(Transport):
 
         logger.info(f"Making request to {url}")
 
-        return requests.get(url, params=params, headers=self._get_headers())
+        response = requests.get(url, params=params, headers=self._get_headers())
+        if not response.ok:
+            logger.error(f"Error while searching Priceline: {response.text}")
+
+        return response.json()
 
     def hotel_express(self, **params):
         return self.get(self.Endpoint.HOTEL_EXPRESS, **params)
