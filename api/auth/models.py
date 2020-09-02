@@ -1,4 +1,5 @@
 import typing
+from enum import Enum
 
 from django.conf import settings
 from django.db import models
@@ -8,21 +9,48 @@ from rest_framework_api_key.models import AbstractAPIKey
 from rest_framework_api_key.permissions import BaseHasAPIKey, KeyParser
 
 
+class Feature(Enum):
+    ENABLED_CONNECTORS = "enabled_connectors"
+
+
 class Organization(models.Model):
     class Meta:
         app_label = "api"
+        db_table = "organization"
 
     name = models.CharField(max_length=128)
     active = models.BooleanField(default=True)
     api_daily_limit = models.IntegerField()
     api_burst_limit = models.IntegerField()
 
+    def get_feature(self, feature: Feature):
+        try:
+            result = OrganizationFeatures.objects.get(organization_id=self.id, name=feature.value)
+            return result.value
+        except OrganizationFeatures.DoesNotExist:
+            return None
+
+    def set_feature(self, feature: Feature, value):
+        OrganizationFeatures.objects.update_or_create(organization_id=self.id, name=feature.value, value=value)
+
+
+class OrganizationFeatures(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "organization_features"
+
+    id = models.AutoField(primary_key=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="org")
+    name = models.TextField(unique=True)
+    value = models.TextField()
+
 
 class OrganizationAPIKey(AbstractAPIKey):
     class Meta:
         app_label = "api"
+        db_table = "organization_api_keys"
 
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="api_keys", )
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="api_keys",)
 
 
 class HasOrganizationAPIKey(BaseHasAPIKey):

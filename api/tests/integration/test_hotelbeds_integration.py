@@ -39,7 +39,7 @@ class TestHotelBedsIntegration(TestCase):
 
         response = self.hotelbeds.search_by_location(search_request)
 
-        room_rate_to_book = response[10].room_rates[1]
+        room_rate_to_book = response[0].room_rates[0]
 
         transaction_id = str(uuid.uuid4())[:8]
         booking_request = HotelBookingRequest(

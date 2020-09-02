@@ -1,10 +1,12 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
+from rest_framework.response import Response
 
 from api.auth.models import HasOrganizationAPIKey, OrganizationApiThrottle
 from api.booking import booking_service
 from api.booking.booking_model import HotelBookingRequest
+from api.common.request_cache import get_request_cache
 from api.hotel import converter, hotel_service
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
 from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch
@@ -53,3 +55,13 @@ class HotelViewSet(viewsets.ViewSet):
         booking_response = booking_service.book(booking_request)
 
         return _response(converter.google.convert_booking_response(google_booking_request, booking_response))
+
+    @action(detail=False, url_path="status", methods=["GET"], name="Health Check")
+    def status(self, _):
+        """Simply sets a variable in LocMem request cache, and retrieves it, to ensure things are working"""
+        request_cache = get_request_cache()
+        organization = request_cache.get("organization")
+        organization_name = organization.name
+        request_cache.set("__status", f"OK {organization_name}")
+
+        return Response(data=request_cache.get("__status"))
