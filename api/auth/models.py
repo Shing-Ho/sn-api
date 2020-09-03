@@ -10,7 +10,7 @@ from rest_framework_api_key.permissions import BaseHasAPIKey, KeyParser
 
 
 class Feature(Enum):
-    ENABLED_CONNECTORS = "enabled_connectors"
+    ENABLED_ADAPTERS = "enabled_connectors"
 
 
 class Organization(models.Model):
@@ -30,8 +30,17 @@ class Organization(models.Model):
         except OrganizationFeatures.DoesNotExist:
             return None
 
-    def set_feature(self, feature: Feature, value):
-        OrganizationFeatures.objects.update_or_create(organization_id=self.id, name=feature.value, value=value)
+    def set_feature(self, feature_type: Feature, value):
+        feature_name = feature_type.value
+        feature, _ = OrganizationFeatures.objects.get_or_create(organization_id=self.id, name=feature_name)
+
+        feature.value = value
+        feature.save()
+
+    def clear_feature(self, feature_type: Feature):
+        feature = OrganizationFeatures.objects.get(organization_id=self.id, name=feature_type.value)
+        if feature:
+            feature.delete()
 
 
 class OrganizationFeatures(models.Model):

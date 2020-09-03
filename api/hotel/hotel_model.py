@@ -8,7 +8,17 @@ from typing import List, Optional, Union
 import marshmallow_dataclass
 from marshmallow import EXCLUDE
 
-from api.common.models import BaseSchema, RemoveNone, RoomOccupancy, Address, HotelRate, RoomRate, Money
+from api.common.models import (
+    BaseSchema,
+    RemoveNone,
+    RoomOccupancy,
+    Address,
+    HotelRate,
+    RoomRate,
+    Money,
+    RateType,
+    DailyRate
+)
 
 
 class SimplenightAmenities(Enum):
@@ -187,6 +197,9 @@ class GeoLocation(BaseSchema):
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class HotelDetails(BaseSchema):
+    class Meta:
+        ordered = True
+
     name: str
     address: Address
     hotel_code: str
@@ -227,6 +240,34 @@ class CrsHotel(BaseSchema):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
+class SimplenightRoomType(BaseSchema):
+    """
+    Defines an API model for Simplenight's Front End API.
+    This differs from the models returned by adapters, and the models returned in the Google API
+    In this model, room types, rate plans, and rates are combined into a simple list
+    """
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
+    code: str
+    name: str
+    description: Optional[str]
+    amenities: List[SimplenightAmenities]
+    photos: List[Image]
+    capacity: RoomOccupancy
+    bed_types: Optional[BedTypes]
+    total_base_rate: Money
+    total_tax_rate: Money
+    total: Money
+    rate_type: RateType
+    cancellation_policy: CancellationPolicy
+    daily_rates: Optional[List[DailyRate]] = None
+    unstructured_policies: Optional[str] = None
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
 class Hotel(BaseSchema):
     hotel_id: str
     start_date: date
@@ -239,6 +280,20 @@ class Hotel(BaseSchema):
     average_nightly_rate: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
     average_nightly_base: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
     average_nightly_tax: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
+    error: Optional[ErrorResponse] = None
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class SimplenightHotel(BaseSchema):
+    class Meta:
+        ordered = True
+
+    hotel_id: str
+    start_date: date
+    end_date: date
+    hotel_details: Optional[HotelDetails]
+    room_types: Optional[List[SimplenightRoomType]] = None
     error: Optional[ErrorResponse] = None
 
 

@@ -12,7 +12,7 @@ from api.booking.booking_model import (
     HotelBookingRequest,
 )
 from api.common.models import RoomRate, RateType, RoomOccupancy, Address
-from api.hotel.hotel_model import CrsHotel, RoomType
+from api.hotel.hotel_model import CrsHotel, RoomType, HotelSpecificSearch
 from api.tests import to_money
 
 
@@ -125,4 +125,21 @@ def booking_request(payment_obj=None, rate=None):
         traveler=traveler(),
         room_rates=[rate],
         payment=payment_obj,
+    )
+
+
+def hotel_specific_search(start_date=None, end_date=None, hotel_id="123", adapter="stub"):
+    if start_date is None:
+        start_date = date(2020, 1, 1)
+
+    if end_date is None:
+        end_date = date(2020, 1, 7)
+
+    return HotelSpecificSearch(
+        start_date=start_date,
+        end_date=end_date,
+        occupancy=RoomOccupancy(),
+        daily_rates=False,
+        hotel_id=hotel_id,
+        crs=adapter,
     )

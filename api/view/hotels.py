@@ -20,14 +20,14 @@ class HotelViewSet(viewsets.ViewSet):
     @action(detail=False, url_path="search-by-location", methods=["GET", "POST"], name="Search Hotels")
     def search_by_location(self, request: Request):
         request = HotelLocationSearch.Schema().load(request.data)
-        hotels = hotel_service.search_by_location(request)
+        hotels = hotel_service.search_by_location_frontend(request)
 
         return _response(hotels)
 
     @action(detail=False, url_path="search-by-id", methods=["GET", "POST"], name="Search Hotels")
     def search_by_id(self, request):
         request = HotelSpecificSearch.Schema().load(request.data)
-        hotels = hotel_service.search_by_id(request)
+        hotels = hotel_service.search_by_id_frontend(request)
 
         return _response(hotels)
 

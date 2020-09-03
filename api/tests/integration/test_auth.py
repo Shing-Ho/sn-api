@@ -35,10 +35,10 @@ class TestAuth(SimplenightAPITestCase):
 
     def test_organization_features(self):
         organization = Organization.objects.create(name="foo", api_daily_limit=100, api_burst_limit=5)
-        self.assertIsNone(organization.get_feature(Feature.ENABLED_CONNECTORS))
+        self.assertIsNone(organization.get_feature(Feature.ENABLED_ADAPTERS))
 
-        organization.set_feature(Feature.ENABLED_CONNECTORS, "priceline")
-        self.assertEqual("priceline", organization.get_feature(Feature.ENABLED_CONNECTORS))
+        organization.set_feature(Feature.ENABLED_ADAPTERS, "priceline")
+        self.assertEqual("priceline", organization.get_feature(Feature.ENABLED_ADAPTERS))
 
     def test_status_page_request_cache(self):
         key = self.create_api_key(organization_name="Test_Organization")

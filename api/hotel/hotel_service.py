@@ -1,42 +1,60 @@
 from concurrent.futures.thread import ThreadPoolExecutor
 from decimal import Decimal
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Callable, Dict, Optional
 
 from api.booking.booking_model import HotelBookingRequest
 from api.common import cache_storage
 from api.common.models import RoomRate
 from api.hotel import markups
 from api.hotel.adapters import adapter_service
+from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelDetails,
     HotelSpecificSearch,
     CrsHotel,
     HotelLocationSearch,
-    HotelDetailsSearchRequest, Hotel,
+    HotelDetailsSearchRequest,
+    Hotel,
+    BaseHotelSearch,
+    SimplenightRoomType,
+    RoomType,
+    RatePlan,
+    SimplenightHotel,
 )
-
-MAX_WORKERS = 5
+from api.view.exceptions import SimplenightApiException
 
 
 def search_by_location(search_request: HotelLocationSearch) -> List[Hotel]:
-    futures = []
-    all_hotels = []
-
-    adapters = adapter_service.get_adapters(search_request.crs)
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for adapter in adapters:
-            futures.append(executor.submit(adapter.search_by_location, search_request))
-
-        for future in futures:
-            all_hotels.extend(future.result())
-
+    all_hotels = _search_all_adapters(search_request, HotelAdapter.search_by_location)
     return _process_hotels(all_hotels)
 
 
+def search_by_location_frontend(search_request: HotelLocationSearch) -> List[SimplenightHotel]:
+    """
+    Temporary scaffolding for front-end room type refactor, this will be removed.
+    This module will be split into core_hotel_service, hotel_service, google_hotel_service
+    """
+    return list(map(_convert_hotel_to_front_end_format, search_by_location(search_request)))
+
+
 def search_by_id(search_request: HotelSpecificSearch) -> Hotel:
-    adapter = adapter_service.get_adapters(search_request.crs)[0]
-    hotel = adapter.search_by_id(search_request)
+    adapters_to_search = adapter_service.get_adapters_to_search(search_request)
+    adapters = adapter_service.get_adapters(adapters_to_search)
+
+    if len(adapters) > 1:
+        raise SimplenightApiException("More than one adapter specified in hotel specific search", 500)
+
+    hotel = adapters[0].search_by_id(search_request)
     return _process_hotels(hotel)
+
+
+def search_by_id_frontend(search_request: HotelSpecificSearch) -> SimplenightHotel:
+    """
+    Temporary scaffolding for front-end room type refactor, this will be removed.
+    This module will be split into core_hotel_service, hotel_service, google_hotel_service
+    """
+
+    return _convert_hotel_to_front_end_format(search_by_id(search_request))
 
 
 def details(hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:
@@ -54,6 +72,24 @@ def booking(book_request: HotelBookingRequest):
     return adapter.booking(book_request)
 
 
+def _search_all_adapters(search_request: BaseHotelSearch, adapter_fn: Callable):
+    adapters_to_search = adapter_service.get_adapters_to_search(search_request)
+    adapters = adapter_service.get_adapters(adapters_to_search)
+
+    hotels = []
+    with ThreadPoolExecutor() as executor:
+        futures = []
+
+        for adapter in adapters:
+            adapter_fn_name = getattr(adapter, adapter_fn.__name__)
+            futures.append(executor.submit(adapter_fn_name, search_request))
+
+        for future in futures:
+            hotels.extend(future.result())
+
+    return hotels
+
+
 def _process_hotels(crs_hotels: Union[List[CrsHotel], CrsHotel]) -> Union[Hotel, List[Hotel]]:
     """
     Given a CRS Hotel, calculate markups, minimum nightly rates
@@ -69,7 +105,6 @@ def _process_hotels(crs_hotels: Union[List[CrsHotel], CrsHotel]) -> Union[Hotel,
 def __process_hotels(crs_hotel: CrsHotel) -> Hotel:
     _markup_room_rates(crs_hotel)
     average_nightly_base, average_nightly_tax, average_nightly_rate = _calculate_min_nightly_rates(crs_hotel)
-    _calculate_and_set_room_type_min_rate(crs_hotel)
 
     return Hotel(
         hotel_id=crs_hotel.hotel_id,
@@ -82,7 +117,7 @@ def __process_hotels(crs_hotel: CrsHotel) -> Hotel:
         rate_plans=crs_hotel.rate_plans,
         average_nightly_rate=average_nightly_rate,
         average_nightly_base=average_nightly_base,
-        average_nightly_tax=average_nightly_tax
+        average_nightly_tax=average_nightly_tax,
     )
 
 
@@ -110,8 +145,46 @@ def _calculate_min_nightly_rates(hotel: CrsHotel) -> Tuple[Decimal, Decimal, Dec
     return min_nightly_base, min_nightly_tax, min_nightly_total
 
 
-def _calculate_and_set_room_type_min_rate(hotel: CrsHotel):
-    for room_type in hotel.room_types:
-        matching_room_rates = list(rate.total for rate in hotel.room_rates if rate.room_type_code == room_type.code)
-        minimum_room_rate = min(matching_room_rates, key=lambda rate: rate.amount)
-        room_type.avg_nightly_rate = minimum_room_rate
+def _convert_hotel_to_front_end_format(hotel: Hotel) -> Optional[SimplenightHotel]:
+    if hotel is None:
+        return None
+
+    room_types: Dict[str, RoomType] = {room_type.code: room_type for room_type in hotel.room_types}
+    rate_plans: Dict[str, RatePlan] = {rate_plan.code: rate_plan for rate_plan in hotel.rate_plans}
+
+    simplenight_room_types = []
+    for room_rate in hotel.room_rates:
+        room_type = room_types[room_rate.room_type_code]
+        rate_plan = rate_plans[room_rate.rate_plan_code]
+
+        simplenight_room_type = SimplenightRoomType(
+            code=room_rate.code,
+            name=room_type.name,
+            description=room_type.description,
+            amenities=room_type.amenities,
+            photos=room_type.photos,
+            capacity=room_type.capacity,
+            bed_types=room_type.bed_types,
+            total_base_rate=room_rate.total_base_rate,
+            total_tax_rate=room_rate.total_tax_rate,
+            total=room_rate.total,
+            rate_type=room_rate.rate_type,
+            cancellation_policy=rate_plan.cancellation_policy,
+            daily_rates=room_rate.daily_rates,
+            unstructured_policies=room_type.unstructured_policies,
+        )
+
+        simplenight_room_types.append(simplenight_room_type)
+
+    simplenight_hotel = SimplenightHotel(
+        hotel_id=hotel.hotel_id,
+        start_date=hotel.start_date,
+        end_date=hotel.end_date,
+        hotel_details=hotel.hotel_details,
+        room_types=simplenight_room_types,
+    )
+
+    if hotel.error:
+        simplenight_hotel.error = hotel.error
+
+    return simplenight_hotel

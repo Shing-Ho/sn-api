@@ -38,6 +38,9 @@ from api.hotel.hotel_model import (
     BaseHotelSearch,
     RoomOccupancy,
     RoomType,
+    RatePlan,
+    CancellationPolicy,
+    CancellationSummary,
 )
 from api.view.exceptions import AvailabilityException
 
@@ -141,7 +144,8 @@ class HotelBeds(HotelAdapter):
 
     def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
         verified_hotel = self._recheck_request(room_rates)
-        return list(map(self._create_room_rate, verified_hotel.hotel.rooms[0].rates))
+        room_type_code = verified_hotel.hotel.rooms[0].code
+        return list(map(lambda x: self._create_room_rate(x, room_type_code), verified_hotel.hotel.rooms[0].rates))
 
     def _recheck_request(self, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelBedsCheckRatesRS:
         rooms_to_check = list(HotelBedsCheckRatesRoom(rate_key=x.code) for x in room_rates)
@@ -190,8 +194,19 @@ class HotelBeds(HotelAdapter):
     def _create_hotel(self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail) -> CrsHotel:
 
         room_types = list(map(lambda x: self._create_room_type(x), hotel.rooms))
-        hotelbeds_room_rates = list(rate for room in hotel.rooms for rate in room.rates)
-        room_rates = list(map(lambda x: self._create_room_rate(x, hotel.currency), hotelbeds_room_rates))
+
+        room_rates = []
+        for room in hotel.rooms:
+            for rate in room.rates:
+                room_rates.append(self._create_room_rate(rate, room.code, hotel.currency))
+
+        rate_plan = RatePlan(
+            code="temporary-scaffolding",
+            name="Temporary Rate Plan Name",
+            description="This will be removed when rate plan refactor is complete",
+            amenities=[],
+            cancellation_policy=CancellationPolicy(summary=CancellationSummary.FREE_CANCELLATION),
+        )
 
         return CrsHotel(
             crs=self.CRS_NAME,
@@ -201,7 +216,7 @@ class HotelBeds(HotelAdapter):
             occupancy=search.occupancy,
             room_types=room_types,
             room_rates=room_rates,
-            rate_plans=[],
+            rate_plans=[rate_plan],
             hotel_details=self._create_hotel_details(detail),
         )
 
@@ -222,8 +237,7 @@ class HotelBeds(HotelAdapter):
             unstructured_policies=None,
         )
 
-    def _create_room_rate(self, rate: HotelBedsRoomRateRS, currency=None):
-
+    def _create_room_rate(self, rate: HotelBedsRoomRateRS, room_type_code: str, currency=None):
         total_base_rate = Money(rate.net, currency)
         total_taxes = 0
         if rate.taxes:
@@ -236,13 +250,13 @@ class HotelBeds(HotelAdapter):
 
         return RoomRate(
             code=rate.rate_key,
-            rate_plan_code="",
-            room_type_code="",
+            rate_plan_code="temporary-scaffolding",
+            room_type_code=room_type_code,
             rate_type=self._get_rate_type(rate.rate_type),
             total_base_rate=total_base_rate,
             total_tax_rate=total_tax_rate,
             total=total_rate,
-            maximum_allowed_occupancy=occupancy
+            maximum_allowed_occupancy=occupancy,
         )
 
     @staticmethod

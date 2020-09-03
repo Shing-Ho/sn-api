@@ -52,14 +52,15 @@ class TestBookingService(TestCase):
             traveler=Traveler("John", "Doe", occupancy=RoomOccupancy(adults=1)),
             room_rates=[
                 RoomRate(
-                    "foo-rate-key",
-                    RateType.BOOKABLE,
-                    description="Room Booking",
-                    additional_detail=[],
+                    code="foo-rate-key",
+                    rate_plan_code="foo",
+                    room_type_code="bar",
+                    rate_type=RateType.BOOKABLE,
                     total_base_rate=to_money("100.99"),
                     total_tax_rate=to_money("20.00"),
                     total=to_money("120.99"),
                     daily_rates=[],
+                    maximum_allowed_occupancy=RoomOccupancy()
                 )
             ],
             payment=Payment(
