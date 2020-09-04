@@ -1,4 +1,3 @@
-
 from django.core.management import BaseCommand
 from api.models.models import supplier_hotels, sn_hotel_map, hotel_listing
 import pandas as pd
@@ -19,7 +18,7 @@ class Command(BaseCommand):
 
         # main_data = main_data[main_data.isin(stars)]
         # main_data["stars"] = main_data["stars"].astype("float64")
-
+        main_data = main_data[334285:]
         print(main_data["stars"].value_counts())
         # print(main_data["stars"].value_counts().index)
         for i in range(0, len(main_data)):

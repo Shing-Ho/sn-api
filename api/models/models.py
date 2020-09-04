@@ -4,6 +4,7 @@ from enum import Enum
 
 import stripe
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
 
@@ -15,10 +16,13 @@ ENG = "English"
 class Geoname(models.Model):
     class Meta:
         app_label = "api"
+        indexes = [
+            models.Index(fields=["location_name"]),
+        ]
 
     geoname_id = models.IntegerField(unique=True)
     iso_country_code = models.CharField(max_length=2)
-    province_code = models.CharField(max_length=20)
+    province = models.CharField(max_length=20)
     location_name = models.TextField()
     latitude = models.DecimalField(decimal_places=6, max_digits=11)
     longitude = models.DecimalField(decimal_places=6, max_digits=10)
@@ -29,6 +33,9 @@ class Geoname(models.Model):
 class GeonameAlternateName(models.Model):
     class Meta:
         app_label = "api"
+        indexes = [
+            models.Index(fields=["name"]),
+        ]
 
     alternate_name_id = models.IntegerField()
     iso_language_code = models.CharField(max_length=2)
@@ -38,6 +45,27 @@ class GeonameAlternateName(models.Model):
 
     geoname = models.ForeignKey(
         Geoname, to_field="geoname_id", on_delete=models.CASCADE, null=True, related_name="lang"
+    )
+
+
+class Airport(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "airports"
+        indexes = [
+            models.Index(fields=["airport_name", "airport_code"]),
+        ]
+
+    airport_id = models.IntegerField()
+    airport_name = models.TextField()
+    city_name = models.TextField()
+    iso_country_code = models.TextField()
+    airport_code = models.CharField(max_length=3)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    timezone = models.TextField()
+    geoname = models.ForeignKey(
+        Geoname, to_field="geoname_id", related_name="geoname", null=True, on_delete=models.SET_NULL
     )
 
 
@@ -78,7 +106,7 @@ class Provider(models.Model):
         db_table = "providers"
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=32)
+    name = models.CharField(max_length=32, unique=True)
 
 
 class CrsCity(models.Model):
@@ -86,14 +114,23 @@ class CrsCity(models.Model):
         app_label = "api"
         db_table = "crs_cities"
 
-    id = models.AutoField(primary_key=True)
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
-    provider_code = models.TextField()
+    provider_code = models.TextField(unique=True)
     location_name = models.TextField()
-    province_code = models.TextField()
+    province = models.TextField()
     country_code = models.CharField(max_length=2)
     latitude = models.DecimalField(decimal_places=6, max_digits=11)
     longitude = models.DecimalField(decimal_places=6, max_digits=11)
+
+
+class CityMap(models.Model):
+    class Meta:
+        app_label = "api"
+
+    id = models.AutoField(primary_key=True)
+    simplenight_city_id = models.IntegerField()
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_city_id = models.TextField()
 
 
 class sn_hotel_map(models.Model):
@@ -105,25 +142,34 @@ class sn_hotel_map(models.Model):
     provider_id = models.IntegerField()
 
 
-class sn_city_map(models.Model):
-    class Meta:
-        app_label = "api"
-
-    simplenight_city_id = models.IntegerField()
-    provider = models.CharField(max_length=50)
-    provider_city_name = models.CharField(max_length=50)
-
-
 class sn_images_map(models.Model):
     class Meta:
         app_label = "api"
 
     # simplenight_id = models.ForeignKey((supplier_hotels,))
     # on_delete.CASCADE: when object is deleted, delete all references to the object
-    simplenight_id = models.CharField(max_length=100, blank=True, null=True)
-    image_type = models.TextField(null=True, blank=True)
-    image_url_path = models.TextField(null=True, blank=True)
-    image_provider_id = models.CharField(max_length=100)
+    simplenight_id      = models.CharField(max_length=100, blank=True, null=True)
+    image_type          = models.TextField(null=True, blank=True)
+    image_url_path      = models.TextField(null=True, blank=True)
+    image_provider_id   = models.CharField(max_length=100)
+
+
+class supplier_priceline(models.Model):
+    class Meta:
+        app_label = "api"
+
+    supplier            = models.CharField(max_length=50, default="Priceline")
+    supplier_id         = models.CharField(max_length=100, blank=True, null=False)
+    hotel_name          = models.CharField(max_length=100)
+    hotel_address       = models.CharField(max_length=100)
+    hotel_city          = models.CharField(max_length=100)
+    hotel_state         = models.CharField(max_length=25)
+    hotel_country_code  = models.CharField(max_length=3)
+    hotel_postal_code   = models.CharField(max_length=15)
+    hotel_rating        = models.FloatField()
+    hotel_description   = models.TextField(max_length=100)
+    hotel_amenities     = ArrayField(ArrayField(models.CharField(max_length=100, blank=True),size=8,),size=8,)
+    image_url_path      = models.TextField(null=True, blank=True)
 
 
 class PaymentTransaction(models.Model):

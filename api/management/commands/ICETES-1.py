@@ -18,6 +18,8 @@ class Command(BaseCommand):
         print(len(main_data))
         transport = IcePortalTransport()
         service = transport.get_service()
+        sn_images_map.objects.all().delete()
+
         for x in range(0, len(main_data)):
 
             IceId = "ICE" + str(main_data.iloc[x]["hotelid"])
@@ -89,27 +91,27 @@ class IcePortalTransport:
         return "http://services.iceportal.com/Service.asmx"
 
 
-# transport = IcePortalTransport()
-# service = transport.get_service()
-# data = (service.GetVisualsV2(
-#     _soapheaders=transport.get_auth_header(), MappedID=883))
-# data_as_dict = helpers.serialize_object(data)
-# for x in (data_as_dict['Property']['MediaGallery']['HD360s'].keys()):
-#     print(x)
-#     print(data_as_dict['Property']['MediaGallery']['HD360s'][x])
-# # 20200
-# transport = IcePortalTransport()
-# service = transport.get_service()
-# print(supplier_hotels.objects.filter(provider_name="Ice Portal").count())
-# for x in supplier_hotels.objects.filter(provider_name="Ice Portal"):
-#     IceId = "ICE" + str(x.provider_id)
-#     print(IceId)
-#     data = service.GetVisualsV2(
-#         _soapheaders=transport.get_auth_header(), MappedID=IceId)
-#     data_as_dict = helpers.serialize_object(data)
+# # transport = IcePortalTransport()
+# # service = transport.get_service()
+# # data = (service.GetVisualsV2(
+# #     _soapheaders=transport.get_auth_header(), MappedID=883))
+# # data_as_dict = helpers.serialize_object(data)
+# # for x in (data_as_dict['Property']['MediaGallery']['HD360s'].keys()):
+# #     print(x)
+# #     print(data_as_dict['Property']['MediaGallery']['HD360s'][x])
+# # # 20200
+# # transport = IcePortalTransport()
+# # service = transport.get_service()
+# # print(supplier_hotels.objects.filter(provider_name="Ice Portal").count())
+# # for x in supplier_hotels.objects.filter(provider_name="Ice Portal"):
+# #     IceId = "ICE" + str(x.provider_id)
+# #     print(IceId)
+# #     data = service.GetVisualsV2(
+# #         _soapheaders=transport.get_auth_header(), MappedID=IceId)
+# #     data_as_dict = helpers.serialize_object(data)
 
-#     for item in data_as_dict['Property']['MediaGallery']['Pictures']['ImagesV2']['PropertyImageVisualsV2']:
-#         try:
-#             print(item["mediaGalleryUrl"])
-#         except:
-#             pass
+# #     for item in data_as_dict['Property']['MediaGallery']['Pictures']['ImagesV2']['PropertyImageVisualsV2']:
+# #         try:
+# #             print(item["mediaGalleryUrl"])
+# #         except:
+# #             pass
