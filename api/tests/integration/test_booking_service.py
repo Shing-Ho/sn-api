@@ -70,7 +70,7 @@ class TestBookingService(TestCase):
                 payment_method=PaymentMethod.PAYMENT_TOKEN,
                 payment_token="token_foo",
             ),
-            crs=StubHotelAdapter.CRS_NAME,
+            provider=StubHotelAdapter.PROVIDER_NAME,
         )
 
         cache_storage.set("foo-rate-key", booking_request.room_rates[0])
@@ -104,7 +104,7 @@ class TestBookingService(TestCase):
         hotel_bookings = models.HotelBooking.objects.filter(booking__booking_id=booking.booking_id)
 
         self.assertEqual("Hotel Name", hotel_bookings[0].hotel_name)
-        self.assertEqual("stub", hotel_bookings[0].crs_name)
+        self.assertEqual("stub", hotel_bookings[0].provider_name)
         self.assertEqual("ABC123", hotel_bookings[0].hotel_code)
         self.assertIsNotNone("foo", hotel_bookings[0].record_locator)
         self.assertEqual(decimal.Decimal("120.99"), hotel_bookings[0].total_price)
@@ -127,7 +127,7 @@ class TestBookingService(TestCase):
             end_date=checkout,
             occupancy=RoomOccupancy(adults=1),
             location_name="SFO",
-            crs="hotelbeds",
+            provider="hotelbeds",
         )
 
         availability_response = hotel_service.search_by_location(search)
@@ -140,9 +140,9 @@ class TestBookingService(TestCase):
         booking_request = test_objects.booking_request(rate=room_rate_to_book)
         booking_response = booking_service.book(booking_request)
 
-        crs_rate: RoomRate = cache_storage.get(room_rate_to_book.rate_key)
-        assert booking_response.reservation.room_rates[0].rate_key == crs_rate.rate_key
+        provider_rate: RoomRate = cache_storage.get(room_rate_to_book.rate_key)
+        assert booking_response.reservation.room_rates[0].rate_key == provider_rate.rate_key
 
         hotel_booking = HotelBooking.objects.filter(record_locator=booking_response.reservation.locator.id).first()
-        assert hotel_booking.crs_total_price == crs_rate.total.amount
+        assert hotel_booking.provider_total == provider_rate.total.amount
         assert hotel_booking.total_price == room_rate_to_book.total.amount

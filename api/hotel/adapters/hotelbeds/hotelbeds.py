@@ -32,7 +32,7 @@ from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     HotelDetails,
-    CrsHotel,
+    AdapterHotel,
     HotelLocationSearch,
     Address,
     BaseHotelSearch,
@@ -46,7 +46,7 @@ from api.view.exceptions import AvailabilityException
 
 
 class HotelBeds(HotelAdapter):
-    CRS_NAME = "hotelbeds"
+    PROVIDER_NAME = "hotelbeds"
 
     def __init__(self, transport=None):
         if transport is None:
@@ -54,7 +54,7 @@ class HotelBeds(HotelAdapter):
 
         self.transport = transport
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[CrsHotel]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
         availability_results = self._search_by_location(search_request)
 
         if availability_results.error or availability_results.results.total == 0:
@@ -87,7 +87,7 @@ class HotelBeds(HotelAdapter):
         results = response.json()
         return HotelBedsAvailabilityRS.Schema().load(results)
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> CrsHotel:
+    def search_by_id(self, search_request: HotelSpecificSearch) -> AdapterHotel:
         pass
 
     def details(self, hotel_codes: Union[List[str], str], language: str) -> List[HotelDetails]:
@@ -191,7 +191,7 @@ class HotelBeds(HotelAdapter):
     def _get_image_base_url():
         return "http://photos.hotelbeds.com/giata/bigger/"
 
-    def _create_hotel(self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail) -> CrsHotel:
+    def _create_hotel(self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail) -> AdapterHotel:
 
         room_types = list(map(lambda x: self._create_room_type(x), hotel.rooms))
 
@@ -208,8 +208,8 @@ class HotelBeds(HotelAdapter):
             cancellation_policy=CancellationPolicy(summary=CancellationSummary.FREE_CANCELLATION),
         )
 
-        return CrsHotel(
-            crs=self.CRS_NAME,
+        return AdapterHotel(
+            provider=self.PROVIDER_NAME,
             hotel_id=str(hotel.code),
             start_date=search.start_date,
             end_date=search.end_date,

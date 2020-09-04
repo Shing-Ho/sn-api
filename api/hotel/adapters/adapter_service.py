@@ -20,15 +20,15 @@ HOTEL_ADAPTERS = {
 }
 
 
-def get_adapter(crs_name):
-    return HOTEL_ADAPTERS.get(crs_name)
+def get_adapter(name):
+    return HOTEL_ADAPTERS.get(name)
 
 
-def get_adapters(crs_name) -> List[HotelAdapter]:
-    if crs_name is None:
+def get_adapters(name) -> List[HotelAdapter]:
+    if name is None:
         return [HOTEL_ADAPTERS.get("stub")]
     else:
-        return [HOTEL_ADAPTERS.get(x) for x in crs_name.split(",")]
+        return [HOTEL_ADAPTERS.get(x) for x in name.split(",")]
 
 
 def get_adapters_to_search(search_request: BaseHotelSearch) -> str:
@@ -41,8 +41,8 @@ def get_adapters_to_search(search_request: BaseHotelSearch) -> str:
     If no organization is associated, return the stub adapter.
     """
 
-    if search_request.crs:
-        return search_request.crs
+    if search_request.provider:
+        return search_request.provider
 
     organization = get_request_context().get_organization()
     if organization:

@@ -22,7 +22,7 @@ class HotelService(abc.ABC):
     def details(self, hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:
         pass
 
-    def recheck(self, crs: str, room_rate: List[RoomRate]) -> List[RoomRate]:
+    def recheck(self, provider: str, room_rate: List[RoomRate]) -> List[RoomRate]:
         pass
 
     def booking(self, book_request: HotelBookingRequest):

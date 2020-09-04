@@ -1,3 +1,4 @@
+import json
 import uuid
 from decimal import Decimal
 from enum import Enum
@@ -12,12 +13,14 @@ from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelDetails,
     HotelSpecificSearch,
-    CrsHotel,
+    AdapterHotel,
     HotelLocationSearch,
     RoomType,
     RatePlan,
     CancellationPolicy,
-    CancellationSummary, GeoLocation,
+    CancellationSummary,
+    GeoLocation,
+    BaseHotelSearch,
 )
 from api.view.exceptions import AvailabilityException
 
@@ -28,18 +31,24 @@ class PricelineAdapter(HotelAdapter):
         if self.transport is None:
             self.transport = PricelineTransport(test_mode=True)
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[CrsHotel]:
-        priceline_request = self._create_city_search(search_request)
-        logger.info(f"Initiating Priceline City Express Search: {priceline_request}")
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
+        request = self._create_city_search(search_request)
+        logger.info(f"Initiating Priceline City Express Search: {request}")
 
-        response = self.transport.hotel_express(**priceline_request)
-        results = self._check_hotel_express_response_and_get_results(response)
+        response = self.transport.hotel_express(**request)
+        hotel_results = self._check_hotel_express_response_and_get_results(response)
 
-        crs_hotels = list(map(lambda result: self._create_crs_hotel_from_response(search_request, result), results))
-        return crs_hotels
+        hotels = list(map(lambda result: self._create_hotel_from_response(search_request, result), hotel_results))
+        return hotels
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> CrsHotel:
-        pass
+    def search_by_id(self, search: HotelSpecificSearch) -> AdapterHotel:
+        request = self._create_hotel_id_search(search)
+        logger.info(f"Initiating Priceline Hotel Express Search: {request}")
+
+        response = self.transport.hotel_express(**request)
+        hotel_results = self._check_hotel_express_response_and_get_results(response)
+
+        return self._create_hotel_from_response(search, hotel_results[0])
 
     def details(self, *args) -> HotelDetails:
         pass
@@ -50,18 +59,30 @@ class PricelineAdapter(HotelAdapter):
     def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
         pass
 
-    @staticmethod
-    def _create_city_search(search_request: HotelLocationSearch):
-        params = {
-            "check_in": search_request.start_date,
-            "check_out": search_request.end_date,
-            "adults": search_request.occupancy.adults,
-            "children": search_request.occupancy.children,
-            "city_id": search_request.location_name,
+    def _create_hotel_id_search(self, search: HotelSpecificSearch):
+        return {
+            **self._create_base_search(search),
+            "hotel_ids": search.hotel_id,
         }
 
-        if search_request.currency:
-            params["currency"] = search_request.currency
+    def _create_city_search(self, search: HotelLocationSearch):
+        return {
+            **self._create_base_search(search),
+            "city_id": search.location_name,
+        }
+
+    @staticmethod
+    def _create_base_search(search: BaseHotelSearch):
+        params = {
+            "check_in": search.start_date,
+            "check_out": search.end_date,
+            "adults": search.occupancy.adults,
+            "children": search.occupancy.children,
+            "limit": 2,
+        }
+
+        if search.currency:
+            params["currency"] = search.currency
 
         return params
 
@@ -77,14 +98,14 @@ class PricelineAdapter(HotelAdapter):
 
         return results["results"]["hotel_data"]
 
-    def _create_crs_hotel_from_response(self, search, hotel_response):
+    def _create_hotel_from_response(self, search, hotel_response):
         room_types = self._create_room_types(hotel_response)
         rate_plans = self._create_rate_plans(hotel_response)
         room_rates = self._create_room_rates(hotel_response, rate_plans)
         hotel_details = self._create_hotel_details(hotel_response)
 
-        return CrsHotel(
-            crs=PricelineInfo.name,
+        return AdapterHotel(
+            provider=PricelineInfo.name,
             hotel_id=hotel_response["id"],
             start_date=search.start_date,
             end_date=search.end_date,
@@ -117,7 +138,7 @@ class PricelineAdapter(HotelAdapter):
             geolocation=GeoLocation(hotel_data["geo"]["latitude"], hotel_data["geo"]["longitude"]),
             chain_code=hotel_data["hotel_chain"]["chain_codes_t"],
             star_rating=hotel_data["star_rating"],
-            property_description=hotel_data["hotel_description"]
+            property_description=hotel_data["hotel_description"],
         )
 
     @staticmethod
@@ -129,7 +150,7 @@ class PricelineAdapter(HotelAdapter):
                 display_currency = price_details["display_currency"]
                 rate = RoomRate(
                     code=rate["ppn_bundle"],
-                    room_type_code=rate["room_id"],
+                    room_type_code=room["id"],
                     rate_plan_code=rate_plans[0].code,
                     maximum_allowed_occupancy=RoomOccupancy(adults=rate["occupancy_limit"]),
                     total_base_rate=Money(Decimal(price_details["display_sub_total"]), display_currency),
@@ -179,7 +200,7 @@ class PricelineAdapter(HotelAdapter):
         for room in hotel_response["room_data"]:
             rate_data = room["rate_data"][0]
             room_type = RoomType(
-                code=rate_data["room_id"],
+                code=room["id"],
                 name=rate_data["title"],
                 description=rate_data["description"],
                 amenities=[],

@@ -121,7 +121,7 @@ class HotelBookingRequest(BaseSchema):
     payment: Optional[Payment] = None
     tracking: Optional[str] = None
     ip_address: Optional[str] = None
-    crs: str = "stub"
+    provider: str = "stub"
 
 
 @dataclasses.dataclass

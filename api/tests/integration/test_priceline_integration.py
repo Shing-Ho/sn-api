@@ -5,7 +5,7 @@ from django.test import TestCase
 from api.common.models import RoomOccupancy
 from api.hotel.adapters.priceline.priceline import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
-from api.hotel.hotel_model import HotelLocationSearch
+from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch
 
 
 class TestPricelineIntegration(TestCase):
@@ -18,7 +18,7 @@ class TestPricelineIntegration(TestCase):
         hotel_express_url = transport.endpoint(transport.Endpoint.HOTEL_EXPRESS)
         self.assertEqual("https://api.rezserver.com/api/hotel/getExpress.Results", hotel_express_url)
 
-    def test_hotel_express_availability(self):
+    def test_hotel_express_city_availability(self):
         transport = PricelineTransport(test_mode=True)
         priceline = PricelineAdapter(transport)
 
@@ -31,4 +31,19 @@ class TestPricelineIntegration(TestCase):
         )
 
         results = priceline.search_by_location(search_request)
+        print(results)
+
+    def test_hotel_express_hotel_availability(self):
+        transport = PricelineTransport(test_mode=True)
+        priceline = PricelineAdapter(transport)
+
+        hotel_id = "700363264"
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=35)
+        occupancy = RoomOccupancy()
+        search = HotelSpecificSearch(
+            start_date=checkin, end_date=checkout, occupancy=occupancy, hotel_id=hotel_id
+        )
+
+        results = priceline.search_by_id(search)
         print(results)

@@ -27,7 +27,7 @@ class TestHotelService(TestCase):
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(2, 1),
-            crs="stub",
+            provider="stub",
         )
 
         hotel = hotel_service.search_by_id(search_request)
@@ -39,7 +39,7 @@ class TestHotelService(TestCase):
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(2, 1),
-            crs="stub",
+            provider="stub",
         )
 
         hotel = hotel_service.search_by_location(search_request)
@@ -54,7 +54,7 @@ class TestHotelService(TestCase):
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 22),
             occupancy=RoomOccupancy(2, 1),
-            crs="stub",
+            provider="stub",
         )
 
         room_rate = test_objects.room_rate(rate_key="foo", total="100", base_rate="80", tax_rate="20")
@@ -84,7 +84,7 @@ class TestHotelService(TestCase):
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(2, 1),
-            crs="stub",
+            provider="stub",
         )
 
         google_search_request = GoogleHotelSearchRequest(
@@ -107,7 +107,7 @@ class TestHotelService(TestCase):
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(2, 1),
-            crs="stub",
+            provider="stub",
         )
 
         hotels = hotel_service.search_by_location(search_request)
@@ -115,9 +115,9 @@ class TestHotelService(TestCase):
         assert len(room_rates) > 10
 
         for room_rate in room_rates:
-            crs_rate: RoomRate = cache_storage.get(room_rate.code)
-            assert crs_rate is not None
-            assert crs_rate.total.amount < room_rate.total.amount
+            provider_rate: RoomRate = cache_storage.get(room_rate.code)
+            assert provider_rate is not None
+            assert provider_rate.total.amount < room_rate.total.amount
 
     def test_error_in_api_response(self):
         error_response = load_test_resource("hotelbeds/error-response.json")
@@ -128,7 +128,7 @@ class TestHotelService(TestCase):
                 start_date=date(2020, 1, 20),
                 end_date=date(2020, 1, 27),
                 occupancy=RoomOccupancy(2, 1),
-                crs="hotelbeds",
+                provider="hotelbeds",
             )
 
             with pytest.raises(AvailabilityException) as e:

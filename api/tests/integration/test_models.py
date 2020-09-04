@@ -1,4 +1,4 @@
-from api.models.models import Geoname, GeonameAlternateName, CrsCity, Provider, CityMap, Airport
+from api.models.models import Geoname, GeonameAlternateName, ProviderCity, Provider, CityMap, Airport
 
 
 def create_geoname(geoname_id, location_name, province, country_code, population=0, latitude=None, longitude=None):
@@ -44,7 +44,7 @@ def create_provider(provider_name: str):
     return provider
 
 
-def create_crs_city(
+def create_provider_city(
     provider_name: str,
     code: str,
     name: str,
@@ -58,7 +58,7 @@ def create_crs_city(
         longitude = 0.0
 
     provider = Provider.objects.get(name=provider_name)
-    crs_city = CrsCity(
+    provider_city = ProviderCity(
         provider=provider,
         provider_code=code,
         location_name=name,
@@ -68,8 +68,8 @@ def create_crs_city(
         longitude=longitude,
     )
 
-    crs_city.save()
-    return crs_city
+    provider_city.save()
+    return provider_city
 
 
 def create_city_mapping(provider_name: str, simplenight_id: str, provider_id: str):

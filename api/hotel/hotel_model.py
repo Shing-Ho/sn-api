@@ -56,7 +56,7 @@ class BaseHotelSearch(BaseSchema, RemoveNone):
     currency: Optional[str] = "USD"
     checkin_time: Optional[Union[str, datetime]] = None
     checkout_time: Optional[Union[str, datetime]] = None
-    crs: str = "stub"
+    provider: str = "stub"
 
 
 @dataclasses.dataclass
@@ -80,7 +80,7 @@ class HotelDetailsSearchRequest(BaseSchema):
     num_rooms: int = 1
     currency: str = "USD"
     language: str = "en_US"
-    crs: str = "stub"
+    provider: str = "stub"
     chain_code: Optional[str] = None
 
 
@@ -225,8 +225,8 @@ class ErrorResponse(BaseSchema):
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
-class CrsHotel(BaseSchema):
-    crs: str
+class AdapterHotel(BaseSchema):
+    provider: str
     hotel_id: str
     start_date: date
     end_date: date

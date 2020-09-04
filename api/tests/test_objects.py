@@ -12,7 +12,7 @@ from api.booking.booking_model import (
     HotelBookingRequest,
 )
 from api.common.models import RoomRate, RateType, RoomOccupancy, Address
-from api.hotel.hotel_model import CrsHotel, RoomType, HotelSpecificSearch
+from api.hotel.hotel_model import AdapterHotel, RoomType, HotelSpecificSearch
 from api.tests import to_money
 
 
@@ -20,8 +20,8 @@ def hotel(room_rates=None):
     if room_rates is None:
         room_rates = []
 
-    return CrsHotel(
-        crs="stub",
+    return AdapterHotel(
+        provider="stub",
         hotel_id="100",
         start_date=date(2020, 1, 1),
         end_date=date(2020, 2, 1),
@@ -67,7 +67,7 @@ def room_type():
     )
 
 
-def customer(first_name="John", last_name="Simp"):
+def customer(first_name="John", last_name="Simplenight"):
     return Customer(
         first_name=first_name,
         last_name=last_name,
@@ -81,7 +81,7 @@ def address():
     return Address(address1="123 Market St", city="San Francisco", province="CA", country="US", postal_code="94111")
 
 
-def traveler(first_name="John", last_name="Simpnight"):
+def traveler(first_name="John", last_name="Simplenight"):
     return Traveler(first_name=first_name, last_name=last_name, occupancy=RoomOccupancy(adults=1, children=0))
 
 
@@ -96,7 +96,7 @@ def payment(card_number=None):
         payment_card_parameters=PaymentCardParameters(
             card_type=CardType.VI,
             card_number=card_number,
-            cardholder_name="John Q. Simpnight",
+            cardholder_name="John Q. Simplenight",
             expiration_month=str(exp_date.month),
             expiration_year=str(exp_date.year),
             cvv="123",
@@ -141,5 +141,5 @@ def hotel_specific_search(start_date=None, end_date=None, hotel_id="123", adapte
         occupancy=RoomOccupancy(),
         daily_rates=False,
         hotel_id=hotel_id,
-        crs=adapter,
+        provider=adapter,
     )

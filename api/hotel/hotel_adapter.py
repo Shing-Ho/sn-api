@@ -6,30 +6,30 @@ from api.common.models import RoomRate
 from api.hotel.hotel_model import (
     HotelLocationSearch,
     HotelSpecificSearch,
-    CrsHotel,
+    AdapterHotel,
     HotelDetails,
 )
 
 
 class HotelAdapter(abc.ABC):
     @abc.abstractmethod
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[CrsHotel]:
-        """Search for a particular location in a remote CRS"""
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
+        """Search a provider for a particular location"""
         pass
 
     @abc.abstractmethod
-    def search_by_id(self, search_request: HotelSpecificSearch) -> CrsHotel:
-        """Search for a specific hotel in a remote CRS"""
+    def search_by_id(self, search_request: HotelSpecificSearch) -> AdapterHotel:
+        """Search a hotel provider for a specific hotel"""
         pass
 
     @abc.abstractmethod
     def details(self, *args) -> HotelDetails:
-        """Return Hotel Details from a remote CRS"""
+        """Return Hotel Details using a hotel provider"""
         pass
 
     @abc.abstractmethod
     def booking(self, book_request: HotelBookingRequest):
-        """Given a HotelBookingRequest, confirm a reservation in a CRS"""
+        """Given a HotelBookingRequest, confirm a reservation with a hotel provider"""
         pass
 
     @abc.abstractmethod

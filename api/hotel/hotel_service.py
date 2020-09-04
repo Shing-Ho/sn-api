@@ -11,7 +11,7 @@ from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelDetails,
     HotelSpecificSearch,
-    CrsHotel,
+    AdapterHotel,
     HotelLocationSearch,
     HotelDetailsSearchRequest,
     Hotel,
@@ -58,17 +58,17 @@ def search_by_id_frontend(search_request: HotelSpecificSearch) -> SimplenightHot
 
 
 def details(hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:
-    adapter = adapter_service.get_adapters(hotel_details_req.crs)[0]
+    adapter = adapter_service.get_adapters(hotel_details_req.provider)[0]
     return adapter.details(hotel_details_req)
 
 
-def recheck(crs: str, room_rate: List[RoomRate]) -> List[RoomRate]:
-    adapter = adapter_service.get_adapters(crs)[0]
+def recheck(provider: str, room_rate: List[RoomRate]) -> List[RoomRate]:
+    adapter = adapter_service.get_adapters(provider)[0]
     return adapter.recheck(room_rate)
 
 
 def booking(book_request: HotelBookingRequest):
-    adapter = adapter_service.get_adapters(book_request.crs)[0]
+    adapter = adapter_service.get_adapters(book_request.provider)[0]
     return adapter.booking(book_request)
 
 
@@ -90,48 +90,48 @@ def _search_all_adapters(search_request: BaseHotelSearch, adapter_fn: Callable):
     return hotels
 
 
-def _process_hotels(crs_hotels: Union[List[CrsHotel], CrsHotel]) -> Union[Hotel, List[Hotel]]:
+def _process_hotels(adapter_hotels: Union[List[AdapterHotel], AdapterHotel]) -> Union[Hotel, List[Hotel]]:
     """
-    Given a CRS Hotel, calculate markups, minimum nightly rates
+    Given an AdapterHotel, calculate markups, minimum nightly rates
     and return a Hotel object suitable for the API view layer
     """
 
-    if isinstance(crs_hotels, CrsHotel):
-        return __process_hotels(crs_hotels)
+    if isinstance(adapter_hotels, AdapterHotel):
+        return __process_hotels(adapter_hotels)
 
-    return list(map(__process_hotels, crs_hotels))
+    return list(map(__process_hotels, adapter_hotels))
 
 
-def __process_hotels(crs_hotel: CrsHotel) -> Hotel:
-    _markup_room_rates(crs_hotel)
-    average_nightly_base, average_nightly_tax, average_nightly_rate = _calculate_min_nightly_rates(crs_hotel)
+def __process_hotels(adapter_hotel: AdapterHotel) -> Hotel:
+    _markup_room_rates(adapter_hotel)
+    average_nightly_base, average_nightly_tax, average_nightly_rate = _calculate_min_nightly_rates(adapter_hotel)
 
     return Hotel(
-        hotel_id=crs_hotel.hotel_id,
-        start_date=crs_hotel.start_date,
-        end_date=crs_hotel.end_date,
-        occupancy=crs_hotel.occupancy,
-        hotel_details=crs_hotel.hotel_details,
-        room_types=crs_hotel.room_types,
-        room_rates=crs_hotel.room_rates,
-        rate_plans=crs_hotel.rate_plans,
+        hotel_id=adapter_hotel.hotel_id,
+        start_date=adapter_hotel.start_date,
+        end_date=adapter_hotel.end_date,
+        occupancy=adapter_hotel.occupancy,
+        hotel_details=adapter_hotel.hotel_details,
+        room_types=adapter_hotel.room_types,
+        room_rates=adapter_hotel.room_rates,
+        rate_plans=adapter_hotel.rate_plans,
         average_nightly_rate=average_nightly_rate,
         average_nightly_base=average_nightly_base,
         average_nightly_tax=average_nightly_tax,
     )
 
 
-def _markup_room_rates(hotel: CrsHotel):
+def _markup_room_rates(hotel: AdapterHotel):
     room_rates = []
-    for crs_room_rate in hotel.room_rates:
-        markup_rate = markups.markup_rate(crs_room_rate)
-        cache_storage.set(markup_rate.code, crs_room_rate)
+    for provider_rate in hotel.room_rates:
+        markup_rate = markups.markup_rate(provider_rate)
+        cache_storage.set(markup_rate.code, provider_rate)
         room_rates.append(markup_rate)
 
     hotel.room_rates = room_rates
 
 
-def _calculate_min_nightly_rates(hotel: CrsHotel) -> Tuple[Decimal, Decimal, Decimal]:
+def _calculate_min_nightly_rates(hotel: AdapterHotel) -> Tuple[Decimal, Decimal, Decimal]:
     room_nights = max((hotel.end_date - hotel.start_date).days, 1)
     least_cost_rate = min(hotel.room_rates, key=lambda x: x.total.amount)
 

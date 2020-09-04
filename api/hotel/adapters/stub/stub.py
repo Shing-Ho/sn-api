@@ -9,7 +9,7 @@ from api.common.models import RateType, RoomRate, DailyRate, Money
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelLocationSearch,
-    CrsHotel,
+    AdapterHotel,
     RoomOccupancy,
     RoomType,
     Image,
@@ -32,14 +32,14 @@ from common.utils import random_string
 class StubHotelAdapter(HotelAdapter):
     """Stub Hotel Adapter, generates fakes data, for testing purposes"""
 
-    CRS_NAME = "stub"
+    PROVIDER_NAME = "stub"
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[CrsHotel]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
         num_hotels_to_return = random.randint(10, 50)
 
         return [self.search_by_id(search_request) for _ in range(num_hotels_to_return)]
 
-    def search_by_id(self, search_request: Union[BaseHotelSearch, HotelSpecificSearch]) -> CrsHotel:
+    def search_by_id(self, search_request: Union[BaseHotelSearch, HotelSpecificSearch]) -> AdapterHotel:
         hotel_code = random_string(5).upper()
         if isinstance(search_request, HotelSpecificSearch) and search_request.hotel_id:
             hotel_code = search_request.hotel_id
@@ -48,8 +48,8 @@ class StubHotelAdapter(HotelAdapter):
         rate_plans = self._generate_rate_plans(search_request)
         room_rates = self._generate_room_rates(search_request, room_types, rate_plans)
 
-        response = CrsHotel(
-            crs=self.CRS_NAME,
+        response = AdapterHotel(
+            provider=self.PROVIDER_NAME,
             hotel_id=hotel_code,
             start_date=search_request.start_date,
             end_date=search_request.end_date,

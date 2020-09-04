@@ -4,7 +4,7 @@ from typing import DefaultDict, List
 from haversine import haversine
 
 from api import logger
-from api.models.models import CrsCity, Geoname, CityMap, Provider
+from api.models.models import ProviderCity, Geoname, CityMap, Provider
 
 
 class CityMappingService:
@@ -14,8 +14,8 @@ class CityMappingService:
         self.simplenight_cities = self.find_unmapped_simplenight_cities()
         self.unmapped_provider_cities = self.find_unmapped_provider_cities()
         self.simplenight_city_name_map: DefaultDict[str, List[Geoname]] = defaultdict(list)
-        self.provider_city_name_map: DefaultDict[str, List[CrsCity]] = defaultdict(list)
-        self.provider_by_country: DefaultDict[str, List[CrsCity]] = defaultdict(list)
+        self.provider_city_name_map: DefaultDict[str, List[ProviderCity]] = defaultdict(list)
+        self.provider_by_country: DefaultDict[str, List[ProviderCity]] = defaultdict(list)
 
         # Create map by location name for quick lookup
         for city in self.unmapped_provider_cities:
@@ -43,7 +43,7 @@ class CityMappingService:
             "provider_city_id", flat=True
         )
 
-        provider_mappings = CrsCity.objects.filter(provider__name=self.provider_name)
+        provider_mappings = ProviderCity.objects.filter(provider__name=self.provider_name)
         return list(provider_mappings.exclude(provider_code__in=existing_mappings))
 
     def map_cities(self):

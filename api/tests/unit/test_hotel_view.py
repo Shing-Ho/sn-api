@@ -22,7 +22,7 @@ class TestBookingView(SimplenightAPITestCase):
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(2, 1),
-            crs="hotelbeds",
+            provider="hotelbeds",
         )
 
         with requests_mock.Mocker() as mocker:

@@ -30,7 +30,7 @@ class TestAdapterService(SimplenightAPITestCase):
         self.request_context.process_request(mock_request)
 
         # Without an adapter set on the search, fall back to Organization-specified adapters
-        search.crs = None
+        search.provider = None
         self.assertEqual("foo", adapter_service.get_adapters_to_search(search))
 
         # With no adapters set on the search, or organization, fall back to "stub"

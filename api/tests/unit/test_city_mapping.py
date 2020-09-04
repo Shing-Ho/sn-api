@@ -13,9 +13,9 @@ class TestCityMappings(TestCase):
         provider = "priceline"
         test_models.create_provider(provider)
 
-        test_models.create_crs_city(provider, code="10", name="San Francisco", province="CA", country="US")
-        test_models.create_crs_city(provider, code="20", name="Seattle", province="WA", country="US")
-        test_models.create_crs_city(provider, code="30", name="New York City", province="NY", country="US")
+        test_models.create_provider_city(provider, code="10", name="San Francisco", province="CA", country="US")
+        test_models.create_provider_city(provider, code="20", name="Seattle", province="WA", country="US")
+        test_models.create_provider_city(provider, code="30", name="New York City", province="NY", country="US")
 
         mapping_service = CityMappingService(provider)
 
@@ -52,11 +52,11 @@ class TestCityMappings(TestCase):
         provider = "priceline"
         test_models.create_provider(provider)
 
-        test_models.create_crs_city(provider, code="10", name="San Francisco", province="CA", country="US")
-        test_models.create_crs_city(provider, code="20", name="Seattle", province="WA", country="US")
-        test_models.create_crs_city(provider, code="30", name="New York", province="NY", country="US")
-        test_models.create_crs_city(provider, code="40", name="Foo City", province="FO", country="US")
-        test_models.create_crs_city(provider, code="50", name="Bar Town", province="BR", country="US")
+        test_models.create_provider_city(provider, code="10", name="San Francisco", province="CA", country="US")
+        test_models.create_provider_city(provider, code="20", name="Seattle", province="WA", country="US")
+        test_models.create_provider_city(provider, code="30", name="New York", province="NY", country="US")
+        test_models.create_provider_city(provider, code="40", name="Foo City", province="FO", country="US")
+        test_models.create_provider_city(provider, code="50", name="Bar Town", province="BR", country="US")
 
         mapping_service = CityMappingService(provider)
 
@@ -70,7 +70,7 @@ class TestCityMappings(TestCase):
         # Multiple Matches, Difference Provinces
         test_models.create_geoname(6, "Sometown", province="AA", country_code="US")
         test_models.create_geoname(7, "Sometown", province="BB", country_code="US")
-        test_models.create_crs_city(provider, code="60", name="Sometown", province="AA", country="US")
+        test_models.create_provider_city(provider, code="60", name="Sometown", province="AA", country="US")
         unmapped_provider_cities = mapping_service.find_unmapped_provider_cities()
         assert len(unmapped_provider_cities) == 3
 
@@ -81,7 +81,7 @@ class TestCityMappings(TestCase):
 
         # No province, but only one city, so should be mapped
         test_models.create_geoname(8, "RandomCity", province="", country_code="US")
-        test_models.create_crs_city(provider, code="80", name="RandomCity", province="", country="US")
+        test_models.create_provider_city(provider, code="80", name="RandomCity", province="", country="US")
 
         mapping_service.reload()
         mapping_service.map_cities()
@@ -91,7 +91,7 @@ class TestCityMappings(TestCase):
         # No province in Provider city, and multiple city name matches in Geonames, so should be skipped
         test_models.create_geoname(9, "RandomCity", province="AA", country_code="US")
         test_models.create_geoname(10, "RandomCity", province="BB", country_code="US")
-        test_models.create_crs_city(provider, code="90", name="RandomCity", province="", country="US")
+        test_models.create_provider_city(provider, code="90", name="RandomCity", province="", country="US")
 
         mapping_service.reload()
         mapping_service.map_cities()
