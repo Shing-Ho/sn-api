@@ -1,7 +1,8 @@
 import logging
-import unittest
 import uuid
 from datetime import datetime, timedelta
+
+from django.test import TestCase
 
 from api import logger
 from api.booking.booking_model import HotelBookingRequest, Customer, Traveler
@@ -14,7 +15,7 @@ from api.hotel.hotel_model import (
 from api.tests import to_money
 
 
-class TestHotelBedsIntegration(unittest.TestCase):
+class TestHotelBedsIntegration(TestCase):
     def setUp(self) -> None:
         self.hotelbeds = HotelBeds()
 
@@ -38,7 +39,7 @@ class TestHotelBedsIntegration(unittest.TestCase):
 
         response = self.hotelbeds.search_by_location(search_request)
 
-        rate_key = response[10].room_types[1].rates[1].rate_key
+        room_rate_to_book = response[0].room_rates[0]
 
         transaction_id = str(uuid.uuid4())[:8]
         booking_request = HotelBookingRequest(
@@ -52,13 +53,14 @@ class TestHotelBedsIntegration(unittest.TestCase):
             traveler=Traveler("John", "Smith", occupancy=search_request.occupancy),
             room_rates=[
                 RoomRate(
-                    rate_key=rate_key,
+                    code=room_rate_to_book.code,
+                    rate_plan_code=room_rate_to_book.rate_plan_code,
+                    room_type_code=room_rate_to_book.room_type_code,
                     rate_type=RateType.BOOKABLE,
-                    description="",
                     total_base_rate=to_money("0.0"),
                     total_tax_rate=to_money("0.0"),
                     total=to_money("0.0"),
-                    additional_detail=[],
+                    maximum_allowed_occupancy=room_rate_to_book.maximum_allowed_occupancy,
                 )
             ],
             payment=None,

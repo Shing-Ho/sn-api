@@ -6,7 +6,7 @@ from typing import Union, List, Dict
 from api import logger
 from api.common.models import RoomRate
 from api.hotel.adapters import adapter_service
-from api.hotel.hotel_model import CrsHotel, HotelPriceVerification
+from api.hotel.hotel_model import AdapterHotel, HotelPriceVerification
 
 
 class PriceVerificationLogicModule(abc.ABC):
@@ -59,13 +59,14 @@ def get_price_verification_model(
     return model(original_rates, verified_rates)
 
 
-def recheck(hotel: CrsHotel, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelPriceVerification:
-    """Verify room prices with a particular HotelAdapter.  Detect price changes
+def recheck(hotel: AdapterHotel, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelPriceVerification:
+    """
+    Verify room prices with a particular HotelAdapter.  Detect price changes
     between the room rates.  Apply a validator to determine if the price change is allowed.
     If price change is not allowed, return an error.
     """
 
-    adapter = adapter_service.get_adapter(crs_name=hotel.crs)
+    adapter = adapter_service.get_adapter(name=hotel.provider)
 
     verified_room_rates = adapter.recheck(room_rates)
     original_room_rates_by_rate_key = _rates_by_rate_key(room_rates)
@@ -76,4 +77,4 @@ def recheck(hotel: CrsHotel, room_rates: Union[RoomRate, List[RoomRate]]) -> Hot
 
 
 def _rates_by_rate_key(room_rates: List[RoomRate]) -> Dict[str, RoomRate]:
-    return {x.rate_key: x for x in room_rates}
+    return {x.code: x for x in room_rates}

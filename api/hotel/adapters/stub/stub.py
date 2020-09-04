@@ -1,7 +1,7 @@
 import decimal
 import random
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import List, Union
 
 from api.booking.booking_model import Reservation, HotelBookingRequest, HotelBookingResponse, Locator, Status
@@ -9,10 +9,9 @@ from api.common.models import RateType, RoomRate, DailyRate, Money
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelLocationSearch,
-    CrsHotel,
+    AdapterHotel,
     RoomOccupancy,
     RoomType,
-    Amenity,
     Image,
     ImageType,
     BedTypes,
@@ -24,6 +23,7 @@ from api.hotel.hotel_model import (
     BaseHotelSearch,
     HotelSpecificSearch,
     SimplenightAmenities,
+    CancellationSummary,
 )
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
@@ -32,26 +32,31 @@ from common.utils import random_string
 class StubHotelAdapter(HotelAdapter):
     """Stub Hotel Adapter, generates fakes data, for testing purposes"""
 
-    CRS_NAME = "stub"
+    PROVIDER_NAME = "stub"
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[CrsHotel]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
         num_hotels_to_return = random.randint(10, 50)
 
         return [self.search_by_id(search_request) for _ in range(num_hotels_to_return)]
 
-    def search_by_id(self, search_request: Union[BaseHotelSearch, HotelSpecificSearch]) -> CrsHotel:
+    def search_by_id(self, search_request: Union[BaseHotelSearch, HotelSpecificSearch]) -> AdapterHotel:
         hotel_code = random_string(5).upper()
         if isinstance(search_request, HotelSpecificSearch) and search_request.hotel_id:
             hotel_code = search_request.hotel_id
 
-        room_types = self._generate_room_types(search_request)
-        response = CrsHotel(
-            crs=self.CRS_NAME,
+        room_types = self._generate_room_types()
+        rate_plans = self._generate_rate_plans(search_request)
+        room_rates = self._generate_room_rates(search_request, room_types, rate_plans)
+
+        response = AdapterHotel(
+            provider=self.PROVIDER_NAME,
             hotel_id=hotel_code,
             start_date=search_request.start_date,
             end_date=search_request.end_date,
             occupancy=RoomOccupancy(adults=2, children=2),
             room_types=room_types,
+            rate_plans=rate_plans,
+            room_rates=room_rates,
             hotel_details=self._generate_hotel_details(),
         )
 
@@ -82,7 +87,7 @@ class StubHotelAdapter(HotelAdapter):
             api_version=1, transaction_id=str(uuid.uuid4()), status=Status(True, "Success"), reservation=reservation
         )
 
-    def _generate_room_types(self, search_request: BaseHotelSearch):
+    def _generate_room_types(self):
         bed_types = {
             "King": BedTypes(king=1),
             "Queen": BedTypes(queen=random.randint(1, 2)),
@@ -111,7 +116,6 @@ class StubHotelAdapter(HotelAdapter):
             photos = self._get_photos(code)
 
             description = f"{category} room with a {bed_type.lower()} bed"
-            rate_plans = self._generate_rate_plans()
             room_type = RoomType(
                 code=code,
                 name=room_type_name,
@@ -122,73 +126,68 @@ class StubHotelAdapter(HotelAdapter):
                 bed_types=bed_types[bed_type],
             )
 
-            room_type.rates = self._generate_room_rates(search_request, room_type, rate_plans)
             room_types.append(room_type)
 
         return room_types
 
     @staticmethod
-    def _generate_rate_plans():
-        rate_plan_def = {
-            "Resort Package": {
-                "Amenities": [Amenity.FREE_WIFI],
-                "Cancellation": CancellationPolicy("Non Refundable", datetime.now(), ""),
-            },
-            "Free Continental Breakfast": {
-                "Amenities": [Amenity.FREE_BREAKFAST],
-                "Cancellation": CancellationPolicy("Non_Refundable", datetime.now(), ""),
-            },
-            "Refundable": {
-                "Amenities": [],
-                "Cancellation": CancellationPolicy("Refundable Up to 24 Hours", datetime.now(), ""),
-            },
-        }
+    def _generate_rate_plans(hotel_search: BaseHotelSearch):
+        refundable_rate_plan = RatePlan(
+            name="Free Cancellation",
+            code=random_alphanumeric(8),
+            description=f"Free Cancellation allowed without charge before {hotel_search.start_date - timedelta(days=14)}",
+            amenities=[SimplenightAmenities.WIFI],
+            cancellation_policy=CancellationPolicy(
+                summary=CancellationSummary.FREE_CANCELLATION,
+                cancellation_deadline=hotel_search.start_date - timedelta(days=14),
+            ),
+        )
 
-        rate_plans = []
-        rate_plan_types = list(rate_plan_def)
-        for i in range(random.randint(1, len(rate_plan_types))):
-            rate_plan_type = rate_plan_types[i]
-            code = random_string(3).upper()
-            rate_plan_amenities = rate_plan_def[rate_plan_type]["Amenities"]
-            cancellation = rate_plan_def[rate_plan_type]["Cancellation"]
-            rate_plans.append(RatePlan(code, rate_plan_type, rate_plan_type, rate_plan_amenities, cancellation))
+        non_refundable_rate_plan = RatePlan(
+            name="Lowest Rate",
+            code=random_alphanumeric(8),
+            description=f"Lowest available rate (non-refundable)",
+            amenities=[],
+            cancellation_policy=CancellationPolicy(summary=CancellationSummary.NON_REFUNDABLE),
+        )
 
-        return rate_plans
+        return [refundable_rate_plan, non_refundable_rate_plan]
 
     @staticmethod
-    def _generate_room_rates(search_request: BaseHotelSearch, room_type: RoomType, rate_plan_types: List[RatePlan]):
+    def _generate_room_rates(
+        search_request: BaseHotelSearch, room_types: List[RoomType], rate_plan_types: List[RatePlan]
+    ):
         room_rates = []
-        for i in range(len(rate_plan_types)):
-            rate_plan = rate_plan_types[i]
+        for room_types in room_types:
+            for rate_plan in rate_plan_types:
+                room_nights = (search_request.end_date - search_request.start_date).days
+                total_rate = round(decimal.Decimal(random.random() * 1200), 2)
+                total_tax_rate = round(decimal.Decimal(total_rate / 10), 2)
+                total_base_rate = decimal.Decimal(total_rate - total_tax_rate)
+                base_rate = round(decimal.Decimal(total_rate / room_nights), 2)
+                tax_rate = round(decimal.Decimal(total_tax_rate / room_nights), 2)
 
-            description = f"{room_type.name} {rate_plan.name}"
-            room_nights = (search_request.end_date - search_request.start_date).days
-            total_rate = round(decimal.Decimal(random.random() * 1200), 2)
-            total_tax_rate = round(decimal.Decimal(total_rate / 10), 2)
-            total_base_rate = decimal.Decimal(total_rate - total_tax_rate)
-            base_rate = round(decimal.Decimal(total_rate / room_nights), 2)
-            tax_rate = round(decimal.Decimal(total_tax_rate / room_nights), 2)
+                daily_rates = []
+                for night in range(room_nights):
+                    rate_date = search_request.start_date + timedelta(days=night)
+                    daily_base_rate = Money(base_rate, "USD")
+                    daily_tax_rate = Money(tax_rate, "USD")
+                    daily_total_rate = Money(base_rate + tax_rate, "USD")
+                    daily_rates.append(DailyRate(rate_date, daily_base_rate, daily_tax_rate, daily_total_rate))
 
-            daily_rates = []
-            for night in range(room_nights):
-                rate_date = search_request.start_date + timedelta(days=night)
-                daily_base_rate = Money(base_rate, "USD")
-                daily_tax_rate = Money(tax_rate, "USD")
-                daily_total_rate = Money(base_rate + tax_rate, "USD")
-                daily_rates.append(DailyRate(rate_date, daily_base_rate, daily_tax_rate, daily_total_rate))
-
-            room_rates.append(
-                RoomRate(
-                    description=description,
-                    additional_detail=list(),
-                    total_base_rate=Money(total_base_rate, "USD"),
-                    total_tax_rate=Money(total_tax_rate, "USD"),
-                    total=Money(total_rate, "USD"),
-                    daily_rates=daily_rates,
-                    rate_key=random_alphanumeric(5),
-                    rate_type=RateType.BOOKABLE,
+                room_rates.append(
+                    RoomRate(
+                        code=random_alphanumeric(8),
+                        room_type_code=room_types.code,
+                        rate_plan_code=rate_plan.code,
+                        maximum_allowed_occupancy=RoomOccupancy(adults=2, children=2),
+                        total_base_rate=Money(total_base_rate, "USD"),
+                        total_tax_rate=Money(total_tax_rate, "USD"),
+                        total=Money(total_rate, "USD"),
+                        daily_rates=daily_rates,
+                        rate_type=RateType.BOOKABLE,
+                    )
                 )
-            )
 
         return room_rates
 

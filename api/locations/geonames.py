@@ -109,7 +109,7 @@ class GeonamesParser:
             latitude=row[4],
             longitude=row[5],
             iso_country_code=row[8],
-            province_code=row[10],
+            province=row[10],
             population=row[14],
             timezone=row[17]
         )

@@ -15,20 +15,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='bookingrequest',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('checkindate', models.DateField(auto_now=True)),
-                ('checkoutdate', models.DateField(auto_now=True)),
-                ('currency', models.CharField(choices=[('US Dollars', 'US DOLLARS')], default='US Dollars', max_length=30)),
-                ('language', models.CharField(choices=[('English', 'ENGLISH')], default='US Dollars', max_length=10)),
-                ('occupancy', models.IntegerField(default=1, verbose_name=1)),
-                ('snpropertyid', models.CharField(default='AAA', max_length=10)),
-                ('package', models.BooleanField(default=False)),
-                ('Standalone', models.BooleanField(default=True)),
-            ],
-        ),
-        migrations.CreateModel(
             name='Geoname',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),

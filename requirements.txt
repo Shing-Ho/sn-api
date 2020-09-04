@@ -13,3 +13,5 @@ django-cors-headers
 djangorestframework-api-key
 django_extensions
 stripe
+haversine
+pandas

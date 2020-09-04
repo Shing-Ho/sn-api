@@ -3,13 +3,13 @@ import uuid
 from datetime import date
 
 from api.booking.booking_model import Customer, Traveler, PaymentCardParameters, CardType, Payment, HotelBookingRequest
-from api.common.models import RateType, RoomRate, Address
+from api.common.models import Address
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     RoomOccupancy,
 )
-from api.tests import to_money
+from api.tests import test_objects
 
 
 class TestStubHotelAdapter(unittest.TestCase):
@@ -29,15 +29,17 @@ class TestStubHotelAdapter(unittest.TestCase):
         self.assertIsNotNone(response.room_types[0].bed_types)
         self.assertIsNotNone(response.room_types[0].amenities)
         self.assertIsNotNone(response.room_types[0].photos)
-        self.assertIsNotNone(response.room_types[0].rates)
-        self.assertIsNotNone(response.room_types[0].rates[0].description)
-        self.assertIsNotNone(response.room_types[0].rates[0].total)
-        self.assertIsNotNone(response.room_types[0].rates[0].total_tax_rate)
-        self.assertIsNotNone(response.room_types[0].rates[0].total_base_rate)
-        self.assertIsNotNone(response.room_types[0].rates[0].daily_rates)
-        self.assertIsNotNone(response.room_types[0].rates[0].daily_rates[0].total)
-        self.assertIsNotNone(response.room_types[0].rates[0].daily_rates[0].tax)
-        self.assertIsNotNone(response.room_types[0].rates[0].daily_rates[0].base_rate)
+
+        self.assertIsNotNone(response.room_rates[0])
+        self.assertIsNotNone(response.room_rates[0].total)
+        self.assertIsNotNone(response.room_rates[0].total_tax_rate)
+        self.assertIsNotNone(response.room_rates[0].total_base_rate)
+        self.assertIsNotNone(response.room_rates[0].daily_rates)
+        self.assertIsNotNone(response.room_rates[0].daily_rates[0].total)
+        self.assertIsNotNone(response.room_rates[0].daily_rates[0].tax)
+        self.assertIsNotNone(response.room_rates[0].daily_rates[0].base_rate)
+
+        print(response)
 
     def test_booking(self):
         customer = Customer(
@@ -49,16 +51,7 @@ class TestStubHotelAdapter(unittest.TestCase):
         )
 
         traveler = Traveler(first_name="Jane", last_name="Smith", occupancy=RoomOccupancy(adults=1, children=0))
-        room_rate = RoomRate(
-            rate_key="foo",
-            description="King Bed Ocean View Suite",
-            additional_detail=list(),
-            total_base_rate=to_money("526.22"),
-            total_tax_rate=to_money("63.29"),
-            total=to_money("589.51"),
-            daily_rates=[],
-            rate_type=RateType.BOOKABLE,
-        )
+        room_rate = test_objects.room_rate(rate_key="foo", base_rate="526.22", total="589.51", tax_rate="63.29")
 
         payment_card_params = PaymentCardParameters(
             card_type=CardType.VI,
@@ -106,7 +99,6 @@ class TestStubHotelAdapter(unittest.TestCase):
         self.assertEqual("Jane", response.reservation.traveler.first_name)
         self.assertEqual("Smith", response.reservation.traveler.last_name)
         self.assertEqual(1, response.reservation.traveler.occupancy.adults)
-        self.assertEqual("King Bed Ocean View Suite", response.reservation.room_rates[0].description)
         self.assertEqual("526.22", str(response.reservation.room_rates[0].total_base_rate.amount))
         self.assertEqual("63.29", str(response.reservation.room_rates[0].total_tax_rate.amount))
         self.assertEqual("589.51", str(response.reservation.room_rates[0].total.amount))

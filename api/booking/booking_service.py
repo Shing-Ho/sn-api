@@ -13,7 +13,7 @@ from common.exceptions import AppException
 
 
 def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
-    adapter = adapter_service.get_adapter(book_request.crs)
+    adapter = adapter_service.get_adapter(book_request.provider)
     total_payment_amount = _get_payment_amount(book_request)
     auth_response = payment_service.authorize_payment(
         amount=total_payment_amount,
@@ -26,10 +26,10 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
         raise AppException("Error authorizing payment")
 
     # Save Simplenight Internal Room Rates
-    # Lookup CRS Rates in Cache
+    # Lookup Provider Rates in Cache
     room_rates = book_request.room_rates
-    crs_rates = list(map(_get_crs_rate, book_request.room_rates))
-    book_request.room_rates = crs_rates
+    provider_rates = list(map(_get_provider_rate, book_request.room_rates))
+    book_request.room_rates = provider_rates
     response = adapter.booking(book_request)
 
     if not response or not response.reservation.locator:
@@ -62,19 +62,19 @@ def persist_reservation(book_request, room_rates, response):
 
 def _persist_hotel(book_request, room_rates, booking, response):
     # Takes the original room rates as a parameter
-    # Persists both the CRS rate (on book_request) and the original rates
-    for crs_rate, rate in zip(response.reservation.room_rates, room_rates):
+    # Persists both the provider rate (on book_request) and the original rates
+    for provider_rate, rate in zip(response.reservation.room_rates, room_rates):
         hotel_booking = models.HotelBooking(
             booking=booking,
             created_date=datetime.now(),
             hotel_name="Hotel Name",
-            crs_name=book_request.crs,
+            provider_name=book_request.provider,
             hotel_code=book_request.hotel_id,
             record_locator=response.reservation.locator.id,
             total_price=rate.total.amount,
             currency=rate.total.currency,
-            crs_total_price=crs_rate.total.amount,
-            crs_currency=crs_rate.total.currency,
+            provider_total=provider_rate.total.amount,
+            provider_currency=provider_rate.total.currency,
         )
 
         hotel_booking.save()
@@ -105,9 +105,9 @@ def _persist_traveler(response):
     return traveler
 
 
-def _get_crs_rate(room_rate: RoomRate) -> RoomRate:
-    crs_rate = cache_storage.get(room_rate.rate_key)
-    if not crs_rate:
-        raise RuntimeError(f"Could not find CRS Rate for Rate Key {room_rate.rate_key}")
+def _get_provider_rate(room_rate: RoomRate) -> RoomRate:
+    provider_rate = cache_storage.get(room_rate.code)
+    if not provider_rate:
+        raise RuntimeError(f"Could not find Provider Rate for Rate Key {room_rate.code}")
 
-    return crs_rate
+    return provider_rate

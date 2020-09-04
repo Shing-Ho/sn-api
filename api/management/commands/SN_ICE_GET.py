@@ -1,36 +1,32 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
-from api.models.models import sn_images_map, supplier_hotels
+from django.core.management import BaseCommand
 from requests import Session
 from requests.auth import HTTPBasicAuth
-from django.http import HttpResponse
 from zeep import Client
 from zeep.transports import Transport
-from zeep import xsd
-from django.core.management import BaseCommand
-from api.models.models import supplier_hotels, sn_city_map
-import random
+
+from api.models.models import sn_images_map
+from api.models.models import supplier_hotels
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         session = Session()
-        auth = HTTPBasicAuth('distributor@simplenight.com', 'Gp*3eA')
-        client = Client('http://services.iceportal.com/Service.asmx?WSDL',
-                        transport=Transport(session=session))
+        auth = HTTPBasicAuth("distributor@simplenight.com", "Gp*3eA")
+        client = Client("http://services.iceportal.com/Service.asmx?WSDL", transport=Transport(session=session))
 
         # get list of all properties
-        main_dict = {"Ice Portal": {
-            "model": sn_images_map, "name": "Ice Portal"}}
-        properties = supplier_hotels.objects.filter(provider_name='Ice Portal')
+        main_dict = {"Ice Portal": {"model": sn_images_map, "name": "Ice Portal"}}
+        properties = supplier_hotels.objects.filter(provider_name="Ice Portal")
         for hotel in properties:
             print(hotel.hotel_codes)
 
         # get list
         # Main image for a particular property plus thumbnail passed to front end from db
         # but we must get the image id from the ui
-        '''
+        """
         main_dict = {"iceportal": {
             "model": sn_images_map, "name": "Ice Portal"}}
 
@@ -81,4 +77,4 @@ class Command(BaseCommand):
         # need to do a GetProperties request
         # return the data in json format
         # log the data into the suppliers table
-        '''
+        """

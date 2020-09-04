@@ -15,7 +15,7 @@ from api.hotel.hotel_model import (
     HotelDetailsSearchRequest,
     HotelDetails,
     HotelSpecificSearch,
-    CrsHotel,
+    AdapterHotel,
     GeoLocation,
 )
 
@@ -27,7 +27,7 @@ secrets = {
 
 
 class TravelportHotelAdapter(HotelAdapter):
-    CRS_NAME = "travelport"
+    PROVIDER_NAME = "travelport"
 
     def __init__(self, transport: TravelportTransport = None):
         if transport is None:
@@ -50,7 +50,7 @@ class TravelportHotelAdapter(HotelAdapter):
 
         return self._parse_details(response)
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> CrsHotel:
+    def search_by_id(self, search_request: HotelSpecificSearch) -> AdapterHotel:
         pass
 
     def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:

@@ -14,14 +14,14 @@ class Transport(abc.ABC):
         }
 
     @abc.abstractmethod
-    def get_headers(self, **kwargs):
+    def _get_headers(self, **kwargs):
         pass
 
     def _get_default_headers(self):
         return self._headers.copy()
 
     def post(self, url, request: BaseSchema, **kwargs):
-        response = requests.post(url, json=to_json(request), headers=self.get_headers(**kwargs))
+        response = requests.post(url, json=to_json(request), headers=self._get_headers(**kwargs))
         self._log_request(url, request, response)
 
         return response
@@ -29,7 +29,7 @@ class Transport(abc.ABC):
     def get(self, url, params: Dict, **kwargs):
         params.update(kwargs)
 
-        response = requests.get(url, params=params, headers=self.get_headers())
+        response = requests.get(url, params=params, headers=self._get_headers())
         self._log_request(url, params, response)
 
         return response

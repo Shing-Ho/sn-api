@@ -5,7 +5,7 @@ from api.hotel.adapters.transport import Transport
 
 
 class HotelBedsTransport(Transport):
-    def get_headers(self, **kwargs):
+    def _get_headers(self, **kwargs):
         headers = self._get_default_headers()
         headers["Content-Type"] = "application/json"
         headers["Api-Key"] = self._get_apikey()

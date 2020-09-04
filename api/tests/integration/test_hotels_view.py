@@ -8,7 +8,8 @@ from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     RoomOccupancy,
-    HotelLocationSearch, Hotel,
+    HotelLocationSearch,
+    Hotel,
 )
 from api.tests import test_objects
 from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
@@ -46,7 +47,7 @@ class TestHotelsView(SimplenightAPITestCase):
         self.assertTrue(len(hotels) > 1)
         self.assertIsNotNone(hotels[0].hotel_id)
 
-    def test_search_location_by_crs(self):
+    def test_search_location_by_provider(self):
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         search = HotelLocationSearch(
@@ -54,7 +55,7 @@ class TestHotelsView(SimplenightAPITestCase):
             end_date=checkout,
             occupancy=RoomOccupancy(adults=1),
             location_name="SFO",
-            crs="hotelbeds",
+            provider="hotelbeds",
         )
 
         response = self._post(SEARCH_BY_LOCATION, search)
@@ -85,7 +86,7 @@ class TestHotelsView(SimplenightAPITestCase):
                 start_date=date(2020, 1, 20),
                 end_date=date(2020, 1, 27),
                 occupancy=RoomOccupancy(2, 1),
-                crs="hotelbeds",
+                provider="hotelbeds",
             )
 
             response = self.post(endpoint=SEARCH_BY_LOCATION, obj=search_request)

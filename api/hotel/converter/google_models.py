@@ -13,7 +13,7 @@ from marshmallow import EXCLUDE, validates_schema
 
 from api.booking.booking_model import Customer, PaymentMethod, CardType, Locator
 from api.common.models import BaseSchema, Address, Money, RemoveNone
-from api.hotel.hotel_model import GeoLocation, BedTypes
+from api.hotel.hotel_model import GeoLocation, BedTypes, CancellationSummary
 
 
 class ApiVersion(Enum):
@@ -77,13 +77,6 @@ class RoomParty(BaseSchema):
 class GuaranteeType(Enum):
     NO_GUARANTEE = "NO_GUARANTEE"
     PAYMENT_CARD = "PAYMENT_CARD"
-
-
-class CancellationSummary(Enum):
-    UNKNOWN_CANCELLATION_POLICY = "UNKNOWN_CANCELLATION_POLICY"
-    FREE_CANCELLATION = "FREE_CANCELLATION"
-    NON_REFUNDABLE = "NON_REFUNDABLE"
-    PARTIAL_REFUND = "PARTIAL_REFUND"
 
 
 @dataclasses.dataclass

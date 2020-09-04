@@ -32,18 +32,21 @@ from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     HotelDetails,
-    CrsHotel,
+    AdapterHotel,
     HotelLocationSearch,
     Address,
     BaseHotelSearch,
     RoomOccupancy,
     RoomType,
+    RatePlan,
+    CancellationPolicy,
+    CancellationSummary,
 )
 from api.view.exceptions import AvailabilityException
 
 
 class HotelBeds(HotelAdapter):
-    CRS_NAME = "hotelbeds"
+    PROVIDER_NAME = "hotelbeds"
 
     def __init__(self, transport=None):
         if transport is None:
@@ -51,7 +54,7 @@ class HotelBeds(HotelAdapter):
 
         self.transport = transport
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[CrsHotel]:
+    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
         availability_results = self._search_by_location(search_request)
 
         if availability_results.error or availability_results.results.total == 0:
@@ -84,7 +87,7 @@ class HotelBeds(HotelAdapter):
         results = response.json()
         return HotelBedsAvailabilityRS.Schema().load(results)
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> CrsHotel:
+    def search_by_id(self, search_request: HotelSpecificSearch) -> AdapterHotel:
         pass
 
     def details(self, hotel_codes: Union[List[str], str], language: str) -> List[HotelDetails]:
@@ -141,10 +144,11 @@ class HotelBeds(HotelAdapter):
 
     def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
         verified_hotel = self._recheck_request(room_rates)
-        return list(map(self._create_room_rate, verified_hotel.hotel.rooms[0].rates))
+        room_type_code = verified_hotel.hotel.rooms[0].code
+        return list(map(lambda x: self._create_room_rate(x, room_type_code), verified_hotel.hotel.rooms[0].rates))
 
     def _recheck_request(self, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelBedsCheckRatesRS:
-        rooms_to_check = list(HotelBedsCheckRatesRoom(rate_key=x.rate_key) for x in room_rates)
+        rooms_to_check = list(HotelBedsCheckRatesRoom(rate_key=x.code) for x in room_rates)
         request = HotelBedsCheckRatesRQ(rooms=rooms_to_check)
 
         response = self.transport.post(self.transport.get_checkrates_url(), request)
@@ -161,7 +165,7 @@ class HotelBeds(HotelAdapter):
 
         rooms_to_book = []
         for room_rate in book_request.room_rates:
-            booking_room = HotelBedsBookingRoom(rateKey=room_rate.rate_key, paxes=[lead_traveler])
+            booking_room = HotelBedsBookingRoom(rateKey=room_rate.code, paxes=[lead_traveler])
             rooms_to_book.append(booking_room)
 
         booking_request = HotelBedsBookingRQ(
@@ -187,26 +191,40 @@ class HotelBeds(HotelAdapter):
     def _get_image_base_url():
         return "http://photos.hotelbeds.com/giata/bigger/"
 
-    def _create_hotel(self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail) -> CrsHotel:
+    def _create_hotel(self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail) -> AdapterHotel:
 
-        room_types = list(map(lambda x: self._create_room_type(search, x), hotel.rooms))
+        room_types = list(map(lambda x: self._create_room_type(x), hotel.rooms))
 
-        return CrsHotel(
-            crs=self.CRS_NAME,
+        room_rates = []
+        for room in hotel.rooms:
+            for rate in room.rates:
+                room_rates.append(self._create_room_rate(rate, room.code, hotel.currency))
+
+        rate_plan = RatePlan(
+            code="temporary-scaffolding",
+            name="Temporary Rate Plan Name",
+            description="This will be removed when rate plan refactor is complete",
+            amenities=[],
+            cancellation_policy=CancellationPolicy(summary=CancellationSummary.FREE_CANCELLATION),
+        )
+
+        return AdapterHotel(
+            provider=self.PROVIDER_NAME,
             hotel_id=str(hotel.code),
             start_date=search.start_date,
             end_date=search.end_date,
             occupancy=search.occupancy,
             room_types=room_types,
+            room_rates=room_rates,
+            rate_plans=[rate_plan],
             hotel_details=self._create_hotel_details(detail),
         )
 
-    def _create_room_type(self, search: BaseHotelSearch, hotelbeds_room: HotelBedsRoomRS):
+    @staticmethod
+    def _create_room_type(hotelbeds_room: HotelBedsRoomRS):
         adults = max(x.adults for x in hotelbeds_room.rates)
         children = max(x.children for x in hotelbeds_room.rates)
         occupancy = RoomOccupancy(adults=adults, children=children)
-
-        rates = list(map(lambda x: self._create_room_rate(x, search.currency), hotelbeds_room.rates))
 
         return RoomType(
             code=hotelbeds_room.code,
@@ -217,10 +235,9 @@ class HotelBeds(HotelAdapter):
             capacity=occupancy,
             bed_types=None,
             unstructured_policies=None,
-            rates=rates,
         )
 
-    def _create_room_rate(self, rate: HotelBedsRoomRateRS, currency=None):
+    def _create_room_rate(self, rate: HotelBedsRoomRateRS, room_type_code: str, currency=None):
         total_base_rate = Money(rate.net, currency)
         total_taxes = 0
         if rate.taxes:
@@ -229,14 +246,17 @@ class HotelBeds(HotelAdapter):
         total_tax_rate = Money(total_taxes, currency)
         total_rate = Money(total_base_rate.amount + total_tax_rate.amount, currency)
 
+        occupancy = RoomOccupancy(adults=rate.adults, children=rate.children, num_rooms=rate.rooms)
+
         return RoomRate(
-            rate_key=rate.rate_key,
+            code=rate.rate_key,
+            rate_plan_code="temporary-scaffolding",
+            room_type_code=room_type_code,
             rate_type=self._get_rate_type(rate.rate_type),
-            description="",
-            additional_detail=[],
             total_base_rate=total_base_rate,
             total_tax_rate=total_tax_rate,
             total=total_rate,
+            maximum_allowed_occupancy=occupancy,
         )
 
     @staticmethod
