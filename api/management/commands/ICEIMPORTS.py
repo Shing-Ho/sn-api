@@ -1,19 +1,35 @@
 from django.core.management import BaseCommand
 from api.models.models import supplier_hotels
 import pandas as pd
-from api.models.models import supplier_hotels, sn_hotel_map, hotel_listing
 
 
 class Command(BaseCommand):
-
-    '''
-    Just to test data
-
-    'provider', 'hotelid', 'hotelname',
-       'zipcode', 'stars', 'countrycode', 'address', 'city_names', 'street',
-       'sn_id', 'new_string'],
-    '''
-
     def handle(self, *args, **options):
-        main_data = pd.read_csv(r"C:\Users\tony\Downloads\with_iceportal.csv")
-        print(hotel_listing.objects.all().count())
+        # supplier_hotels.objects.all().delete()
+
+        hotels = pd.read_csv("iceportaldata.csv")
+        hotels = hotels[hotels['Country'] == "United Kingdom"]
+
+        for x in range(0, len(hotels)):
+            try:
+                c = hotels.iloc[x]['City'].strip()
+                add = hotels.iloc[x]['Address'].strip()
+                country = hotels.iloc[x]['Country'].strip()
+
+                supplier_hotels.objects.update_or_create(
+                    provider_id=hotels.iloc[x]["ICEID (don't change)"],
+                    hotel_codes=hotels.iloc[x]["ICEID (don't change)"],
+                    hotel_name=hotels.iloc[x]['Property Name'].strip(),
+                    rating=0,
+                    chain_name=hotels.iloc[x]['Chain Code'],
+                    country_name=country.lower(),
+                    destination_name=hotels.iloc[x]['Property Name'].strip(
+                    ),
+                    address=add.lower(),
+                    postal_code=hotels.iloc[x]['ZipCode'],
+                    city=c.lower(),
+                    provider_name="Ice Portal"
+                )
+            except:
+                print(len(str(
+                    hotels.iloc[x]['Property Name']).replace(" ", "")))
