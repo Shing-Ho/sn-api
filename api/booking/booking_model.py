@@ -1,7 +1,7 @@
 import dataclasses
 from datetime import date
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import marshmallow_dataclass
 from marshmallow import validates_schema
@@ -142,7 +142,7 @@ class Locator(BaseSchema, RemoveNone):
 @marshmallow_dataclass.dataclass
 class Reservation(BaseSchema):
     locator: Locator
-    hotel_locator: Locator
+    hotel_locator: Optional[Union[List[Locator], Locator]]
     hotel_id: str
     checkin: date
     checkout: date

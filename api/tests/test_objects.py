@@ -104,7 +104,7 @@ def payment(card_number=None):
     )
 
 
-def booking_request(payment_obj=None, rate=None):
+def booking_request(payment_obj=None, rate=None, provider=None):
     if payment_obj is None:
         payment_obj = payment(card_number="4242424242424242")
 
@@ -116,7 +116,7 @@ def booking_request(payment_obj=None, rate=None):
 
     return HotelBookingRequest(
         api_version=1,
-        transaction_id=str(uuid.uuid4()),
+        transaction_id=str(uuid.uuid4())[:8],
         hotel_id="1",
         checkin=checkin,
         checkout=checkout,
@@ -125,6 +125,7 @@ def booking_request(payment_obj=None, rate=None):
         traveler=traveler(),
         room_rates=[rate],
         payment=payment_obj,
+        provider=provider
     )
 
 

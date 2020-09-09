@@ -60,7 +60,7 @@ class TestBookingService(TestCase):
                     total_tax_rate=to_money("20.00"),
                     total=to_money("120.99"),
                     daily_rates=[],
-                    maximum_allowed_occupancy=RoomOccupancy()
+                    maximum_allowed_occupancy=RoomOccupancy(),
                 )
             ],
             payment=Payment(
@@ -130,19 +130,22 @@ class TestBookingService(TestCase):
             provider="hotelbeds",
         )
 
-        availability_response = hotel_service.search_by_location(search)
-        room_types = [room_type for hotel in availability_response for room_type in hotel.room_types]
-        room_rates = [rate for room_type in room_types for rate in room_type.rates]
-        bookable_rates = [rate for rate in room_rates if rate.rate_type == RateType.BOOKABLE]
+        availability_response = hotel_service.search_by_location_frontend(search)
 
-        room_rate_to_book = bookable_rates[0]
+        # Find first hotel with a bookable rate
+        hotel, room = next(
+            (hotel, room)
+            for hotel in availability_response
+            for room in hotel.room_types
+            if room.rate_type == RateType.BOOKABLE
+        )
 
-        booking_request = test_objects.booking_request(rate=room_rate_to_book)
+        booking_request = test_objects.booking_request(provider="hotelbeds", rate=room)
         booking_response = booking_service.book(booking_request)
 
-        provider_rate: RoomRate = cache_storage.get(room_rate_to_book.rate_key)
-        assert booking_response.reservation.room_rates[0].rate_key == provider_rate.rate_key
+        provider_rate: RoomRate = cache_storage.get(room.code)
+        assert booking_response.reservation.room_rates[0].code == provider_rate.code
 
         hotel_booking = HotelBooking.objects.filter(record_locator=booking_response.reservation.locator.id).first()
         assert hotel_booking.provider_total == provider_rate.total.amount
-        assert hotel_booking.total_price == room_rate_to_book.total.amount
+        assert hotel_booking.total_price == room.total.amount

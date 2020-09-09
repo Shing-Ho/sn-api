@@ -1,7 +1,8 @@
+import uuid
 from typing import List, Union, Optional
 
 from api import logger
-from api.booking.booking_model import HotelBookingRequest
+from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse, Reservation, Locator, Status
 from api.common.models import RateType, RoomRate, Money
 from api.hotel.adapters.hotelbeds.booking_models import (
     HotelBedsBookingRQ,
@@ -158,9 +159,7 @@ class HotelBeds(HotelAdapter):
 
         return HotelBedsCheckRatesRS.Schema().load(response.json())
 
-    def booking(self, book_request: HotelBookingRequest) -> Optional[HotelBedsBookingRS]:
-        self.transport.get_booking_url()
-
+    def booking(self, book_request: HotelBookingRequest) -> Optional[HotelBookingResponse]:
         lead_traveler = HotelBedsPax(1, "AD", book_request.customer.first_name, book_request.customer.last_name)
 
         rooms_to_book = []
@@ -174,15 +173,31 @@ class HotelBeds(HotelAdapter):
             ),
             clientReference=book_request.transaction_id,
             rooms=rooms_to_book,
+            remark="No remark",
         )
 
         response = self.transport.post(self.transport.get_booking_url(), booking_request)
         if not response.ok:
             logger.error({"message": "Error booking HotelBeds", "request": booking_request})
             logger.error(response.text)
-            raise HotelBedsException(f"Error During Booking: {response.raw}")
+            raise HotelBedsException(f"Error During Booking: {response.text}")
 
-        return HotelBedsBookingRS.Schema().load(response.json())
+        hotelbeds_booking_response: HotelBedsBookingRS = HotelBedsBookingRS.Schema.loads(response.text)
+
+        reservation = Reservation(
+            locator=Locator(hotelbeds_booking_response.booking.reference),
+            hotel_locator=None,
+            hotel_id=book_request.hotel_id,
+            checkin=book_request.checkin,
+            checkout=book_request.checkout,
+            customer=book_request.customer,
+            traveler=book_request.traveler,
+            room_rates=book_request.room_rates,
+        )
+
+        return HotelBookingResponse(
+            api_version=1, transaction_id=str(uuid.uuid4()), status=Status(True, "Success"), reservation=reservation
+        )
 
     def get_image_url(self, path):
         return self._get_image_base_url() + path
@@ -191,7 +206,9 @@ class HotelBeds(HotelAdapter):
     def _get_image_base_url():
         return "http://photos.hotelbeds.com/giata/bigger/"
 
-    def _create_hotel(self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail) -> AdapterHotel:
+    def _create_hotel(
+        self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail
+    ) -> AdapterHotel:
 
         room_types = list(map(lambda x: self._create_room_type(x), hotel.rooms))
 

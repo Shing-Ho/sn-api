@@ -109,10 +109,10 @@ class Provider(models.Model):
     name = models.CharField(max_length=32, unique=True)
 
 
-class CrsCity(models.Model):
+class ProviderCity(models.Model):
     class Meta:
         app_label = "api"
-        db_table = "crs_cities"
+        db_table = "provider_cities"
 
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     provider_code = models.TextField(unique=True)
@@ -232,13 +232,13 @@ class HotelBooking(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
     created_date = models.DateTimeField(auto_now_add=True)
     hotel_name = models.TextField()
-    crs_name = models.TextField()
+    provider_name = models.TextField()
     hotel_code = models.TextField()
     record_locator = models.TextField()
     total_price = models.DecimalField(decimal_places=2, max_digits=8)
     currency = models.CharField(max_length=3)
-    crs_total_price = models.DecimalField(decimal_places=2, max_digits=8)
-    crs_currency = models.CharField(max_length=3)
+    provider_total = models.DecimalField(decimal_places=2, max_digits=8)
+    provider_currency = models.CharField(max_length=3)
 
 
 class supplier_hotels(models.Model):

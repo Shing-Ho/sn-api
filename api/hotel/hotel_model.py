@@ -261,6 +261,7 @@ class SimplenightRoomType(BaseSchema):
     total_tax_rate: Money
     total: Money
     rate_type: RateType
+    avg_nightly_rate: Money
     cancellation_policy: CancellationPolicy
     daily_rates: Optional[List[DailyRate]] = None
     unstructured_policies: Optional[str] = None

@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta
 
-from django.test import TestCase
-
 from api.common.models import RoomOccupancy
 from api.hotel.adapters.priceline.priceline import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch
+from api.tests import test_objects
+from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
-class TestPricelineIntegration(TestCase):
+class TestPricelineIntegration(SimplenightTestCase):
     def test_transport_test_mode(self):
         transport = PricelineTransport(test_mode=True)
         hotel_express_url = transport.endpoint(transport.Endpoint.HOTEL_EXPRESS)
@@ -41,9 +41,36 @@ class TestPricelineIntegration(TestCase):
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         occupancy = RoomOccupancy()
-        search = HotelSpecificSearch(
-            start_date=checkin, end_date=checkout, occupancy=occupancy, hotel_id=hotel_id
-        )
+        search = HotelSpecificSearch(start_date=checkin, end_date=checkout, occupancy=occupancy, hotel_id=hotel_id)
 
         results = priceline.search_by_id(search)
         print(results)
+
+    def test_booking(self):
+        transport = PricelineTransport(test_mode=True)
+        priceline = PricelineAdapter(transport)
+
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=35)
+        occupancy = RoomOccupancy()
+        search = HotelLocationSearch(
+            start_date=checkin, end_date=checkout, occupancy=occupancy, location_name="800046992"
+        )
+
+        availability_response = priceline.search_by_location(search)
+        hotel = availability_response[0]
+
+        payment_object = test_objects.payment("4111111111111111")
+
+        room_rates = priceline.room_details(hotel.room_rates[0].code)
+
+        booking_request = test_objects.booking_request(payment_object, rate=room_rates[0])
+
+        booking_request.customer.first_name = "James"
+        booking_request.customer.last_name = "Morton"
+        booking_request.customer.email = "jmorton@simplenight.com"
+
+        booking_response = priceline.booking(booking_request)
+
+        print(booking_response)
+        self.assertIsNotNone(booking_response.reservation.locator)

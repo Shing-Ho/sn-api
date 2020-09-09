@@ -4,7 +4,7 @@ from typing import List, Union, Tuple, Callable, Dict, Optional
 
 from api.booking.booking_model import HotelBookingRequest
 from api.common import cache_storage
-from api.common.models import RoomRate
+from api.common.models import RoomRate, Money
 from api.hotel import markups
 from api.hotel.adapters import adapter_service
 from api.hotel.hotel_adapter import HotelAdapter
@@ -104,7 +104,7 @@ def _process_hotels(adapter_hotels: Union[List[AdapterHotel], AdapterHotel]) -> 
 
 def __process_hotels(adapter_hotel: AdapterHotel) -> Hotel:
     _markup_room_rates(adapter_hotel)
-    average_nightly_base, average_nightly_tax, average_nightly_rate = _calculate_min_nightly_rates(adapter_hotel)
+    average_nightly_base, average_nightly_tax, average_nightly_rate = _calculate_hotel_min_nightly_rates(adapter_hotel)
 
     return Hotel(
         hotel_id=adapter_hotel.hotel_id,
@@ -131,16 +131,19 @@ def _markup_room_rates(hotel: AdapterHotel):
     hotel.room_rates = room_rates
 
 
-def _calculate_min_nightly_rates(hotel: AdapterHotel) -> Tuple[Decimal, Decimal, Decimal]:
+def _get_nightly_rate(hotel: Union[Hotel, AdapterHotel], amount: Decimal):
     room_nights = max((hotel.end_date - hotel.start_date).days, 1)
+
+    getcontext().rounding = ROUND_UP
+    return Decimal(round(amount / room_nights, 2))
+
+
+def _calculate_hotel_min_nightly_rates(hotel: Union[Hotel, AdapterHotel]) -> Tuple[Decimal, Decimal, Decimal]:
     least_cost_rate = min(hotel.room_rates, key=lambda x: x.total.amount)
 
-    def get_nightly_rate(amount: Decimal):
-        return Decimal(round(amount / room_nights, 2))
-
-    min_nightly_total = get_nightly_rate(least_cost_rate.total.amount)
-    min_nightly_tax = get_nightly_rate(least_cost_rate.total_tax_rate.amount)
-    min_nightly_base = get_nightly_rate(least_cost_rate.total_base_rate.amount)
+    min_nightly_total = _get_nightly_rate(hotel, least_cost_rate.total.amount)
+    min_nightly_tax = _get_nightly_rate(hotel, least_cost_rate.total_tax_rate.amount)
+    min_nightly_base = _get_nightly_rate(hotel, least_cost_rate.total_base_rate.amount)
 
     return min_nightly_base, min_nightly_tax, min_nightly_total
 
@@ -169,6 +172,7 @@ def _convert_hotel_to_front_end_format(hotel: Hotel) -> Optional[SimplenightHote
             total_tax_rate=room_rate.total_tax_rate,
             total=room_rate.total,
             rate_type=room_rate.rate_type,
+            avg_nightly_rate=Money(_get_nightly_rate(hotel, room_rate.total.amount), room_rate.total.currency),
             cancellation_policy=rate_plan.cancellation_policy,
             daily_rates=room_rate.daily_rates,
             unstructured_policies=room_type.unstructured_policies,

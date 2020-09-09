@@ -1,5 +1,5 @@
 import abc
-from typing import Dict
+from typing import Dict, Any
 
 import requests
 
@@ -23,6 +23,12 @@ class Transport(abc.ABC):
     def post(self, url, request: BaseSchema, **kwargs):
         response = requests.post(url, json=to_json(request), headers=self._get_headers(**kwargs))
         self._log_request(url, request, response)
+
+        return response
+
+    def post_params(self, url, params: Dict[Any, Any], **kwargs):
+        response = requests.post(url, json=params, headers=self._get_headers(**kwargs))
+        self._log_request(url, params, response)
 
         return response
 

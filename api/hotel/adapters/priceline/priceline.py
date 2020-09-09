@@ -1,12 +1,12 @@
-import json
 import uuid
 from decimal import Decimal
 from enum import Enum
 from typing import Union, List
 
 from api import logger
-from api.booking.booking_model import HotelBookingRequest
+from api.booking.booking_model import HotelBookingRequest, Customer, Payment, HotelBookingResponse, Status, Reservation
 from api.common.models import RoomRate, RoomOccupancy, Money, RateType, Address
+from api.common.request_context import get_request_context
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_adapter import HotelAdapter
@@ -22,7 +22,7 @@ from api.hotel.hotel_model import (
     GeoLocation,
     BaseHotelSearch,
 )
-from api.view.exceptions import AvailabilityException
+from api.view.exceptions import AvailabilityException, BookingException
 
 
 class PricelineAdapter(HotelAdapter):
@@ -53,11 +53,75 @@ class PricelineAdapter(HotelAdapter):
     def details(self, *args) -> HotelDetails:
         pass
 
-    def booking(self, book_request: HotelBookingRequest):
-        pass
+    def room_details(self, ppn_bundle: str) -> List[RoomRate]:
+        params = {"ppn_bundle": ppn_bundle}
+        response = self.transport.express_contract(**params)
+
+        hotel_data = self._check_hotel_express_contract_response_and_get_results(response)[0]
+        rate_plans = self._create_rate_plans()
+
+        return self._create_room_rates(hotel_response=hotel_data, rate_plans=rate_plans)
+
+    def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
+        for rate in book_request.room_rates:
+            params = self._create_booking_params(book_request.customer, book_request.payment, rate)
+            response = self.transport.express_book(**params)
+
+            if "getHotelExpress.Book" not in response:
+                raise BookingException(PricelineErrorCodes.GENERIC_BOOKING_ERROR, response)
+
+            results = response["getHotelExpress.Book"]["results"]
+            if results["status"] != "Success":
+                raise BookingException(PricelineErrorCodes.BOOKING_FAILURE, response)
+
+            booking_data = results["book_data"]
+            booking_locator = booking_data["itinerary"]["id"]
+            hotel_locators = [room["confirmation_code"] for room in booking_data["itinerary_details"]["room_data"]]
+
+            reservation = Reservation(
+                locator=booking_locator,
+                hotel_locator=hotel_locators,
+                hotel_id=book_request.hotel_id,
+                checkin=book_request.checkin,
+                checkout=book_request.checkout,
+                customer=book_request.customer,
+                traveler=book_request.traveler,
+                room_rates=book_request.room_rates,
+            )
+
+            return HotelBookingResponse(
+                api_version=1,
+                transaction_id=book_request.transaction_id,
+                status=Status(True, "success"),
+                reservation=reservation,
+            )
 
     def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
         pass
+
+    @staticmethod
+    def _create_booking_params(customer: Customer, payment: Payment, rate: RoomRate):
+        request_context = get_request_context()
+        payment_card_params = payment.payment_card_parameters
+        expires_string = f"{int(payment_card_params.expiration_month):02d}{payment_card_params.expiration_year}"
+        return {
+            "ppn_bundle": rate.code,
+            "name_first": customer.first_name,
+            "name_last": customer.last_name,
+            "phone_number": customer.phone_number,
+            "email": customer.email,
+            "card_holder": f"{customer.first_name} {customer.last_name}",
+            "address_line_one": payment.billing_address.address1,
+            "address_city": payment.billing_address.city,
+            "address_state_code": payment.billing_address.province,
+            "country_code": payment.billing_address.country,
+            "address_postal_code": payment.billing_address.postal_code,
+            "card_type": payment_card_params.card_type.name,
+            "card_number": payment_card_params.card_number,
+            "expires": expires_string,
+            "cvc_code": payment_card_params.cvv,
+            "sid": request_context.get_request_id(),
+        }
 
     def _create_hotel_id_search(self, search: HotelSpecificSearch):
         return {
@@ -78,7 +142,6 @@ class PricelineAdapter(HotelAdapter):
             "check_out": search.end_date,
             "adults": search.occupancy.adults,
             "children": search.occupancy.children,
-            "limit": 2,
         }
 
         if search.currency:
@@ -87,20 +150,26 @@ class PricelineAdapter(HotelAdapter):
         return params
 
     @staticmethod
-    def _check_hotel_express_response_and_get_results(response):
-        if response is None or "getHotelExpress.Results" not in response:
+    def _check_hotel_express_operation_response_and_get_results(response, operation):
+        if response is None or operation not in response:
             raise AvailabilityException(code=PricelineErrorCodes.GENERIC_ERROR, detail="Could not retrieve response")
 
-        results = response["getHotelExpress.Results"]
+        results = response[operation]
         if "error" in results:
             error_message = results["error"]["status"]
             raise AvailabilityException(code=PricelineErrorCodes.AVAILABILITY_ERROR, detail=error_message)
 
         return results["results"]["hotel_data"]
 
+    def _check_hotel_express_response_and_get_results(self, response):
+        return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Results")
+
+    def _check_hotel_express_contract_response_and_get_results(self, response):
+        return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Contract")
+
     def _create_hotel_from_response(self, search, hotel_response):
         room_types = self._create_room_types(hotel_response)
-        rate_plans = self._create_rate_plans(hotel_response)
+        rate_plans = self._create_rate_plans()
         room_rates = self._create_room_rates(hotel_response, rate_plans)
         hotel_details = self._create_hotel_details(hotel_response)
 
@@ -146,10 +215,15 @@ class PricelineAdapter(HotelAdapter):
         room_rates = []
         for room in hotel_response["room_data"]:
             for rate in room["rate_data"]:
+                if "ppn_book_bundle" in rate:
+                    rate_code = rate["ppn_book_bundle"]
+                else:
+                    rate_code = rate["ppn_bundle"]
+
                 price_details = rate["price_details"]
                 display_currency = price_details["display_currency"]
                 rate = RoomRate(
-                    code=rate["ppn_bundle"],
+                    code=rate_code,
                     room_type_code=room["id"],
                     rate_plan_code=rate_plans[0].code,
                     maximum_allowed_occupancy=RoomOccupancy(adults=rate["occupancy_limit"]),
@@ -164,7 +238,7 @@ class PricelineAdapter(HotelAdapter):
         return room_rates
 
     @staticmethod
-    def _create_rate_plans(hotel_response):
+    def _create_rate_plans():
         """
         Currently, we only support cancellable/non-cancellable rate plans.
         Priceline rooms are all non-cancellable.  So we return one rate plan.
@@ -217,3 +291,5 @@ class PricelineAdapter(HotelAdapter):
 class PricelineErrorCodes(Enum):
     GENERIC_ERROR = 1
     AVAILABILITY_ERROR = 2
+    GENERIC_BOOKING_ERROR = 3
+    BOOKING_FAILURE = 4
