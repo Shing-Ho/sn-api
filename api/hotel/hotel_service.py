@@ -1,5 +1,5 @@
 from concurrent.futures.thread import ThreadPoolExecutor
-from decimal import Decimal
+from decimal import Decimal, ROUND_UP, getcontext
 from typing import List, Union, Tuple, Callable, Dict, Optional
 
 from api.booking.booking_model import HotelBookingRequest
