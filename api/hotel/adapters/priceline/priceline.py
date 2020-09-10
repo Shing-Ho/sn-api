@@ -1,10 +1,18 @@
 import uuid
 from decimal import Decimal
 from enum import Enum
-from typing import Union, List
+from typing import List, Any, Dict
 
 from api import logger
-from api.booking.booking_model import HotelBookingRequest, Customer, Payment, HotelBookingResponse, Status, Reservation
+from api.booking.booking_model import (
+    HotelBookingRequest,
+    Customer,
+    Payment,
+    HotelBookingResponse,
+    Status,
+    Reservation,
+    Locator,
+)
 from api.common.models import RoomRate, RoomOccupancy, Money, RateType, Address
 from api.common.request_context import get_request_context
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
@@ -53,14 +61,17 @@ class PricelineAdapter(HotelAdapter):
     def details(self, *args) -> HotelDetails:
         pass
 
-    def room_details(self, ppn_bundle: str) -> List[RoomRate]:
+    def room_details(self, ppn_bundle: str) -> RoomRate:
         params = {"ppn_bundle": ppn_bundle}
         response = self.transport.express_contract(**params)
 
         hotel_data = self._check_hotel_express_contract_response_and_get_results(response)[0]
         rate_plans = self._create_rate_plans()
+        room_data = hotel_data["room_data"][0]
+        rate_data = room_data["rate_data"][0]
+        room_id = room_data["id"]
 
-        return self._create_room_rates(hotel_response=hotel_data, rate_plans=rate_plans)
+        return self._create_room_rate(room_id, rate_data, rate_plans[0])
 
     def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
         for rate in book_request.room_rates:
@@ -76,10 +87,12 @@ class PricelineAdapter(HotelAdapter):
 
             booking_data = results["book_data"]
             booking_locator = booking_data["itinerary"]["id"]
-            hotel_locators = [room["confirmation_code"] for room in booking_data["itinerary_details"]["room_data"]]
+            hotel_locators = [
+                Locator(id=room["confirmation_code"]) for room in booking_data["itinerary_details"]["room_data"]
+            ]
 
             reservation = Reservation(
-                locator=booking_locator,
+                locator=Locator(id=booking_locator),
                 hotel_locator=hotel_locators,
                 hotel_id=book_request.hotel_id,
                 checkin=book_request.checkin,
@@ -96,8 +109,8 @@ class PricelineAdapter(HotelAdapter):
                 reservation=reservation,
             )
 
-    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
-        pass
+    def recheck(self, room_rate: RoomRate) -> RoomRate:
+        return self.room_details(room_rate.code)
 
     @staticmethod
     def _create_booking_params(customer: Customer, payment: Payment, rate: RoomRate):
@@ -211,29 +224,36 @@ class PricelineAdapter(HotelAdapter):
         )
 
     @staticmethod
-    def _create_room_rates(hotel_response, rate_plans):
+    def _create_room_rate(room_id: str, rate_data: Dict[Any, Any], rate_plan) -> RoomRate:
+        rate_code = PricelineAdapter.get_ppn_bundle_code(rate_data)
+        price_details = rate_data["price_details"]
+        display_currency = price_details["display_currency"]
+
+        return RoomRate(
+            code=rate_code,
+            room_type_code=room_id,
+            rate_plan_code=rate_plan.code,
+            maximum_allowed_occupancy=RoomOccupancy(adults=rate_data["occupancy_limit"]),
+            total_base_rate=Money(Decimal(price_details["display_sub_total"]), display_currency),
+            total_tax_rate=Money(Decimal(price_details["display_taxes"]), display_currency),
+            total=Money(Decimal(price_details["display_total"]), display_currency),
+            rate_type=RateType.BOOKABLE,
+        )
+
+    @staticmethod
+    def get_ppn_bundle_code(rate_data):
+        if "ppn_book_bundle" in rate_data:
+            rate_code = rate_data["ppn_book_bundle"]
+        else:
+            rate_code = rate_data["ppn_bundle"]
+        return rate_code
+
+    def _create_room_rates(self, hotel_response, rate_plans):
         room_rates = []
         for room in hotel_response["room_data"]:
             for rate in room["rate_data"]:
-                if "ppn_book_bundle" in rate:
-                    rate_code = rate["ppn_book_bundle"]
-                else:
-                    rate_code = rate["ppn_bundle"]
-
-                price_details = rate["price_details"]
-                display_currency = price_details["display_currency"]
-                rate = RoomRate(
-                    code=rate_code,
-                    room_type_code=room["id"],
-                    rate_plan_code=rate_plans[0].code,
-                    maximum_allowed_occupancy=RoomOccupancy(adults=rate["occupancy_limit"]),
-                    total_base_rate=Money(Decimal(price_details["display_sub_total"]), display_currency),
-                    total_tax_rate=Money(Decimal(price_details["display_taxes"]), display_currency),
-                    total=Money(Decimal(price_details["display_total"]), display_currency),
-                    rate_type=RateType.BOOKABLE,
-                )
-
-                room_rates.append(rate)
+                room_id = room["id"]
+                room_rates.append(self._create_room_rate(room_id, rate, rate_plans[0]))
 
         return room_rates
 

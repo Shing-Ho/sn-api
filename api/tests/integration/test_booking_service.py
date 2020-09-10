@@ -3,22 +3,23 @@ from datetime import date, datetime, timedelta
 from unittest.mock import patch
 
 import pytest
-from django.test import TestCase
 
 from api.booking import booking_service
 from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod, SubmitErrorType
 from api.common import cache_storage
 from api.common.models import RoomOccupancy, RoomRate, RateType, Address
 from api.hotel import hotel_service
+from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.hotel_model import HotelLocationSearch
 from api.models import models
 from api.models.models import Booking, BookingStatus, HotelBooking
 from api.tests import to_money, test_objects
+from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.view.exceptions import PaymentException
 
 
-class TestBookingService(TestCase):
+class TestBookingService(SimplenightTestCase):
     def test_booking_request_validation(self):
         address = {
             "city": "San Francisco",
@@ -133,19 +134,43 @@ class TestBookingService(TestCase):
         availability_response = hotel_service.search_by_location_frontend(search)
 
         # Find first hotel with a bookable rate
-        hotel, room = next(
-            (hotel, room)
-            for hotel in availability_response
-            for room in hotel.room_types
-            if room.rate_type == RateType.BOOKABLE
-        )
+        room_to_book = None
+        for hotel in availability_response:
+            for room in hotel.room_types:
+                if room.rate_type == RateType.BOOKABLE:
+                    room_to_book = room
+                    break
 
-        booking_request = test_objects.booking_request(provider="hotelbeds", rate=room)
+        self.assertIsNotNone(room_to_book)
+
+        booking_request = test_objects.booking_request(provider="hotelbeds", rate=room_to_book)
         booking_response = booking_service.book(booking_request)
 
-        provider_rate: RoomRate = cache_storage.get(room.code)
+        provider_rate: RoomRate = cache_storage.get(room_to_book.code)
         assert booking_response.reservation.room_rates[0].code == provider_rate.code
 
         hotel_booking = HotelBooking.objects.filter(record_locator=booking_response.reservation.locator.id).first()
         assert hotel_booking.provider_total == provider_rate.total.amount
-        assert hotel_booking.total_price == room.total.amount
+        assert hotel_booking.total_price == room_to_book.total.amount
+
+    def test_priceline_booking(self):
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=35)
+        search = HotelLocationSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=RoomOccupancy(adults=1),
+            location_name="800046992",
+            provider="priceline",
+        )
+
+        availability_response = hotel_service.search_by_location_frontend(search)
+        self.assertTrue(len(availability_response) >= 1)
+        self.assertTrue(len(availability_response[0].room_types) >= 1)
+
+        hotel_to_book = availability_response[0]
+        room_to_book = hotel_to_book.room_types[0]
+        booking_request = test_objects.booking_request(provider=PricelineInfo.name, rate=room_to_book)
+        booking_response = booking_service.book(booking_request)
+
+        print(booking_response)

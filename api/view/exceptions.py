@@ -1,6 +1,12 @@
+from enum import Enum
+
 from rest_framework.views import exception_handler
 
 from common.exceptions import AppException
+
+
+class BookingErrorCode(Enum):
+    PRICE_VERIFICATION = "PRICE_VERIFICATION"
 
 
 def handler(exc, context):

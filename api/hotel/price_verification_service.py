@@ -1,18 +1,17 @@
 import abc
 import decimal
 from enum import Enum
-from typing import Union, List, Dict
 
 from api import logger
 from api.common.models import RoomRate
 from api.hotel.adapters import adapter_service
-from api.hotel.hotel_model import AdapterHotel, HotelPriceVerification
+from api.hotel.hotel_model import HotelPriceVerification
 
 
 class PriceVerificationLogicModule(abc.ABC):
-    def __init__(self, original_rates: Dict[str, RoomRate], verified_rates: Dict[str, RoomRate]):
-        self.original_rates = original_rates
-        self.verified_rates = verified_rates
+    def __init__(self, original_rate: RoomRate, verified_rate: RoomRate):
+        self.original_rate = original_rate
+        self.verified_rate = verified_rate
 
     @abc.abstractmethod
     def compare(self) -> HotelPriceVerification:
@@ -23,14 +22,13 @@ class PriceVerificationNoPriceChangeModule(PriceVerificationLogicModule):
     def compare(self) -> HotelPriceVerification:
         original_total = decimal.Decimal(0)
         verified_total = decimal.Decimal(0)
-        for rate_key, room_rate in self.original_rates.items():
-            if rate_key not in self.verified_rates:
-                message = "Could not find rate key in recheck response"
-                logger.error({"message": message, "verified_rates": self.verified_rates})
-                raise ValueError(message)
+        if not self.verified_rate:
+            message = "Could not find rate key in recheck response"
+            logger.error({"message": message, "verified_rate": self.verified_rate})
+            raise ValueError(message)
 
-            original_total += room_rate.total.amount
-            verified_total += self.verified_rates[rate_key].total.amount
+        original_total += self.original_rate.total.amount
+        verified_total += self.verified_rate.total.amount
 
         price_difference = verified_total - original_total
         allowed_difference = price_difference <= 0
@@ -39,7 +37,7 @@ class PriceVerificationNoPriceChangeModule(PriceVerificationLogicModule):
         return HotelPriceVerification(
             is_allowed_change=allowed_difference,
             is_exact_price=is_exact_price,
-            room_rates=list(self.verified_rates.values()),
+            verified_room_rate=self.verified_rate,
             original_total=original_total,
             recheck_total=verified_total,
             price_difference=price_difference,
@@ -51,30 +49,24 @@ class PriceVerificationModel(Enum):
 
 
 def get_price_verification_model(
-    original_rates: Dict[str, RoomRate],
-    verified_rates: Dict[str, RoomRate],
+    original_rate: RoomRate,
+    verified_rate: RoomRate,
     model_type: PriceVerificationModel = PriceVerificationModel.DEFAULT,
 ):
     model = model_type.value
-    return model(original_rates, verified_rates)
+    return model(original_rate, verified_rate)
 
 
-def recheck(hotel: AdapterHotel, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelPriceVerification:
+def recheck(provider: str, room_rate: RoomRate) -> HotelPriceVerification:
     """
     Verify room prices with a particular HotelAdapter.  Detect price changes
     between the room rates.  Apply a validator to determine if the price change is allowed.
     If price change is not allowed, return an error.
     """
 
-    adapter = adapter_service.get_adapter(name=hotel.provider)
+    adapter = adapter_service.get_adapter(name=provider)
 
-    verified_room_rates = adapter.recheck(room_rates)
-    original_room_rates_by_rate_key = _rates_by_rate_key(room_rates)
-    verified_rates_by_rate_key = _rates_by_rate_key(verified_room_rates)
+    verified_room_rate = adapter.recheck(room_rate)
 
-    model = get_price_verification_model(original_room_rates_by_rate_key, verified_rates_by_rate_key)
+    model = get_price_verification_model(room_rate, verified_room_rate)
     return model.compare()
-
-
-def _rates_by_rate_key(room_rates: List[RoomRate]) -> Dict[str, RoomRate]:
-    return {x.code: x for x in room_rates}

@@ -1,5 +1,5 @@
 import abc
-from typing import List, Union
+from typing import List
 
 from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse
 from api.common.models import RoomRate
@@ -33,6 +33,6 @@ class HotelAdapter(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
+    def recheck(self, room_rates: RoomRate) -> RoomRate:
         """Given a list of RoomRates, recheck prices, and return verified RoomRates"""
         pass

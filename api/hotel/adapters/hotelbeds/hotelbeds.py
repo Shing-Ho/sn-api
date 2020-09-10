@@ -143,14 +143,14 @@ class HotelBeds(HotelAdapter):
         logger.error(response.text)
         raise HotelBedsException(f"Could not find categories ({response.status_code})")
 
-    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
-        verified_hotel = self._recheck_request(room_rates)
+    def recheck(self, room_rate: RoomRate) -> RoomRate:
+        verified_hotel = self._recheck_request(room_rate)
         room_type_code = verified_hotel.hotel.rooms[0].code
-        return list(map(lambda x: self._create_room_rate(x, room_type_code), verified_hotel.hotel.rooms[0].rates))
+        return self._create_room_rate(verified_hotel.hotel.rooms[0].rates[0], room_type_code)
 
-    def _recheck_request(self, room_rates: Union[RoomRate, List[RoomRate]]) -> HotelBedsCheckRatesRS:
-        rooms_to_check = list(HotelBedsCheckRatesRoom(rate_key=x.code) for x in room_rates)
-        request = HotelBedsCheckRatesRQ(rooms=rooms_to_check)
+    def _recheck_request(self, room_rate: RoomRate) -> HotelBedsCheckRatesRS:
+        room_to_check = HotelBedsCheckRatesRoom(rate_key=room_rate.code)
+        request = HotelBedsCheckRatesRQ(rooms=[room_to_check])
 
         response = self.transport.post(self.transport.get_checkrates_url(), request)
 
@@ -160,6 +160,10 @@ class HotelBeds(HotelAdapter):
         return HotelBedsCheckRatesRS.Schema().load(response.json())
 
     def booking(self, book_request: HotelBookingRequest) -> Optional[HotelBookingResponse]:
+        # To book a Priceline room, we first need to do a contract lookup call
+        # We use the price verification framework to test if the room prices are equivalent
+        # Currently, we don't handle the case where they are not.
+
         lead_traveler = HotelBedsPax(1, "AD", book_request.customer.first_name, book_request.customer.last_name)
 
         rooms_to_book = []
@@ -182,7 +186,7 @@ class HotelBeds(HotelAdapter):
             logger.error(response.text)
             raise HotelBedsException(f"Error During Booking: {response.text}")
 
-        hotelbeds_booking_response: HotelBedsBookingRS = HotelBedsBookingRS.Schema.loads(response.text)
+        hotelbeds_booking_response: HotelBedsBookingRS = HotelBedsBookingRS.Schema().loads(response.text)
 
         reservation = Reservation(
             locator=Locator(hotelbeds_booking_response.booking.reference),

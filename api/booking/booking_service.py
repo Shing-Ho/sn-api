@@ -1,14 +1,17 @@
 from datetime import datetime
-from typing import List
+from typing import List, Union
 
 from api import logger
 from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse
 from api.common import cache_storage
 from api.common.models import RoomRate, Money
+from api.hotel import price_verification_service
 from api.hotel.adapters import adapter_service
+from api.hotel.hotel_model import SimplenightRoomType
 from api.models import models
 from api.models.models import BookingStatus, Traveler
 from api.payments import payment_service
+from api.view.exceptions import BookingException, BookingErrorCode
 from common.exceptions import AppException
 
 
@@ -28,8 +31,11 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
     # Save Simplenight Internal Room Rates
     # Lookup Provider Rates in Cache
     room_rates = book_request.room_rates
-    provider_rates = list(map(_get_provider_rate, book_request.room_rates))
+    provider_rates = list(map(_get_provider_rate_from_cache, book_request.room_rates))
     book_request.room_rates = provider_rates
+
+    # Reset room rates with verified rates.  If prices mismatch, error will raise
+    book_request.room_rates = _price_verification(provider=book_request.provider, rooms=provider_rates)
     response = adapter.booking(book_request)
 
     if not response or not response.reservation.locator:
@@ -48,8 +54,20 @@ def _get_payment_amount(book_request: HotelBookingRequest):
     return Money(total_payment_amount, book_request.room_rates[0].total.currency)
 
 
-def _price_verification(rooms: List[RoomRate]):
-    pass
+def _price_verification(provider: str, rooms: List[Union[SimplenightRoomType, RoomRate]]):
+    verified_rates = []
+    for room in rooms:
+        price_verification = price_verification_service.recheck(provider=provider, room_rate=room)
+
+        if not price_verification.is_allowed_change:
+            old_price = room.total.amount
+            new_price = price_verification.verified_room_rate.total.amount
+            error_msg = f"Price Verification Failed: Old={old_price}, New={new_price}"
+            raise BookingException(BookingErrorCode.PRICE_VERIFICATION, error_msg)
+
+        verified_rates.append(price_verification.verified_room_rate)
+
+    return verified_rates
 
 
 def persist_reservation(book_request, room_rates, response):
@@ -105,7 +123,7 @@ def _persist_traveler(response):
     return traveler
 
 
-def _get_provider_rate(room_rate: RoomRate) -> RoomRate:
+def _get_provider_rate_from_cache(room_rate: Union[SimplenightRoomType, RoomRate]) -> RoomRate:
     provider_rate = cache_storage.get(room_rate.code)
     if not provider_rate:
         raise RuntimeError(f"Could not find Provider Rate for Rate Key {room_rate.code}")

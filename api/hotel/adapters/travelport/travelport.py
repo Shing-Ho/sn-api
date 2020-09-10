@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from api.booking.booking_model import HotelBookingRequest
 from api.common.models import RoomRate, DailyRate, Money, RateType
@@ -53,7 +53,7 @@ class TravelportHotelAdapter(HotelAdapter):
     def search_by_id(self, search_request: HotelSpecificSearch) -> AdapterHotel:
         pass
 
-    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
+    def recheck(self, room_rate: RoomRate) -> RoomRate:
         pass
 
     def booking_availability(self, search_request: HotelSpecificSearch):

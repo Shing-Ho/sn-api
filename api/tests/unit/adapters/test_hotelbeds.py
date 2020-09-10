@@ -221,11 +221,11 @@ class TestHotelBeds(TestCase):
             hotels = hotelbeds.search_by_location(search_request)
             assert len(hotels) > 0
 
-            availability_room_rates = hotels[0].room_rates[:2]
+            availability_room_rates = hotels[0].room_rates[0]
             recheck_response = hotelbeds.recheck(availability_room_rates)
 
-            self.assertEqual(Decimal("99.89"), availability_room_rates[0].total.amount)
-            self.assertEqual(Decimal("149.84"), recheck_response[0].total.amount)
+            self.assertEqual(Decimal("99.89"), availability_room_rates.total.amount)
+            self.assertEqual(Decimal("149.84"), recheck_response.total.amount)
 
     @staticmethod
     def create_location_search(location_name="TVL"):

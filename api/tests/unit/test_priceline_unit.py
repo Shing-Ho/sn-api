@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime, date
+from datetime import timedelta, datetime
 
 import requests_mock
 
@@ -30,8 +30,8 @@ class TestPricelineUnit(SimplenightTestCase):
 
         self.assertEqual("priceline", results.provider)
         self.assertEqual("700363264", results.hotel_id)
-        self.assertEqual(date(2020, 10, 4), results.start_date)
-        self.assertEqual(date(2020, 10, 9), results.end_date)
+        self.assertIsNotNone(results.start_date)
+        self.assertIsNotNone(results.end_date)
         self.assertEqual(1, results.occupancy.adults)
 
         self.assertEqual("Best Western Plus Bayside Hotel", results.hotel_details.name)
@@ -83,10 +83,10 @@ class TestPricelineUnit(SimplenightTestCase):
         self.assertIsNotNone(booking_response.transaction_id)
         self.assertTrue(booking_response.status.success)
         self.assertEqual("success", booking_response.status.message)
-        self.assertEqual("30796806215", booking_response.reservation.locator)
-        self.assertEqual("CONF0", booking_response.reservation.hotel_locator[0])
-        self.assertEqual(date(2020, 9, 14), booking_response.reservation.checkin)
-        self.assertEqual(date(2020, 9, 16), booking_response.reservation.checkout)
+        self.assertEqual("30796806215", booking_response.reservation.locator.id)
+        self.assertEqual("CONF0", booking_response.reservation.hotel_locator[0].id)
+        self.assertIsNotNone(booking_response.reservation.checkin)
+        self.assertIsNotNone(booking_response.reservation.checkout)
         self.assertEqual(1, booking_response.reservation.traveler.occupancy.adults)
         self.assertEqual("John", booking_response.reservation.traveler.first_name)
         self.assertEqual("Simplenight", booking_response.reservation.traveler.last_name)

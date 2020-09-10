@@ -2,13 +2,19 @@ import random
 import string
 from decimal import Decimal
 from itertools import chain, islice
-from typing import Iterable, List, Union
+from typing import Iterable, List, Union, TypeVar
+
+T = TypeVar("T")
 
 
 def chunks(iterable: Iterable, size=10) -> List[Iterable]:
     iterator = iter(iterable)
     for first in iterator:
         yield chain([first], islice(iterator, size - 1))
+
+
+def flatten(lst: Iterable[List[T]]) -> List[T]:
+    return list(item for sublist in lst for item in sublist)
 
 
 def random_string(length):

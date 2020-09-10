@@ -303,7 +303,7 @@ class SimplenightHotel(BaseSchema):
 class HotelPriceVerification(BaseSchema):
     is_allowed_change: bool
     is_exact_price: bool
-    room_rates: List[RoomRate]
+    verified_room_rate: RoomRate
     original_total: decimal.Decimal = field(metadata=dict(as_string=True))
     recheck_total: decimal.Decimal = field(metadata=dict(as_string=True))
     price_difference: decimal.Decimal = field(metadata=dict(as_string=True))

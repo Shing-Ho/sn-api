@@ -1,10 +1,8 @@
-import logging
 import uuid
 from datetime import datetime, timedelta
 
 from django.test import TestCase
 
-from api import logger
 from api.booking.booking_model import HotelBookingRequest, Customer, Traveler
 from api.common.models import RateType, RoomRate
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
@@ -22,6 +20,18 @@ class TestHotelBedsIntegration(TestCase):
     def test_location_search(self):
         search_request = self.create_location_search()
         self.hotelbeds.search_by_location(search_request)
+
+    def test_location_recheck(self):
+        search_request = self.create_location_search()
+        response = self.hotelbeds.search_by_location(search_request)
+
+        self.assertTrue(len(response) >= 1)
+
+        room_rate_to_check = response[0].room_rates[0]
+        room_rate_verified = self.hotelbeds.recheck(room_rate_to_check)
+
+        print(room_rate_to_check)
+        print(room_rate_verified)
 
     def test_location_search_bad_location(self):
         search_request = self.create_location_search(location_name="XXX")
@@ -63,44 +73,6 @@ class TestHotelBedsIntegration(TestCase):
                     maximum_allowed_occupancy=room_rate_to_book.maximum_allowed_occupancy,
                 )
             ],
-            payment=None,
-        )
-
-        booking_response = self.hotelbeds.booking(booking_request)
-        self.assertIsNotNone(booking_response)
-
-    # TODO: Re-enable test
-    def _test_multi_room_hotel_booking(self):
-        checkin = datetime.now().date() + timedelta(days=30)
-        checkout = datetime.now().date() + timedelta(days=35)
-        search_request = self.create_location_search(location_name="SFO", checkin=checkin, checkout=checkout)
-
-        logger.setLevel(logging.DEBUG)
-        response = self.hotelbeds.search_by_location(search_request)
-
-        rate_key = response[0].room_types[0].rates[0].rate_key
-        transaction_id = str(uuid.uuid4())[:8]
-
-        room_rate = RoomRate(
-            rate_key=rate_key,
-            rate_type=RateType.BOOKABLE,
-            description="",
-            total_base_rate=to_money("0.0"),
-            total_tax_rate=to_money("0.0"),
-            total=to_money("0.0"),
-            additional_detail=[],
-        )
-
-        booking_request = HotelBookingRequest(
-            api_version=1,
-            transaction_id=transaction_id,
-            hotel_id="123",
-            checkin=checkin,
-            checkout=checkout,
-            language=search_request.language,
-            customer=Customer("John", "Smith", "5558675309", "john@smith.foo", "US"),
-            traveler=Traveler("John", "Smith", occupancy=search_request.occupancy),
-            room_rates=[room_rate, room_rate],
             payment=None,
         )
 

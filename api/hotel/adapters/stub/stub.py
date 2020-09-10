@@ -62,11 +62,11 @@ class StubHotelAdapter(HotelAdapter):
 
         return response
 
-    def recheck(self, room_rates: Union[RoomRate, List[RoomRate]]) -> List[RoomRate]:
-        pass
+    def recheck(self, room_rate: RoomRate) -> RoomRate:
+        return room_rate
 
     def details(self, *args):
-        pass
+        return self._generate_hotel_details(city="Foo")
 
     def booking_availability(self, search_request: BaseHotelSearch):
         return self.search_by_id(search_request)
