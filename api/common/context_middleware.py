@@ -4,7 +4,7 @@ from django.http import HttpRequest
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework_api_key.permissions import KeyParser
 
-from api.auth.models import OrganizationAPIKey
+from api.auth.authentication import OrganizationAPIKey
 from api.common.request_cache import get_request_cache
 
 

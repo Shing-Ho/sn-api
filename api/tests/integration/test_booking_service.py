@@ -131,7 +131,7 @@ class TestBookingService(SimplenightTestCase):
             provider="hotelbeds",
         )
 
-        availability_response = hotel_service.search_by_location_frontend(search)
+        availability_response = hotel_service.search_by_location(search)
 
         # Find first hotel with a bookable rate
         room_to_book = None
@@ -143,7 +143,7 @@ class TestBookingService(SimplenightTestCase):
 
         self.assertIsNotNone(room_to_book)
 
-        booking_request = test_objects.booking_request(provider="hotelbeds", rate=room_to_book)
+        booking_request = test_objects.booking_request(provider="hotelbeds", rate_code=room_to_book)
         booking_response = booking_service.book(booking_request)
 
         provider_rate: RoomRate = cache_storage.get(room_to_book.code)
@@ -164,13 +164,13 @@ class TestBookingService(SimplenightTestCase):
             provider="priceline",
         )
 
-        availability_response = hotel_service.search_by_location_frontend(search)
+        availability_response = hotel_service.search_by_location(search)
         self.assertTrue(len(availability_response) >= 1)
         self.assertTrue(len(availability_response[0].room_types) >= 1)
 
         hotel_to_book = availability_response[0]
         room_to_book = hotel_to_book.room_types[0]
-        booking_request = test_objects.booking_request(provider=PricelineInfo.name, rate=room_to_book)
+        booking_request = test_objects.booking_request(provider=PricelineInfo.name, rate_code=room_to_book)
         booking_response = booking_service.book(booking_request)
 
         print(booking_response)

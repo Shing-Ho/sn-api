@@ -11,6 +11,11 @@ from rest_framework_api_key.permissions import BaseHasAPIKey, KeyParser
 
 class Feature(Enum):
     ENABLED_ADAPTERS = "enabled_connectors"
+    TEST_MODE = "test_mode"
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name) for key in cls]
 
 
 class Organization(models.Model):
@@ -50,7 +55,7 @@ class OrganizationFeatures(models.Model):
 
     id = models.AutoField(primary_key=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="org")
-    name = models.TextField(unique=True)
+    name = models.TextField(unique=True, choices=Feature.choices())
     value = models.TextField()
 
 

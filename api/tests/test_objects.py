@@ -104,26 +104,21 @@ def payment(card_number=None):
     )
 
 
-def booking_request(payment_obj=None, rate=None, provider=None):
+def booking_request(payment_obj=None, rate_code=None, provider=None):
     if payment_obj is None:
         payment_obj = payment(card_number="4242424242424242")
 
-    if rate is None:
-        rate = room_rate("rate_key", "1.00")
-
-    checkin = datetime.now().date() + timedelta(days=5)
-    checkout = datetime.now().date() + timedelta(days=7)
+    if rate_code is None:
+        rate_code = "rate_key"
 
     return HotelBookingRequest(
         api_version=1,
         transaction_id=str(uuid.uuid4())[:8],
         hotel_id="1",
-        checkin=checkin,
-        checkout=checkout,
         language="en_US",
         customer=customer(),
         traveler=traveler(),
-        room_rates=[rate],
+        room_code=rate_code,
         payment=payment_obj,
         provider=provider
     )

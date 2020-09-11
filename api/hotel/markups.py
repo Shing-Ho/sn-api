@@ -5,7 +5,7 @@ from api.common.models import RoomRate, Money
 
 
 def markup_rate(room_rate: RoomRate) -> RoomRate:
-    new_room_rate_code = str(uuid.uuid4())[:-12]
+    new_room_rate_code = str(uuid.uuid4())[:8]
 
     return RoomRate(
         code=new_room_rate_code,

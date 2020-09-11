@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 from decimal import Decimal
 from enum import Enum
 from typing import List, Any, Dict
@@ -74,51 +75,59 @@ class PricelineAdapter(HotelAdapter):
         return self._create_room_rate(room_id, rate_data, rate_plans[0])
 
     def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
-        for rate in book_request.room_rates:
-            params = self._create_booking_params(book_request.customer, book_request.payment, rate)
-            response = self.transport.express_book(**params)
+        params = self._create_booking_params(book_request.customer, book_request.payment, book_request.room_code)
+        response = self.transport.express_book(**params)
 
-            if "getHotelExpress.Book" not in response:
-                raise BookingException(PricelineErrorCodes.GENERIC_BOOKING_ERROR, response)
+        if "getHotelExpress.Book" not in response:
+            raise BookingException(PricelineErrorCodes.GENERIC_BOOKING_ERROR, response)
 
-            results = response["getHotelExpress.Book"]["results"]
-            if results["status"] != "Success":
-                raise BookingException(PricelineErrorCodes.BOOKING_FAILURE, response)
+        results = response["getHotelExpress.Book"]["results"]
+        if results["status"] != "Success":
+            raise BookingException(PricelineErrorCodes.BOOKING_FAILURE, response)
 
-            booking_data = results["book_data"]
-            booking_locator = booking_data["itinerary"]["id"]
-            hotel_locators = [
-                Locator(id=room["confirmation_code"]) for room in booking_data["itinerary_details"]["room_data"]
-            ]
+        booking_data = results["book_data"]
+        contract_data = results["contract_data"]
+        booking_locator = booking_data["itinerary"]["id"]
+        room_data = booking_data["itinerary_details"]["room_data"]
+        hotel_locators = [Locator(id=room["confirmation_code"]) for room in room_data]
 
-            reservation = Reservation(
-                locator=Locator(id=booking_locator),
-                hotel_locator=hotel_locators,
-                hotel_id=book_request.hotel_id,
-                checkin=book_request.checkin,
-                checkout=book_request.checkout,
-                customer=book_request.customer,
-                traveler=book_request.traveler,
-                room_rates=book_request.room_rates,
-            )
+        checkin = date.fromisoformat(booking_data["itinerary"]["check_in"])
+        checkout = date.fromisoformat(booking_data["itinerary"]["check_out"])
 
-            return HotelBookingResponse(
-                api_version=1,
-                transaction_id=book_request.transaction_id,
-                status=Status(True, "success"),
-                reservation=reservation,
-            )
+        contract_room_data = contract_data["hotel_data"][0]["room_data"][0]
+        contract_room_id = contract_room_data["id"]
+        booked_rate_data = contract_room_data["rate_data"][0]
+        booked_rate_plan = self._create_rate_plans()[0]
+        booked_room_rate = self._create_room_rate(contract_room_id, booked_rate_data, booked_rate_plan)
+
+        reservation = Reservation(
+            locator=Locator(id=booking_locator),
+            hotel_locator=hotel_locators,
+            hotel_id=book_request.hotel_id,
+            checkin=checkin,
+            checkout=checkout,
+            customer=book_request.customer,
+            traveler=book_request.traveler,
+            room_rate=booked_room_rate,
+        )
+
+        return HotelBookingResponse(
+            api_version=1,
+            transaction_id=book_request.transaction_id,
+            status=Status(True, "success"),
+            reservation=reservation,
+        )
 
     def recheck(self, room_rate: RoomRate) -> RoomRate:
         return self.room_details(room_rate.code)
 
     @staticmethod
-    def _create_booking_params(customer: Customer, payment: Payment, rate: RoomRate):
+    def _create_booking_params(customer: Customer, payment: Payment, rate_code: str):
         request_context = get_request_context()
         payment_card_params = payment.payment_card_parameters
         expires_string = f"{int(payment_card_params.expiration_month):02d}{payment_card_params.expiration_year}"
         return {
-            "ppn_bundle": rate.code,
+            "ppn_bundle": rate_code,
             "name_first": customer.first_name,
             "name_last": customer.last_name,
             "phone_number": customer.phone_number,
@@ -133,7 +142,6 @@ class PricelineAdapter(HotelAdapter):
             "card_number": payment_card_params.card_number,
             "expires": expires_string,
             "cvc_code": payment_card_params.cvv,
-            "sid": request_context.get_request_id(),
         }
 
     def _create_hotel_id_search(self, search: HotelSpecificSearch):
@@ -243,10 +251,9 @@ class PricelineAdapter(HotelAdapter):
     @staticmethod
     def get_ppn_bundle_code(rate_data):
         if "ppn_book_bundle" in rate_data:
-            rate_code = rate_data["ppn_book_bundle"]
+            return rate_data["ppn_book_bundle"]
         else:
-            rate_code = rate_data["ppn_bundle"]
-        return rate_code
+            return rate_data["ppn_bundle"]
 
     def _create_room_rates(self, hotel_response, rate_plans):
         room_rates = []

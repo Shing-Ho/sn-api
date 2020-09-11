@@ -80,7 +80,7 @@ class TestPricelineIntegration(SimplenightTestCase):
 
         room_rate_to_book = priceline.room_details(hotel.room_rates[0].code)
 
-        booking_request = test_objects.booking_request(payment_object, rate=room_rate_to_book)
+        booking_request = test_objects.booking_request(payment_object, rate_code=room_rate_to_book.code)
 
         booking_request.customer.first_name = "James"
         booking_request.customer.last_name = "Morton"

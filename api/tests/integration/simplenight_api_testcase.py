@@ -12,7 +12,7 @@ class SimplenightAPITestCase(APITestCase):
 
     @staticmethod
     def create_api_key(organization_name="anonymous"):
-        from api.auth.models import Organization, OrganizationAPIKey
+        from api.auth.authentication import Organization, OrganizationAPIKey
 
         try:
             organization = Organization.objects.get(name=organization_name)

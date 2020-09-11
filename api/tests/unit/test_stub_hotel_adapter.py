@@ -1,18 +1,19 @@
-import unittest
 import uuid
 from datetime import date
 
 from api.booking.booking_model import Customer, Traveler, PaymentCardParameters, CardType, Payment, HotelBookingRequest
 from api.common.models import Address
+from api.hotel import hotel_cache_service
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     RoomOccupancy,
 )
 from api.tests import test_objects
+from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
-class TestStubHotelAdapter(unittest.TestCase):
+class TestStubHotelAdapter(SimplenightTestCase):
     def test_search_by_hotel_id(self):
         search_request = HotelSpecificSearch(
             hotel_id="A1H2J6", start_date=date(2020, 1, 20), end_date=date(2020, 1, 27), occupancy=RoomOccupancy(2, 1),
@@ -69,16 +70,16 @@ class TestStubHotelAdapter(unittest.TestCase):
             api_version=1,
             transaction_id=str(uuid.uuid4()),
             hotel_id="HAUE1X",
-            checkin=date(2020, 2, 15),
-            checkout=date(2020, 2, 20),
             language="en_US",
             customer=customer,
             traveler=traveler,
-            room_rates=[room_rate],
+            room_code=room_rate.code,
             payment=payment,
-            tracking=str(uuid.uuid4()),
-            ip_address="1.1.1.1",
         )
+
+        adapter_hotel = test_objects.hotel()
+        adapter_hotel.hotel_Id = "HAUE1X"
+        hotel_cache_service.save_provider_rate_in_cache("foo", adapter_hotel, room_rate, room_rate)
 
         stub_adapter = StubHotelAdapter()
         response = stub_adapter.booking(booking_request)
@@ -90,8 +91,8 @@ class TestStubHotelAdapter(unittest.TestCase):
         self.assertIsNotNone(response.reservation.locator.id)
         self.assertIsNotNone(response.reservation.hotel_locator.id)
         self.assertIsNotNone(response.reservation.hotel_id)
-        self.assertEqual("2020-02-15", str(response.reservation.checkin))
-        self.assertEqual("2020-02-20", str(response.reservation.checkout))
+        self.assertEqual("2020-01-01", str(response.reservation.checkin))
+        self.assertEqual("2020-02-01", str(response.reservation.checkout))
         self.assertEqual("John", response.reservation.customer.first_name)
         self.assertEqual("Smith", response.reservation.customer.last_name)
         self.assertEqual("+1 (555) 867-5309", response.reservation.customer.phone_number)
@@ -99,6 +100,6 @@ class TestStubHotelAdapter(unittest.TestCase):
         self.assertEqual("Jane", response.reservation.traveler.first_name)
         self.assertEqual("Smith", response.reservation.traveler.last_name)
         self.assertEqual(1, response.reservation.traveler.occupancy.adults)
-        self.assertEqual("526.22", str(response.reservation.room_rates[0].total_base_rate.amount))
-        self.assertEqual("63.29", str(response.reservation.room_rates[0].total_tax_rate.amount))
-        self.assertEqual("589.51", str(response.reservation.room_rates[0].total.amount))
+        self.assertEqual("526.22", str(response.reservation.room_rate.total_base_rate.amount))
+        self.assertEqual("63.29", str(response.reservation.room_rate.total_tax_rate.amount))
+        self.assertEqual("589.51", str(response.reservation.room_rate.total.amount))

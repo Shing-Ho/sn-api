@@ -140,12 +140,10 @@ class TestHotelBeds(TestCase):
             api_version=1,
             transaction_id="tx",
             hotel_id="123",
-            checkin=date(2020, 1, 1),
-            checkout=date(2020, 1, 2),
             language="en",
             customer=Customer("John", "Smith", "5558675309", "john@smith.foo", "US"),
             traveler=Traveler("John", "Smith", occupancy=RoomOccupancy(adults=1)),
-            room_rates=[room_rate],
+            room_code=room_rate.code,
             payment=None,
         )
 

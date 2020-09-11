@@ -2,7 +2,6 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
 
-from api.auth.models import OrganizationApiThrottle, HasOrganizationAPIKey
 from api.locations import location_service
 from api.views import _response
 

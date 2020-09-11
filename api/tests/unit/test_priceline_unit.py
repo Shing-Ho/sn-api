@@ -90,4 +90,4 @@ class TestPricelineUnit(SimplenightTestCase):
         self.assertEqual(1, booking_response.reservation.traveler.occupancy.adults)
         self.assertEqual("John", booking_response.reservation.traveler.first_name)
         self.assertEqual("Simplenight", booking_response.reservation.traveler.last_name)
-        self.assertEqual(RateType.BOOKABLE, booking_response.reservation.room_rates[0].rate_type)
+        self.assertEqual(RateType.BOOKABLE, booking_response.reservation.room_rate.rate_type)

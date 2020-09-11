@@ -166,17 +166,15 @@ class HotelBeds(HotelAdapter):
 
         lead_traveler = HotelBedsPax(1, "AD", book_request.customer.first_name, book_request.customer.last_name)
 
-        rooms_to_book = []
-        for room_rate in book_request.room_rates:
-            booking_room = HotelBedsBookingRoom(rateKey=room_rate.code, paxes=[lead_traveler])
-            rooms_to_book.append(booking_room)
+        room_code = book_request.room_code
+        booking_room = HotelBedsBookingRoom(rateKey=room_code, paxes=[lead_traveler])
 
         booking_request = HotelBedsBookingRQ(
             holder=HotelBedsBookingLeadTraveler(
                 name=book_request.customer.first_name, surname=book_request.customer.last_name
             ),
             clientReference=book_request.transaction_id,
-            rooms=rooms_to_book,
+            rooms=[booking_room],
             remark="No remark",
         )
 
@@ -192,11 +190,11 @@ class HotelBeds(HotelAdapter):
             locator=Locator(hotelbeds_booking_response.booking.reference),
             hotel_locator=None,
             hotel_id=book_request.hotel_id,
-            checkin=book_request.checkin,
-            checkout=book_request.checkout,
+            checkin=None,
+            checkout=None,
             customer=book_request.customer,
             traveler=book_request.traveler,
-            room_rates=book_request.room_rates,
+            room_rate=None,
         )
 
         return HotelBookingResponse(

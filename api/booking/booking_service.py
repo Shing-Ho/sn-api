@@ -1,11 +1,10 @@
 from datetime import datetime
-from typing import List, Union
+from typing import Union
 
 from api import logger
 from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse
-from api.common import cache_storage
-from api.common.models import RoomRate, Money
-from api.hotel import price_verification_service
+from api.common.models import RoomRate
+from api.hotel import price_verification_service, hotel_cache_service
 from api.hotel.adapters import adapter_service
 from api.hotel.hotel_model import SimplenightRoomType
 from api.models import models
@@ -16,8 +15,12 @@ from common.exceptions import AppException
 
 
 def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
-    adapter = adapter_service.get_adapter(book_request.provider)
-    total_payment_amount = _get_payment_amount(book_request)
+    provider_rate_cache_payload = hotel_cache_service.get_provider_rate_from_cache(book_request.room_code)
+    provider = provider_rate_cache_payload.provider
+    simplenight_rate = provider_rate_cache_payload.simplenight_rate
+    adapter = adapter_service.get_adapter(provider)
+
+    total_payment_amount = simplenight_rate.total
     auth_response = payment_service.authorize_payment(
         amount=total_payment_amount,
         payment=book_request.payment,
@@ -30,72 +33,61 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
 
     # Save Simplenight Internal Room Rates
     # Lookup Provider Rates in Cache
-    room_rates = book_request.room_rates
-    provider_rates = list(map(_get_provider_rate_from_cache, book_request.room_rates))
-    book_request.room_rates = provider_rates
+    provider_rate = provider_rate_cache_payload.provider_rate
+    book_request.room_code = provider_rate.code
 
     # Reset room rates with verified rates.  If prices mismatch, error will raise
-    book_request.room_rates = _price_verification(provider=book_request.provider, rooms=provider_rates)
+    verified_rates = _price_verification(provider=provider, rate=provider_rate)
+    book_request.room_code = verified_rates.code
     response = adapter.booking(book_request)
 
     if not response or not response.reservation.locator:
         logger.error(f"Could not book request: {book_request}")
         raise AppException("Error during booking")
 
-    persist_reservation(book_request, room_rates, response)
+    persist_reservation(book_request, simplenight_rate, response)
 
     return response
 
 
-def _get_payment_amount(book_request: HotelBookingRequest):
-    # TODO: Validate these payment amounts better
-    # TODO: Validate currency
-    total_payment_amount = sum(x.total.amount for x in book_request.room_rates)
-    return Money(total_payment_amount, book_request.room_rates[0].total.currency)
+def _price_verification(provider: str, rate: Union[SimplenightRoomType, RoomRate]):
+    price_verification = price_verification_service.recheck(provider=provider, room_rate=rate)
+
+    if not price_verification.is_allowed_change:
+        old_price = rate.total.amount
+        new_price = price_verification.verified_room_rate.total.amount
+        error_msg = f"Price Verification Failed: Old={old_price}, New={new_price}"
+        raise BookingException(BookingErrorCode.PRICE_VERIFICATION, error_msg)
+
+    return price_verification.verified_room_rate
 
 
-def _price_verification(provider: str, rooms: List[Union[SimplenightRoomType, RoomRate]]):
-    verified_rates = []
-    for room in rooms:
-        price_verification = price_verification_service.recheck(provider=provider, room_rate=room)
-
-        if not price_verification.is_allowed_change:
-            old_price = room.total.amount
-            new_price = price_verification.verified_room_rate.total.amount
-            error_msg = f"Price Verification Failed: Old={old_price}, New={new_price}"
-            raise BookingException(BookingErrorCode.PRICE_VERIFICATION, error_msg)
-
-        verified_rates.append(price_verification.verified_room_rate)
-
-    return verified_rates
-
-
-def persist_reservation(book_request, room_rates, response):
+def persist_reservation(book_request, room_rate, response):
     traveler = _persist_traveler(response)
     booking = _persist_booking_record(response, traveler)
-    _persist_hotel(book_request, room_rates, booking, response)
+    _persist_hotel(book_request, room_rate, booking, response)
 
     return booking
 
 
-def _persist_hotel(book_request, room_rates, booking, response):
+def _persist_hotel(book_request, room_rate, booking, response):
     # Takes the original room rates as a parameter
     # Persists both the provider rate (on book_request) and the original rates
-    for provider_rate, rate in zip(response.reservation.room_rates, room_rates):
-        hotel_booking = models.HotelBooking(
-            booking=booking,
-            created_date=datetime.now(),
-            hotel_name="Hotel Name",
-            provider_name=book_request.provider,
-            hotel_code=book_request.hotel_id,
-            record_locator=response.reservation.locator.id,
-            total_price=rate.total.amount,
-            currency=rate.total.currency,
-            provider_total=provider_rate.total.amount,
-            provider_currency=provider_rate.total.currency,
-        )
+    provider_rate, rate = response.reservation.room_rate, room_rate
+    hotel_booking = models.HotelBooking(
+        booking=booking,
+        created_date=datetime.now(),
+        hotel_name="Hotel Name",
+        provider_name=book_request.provider,
+        hotel_code=book_request.hotel_id,
+        record_locator=response.reservation.locator.id,
+        total_price=rate.total.amount,
+        currency=rate.total.currency,
+        provider_total=provider_rate.total.amount,
+        provider_currency=provider_rate.total.currency,
+    )
 
-        hotel_booking.save()
+    hotel_booking.save()
 
 
 def _persist_booking_record(response, traveler):
@@ -116,16 +108,8 @@ def _persist_traveler(response):
         last_name=response.reservation.customer.last_name,
         phone_number=response.reservation.customer.phone_number,
         email_address=response.reservation.customer.email,
-        country=response.reservation.customer.country,
+        country=response.reservation.customer.country[:2],
     )
 
     traveler.save()
     return traveler
-
-
-def _get_provider_rate_from_cache(room_rate: Union[SimplenightRoomType, RoomRate]) -> RoomRate:
-    provider_rate = cache_storage.get(room_rate.code)
-    if not provider_rate:
-        raise RuntimeError(f"Could not find Provider Rate for Rate Key {room_rate.code}")
-
-    return provider_rate

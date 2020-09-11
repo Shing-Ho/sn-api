@@ -307,3 +307,14 @@ class HotelPriceVerification(BaseSchema):
     original_total: decimal.Decimal = field(metadata=dict(as_string=True))
     recheck_total: decimal.Decimal = field(metadata=dict(as_string=True))
     price_difference: decimal.Decimal = field(metadata=dict(as_string=True))
+
+
+@dataclasses.dataclass
+class ProviderRoomDataCachePayload:
+    hotel_id: str
+    provider: str
+    checkin: date
+    checkout: date
+    room_code: str
+    provider_rate: RoomRate
+    simplenight_rate: RoomRate

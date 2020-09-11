@@ -12,6 +12,7 @@ class PricelineTransport(Transport):
         HOTEL_DETAILS = "/hotel/getHotelDetails"
         EXPRESS_BOOK = "/hotel/getExpress.Book"
         EXPRESS_CONTRACT = "/hotel/getExpress.Contract"
+        HOTELS_DOWNLOAD = "/shared/getBOF2.Downloads.Hotel.Hotels"
 
     CREDENTIALS = {
         "refid": "10047",
@@ -57,6 +58,9 @@ class PricelineTransport(Transport):
 
     def express_contract(self, **params):
         return self.post(self.Endpoint.EXPRESS_CONTRACT, **params)
+
+    def hotels_download(self, **params):
+        return self.get(self.Endpoint.HOTELS_DOWNLOAD, **params)
 
     def endpoint(self, priceline_endpoint: Endpoint):
         return f"{self._get_host()}{priceline_endpoint.value}"

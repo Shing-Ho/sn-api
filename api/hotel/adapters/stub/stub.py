@@ -5,7 +5,9 @@ from datetime import timedelta
 from typing import List, Union
 
 from api.booking.booking_model import Reservation, HotelBookingRequest, HotelBookingResponse, Locator, Status
+from api.common import cache_storage
 from api.common.models import RateType, RoomRate, DailyRate, Money
+from api.hotel import hotel_cache_service
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelLocationSearch,
@@ -72,15 +74,22 @@ class StubHotelAdapter(HotelAdapter):
         return self.search_by_id(search_request)
 
     def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
+        # TODO booking_service already replaced the room_code with the provider room code
+        # Here, we want to lookup the simplenight rate
+        # Get rid of this hack to lookup the simplenight ID
+
+        simplenight_key = cache_storage.get(book_request.room_code)
+        saved_provider_rate = hotel_cache_service.get_provider_rate_from_cache(simplenight_key)
+
         reservation = Reservation(
             locator=Locator(str(uuid.uuid4())),
-            hotel_locator=Locator(random_alphanumeric(6)),
-            hotel_id=book_request.hotel_id,
-            checkin=book_request.checkin,
-            checkout=book_request.checkout,
+            hotel_locator=[Locator(random_alphanumeric(6))],
+            hotel_id=saved_provider_rate.hotel_id,
+            checkin=saved_provider_rate.checkin,
+            checkout=saved_provider_rate.checkout,
             customer=book_request.customer,
             traveler=book_request.traveler,
-            room_rates=book_request.room_rates,
+            room_rate=saved_provider_rate.simplenight_rate,
         )
 
         return HotelBookingResponse(

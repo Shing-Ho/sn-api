@@ -3,14 +3,12 @@ openapi: 3.0.0
 servers:
 # Added by API Auto Mocking Plugin
 # Added by API Auto Mocking Plugin
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/LPBS7/SN_HOTEL_API/1.0.0
   - description: Simplenight Live Sandbox
     url: https://simplenight-api-278418.ue.r.appspot.com/api/v1/
   - description: Localhost
-    url: http://localhost:8000/api/v1/x
+    url: http://localhost:8000/api/v1
 info:
-  version: "1.0.0"
+  version: "1.0.2"
   title: Simplenight Hotel API
   description: |
     This OpenAPI Specification describes the Simplenight Hotel API.  In the dropdown below, there are a list of two servers to choose from.  The first is a simple automock server which returns static mock responses.  The second is the Simplenight Live Sandbox server, which returns real data.
@@ -863,12 +861,10 @@ components:
         - api_version
         - transaction_id
         - hotel_id
-        - checkin
-        - checkout
+        - room_code
         - language
         - customer
         - traveler
-        - room_rate
         - payment
       properties:
         api_version:
@@ -880,24 +876,14 @@ components:
           example:
             3ef11392-a96a-423f-8bc6-4207d957a545
           description: Unique ID for this booking transaction
-        tracking:
-          $ref: '#/components/schemas/Tracking'
         hotel_id:
           type: string
           example: AHY14Z
           description: The SimpleNight Hotel ID of the property being booked
-        checkin:
+        room_code:
           type: string
-          format: date
-          description: The start date of the hotel booking
-        checkout:
-          type: string
-          format: date
-          description: The end date of the hotel booking
-        ip_address:
-          type: string
-          example: 1.2.3.4
-          description: The end user IP address, for tracking purposes.  Optional.
+          example: X2HD4J
+          description: The room code associated with the room rate to book
         language:
           type: string
           example: en_US
@@ -906,8 +892,6 @@ components:
           $ref: '#/components/schemas/Customer'
         traveler:
           $ref: '#/components/schemas/Traveler'
-        room_rate:
-          $ref: '#/components/schemas/RoomRate'
         payment:
           $ref: '#/components/schemas/Payment'
 

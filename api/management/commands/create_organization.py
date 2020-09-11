@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 
-from api.auth.models import Organization, OrganizationAPIKey
+from api.auth.authentication import Organization, OrganizationAPIKey
 
 
 class Command(BaseCommand):

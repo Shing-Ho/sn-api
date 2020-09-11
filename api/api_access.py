@@ -5,7 +5,7 @@ import marshmallow_dataclass
 from marshmallow import Schema
 
 from api import logger
-from api.auth.models import OrganizationAPIKey, Organization
+from api.auth.authentication import OrganizationAPIKey, Organization
 
 
 @dataclasses.dataclass

@@ -1,6 +1,6 @@
 from typing import List
 
-from api.auth.models import Feature
+from api.auth.authentication import Feature
 from api.common.request_context import get_request_context
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport

@@ -4,6 +4,7 @@ from typing import List
 import requests_mock
 
 from api.common.models import to_json
+from api.hotel import hotel_cache_service
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
@@ -68,7 +69,11 @@ class TestHotelsView(SimplenightAPITestCase):
 
     def test_booking_invalid_payment(self):
         invalid_card_number_payment = test_objects.payment("4000000000000002")
-        booking_request = test_objects.booking_request(payment_obj=invalid_card_number_payment)
+        booking_request = test_objects.booking_request(payment_obj=invalid_card_number_payment, provider="stub")
+
+        hotel = test_objects.hotel()
+        room_rate = test_objects.room_rate(rate_key="rate_key", total="100.00")
+        hotel_cache_service.save_provider_rate_in_cache(room_rate.code, hotel, room_rate, room_rate)
 
         response = self.post(endpoint=BOOKING, obj=booking_request)
 

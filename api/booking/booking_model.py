@@ -112,15 +112,11 @@ class HotelBookingRequest(BaseSchema):
     api_version: int
     transaction_id: str
     hotel_id: str
-    checkin: date
-    checkout: date
+    room_code: str
     language: str
     customer: Customer
     traveler: Traveler
-    room_rates: List[RoomRate] = dataclasses.field(default_factory=list)
     payment: Optional[Payment] = None
-    tracking: Optional[str] = None
-    ip_address: Optional[str] = None
     provider: str = "stub"
 
 
@@ -148,7 +144,7 @@ class Reservation(BaseSchema):
     checkout: date
     customer: Customer
     traveler: Traveler
-    room_rates: List[RoomRate]
+    room_rate: RoomRate
 
 
 @dataclasses.dataclass

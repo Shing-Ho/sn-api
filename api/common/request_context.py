@@ -1,4 +1,4 @@
-from api.auth.models import Organization
+from api.auth.authentication import Organization
 from api.common.request_cache import get_request_cache
 
 

@@ -2,15 +2,8 @@
 import uuid
 from enum import Enum
 
-import stripe
-from django.db import models
 from django.contrib.postgres.fields import ArrayField
-
-stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
-
-USD = "US Dollars"
-FRA = "French Francs"
-ENG = "English"
+from django.db import models
 
 
 class Geoname(models.Model):
@@ -148,28 +141,28 @@ class sn_images_map(models.Model):
 
     # simplenight_id = models.ForeignKey((supplier_hotels,))
     # on_delete.CASCADE: when object is deleted, delete all references to the object
-    simplenight_id      = models.CharField(max_length=100, blank=True, null=True)
-    image_type          = models.TextField(null=True, blank=True)
-    image_url_path      = models.TextField(null=True, blank=True)
-    image_provider_id   = models.CharField(max_length=100)
+    simplenight_id = models.CharField(max_length=100, blank=True, null=True)
+    image_type = models.TextField(null=True, blank=True)
+    image_url_path = models.TextField(null=True, blank=True)
+    image_provider_id = models.CharField(max_length=100)
 
 
 class supplier_priceline(models.Model):
     class Meta:
         app_label = "api"
 
-    supplier            = models.CharField(max_length=50, default="Priceline")
-    supplier_id         = models.CharField(max_length=100, blank=True, null=False)
-    hotel_name          = models.CharField(max_length=100)
-    hotel_address       = models.CharField(max_length=100)
-    hotel_city          = models.CharField(max_length=100)
-    hotel_state         = models.CharField(max_length=25)
-    hotel_country_code  = models.CharField(max_length=3)
-    hotel_postal_code   = models.CharField(max_length=15)
-    hotel_rating        = models.FloatField()
-    hotel_description   = models.TextField(max_length=100)
-    hotel_amenities     = ArrayField(ArrayField(models.CharField(max_length=100, blank=True),size=8,),size=8,)
-    image_url_path      = models.TextField(null=True, blank=True)
+    supplier = models.CharField(max_length=50, default="Priceline")
+    supplier_id = models.CharField(max_length=100, blank=True, null=False)
+    hotel_name = models.CharField(max_length=100)
+    hotel_address = models.CharField(max_length=100)
+    hotel_city = models.CharField(max_length=100)
+    hotel_state = models.CharField(max_length=25)
+    hotel_country_code = models.CharField(max_length=3)
+    hotel_postal_code = models.CharField(max_length=15)
+    hotel_rating = models.FloatField()
+    hotel_description = models.TextField(max_length=100)
+    hotel_amenities = ArrayField(ArrayField(models.CharField(max_length=100, blank=True), size=8,), size=8,)
+    image_url_path = models.TextField(null=True, blank=True)
 
 
 class PaymentTransaction(models.Model):

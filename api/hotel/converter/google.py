@@ -90,8 +90,7 @@ def convert_booking_request(google_booking_request: GoogleBookingSubmitRequest) 
         api_version=google_booking_request.api_version,
         transaction_id=google_booking_request.transaction_id,
         hotel_id=google_booking_request.hotel_id,
-        checkin=google_booking_request.start_date,
-        checkout=google_booking_request.end_date,
+        room_code=room_rate.code,
         language=google_booking_request.language,
         customer=google_booking_request.customer,
         traveler=Traveler(
@@ -102,10 +101,7 @@ def convert_booking_request(google_booking_request: GoogleBookingSubmitRequest) 
                 children=len(google_booking_request.traveler.occupancy.children),
             ),
         ),
-        room_rates=[room_rate],
         payment=payment,
-        tracking=google_booking_request.tracking.campaign_id,
-        ip_address=google_booking_request.ip_address,
     )
 
 
