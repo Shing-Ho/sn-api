@@ -113,11 +113,11 @@ def _persist_traveler(response):
 
     traveler.save()
     return traveler
-def _get_reservation_cancelable(transaction_id: transaction_id):
+def _get_reservation_cancelable(transaction_id):
     reservation = models.Booking(
         transaction_id=transaction_id
     )
-    if reservation not None:
+    if reservation != None:
         res =  reservation["cancel_policy"]
     else:
         res = None 
