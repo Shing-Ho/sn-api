@@ -162,6 +162,8 @@ class supplier_priceline(models.Model):
     hotel_rating = models.FloatField()
     hotel_description = models.TextField(max_length=100)
     hotel_amenities = ArrayField(ArrayField(models.CharField(max_length=100, blank=True), size=8,), size=8,)
+    hotelid_ppn = models.TextField(max_length=100)
+    cityid_ppn  = models.TextField(max_length=100)
     image_url_path = models.TextField(null=True, blank=True)
 
 
