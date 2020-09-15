@@ -113,3 +113,30 @@ def _persist_traveler(response):
 
     traveler.save()
     return traveler
+def _get_reservation_cancelable(transaction_id: transaction_id):
+    reservation = models.Booking(
+        transaction_id=transaction_id
+    )
+    if reservation not None:
+        res =  reservation["cancel_policy"]
+    else:
+        res = None 
+
+    return res 
+
+
+
+def remove_booking(transaction_id):
+    res = _get_reservation_cancelable(transaction_id)
+    if res["cancel_policy"] == "Non-refunable":
+        return AppException("Booking is non-refundable")
+    else:
+        if res["refundable_deadline"] > datetime.datetime.now():
+            return AppException("Unfortunatly booking cannot be canceled as it needed to be canceled by {}".format(res["refundable_deadline"]))
+
+        else:
+            refunable_amount = ((res["refundable_amount"]/100)*res["room_rates"])*(res["checkout"]-res["checkin"]).days
+            return refunable_amount
+
+        
+    
