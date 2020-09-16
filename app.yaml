@@ -8,7 +8,7 @@ beta_settings:
 
 env_variables:
   DJANGO_DATABASE: "appengine"
-  DJANGO_SETTINGS_MODULE: "project.settings.appengine"
+  DJANGO_SETTINGS_MODULE: "api.environments.appengine"
   DB_NAME: 'simplenight-api-db'
   DB_USERNAME: 'simplenight'
   DB_PASSWORD: 'daux!bauc7nooc7YIP'
