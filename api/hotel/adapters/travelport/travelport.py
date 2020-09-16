@@ -180,3 +180,8 @@ class TravelportHotelAdapter(HotelAdapter):
         amount = money_str[3:]
 
         return Money(float(amount), currency)
+
+    @classmethod
+    def factory(cls, test_mode=True):
+        return TravelportHotelAdapter(TravelportTransport())
+

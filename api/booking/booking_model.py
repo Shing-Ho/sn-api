@@ -145,9 +145,9 @@ class Reservation(BaseSchema):
     customer: Customer
     traveler: Traveler
     room_rate: RoomRate
-    cancel_policy: str
-    refundable_deadline: date
-    refundable_amount: int ## 0-100 in percentage 
+    # cancel_policy: str
+    # refundable_deadline: date
+    # refundable_amount: int ## 0-100 in percentage
 
 
 @dataclasses.dataclass

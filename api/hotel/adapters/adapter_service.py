@@ -1,34 +1,29 @@
+import distutils.util
 from typing import List
 
 from api.auth.authentication import Feature
 from api.common.request_context import get_request_context
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
-from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.adapters.priceline.priceline import PricelineAdapter
-from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.adapters.stub.stub import StubHotelAdapter
-from api.hotel.adapters.travelport.transport import TravelportTransport
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import BaseHotelSearch
 
 HOTEL_ADAPTERS = {
-    "stub": StubHotelAdapter(),
-    "travelport": TravelportHotelAdapter(TravelportTransport()),
-    "hotelbeds": HotelBeds(HotelBedsTransport()),
-    "priceline": PricelineAdapter(PricelineTransport(test_mode=True)),
+    "stub": StubHotelAdapter,
+    "travelport": TravelportHotelAdapter,
+    "hotelbeds": HotelBeds,
+    "priceline": PricelineAdapter,
 }
 
 
 def get_adapter(name):
-    return HOTEL_ADAPTERS.get(name)
+    return HOTEL_ADAPTERS.get(name).factory(get_test_mode())
 
 
 def get_adapters(name) -> List[HotelAdapter]:
-    if name is None:
-        return [HOTEL_ADAPTERS.get("stub")]
-    else:
-        return [HOTEL_ADAPTERS.get(x) for x in name.split(",")]
+    return [get_adapter(x) for x in name.split(",")]
 
 
 def get_adapters_to_search(search_request: BaseHotelSearch) -> str:
@@ -51,3 +46,20 @@ def get_adapters_to_search(search_request: BaseHotelSearch) -> str:
             return organization_enabled_adapters
 
     return "stub"
+
+
+def get_test_mode():
+    """
+    Retrieve test mode from an organization's set of features
+    If no test_mode feature is found, return True for safety
+    """
+
+    organization = get_request_context().get_organization()
+    if not organization:
+        return True
+
+    feature_value = organization.get_feature(Feature.TEST_MODE)
+    if not feature_value:
+        return True
+
+    return bool(distutils.util.strtobool(feature_value))

@@ -36,3 +36,8 @@ class HotelAdapter(abc.ABC):
     def recheck(self, room_rate: RoomRate) -> RoomRate:
         """Given a list of RoomRates, recheck prices, and return verified RoomRates"""
         pass
+
+    @classmethod
+    @abc.abstractmethod
+    def factory(cls, test_mode=True):
+        pass

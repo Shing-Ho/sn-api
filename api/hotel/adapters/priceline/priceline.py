@@ -314,6 +314,10 @@ class PricelineAdapter(HotelAdapter):
 
         return room_types
 
+    @classmethod
+    def factory(cls, test_mode=True):
+        return PricelineAdapter(PricelineTransport(test_mode=test_mode))
+
 
 class PricelineErrorCodes(Enum):
     GENERIC_ERROR = 1

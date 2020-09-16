@@ -15,7 +15,6 @@ def save_provider_rate_in_cache(key: str, hotel: AdapterHotel, room_rate: RoomRa
     )
 
     cache_storage.set(key, payload)
-    cache_storage.set(room_rate.code, key)
 
 
 def get_provider_rate_from_cache(room_code: str) -> ProviderRoomDataCachePayload:

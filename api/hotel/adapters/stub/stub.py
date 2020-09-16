@@ -5,7 +5,6 @@ from datetime import timedelta
 from typing import List, Union
 
 from api.booking.booking_model import Reservation, HotelBookingRequest, HotelBookingResponse, Locator, Status
-from api.common import cache_storage
 from api.common.models import RateType, RoomRate, DailyRate, Money
 from api.hotel import hotel_cache_service
 from api.hotel.hotel_adapter import HotelAdapter
@@ -78,8 +77,7 @@ class StubHotelAdapter(HotelAdapter):
         # Here, we want to lookup the simplenight rate
         # Get rid of this hack to lookup the simplenight ID
 
-        simplenight_key = cache_storage.get(book_request.room_code)
-        saved_provider_rate = hotel_cache_service.get_provider_rate_from_cache(simplenight_key)
+        saved_provider_rate = hotel_cache_service.get_provider_rate_from_cache(book_request.room_code)
 
         reservation = Reservation(
             locator=Locator(str(uuid.uuid4())),
@@ -270,3 +268,7 @@ class StubHotelAdapter(HotelAdapter):
             "vitae et. Purus viverra accumsan in nisl. Pharetra sit amet aliquam id diam. Vulputate sapien nec "
             "sagittis aliquam malesuada. Bibendum enim facilisis gravida neque. "
         )
+
+    @classmethod
+    def factory(cls, test_mode=True):
+        return StubHotelAdapter()

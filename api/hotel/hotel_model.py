@@ -56,7 +56,7 @@ class BaseHotelSearch(BaseSchema, RemoveNone):
     currency: Optional[str] = "USD"
     checkin_time: Optional[Union[str, datetime]] = None
     checkout_time: Optional[Union[str, datetime]] = None
-    provider: str = "stub"
+    provider: Optional[str] = None
 
 
 @dataclasses.dataclass

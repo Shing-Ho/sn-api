@@ -190,21 +190,9 @@ CACHES = {
         "LOCATION": "unique-snowflake",
         "OPTIONS": {"MAX_ENTRIES": "50000"},
     },
-    "appengine": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ.get("REDIS_URL"),
-        "OPTIONS": {"MAX_ENTRIES": "50000", "CLIENT_CLASS": "django_redis.client.DefaultClient"},
-    },
 }
-
-redis_host = os.environ.get('REDISHOST', 'localhost')
-redis_port = int(os.environ.get('REDISPORT', 6379))
-
 
 CACHE_TIMEOUT = 900
 
 active_database_label = os.environ.get("DJANGO_DATABASE", "default")
 DATABASES["default"] = DATABASES[active_database_label]
-
-if active_database_label in CACHES:
-    CACHES["default"] = CACHES[active_database_label]

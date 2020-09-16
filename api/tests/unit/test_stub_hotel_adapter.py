@@ -52,7 +52,7 @@ class TestStubHotelAdapter(SimplenightTestCase):
         )
 
         traveler = Traveler(first_name="Jane", last_name="Smith", occupancy=RoomOccupancy(adults=1, children=0))
-        room_rate = test_objects.room_rate(rate_key="foo", base_rate="526.22", total="589.51", tax_rate="63.29")
+        room_rate = test_objects.room_rate(rate_key="rate-key", base_rate="526.22", total="589.51", tax_rate="63.29")
 
         payment_card_params = PaymentCardParameters(
             card_type=CardType.VI,
@@ -78,8 +78,8 @@ class TestStubHotelAdapter(SimplenightTestCase):
         )
 
         adapter_hotel = test_objects.hotel()
-        adapter_hotel.hotel_Id = "HAUE1X"
-        hotel_cache_service.save_provider_rate_in_cache("foo", adapter_hotel, room_rate, room_rate)
+        adapter_hotel.hotel_id = "HAUE1X"
+        hotel_cache_service.save_provider_rate_in_cache("rate-key", adapter_hotel, room_rate, room_rate)
 
         stub_adapter = StubHotelAdapter()
         response = stub_adapter.booking(booking_request)
@@ -89,7 +89,7 @@ class TestStubHotelAdapter(SimplenightTestCase):
         self.assertTrue(response.status.success)
         self.assertIsNotNone(response.reservation)
         self.assertIsNotNone(response.reservation.locator.id)
-        self.assertIsNotNone(response.reservation.hotel_locator.id)
+        self.assertIsNotNone(response.reservation.hotel_locator[0].id)
         self.assertIsNotNone(response.reservation.hotel_id)
         self.assertEqual("2020-01-01", str(response.reservation.checkin))
         self.assertEqual("2020-02-01", str(response.reservation.checkout))

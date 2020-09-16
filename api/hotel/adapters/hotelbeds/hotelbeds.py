@@ -335,3 +335,8 @@ class HotelBeds(HotelAdapter):
     def _get_matching_amenities(hotelbeds_amenities: List[HotelBedsAmenity]):
         facility_codes = set(x.facility_code for x in hotelbeds_amenities or [])
         return {amenity for amenity, code in HOTELBEDS_AMENITY_MAPPING.items() if code in facility_codes}
+
+    @classmethod
+    def factory(cls, test_mode=True):
+        return HotelBeds(HotelBedsTransport())
+
