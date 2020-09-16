@@ -53,6 +53,8 @@ class Command(BaseCommand):
                 hotel_country_code  = hotel_data[hotel]['country_code']
                 hotel_rating        = hotel_data[hotel]['star_rating']
                 hotel_description   = hotel_data[hotel]['property_description']
+                hotelid_ppn         = hotel_data[hotel]['hotelid_ppn']
+                cityid_ppn          = hotel_data[hotel]['cityid_ppn']
                 image_url_path      = hotel_data[hotel]['thumbnail']
 
                 # romp through each item and append to our empty list
@@ -65,7 +67,7 @@ class Command(BaseCommand):
 
 
                 # insert into sn db
-                    print('inserting')
+                    print('Inserting...')
                     print(image_url_path)
                     print(hotel_rating)
                     try:
@@ -76,5 +78,5 @@ class Command(BaseCommand):
                         hotel_amenities = amenities, image_url_path = image_url_path
                     )
                     except:
-                        print("didtn insert for {}".format(hotel))
+                        print("Failed to insert for {}".format(hotel))
                     print(supplier_priceline.objects.all().count())
