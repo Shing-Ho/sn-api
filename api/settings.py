@@ -129,6 +129,9 @@ DATABASES = {
     },
 }
 
+active_database_label = os.environ.get("DJANGO_DATABASE", "default")
+DATABASES["default"] = DATABASES[active_database_label]
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -193,6 +196,3 @@ CACHES = {
 }
 
 CACHE_TIMEOUT = 900
-
-active_database_label = os.environ.get("DJANGO_DATABASE", "default")
-DATABASES["default"] = DATABASES[active_database_label]
