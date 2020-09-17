@@ -20,7 +20,7 @@ class AirportMapping:
 
         for city in self.cities:
             self.cities_by_country[city.iso_country_code].append(city)
-            self.cities_by_city_name[city.location_name].append(city)
+            self.cities_by_city_name[city.location_id].append(city)
 
     def map_airport(self, airport: Airport):
         matching_cities = self.cities_by_city_name[airport.city_name]

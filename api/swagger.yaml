@@ -434,12 +434,12 @@ components:
     HotelLocationSearchRequest:
       type: object
       required:
-        - location_name
+        - location_id
         - start_date
         - end_date
         - occupancy
       properties:
-        location_name:
+        location_id:
           type: string
           example: "19823"
           description: Simplenight Location ID

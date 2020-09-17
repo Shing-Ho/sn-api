@@ -18,7 +18,7 @@ class TestBookingView(SimplenightAPITestCase):
         hotelbeds_content_response = load_test_resource("hotelbeds/hotel-details-response.json")
 
         search_request = HotelLocationSearch(
-            location_name="SFO",
+            location_id="SFO",
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(2, 1),

@@ -39,7 +39,7 @@ class TestHotelsView(SimplenightAPITestCase):
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         search = HotelLocationSearch(
-            start_date=checkin, end_date=checkout, occupancy=RoomOccupancy(adults=1), location_name="SFO"
+            start_date=checkin, end_date=checkout, occupancy=RoomOccupancy(adults=1), location_id="SFO"
         )
 
         response = self._post(SEARCH_BY_LOCATION, search)
@@ -56,7 +56,7 @@ class TestHotelsView(SimplenightAPITestCase):
             start_date=checkin,
             end_date=checkout,
             occupancy=RoomOccupancy(adults=1),
-            location_name="SFO",
+            location_id="SFO",
             provider="hotelbeds",
         )
 
@@ -88,7 +88,7 @@ class TestHotelsView(SimplenightAPITestCase):
         with requests_mock.Mocker() as mocker:
             mocker.post(HotelBedsTransport.get_hotels_url(), text=error_response)
             search_request = HotelLocationSearch(
-                location_name="SFO",
+                location_id="SFO",
                 start_date=date(2020, 1, 20),
                 end_date=date(2020, 1, 27),
                 occupancy=RoomOccupancy(2, 1),

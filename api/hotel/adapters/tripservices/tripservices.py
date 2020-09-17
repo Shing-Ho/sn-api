@@ -1,5 +1,7 @@
 from api.booking.booking_model import HotelBookingRequest
+from api.common.models import RoomRate
 from api.hotel.adapters.tripservices.transport import TripServicesTransport
+from api.hotel.adapters.tripservices.tripservices_info import TripservicesInfo
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_model import (
     HotelDetails,
@@ -33,7 +35,7 @@ class TripservicesAdapter(HotelAdapter):
     def _create_city_search(self, search: HotelLocationSearch):
         return {
             **self._create_base_search(search),
-            "city": search.location_name,
+            "city": search.location_id,
         }
 
     @staticmethod
@@ -50,3 +52,15 @@ class TripservicesAdapter(HotelAdapter):
             params["currency"] = search.currency
 
         return params
+
+    def recheck(self, room_rate: RoomRate) -> RoomRate:
+        pass
+
+    @classmethod
+    def factory(cls, test_mode=True):
+        return TripservicesAdapter(TripservicesAdapter())
+
+    @classmethod
+    def get_provider_name(cls):
+        TripservicesInfo.get_name()
+

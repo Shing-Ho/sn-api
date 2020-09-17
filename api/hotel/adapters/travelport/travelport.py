@@ -185,3 +185,6 @@ class TravelportHotelAdapter(HotelAdapter):
     def factory(cls, test_mode=True):
         return TravelportHotelAdapter(TravelportTransport())
 
+    @classmethod
+    def get_provider_name(cls):
+        return cls.PROVIDER_NAME

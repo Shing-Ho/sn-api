@@ -121,9 +121,13 @@ class CityMap(models.Model):
         app_label = "api"
 
     id = models.AutoField(primary_key=True)
-    simplenight_city_id = models.IntegerField()
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
-    provider_city_id = models.TextField()
+    simplenight_city = models.ForeignKey(
+        Geoname, to_field="geoname_id", related_name="simplenight_city", on_delete=models.CASCADE
+    )
+    provider_city = models.ForeignKey(
+        ProviderCity, to_field="provider_code", related_name="provider_city", on_delete=models.CASCADE
+    )
 
 
 class sn_hotel_map(models.Model):

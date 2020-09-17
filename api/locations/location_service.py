@@ -1,9 +1,10 @@
 from decimal import Decimal
 from typing import List, Optional
 
+from api import logger
 from api.locations import airports
 from api.locations.models import LocationResponse, LocationType
-from api.models.models import Geoname, Airport
+from api.models.models import Geoname, Airport, CityMap
 
 
 def find_by_prefix(prefix: str, language_code="en", limit=10) -> List[LocationResponse]:
@@ -33,7 +34,7 @@ def find_by_prefix(prefix: str, language_code="en", limit=10) -> List[LocationRe
     return list(city_matches) + list(airport_matches.keys())
 
 
-def find_city_by_geoname_id(geoname_id: int, language_code="en") -> Optional[LocationResponse]:
+def find_city_by_simplenight_id(geoname_id: int, language_code="en") -> Optional[LocationResponse]:
     matching_locations = Geoname.objects.filter(geoname_id=geoname_id, lang__iso_language_code=language_code)
     if not matching_locations:
         return None
@@ -47,6 +48,15 @@ def find_all_cities(country_code=None, language_code="en") -> List[LocationRespo
         locations = locations.filter(iso_country_code=country_code)
 
     return list(_geoname_to_location_response(location, language_code) for location in locations)
+
+
+def find_provider_location(provider: str, simplenight_location_id):
+    try:
+
+        return CityMap.objects.get(provider__name=provider, simplenight_city_id=simplenight_location_id).provider_city
+    except CityMap.DoesNotExist:
+        logger.error(f"Could not find city mapping for SimplenightID={simplenight_location_id} provider={provider}")
+        return None
 
 
 def _geoname_to_location_response(geoname: Geoname, language_code: str):

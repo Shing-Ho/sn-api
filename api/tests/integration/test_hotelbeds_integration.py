@@ -96,7 +96,7 @@ class TestHotelBedsIntegration(TestCase):
             checkout = datetime.now().date() + timedelta(days=35)
 
         search_request = HotelLocationSearch(
-            location_name=location_name,
+            location_id=location_name,
             start_date=checkin,
             end_date=checkout,
             daily_rates=True,

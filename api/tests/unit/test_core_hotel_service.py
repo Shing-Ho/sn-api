@@ -6,8 +6,7 @@ from unittest.mock import patch
 import pytest
 import requests_mock
 
-from api.common import cache_storage
-from api.common.models import RoomRate, RoomOccupancy
+from api.common.models import RoomOccupancy
 from api.hotel import core_hotel_service, hotel_service, converter, hotel_cache_service
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.adapters.stub.stub import StubHotelAdapter
@@ -22,7 +21,7 @@ from api.view.exceptions import AvailabilityException
 class TestCoreHotelService(SimplenightTestCase):
     def test_markups_applied_and_stored_in_cache(self):
         search_request = HotelLocationSearch(
-            location_name="SFO",
+            location_id="SFO",
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(2, 1),
@@ -45,7 +44,7 @@ class TestCoreHotelService(SimplenightTestCase):
         with requests_mock.Mocker() as mocker:
             mocker.post(HotelBedsTransport.get_hotels_url(), text=error_response)
             search_request = HotelLocationSearch(
-                location_name="SFO",
+                location_id="SFO",
                 start_date=date(2020, 1, 20),
                 end_date=date(2020, 1, 27),
                 occupancy=RoomOccupancy(2, 1),
@@ -116,7 +115,7 @@ class TestCoreHotelService(SimplenightTestCase):
 
     def test_min_nightly_rates_included_in_response(self):
         search_request = HotelLocationSearch(
-            location_name="SFO",
+            location_id="SFO",
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 22),
             occupancy=RoomOccupancy(2, 1),

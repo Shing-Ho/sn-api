@@ -15,7 +15,6 @@ from api.booking.booking_model import (
     Locator,
 )
 from api.common.models import RoomRate, RoomOccupancy, Money, RateType, Address
-from api.common.request_context import get_request_context
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_adapter import HotelAdapter
@@ -123,7 +122,6 @@ class PricelineAdapter(HotelAdapter):
 
     @staticmethod
     def _create_booking_params(customer: Customer, payment: Payment, rate_code: str):
-        request_context = get_request_context()
         payment_card_params = payment.payment_card_parameters
         expires_string = f"{int(payment_card_params.expiration_month):02d}{payment_card_params.expiration_year}"
         return {
@@ -151,9 +149,13 @@ class PricelineAdapter(HotelAdapter):
         }
 
     def _create_city_search(self, search: HotelLocationSearch):
+        priceline_location = self.get_provider_location(search)
+        priceline_location_code = priceline_location.provider_code
+
+        logger.info(f"Resolved Simplenight Location ID {search.location_id} to {priceline_location_code}")
         return {
             **self._create_base_search(search),
-            "city_id": search.location_name,
+            "city_id": priceline_location_code,
         }
 
     @staticmethod
@@ -317,6 +319,10 @@ class PricelineAdapter(HotelAdapter):
     @classmethod
     def factory(cls, test_mode=True):
         return PricelineAdapter(PricelineTransport(test_mode=test_mode))
+
+    @classmethod
+    def get_provider_name(cls):
+        return PricelineInfo.name
 
 
 class PricelineErrorCodes(Enum):

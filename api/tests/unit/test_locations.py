@@ -4,6 +4,7 @@ from django.test import TestCase
 
 from api.locations import location_service
 from api.locations.models import LocationType
+from api.models.models import CityMap
 from api.tests.integration import test_models
 
 
@@ -74,7 +75,7 @@ class TestLocationService(TestCase):
         self.assertEqual("jp", cities[0].language_code)
 
     def test_find_by_geoname_id(self):
-        cities = location_service.find_city_by_geoname_id(1)
+        cities = location_service.find_city_by_simplenight_id(1)
         self.assertEqual("1", cities.location_id)
         self.assertEqual("San Francisco", cities.location_name)
         self.assertEqual("CA", cities.province)
@@ -82,7 +83,7 @@ class TestLocationService(TestCase):
         self.assertEqual("en", cities.language_code)
 
     def test_find_by_geoname_id_alt_language(self):
-        cities = location_service.find_city_by_geoname_id(1, language_code="jp")
+        cities = location_service.find_city_by_simplenight_id(1, language_code="jp")
         self.assertEqual("1", cities.location_id)
         self.assertEqual("サンフランシスコ", cities.location_name)
         self.assertEqual("CA", cities.province)
@@ -115,3 +116,23 @@ class TestLocationService(TestCase):
         self.assertEqual(1, len(locations))
         self.assertEqual("San Francisco Intl", locations[0].location_name)
         self.assertEqual(LocationType.AIRPORT, locations[0].location_type)
+
+    def test_find_provider_city(self):
+        provider = test_models.create_provider("priceline")
+        provider.save()
+
+        test_models.create_provider_city(provider.name, code="10", name="San Francisco", province="CA", country="US")
+        test_models.create_provider_city(provider.name, code="20", name="Seattle", province="WA", country="US")
+        test_models.create_provider_city(provider.name, code="30", name="New York City", province="NY", country="US")
+
+        CityMap.objects.create(simplenight_city_id=1, provider=provider, provider_city_id=10)
+        CityMap.objects.create(simplenight_city_id=2, provider=provider, provider_city_id=20)
+
+        provider_city_sfo = location_service.find_provider_location(provider.name, 1)
+        self.assertEqual("San Francisco", provider_city_sfo.location_name)
+
+        provider_city_sea = location_service.find_provider_location(provider.name, 2)
+        self.assertEqual("Seattle", provider_city_sea.location_name)
+
+        self.assertIsNone(location_service.find_provider_location(provider.name, 3))
+

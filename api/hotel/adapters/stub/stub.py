@@ -272,3 +272,7 @@ class StubHotelAdapter(HotelAdapter):
     @classmethod
     def factory(cls, test_mode=True):
         return StubHotelAdapter()
+
+    @classmethod
+    def get_provider_name(cls):
+        return cls.PROVIDER_NAME

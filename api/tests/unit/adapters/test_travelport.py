@@ -30,7 +30,7 @@ class TestTravelport(unittest.TestCase):
 
     def _test_hotel_search_builder_from_search_request(self):
         search_request = HotelLocationSearch(
-            location_name="SFO",
+            location_id="SFO",
             start_date=date(2020, 12, 1),
             end_date=date(2020, 12, 7),
             occupancy=RoomOccupancy(adults=1),

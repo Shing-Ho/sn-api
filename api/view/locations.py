@@ -27,5 +27,5 @@ class LocationsViewSet(viewsets.ViewSet):
         lang_code = request.GET.get("lang_code", "en")
         geoname_id = request.GET.get("location_id")
 
-        locations = location_service.find_city_by_geoname_id(geoname_id, lang_code)
+        locations = location_service.find_city_by_simplenight_id(geoname_id, lang_code)
         return _response(locations)

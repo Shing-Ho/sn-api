@@ -9,6 +9,8 @@ from api.hotel.hotel_model import (
     AdapterHotel,
     HotelDetails,
 )
+from api.locations import location_service
+from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
 class HotelAdapter(abc.ABC):
@@ -41,3 +43,20 @@ class HotelAdapter(abc.ABC):
     @abc.abstractmethod
     def factory(cls, test_mode=True):
         pass
+
+    @classmethod
+    @abc.abstractmethod
+    def get_provider_name(self):
+        pass
+
+    def get_provider_location(self, search_request: HotelLocationSearch):
+        provider_location = location_service.find_provider_location(
+            self.get_provider_name(), search_request.location_id
+        )
+
+        if provider_location is None:
+            raise AvailabilityException(
+                detail="Could not find provider location mapping", code=AvailabilityErrorCode.LOCATION_NOT_FOUND
+            )
+
+        return provider_location

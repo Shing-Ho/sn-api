@@ -33,14 +33,14 @@ class CityMappingService:
 
     def find_unmapped_simplenight_cities(self):
         existing_mappings = CityMap.objects.filter(provider__name=self.provider_name).values_list(
-            "simplenight_city_id", flat=True
+            "simplenight_city", flat=True
         )
 
         return list(Geoname.objects.exclude(geoname_id__in=existing_mappings))
 
     def find_unmapped_provider_cities(self):
         existing_mappings = CityMap.objects.filter(provider__name=self.provider_name).values_list(
-            "provider_city_id", flat=True
+            "provider_city", flat=True
         )
 
         provider_mappings = ProviderCity.objects.filter(provider__name=self.provider_name)
@@ -56,7 +56,7 @@ class CityMappingService:
 
             closest_distance_match = self._nearby_matches(simplenight_city)
             if closest_distance_match:
-                logger.info(f"Nearby Match: {simplenight_city.location_name} = {closest_distance_match.location_name}")
+                logger.info(f"Nearby Match: {simplenight_city.location_id} = {closest_distance_match.location_name}")
                 self._create_match(simplenight_city, closest_distance_match)
                 continue
 

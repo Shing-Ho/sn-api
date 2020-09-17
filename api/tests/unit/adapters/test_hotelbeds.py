@@ -36,7 +36,7 @@ class TestHotelBeds(TestCase):
     def test_build_search_request(self):
         search_builder = HotelBedsSearchBuilder()
         location_search = HotelLocationSearch(
-            location_name="SFO",
+            location_id="SFO",
             start_date=date(2020, 1, 1),
             end_date=date(2020, 1, 7),
             occupancy=RoomOccupancy(adults=2, children=1),
@@ -61,7 +61,7 @@ class TestHotelBeds(TestCase):
         hotelbeds = HotelBeds()
 
         search = HotelLocationSearch(
-            location_name="FOO",
+            location_id="FOO",
             start_date=date(2020, 1, 1),
             end_date=date(2020, 1, 7),
             occupancy=RoomOccupancy(adults=1),
@@ -202,7 +202,7 @@ class TestHotelBeds(TestCase):
         self.assertIn(SimplenightAmenities.WASHER_DRYER, hotel_detail.amenities)
 
     def test_hotelbeds_recheck(self):
-        search_request = self.create_location_search(location_name="SFO")
+        search_request = self.create_location_search(location_id="SFO")
 
         avail_response = load_test_resource("hotelbeds/recheck/availability.json")
         details_response = load_test_resource("hotelbeds/recheck/details.json")
@@ -226,11 +226,11 @@ class TestHotelBeds(TestCase):
             self.assertEqual(Decimal("149.84"), recheck_response.total.amount)
 
     @staticmethod
-    def create_location_search(location_name="TVL"):
+    def create_location_search(location_id="TVL"):
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         search_request = HotelLocationSearch(
-            location_name=location_name,
+            location_id=location_id,
             start_date=checkin,
             end_date=checkout,
             daily_rates=True,

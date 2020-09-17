@@ -18,7 +18,7 @@ class TravelportHotelSearchBuilder:
     @staticmethod
     def build(search_request: HotelLocationSearch):
         builder = TravelportHotelSearchBuilder()
-        builder.hotel_location = search_request.location_name
+        builder.hotel_location = search_request.location_id
         builder.checkin = search_request.start_date
         builder.checkout = search_request.end_date
         builder.num_rooms = search_request.num_rooms

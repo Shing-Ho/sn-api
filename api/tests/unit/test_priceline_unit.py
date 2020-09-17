@@ -6,12 +6,26 @@ from api.common.models import RoomOccupancy, RateType
 from api.hotel.adapters.priceline.priceline import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch
+from api.models.models import CityMap
 from api.tests import test_objects
+from api.tests.integration import test_models
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
 
 
 class TestPricelineUnit(SimplenightTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        provider = test_models.create_provider("priceline")
+        provider.save()
+
+        test_models.create_geoname(1, "San Francisco", "CA", "US", population=100)
+        test_models.create_provider_city(
+            provider.name, code="800046992", name="San Francisco", province="CA", country="US"
+        )
+
+        CityMap.objects.create(simplenight_city_id=1, provider=provider, provider_city_id=800046992)
+
     def test_hotel_express_hotel_searcb(self):
         transport = PricelineTransport(test_mode=True)
         priceline = PricelineAdapter(transport)
@@ -49,12 +63,12 @@ class TestPricelineUnit(SimplenightTestCase):
         transport = PricelineTransport(test_mode=True)
         priceline = PricelineAdapter(transport)
 
-        location = "800046992"
+        location = "1"
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         occupancy = RoomOccupancy()
         search_request = HotelLocationSearch(
-            start_date=checkin, end_date=checkout, occupancy=occupancy, location_name=location
+            start_date=checkin, end_date=checkout, occupancy=occupancy, location_id=location
         )
 
         priceline_city_search_resource = load_test_resource("priceline/city_search_results.json")

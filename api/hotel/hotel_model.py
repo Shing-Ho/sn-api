@@ -62,7 +62,7 @@ class BaseHotelSearch(BaseSchema, RemoveNone):
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class HotelLocationSearch(BaseHotelSearch):
-    location_name: str = None
+    location_id: str = None
 
 
 @dataclasses.dataclass

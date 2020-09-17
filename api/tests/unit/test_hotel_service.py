@@ -22,7 +22,7 @@ class TestHotelService(TestCase):
 
     def test_search_by_location(self):
         search_request = HotelLocationSearch(
-            location_name="SFO",
+            location_id="SFO",
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(2, 1),

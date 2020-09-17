@@ -340,3 +340,8 @@ class HotelBeds(HotelAdapter):
     def factory(cls, test_mode=True):
         return HotelBeds(HotelBedsTransport())
 
+    @classmethod
+    def get_provider_name(cls):
+        return cls.PROVIDER_NAME
+
+

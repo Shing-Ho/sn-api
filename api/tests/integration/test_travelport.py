@@ -14,7 +14,7 @@ class TestTravelport(unittest.TestCase):
         checkin_date = datetime.now().date() + timedelta(days=30)
         checkout_date = datetime.now().date() + timedelta(days=37)
         search_request = HotelLocationSearch(
-            location_name="SFO",
+            location_id="SFO",
             start_date=checkin_date,
             end_date=checkout_date,
             occupancy=RoomOccupancy(adults=1, children=2),

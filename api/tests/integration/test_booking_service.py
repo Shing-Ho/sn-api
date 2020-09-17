@@ -127,7 +127,7 @@ class TestBookingService(SimplenightTestCase):
             start_date=checkin,
             end_date=checkout,
             occupancy=RoomOccupancy(adults=1),
-            location_name="SFO",
+            location_id="SFO",
             provider="hotelbeds",
         )
 
@@ -160,7 +160,7 @@ class TestBookingService(SimplenightTestCase):
             start_date=checkin,
             end_date=checkout,
             occupancy=RoomOccupancy(adults=1),
-            location_name="800046992",
+            location_id="5391959",
             provider="priceline",
         )
 
