@@ -73,11 +73,7 @@ class StubHotelAdapter(HotelAdapter):
         return self.search_by_id(search_request)
 
     def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
-        # TODO booking_service already replaced the room_code with the provider room code
-        # Here, we want to lookup the simplenight rate
-        # Get rid of this hack to lookup the simplenight ID
-
-        saved_provider_rate = hotel_cache_service.get_provider_rate_from_cache(book_request.room_code)
+        saved_provider_rate = hotel_cache_service.get_simplenight_rate(book_request.room_code)
 
         reservation = Reservation(
             locator=Locator(str(uuid.uuid4())),

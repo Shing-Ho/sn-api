@@ -73,7 +73,7 @@ class TestHotelsView(SimplenightAPITestCase):
 
         hotel = test_objects.hotel()
         room_rate = test_objects.room_rate(rate_key="rate_key", total="100.00")
-        hotel_cache_service.save_provider_rate_in_cache(room_rate.code, hotel, room_rate, room_rate)
+        hotel_cache_service.save_provider_rate_in_cache(hotel, room_rate, room_rate)
 
         response = self.post(endpoint=BOOKING, obj=booking_request)
 

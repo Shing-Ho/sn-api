@@ -52,7 +52,8 @@ class TestStubHotelAdapter(SimplenightTestCase):
         )
 
         traveler = Traveler(first_name="Jane", last_name="Smith", occupancy=RoomOccupancy(adults=1, children=0))
-        room_rate = test_objects.room_rate(rate_key="rate-key", base_rate="526.22", total="589.51", tax_rate="63.29")
+        provider_room_rate = test_objects.room_rate(rate_key="rate-key", base_rate="526.22", total="589.51", tax_rate="63.29")
+        simplenight_room_rate = test_objects.room_rate(rate_key="sn-rate-key", base_rate="526.22", total="589.51", tax_rate="63.29")
 
         payment_card_params = PaymentCardParameters(
             card_type=CardType.VI,
@@ -73,13 +74,13 @@ class TestStubHotelAdapter(SimplenightTestCase):
             language="en_US",
             customer=customer,
             traveler=traveler,
-            room_code=room_rate.code,
+            room_code=provider_room_rate.code,
             payment=payment,
         )
 
         adapter_hotel = test_objects.hotel()
         adapter_hotel.hotel_id = "HAUE1X"
-        hotel_cache_service.save_provider_rate_in_cache("rate-key", adapter_hotel, room_rate, room_rate)
+        hotel_cache_service.save_provider_rate_in_cache(adapter_hotel, provider_room_rate, simplenight_room_rate)
 
         stub_adapter = StubHotelAdapter()
         response = stub_adapter.booking(booking_request)

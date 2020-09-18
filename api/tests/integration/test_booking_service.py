@@ -1,5 +1,5 @@
 import decimal
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import pytest
@@ -8,18 +8,22 @@ from api.booking import booking_service
 from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod, SubmitErrorType
 from api.common import cache_storage
 from api.common.models import RoomOccupancy, RoomRate, RateType, Address
-from api.hotel import hotel_service
+from api.hotel import hotel_service, hotel_cache_service
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.hotel_model import HotelLocationSearch
 from api.models import models
-from api.models.models import Booking, BookingStatus, HotelBooking
-from api.tests import to_money, test_objects
+from api.models.models import Booking, BookingStatus, HotelBooking, CityMap
+from api.tests import test_objects
+from api.tests.integration import test_models
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.view.exceptions import PaymentException
 
 
 class TestBookingService(SimplenightTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_booking_request_validation(self):
         address = {
             "city": "San Francisco",
@@ -44,26 +48,12 @@ class TestBookingService(SimplenightTestCase):
             api_version=1,
             transaction_id="foo",
             hotel_id="ABC123",
-            checkin=date(2020, 1, 1),
-            checkout=date(2020, 1, 1),
             language="en_US",
             customer=Customer(
                 first_name="John", last_name="Doe", phone_number="5558675309", email="john@doe.foo", country="US"
             ),
             traveler=Traveler("John", "Doe", occupancy=RoomOccupancy(adults=1)),
-            room_rates=[
-                RoomRate(
-                    code="foo-rate-key",
-                    rate_plan_code="foo",
-                    room_type_code="bar",
-                    rate_type=RateType.BOOKABLE,
-                    total_base_rate=to_money("100.99"),
-                    total_tax_rate=to_money("20.00"),
-                    total=to_money("120.99"),
-                    daily_rates=[],
-                    maximum_allowed_occupancy=RoomOccupancy(),
-                )
-            ],
+            room_code="sn-foo",
             payment=Payment(
                 billing_address=Address(
                     city="San Francisco", province="CA", postal_code="94111", country="US", address1="One Market Street"
@@ -74,7 +64,13 @@ class TestBookingService(SimplenightTestCase):
             provider=StubHotelAdapter.PROVIDER_NAME,
         )
 
-        cache_storage.set("foo-rate-key", booking_request.room_rates[0])
+        room_rate = test_objects.room_rate("foo", "100.0", base_rate="80", tax_rate="20")
+        simplenight_rate = test_objects.room_rate("sn-foo", "120", base_rate="96", tax_rate="24")
+        hotel = test_objects.hotel()
+
+        hotel_cache_service.save_provider_rate_in_cache(
+            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
+        )
 
         with patch("api.payments.payment_service.authorize_payment"):
             response = booking_service.book(booking_request)
@@ -83,10 +79,10 @@ class TestBookingService(SimplenightTestCase):
         self.assertIsNotNone(response.transaction_id)
         self.assertTrue(response.status.success)
         self.assertEqual("Success", response.status.message)
-        self.assertEqual("ABC123", response.reservation.hotel_id)
+        self.assertEqual("100", response.reservation.hotel_id)
         self.assertIsNotNone(response.reservation.locator)
         self.assertEqual("2020-01-01", str(response.reservation.checkin))
-        self.assertEqual("2020-01-01", str(response.reservation.checkout))
+        self.assertEqual("2020-02-01", str(response.reservation.checkout))
         self.assertEqual("John", response.reservation.customer.first_name)
         self.assertEqual("Doe", response.reservation.customer.last_name)
         self.assertEqual("5558675309", response.reservation.customer.phone_number)
@@ -108,12 +104,21 @@ class TestBookingService(SimplenightTestCase):
         self.assertEqual("stub", hotel_bookings[0].provider_name)
         self.assertEqual("ABC123", hotel_bookings[0].hotel_code)
         self.assertIsNotNone("foo", hotel_bookings[0].record_locator)
-        self.assertEqual(decimal.Decimal("120.99"), hotel_bookings[0].total_price)
+        self.assertEqual(decimal.Decimal("120.00"), hotel_bookings[0].total_price)
         self.assertEqual("USD", hotel_bookings[0].currency)
 
     def test_stub_booking_with_invalid_payment(self):
         invalid_card_number_payment = test_objects.payment("4000000000000002")
-        booking_request = test_objects.booking_request(payment_obj=invalid_card_number_payment)
+        room_rate = test_objects.room_rate("foo", "100.0", base_rate="80", tax_rate="20")
+        simplenight_rate = test_objects.room_rate("sn-foo", "120", base_rate="96", tax_rate="24")
+        hotel = test_objects.hotel()
+        booking_request = test_objects.booking_request(
+            payment_obj=invalid_card_number_payment, rate_code=simplenight_rate.code
+        )
+
+        hotel_cache_service.save_provider_rate_in_cache(
+            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
+        )
 
         with pytest.raises(PaymentException) as e:
             booking_service.book(booking_request)
@@ -154,13 +159,23 @@ class TestBookingService(SimplenightTestCase):
         assert hotel_booking.total_price == room_to_book.total.amount
 
     def test_priceline_booking(self):
+        provider = test_models.create_provider(PricelineInfo.name)
+        provider.save()
+
+        test_models.create_geoname(1, "San Francisco", "CA", "US", population=100)
+        test_models.create_provider_city(
+            PricelineInfo.name, code="800046992", name="San Francisco", province="CA", country="US"
+        )
+
+        CityMap.objects.create(simplenight_city_id=1, provider=provider, provider_city_id=800046992)
+
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         search = HotelLocationSearch(
             start_date=checkin,
             end_date=checkout,
             occupancy=RoomOccupancy(adults=1),
-            location_id="5391959",
+            location_id="1",
             provider="priceline",
         )
 
@@ -170,7 +185,7 @@ class TestBookingService(SimplenightTestCase):
 
         hotel_to_book = availability_response[0]
         room_to_book = hotel_to_book.room_types[0]
-        booking_request = test_objects.booking_request(provider=PricelineInfo.name, rate_code=room_to_book)
+        booking_request = test_objects.booking_request(provider=PricelineInfo.name, rate_code=room_to_book.code)
         booking_response = booking_service.book(booking_request)
 
         print(booking_response)

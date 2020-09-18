@@ -1,4 +1,3 @@
-from concurrent.futures.thread import ThreadPoolExecutor
 from decimal import Decimal, ROUND_UP, getcontext
 from typing import List, Union, Tuple, Callable
 
@@ -55,15 +54,9 @@ def _search_all_adapters(search_request: BaseHotelSearch, adapter_fn: Callable):
     adapters = adapter_service.get_adapters(adapters_to_search)
 
     hotels = []
-    with ThreadPoolExecutor() as executor:
-        futures = []
-
-        for adapter in adapters:
-            adapter_fn_name = getattr(adapter, adapter_fn.__name__)
-            futures.append(executor.submit(adapter_fn_name, search_request))
-
-        for future in futures:
-            hotels.extend(future.result())
+    for adapter in adapters:
+        adapter_fn_name = getattr(adapter, adapter_fn.__name__)
+        hotels.extend(adapter_fn_name(search_request))
 
     return hotels
 
@@ -103,7 +96,7 @@ def _markup_room_rates(hotel: AdapterHotel):
     room_rates = []
     for provider_rate in hotel.room_rates:
         markup_rate = markups.markup_rate(provider_rate)
-        hotel_cache_service.save_provider_rate_in_cache(markup_rate.code, hotel, provider_rate, markup_rate)
+        hotel_cache_service.save_provider_rate_in_cache(hotel, provider_rate, markup_rate)
         room_rates.append(markup_rate)
 
     hotel.room_rates = room_rates

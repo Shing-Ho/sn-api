@@ -15,7 +15,7 @@ from common.exceptions import AppException
 
 
 def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
-    provider_rate_cache_payload = hotel_cache_service.get_provider_rate_from_cache(book_request.room_code)
+    provider_rate_cache_payload = hotel_cache_service.get_provider_rate(book_request.room_code)
     provider = provider_rate_cache_payload.provider
     simplenight_rate = provider_rate_cache_payload.simplenight_rate
     adapter = adapter_service.get_adapter(provider)
