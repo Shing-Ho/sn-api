@@ -20,7 +20,7 @@ def save_provider_rate_in_cache(hotel: AdapterHotel, room_rate: RoomRate, simple
     cache_storage.set(_get_cache_key(room_rate.code), simplenight_rate.code)  # To lookup SN rate with Provider rate
 
 
-def get_provider_rate(simplenight_rate_code: str) -> ProviderRoomDataCachePayload:
+def get_cached_room_data(simplenight_rate_code: str) -> ProviderRoomDataCachePayload:
     provider_rate = cache_storage.get(_get_cache_key(simplenight_rate_code))
     if not provider_rate:
         raise RuntimeError(f"Could not find Provider Rate for Rate Key {simplenight_rate_code}")
@@ -28,12 +28,12 @@ def get_provider_rate(simplenight_rate_code: str) -> ProviderRoomDataCachePayloa
     return provider_rate
 
 
-def get_simplenight_rate(provider_rate_code) -> str:
+def get_simplenight_rate(provider_rate_code) -> ProviderRoomDataCachePayload:
     simplenight_rate_id = cache_storage.get(_get_cache_key(provider_rate_code))
     if not simplenight_rate_id:
         raise RuntimeError("Could not find Simplenight Rate ID with Provider Rate ID: " + provider_rate_code)
 
-    return simplenight_rate_id
+    return get_cached_room_data(simplenight_rate_id)
 
 
 def _get_cache_key(key) -> str:

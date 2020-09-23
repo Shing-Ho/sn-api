@@ -33,7 +33,7 @@ class TestCoreHotelService(SimplenightTestCase):
         assert len(room_rates) > 10
 
         for room_rate in room_rates:
-            stored_provider_rate_payload = hotel_cache_service.get_provider_rate(room_rate.code)
+            stored_provider_rate_payload = hotel_cache_service.get_cached_room_data(room_rate.code)
             provider_rate = stored_provider_rate_payload.provider_rate
 
             assert provider_rate is not None

@@ -15,7 +15,7 @@ from common.exceptions import AppException
 
 
 def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
-    provider_rate_cache_payload = hotel_cache_service.get_provider_rate(book_request.room_code)
+    provider_rate_cache_payload = hotel_cache_service.get_cached_room_data(book_request.room_code)
     provider = provider_rate_cache_payload.provider
     simplenight_rate = provider_rate_cache_payload.simplenight_rate
     adapter = adapter_service.get_adapter(provider)
@@ -40,6 +40,7 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
     verified_rates = _price_verification(provider=provider, rate=provider_rate)
     book_request.room_code = verified_rates.code
     response = adapter.booking(book_request)
+    response.reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
 
     if not response or not response.reservation.locator:
         logger.error(f"Could not book request: {book_request}")
