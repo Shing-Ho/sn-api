@@ -241,6 +241,11 @@ class HotelBooking(models.Model):
     currency = models.CharField(max_length=3)
     provider_total = models.DecimalField(decimal_places=2, max_digits=8)
     provider_currency = models.CharField(max_length=3)
+    cancelable = models.BooleanField(default=False)
+    cancelable_hours = models.IntegerField(default=0)
+    refunable_amount = models.IntegerField(default=0)
+    checkindate = models.DateTimeField(blank=True,null=True)
+    checkoutdate = models.DateTimeField(blank=True,null=True)
 
 
 class supplier_hotels(models.Model):

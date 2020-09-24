@@ -114,30 +114,36 @@ def _persist_traveler(response):
 
     traveler.save()
     return traveler
-def _get_reservation_cancelable(transaction_id):
-    reservation = models.Booking(
-        transaction_id=transaction_id
+def _get_reservation_cancelable(hotel_booking_id):
+    reservation = models.HotelBooking(
+        hotel_booking_id=hotel_booking_id
     )
-    if reservation != None:
-        res =  reservation["cancel_policy"]
-    else:
-        res = None 
-
-    return res 
-
-
-
-def remove_booking(transaction_id):
-    res = _get_reservation_cancelable(transaction_id)
-    if res["cancel_policy"] == "Non-refunable":
-        return AppException("Booking is non-refundable")
-    else:
-        if res["refundable_deadline"] > datetime.datetime.now():
-            return AppException("Unfortunately booking cannot be canceled as it needed to be canceled by {}".format(res["refundable_deadline"]))
+    for res in reservation:
+        if res["cancelable"] == True:
+            cancelable = True 
+            if datetime.datetime.now() < (res["checkindate"]-datetime.timedelta(hours=res["cancelable_hours"])):
+                refunable_amount = (res["provider_total"]*res["refunable_amount"])/100
 
         else:
-            refunable_amount = ((res["refundable_amount"]/100)*res["room_rates"])*(res["checkout"]-res["checkin"]).days
-            return refunable_amount
+            cancelable = False 
+        
+
+    return cancelable
+
+
+
+
+# def remove_booking(transaction_id):
+#     res = _get_reservation_cancelable(transaction_id)
+#     if res["cancel_policy"] == "Non-refunable":
+#         return AppException("Booking is non-refundable")
+#     else:
+#         if res["refundable_deadline"] > datetime.datetime.now():
+#             return AppException("Unfortunately booking cannot be canceled as it needed to be canceled by {}".format(res["refundable_deadline"]))
+
+#         else:
+#             refunable_amount = ((res["refundable_amount"]/100)*res["room_rates"])*(res["checkout"]-res["checkin"]).days
+#             return refunable_amount
 
         
     
