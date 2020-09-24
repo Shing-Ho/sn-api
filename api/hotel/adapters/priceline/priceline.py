@@ -2,7 +2,7 @@ import uuid
 from datetime import date
 from decimal import Decimal
 from enum import Enum
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Union
 
 from api import logger
 from api.booking.booking_model import (
@@ -28,8 +28,9 @@ from api.hotel.hotel_model import (
     CancellationPolicy,
     CancellationSummary,
     GeoLocation,
-    BaseHotelSearch,
+    BaseHotelSearch, SimplenightAmenities,
 )
+from api.models.models import supplier_priceline
 from api.view.exceptions import AvailabilityException, BookingException
 
 
@@ -47,6 +48,8 @@ class PricelineAdapter(HotelAdapter):
         hotel_results = self._check_hotel_express_response_and_get_results(response)
 
         hotels = list(map(lambda result: self._create_hotel_from_response(search_request, result), hotel_results))
+        self._enrich_hotels(hotels)
+
         return hotels
 
     def search_by_id(self, search: HotelSpecificSearch) -> AdapterHotel:
@@ -157,6 +160,30 @@ class PricelineAdapter(HotelAdapter):
             **self._create_base_search(search),
             "city_id": priceline_location_code,
         }
+
+    def _enrich_hotels(self, hotels: Union[List[AdapterHotel], AdapterHotel]):
+        logger.info("Enrichment: Begin")
+        if isinstance(hotels, AdapterHotel):
+            hotels = [hotels]
+
+        hotel_codes = list(x.hotel_id for x in hotels)
+        logger.info(f"Enrichment: Looking up {len(hotel_codes)} hotels")
+        hotel_details_map = {x.hotelid_ppn: x for x in supplier_priceline.objects.filter(hotelid_ppn__in=hotel_codes)}
+        logger.info(f"Enrichment: Found {len(hotel_details_map)} stored hotels")
+
+        for hotel in hotels:
+            if hotel.hotel_id not in hotel_details_map:
+                continue
+
+            hotel_detail_model = hotel_details_map[hotel.hotel_id]
+            hotel.hotel_details.amenities = self._get_amenity_mappings(hotel_detail_model.hotel_amenities)
+            hotel.hotel_details.thumbnail_url = hotel_detail_model.image_url_path
+
+        logger.info("Enrichment: Complete")
+
+    @staticmethod
+    def _get_amenity_mappings(amenities: List[str]):
+        return list(map(SimplenightAmenities.from_value, amenities))
 
     @staticmethod
     def _create_base_search(search: BaseHotelSearch):
@@ -278,7 +305,7 @@ class PricelineAdapter(HotelAdapter):
             code=str(uuid.uuid4()),
             name="Non-Refundable",
             description="For the room type and rate that you've selected, you are not allowed to change or cancel "
-            "your reservation",
+                        "your reservation",
             amenities=[],
             cancellation_policy=CancellationPolicy(summary=CancellationSummary.NON_REFUNDABLE),
         )

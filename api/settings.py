@@ -9,10 +9,12 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-
+import logging
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import time
+
 import corsheaders.defaults
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -165,11 +167,24 @@ GEONAMES_CITIES_FILENAME = "cities15000.txt"
 GEONAMES_ALT_NAMES_BASE_URL = "https://download.geonames.org/export/dump/alternatenames/"
 GEONAMES_SUPPORTED_LANGUAGES = {"en", "es", "fr", "de", "ja", "zh", "ko", "th"}
 
+
+class UTCFormatter(logging.Formatter):
+    converter = time.gmtime
+
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "default"}},
     "root": {"handlers": ["console"], "level": "INFO"},
+    "formatters": {
+        "default": {
+            "()": UTCFormatter,
+            "format": "%(created)f %(asctime)s.%(msecs)03dZ "
+            "[%(filename)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(msg)s",
+            "datefmt": "%Y-%m-%dT%H:%M:%S",
+        },
+    },
 }
 
 CORS_ORIGIN_ALLOW_ALL = True

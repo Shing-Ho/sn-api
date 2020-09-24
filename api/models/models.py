@@ -154,6 +154,9 @@ class sn_images_map(models.Model):
 class supplier_priceline(models.Model):
     class Meta:
         app_label = "api"
+        indexes = [
+            models.Index(fields=["hotelid_ppn"]),
+        ]
 
     supplier = models.CharField(max_length=50, default="Priceline")
     supplier_id = models.CharField(max_length=100, blank=True, null=False)

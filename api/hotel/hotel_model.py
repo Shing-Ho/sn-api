@@ -44,6 +44,13 @@ class SimplenightAmenities(Enum):
     RESTAURANT = "Restaurant"
     SAUNA = "Sauna"
 
+    @classmethod
+    def from_value(cls, value):
+        if not hasattr(cls, "value_map"):
+            cls.value_map = {x.value: x for x in SimplenightAmenities}
+
+        return cls.value_map[value]
+
 
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
@@ -207,6 +214,7 @@ class HotelDetails(BaseSchema):
     checkout_time: Optional[str]
     photos: List[Image] = field(default_factory=list)
     amenities: Optional[List[SimplenightAmenities]] = field(default_factory=list)
+    thumbnail_url: str = None
     geolocation: Optional[GeoLocation] = None
     phone_number: Optional[str] = None
     email: Optional[str] = None
@@ -246,6 +254,7 @@ class SimplenightRoomType(BaseSchema):
     This differs from the models returned by adapters, and the models returned in the Google API
     In this model, room types, rate plans, and rates are combined into a simple list
     """
+
     class Meta:
         unknown = EXCLUDE
         ordered = True
@@ -295,6 +304,9 @@ class SimplenightHotel(BaseSchema):
     end_date: date
     hotel_details: Optional[HotelDetails]
     room_types: Optional[List[SimplenightRoomType]] = None
+    avg_nightly_rate: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
+    avg_nightly_base: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
+    avg_nightly_tax: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
     error: Optional[ErrorResponse] = None
 
 
