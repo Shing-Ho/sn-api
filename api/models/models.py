@@ -4,7 +4,8 @@ from enum import Enum
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
 
 class Geoname(models.Model):
     class Meta:
@@ -243,9 +244,11 @@ class HotelBooking(models.Model):
     provider_currency = models.CharField(max_length=3)
     cancelable = models.BooleanField(default=False)
     cancelable_hours = models.IntegerField(default=0)
-    refunable_amount = models.IntegerField(default=0)
+    refundable_amount = models.IntegerField(default=0)
     checkindate = models.DateTimeField(blank=True,null=True)
     checkoutdate = models.DateTimeField(blank=True,null=True)
+
+
 
 
 class supplier_hotels(models.Model):
@@ -266,3 +269,27 @@ class supplier_hotels(models.Model):
     longitude = models.FloatField(blank=True, null=True)
     state = models.CharField(max_length=2, default="X")
     provider_name = models.CharField(max_length=50, default="HotelBeds")
+
+
+class cancelationBookingPolicy(models.Model):
+    class Meta:
+        app_label = "api"
+    
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    refundable = models.BooleanField(default=False)
+    cancelable_hours = models.IntegerField(default=0,blank=True,null=True)
+    refundable_amount = models.IntegerField(default=0,blank=True,null=True)
+
+
+    @receiver(post_save, sender=HotelBooking)
+    def make_cancelation_policy(sender,instance,**kwargs):
+        
+        cancelationBookingPolicy.objects.update_or_create(
+            booking=instance,
+            refundabe=False,
+            cancelable_hours=0,
+            refundable_amount=0
+
+        )
+
+    post_save.connect(make_cancelation_policy,sender=HotelBooking)

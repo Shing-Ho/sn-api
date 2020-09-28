@@ -114,6 +114,12 @@ def _persist_traveler(response):
 
     traveler.save()
     return traveler
+
+
+##origanal booking amount
+# hook into message 
+## present cancelation message first then allow verification by 
+
 def _get_reservation_cancelable(hotel_booking_id):
     reservation = models.HotelBooking(
         hotel_booking_id=hotel_booking_id
@@ -123,12 +129,16 @@ def _get_reservation_cancelable(hotel_booking_id):
             cancelable = True 
             if datetime.datetime.now() < (res["checkindate"]-datetime.timedelta(hours=res["cancelable_hours"])):
                 refunable_amount = (res["provider_total"]*res["refunable_amount"])/100
+            else:
+                message = "This booking is past the deadline to be cancelled."
 
         else:
-            cancelable = False 
-        
+            message = "This is a non-refundable booking."
 
-    return cancelable
+        if cancelable == True:
+            message = "You may cancel this reservation and receive a refund amount of {}. Reservation must be cancelled by {}".format(refundable_amount,res["checkindate"]-datetime.timedelta(hours=res["cancelable_hours"]))
+
+    return message
 
 
 
