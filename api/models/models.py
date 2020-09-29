@@ -296,15 +296,15 @@ class cancelationBookingPolicy(models.Model):
     refundable_amount = models.IntegerField(default=0,blank=True,null=True)
 
 
-    @receiver(post_save, sender=HotelBooking)
-    def make_cancelation_policy(sender,instance,**kwargs):
-        
-        cancelationBookingPolicy.objects.update_or_create(
-            booking=instance,
-            refundabe=False,
-            cancelable_hours=0,
-            refundable_amount=0
-
-        )
-
-    post_save.connect(make_cancelation_policy,sender=HotelBooking)
+    # @receiver(post_save, sender=HotelBooking)
+    # def make_cancelation_policy(sender,instance,**kwargs):
+    #
+    #     cancelationBookingPolicy.objects.update_or_create(
+    #         booking=instance,
+    #         refundabe=False,
+    #         cancelable_hours=0,
+    #         refundable_amount=0
+    #
+    #     )
+    #
+    # post_save.connect(make_cancelation_policy,sender=HotelBooking)
