@@ -1,5 +1,7 @@
 import abc
 
+from api.models.models import Provider
+
 
 class AdapterInfo(abc.ABC):
     @abc.abstractmethod

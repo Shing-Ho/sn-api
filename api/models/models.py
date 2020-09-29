@@ -4,8 +4,9 @@ from enum import Enum
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 
 class Geoname(models.Model):
     class Meta:
@@ -249,6 +250,20 @@ class HotelBooking(models.Model):
     checkoutdate = models.DateTimeField(blank=True,null=True)
 
 
+class ProviderImages(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "provider_images"
+        indexes = [
+            models.Index(fields=["provider", "provider_code"]),
+        ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_code = models.TextField()
+    type = models.TextField()
+    display_order = models.IntegerField()
+    image_url = models.TextField()
 
 
 class supplier_hotels(models.Model):

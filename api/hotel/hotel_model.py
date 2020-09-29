@@ -136,6 +136,7 @@ class ImageType(Enum):
 class Image(BaseSchema):
     url: str
     type: ImageType
+    display_order: Optional[int] = None
 
 
 @dataclasses.dataclass
@@ -330,3 +331,4 @@ class ProviderRoomDataCachePayload:
     room_code: str
     provider_rate: RoomRate
     simplenight_rate: RoomRate
+

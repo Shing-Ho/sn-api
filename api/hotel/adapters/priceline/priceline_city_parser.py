@@ -10,7 +10,7 @@ class PricelineCityParser:
     CITY_FILE_PATH = "resources/priceline/cities.csv"
 
     def __init__(self):
-        self.provider = PricelineInfo.get_or_create_provider_id()
+        self.provider = PricelineInfo().get_or_create_provider_id()
 
     def parse(self):
         with open(self.CITY_FILE_PATH, "r") as f:

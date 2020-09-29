@@ -1,4 +1,5 @@
 import uuid
+from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 from enum import Enum
@@ -28,9 +29,9 @@ from api.hotel.hotel_model import (
     CancellationPolicy,
     CancellationSummary,
     GeoLocation,
-    BaseHotelSearch, SimplenightAmenities,
+    BaseHotelSearch, SimplenightAmenities, Image, ImageType,
 )
-from api.models.models import supplier_priceline
+from api.models.models import supplier_priceline, ProviderImages
 from api.view.exceptions import AvailabilityException, BookingException
 
 
@@ -39,6 +40,9 @@ class PricelineAdapter(HotelAdapter):
         self.transport = transport
         if self.transport is None:
             self.transport = PricelineTransport(test_mode=True)
+
+        self.adapter_info = PricelineInfo()
+        self.provider=self.adapter_info.get_or_create_provider_id()
 
     def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
         request = self._create_city_search(search_request)
@@ -79,7 +83,7 @@ class PricelineAdapter(HotelAdapter):
     def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
         params = self._create_booking_params(book_request.customer, book_request.payment, book_request.room_code)
         response = self.transport.express_book(**params)
-
+        print(response)
         if "getHotelExpress.Book" not in response:
             raise BookingException(PricelineErrorCodes.GENERIC_BOOKING_ERROR, response)
 
@@ -171,15 +175,32 @@ class PricelineAdapter(HotelAdapter):
         hotel_details_map = {x.hotelid_ppn: x for x in supplier_priceline.objects.filter(hotelid_ppn__in=hotel_codes)}
         logger.info(f"Enrichment: Found {len(hotel_details_map)} stored hotels")
 
+        logger.info(f"Enrichment: Looking up images for {len(hotel_codes)} hotels")
+        hotel_images = ProviderImages.objects.filter(provider=self.provider, provider_code__in=hotel_codes)
+        logger.info(f"Enrichment: Found {len(hotel_images)} stored images")
+
+        hotel_images_by_id = defaultdict(list)
+        for image in hotel_images:
+            hotel_images_by_id[image.provider_code].append(image)
+
         for hotel in hotels:
             if hotel.hotel_id not in hotel_details_map:
                 continue
 
             hotel_detail_model = hotel_details_map[hotel.hotel_id]
             hotel.hotel_details.amenities = self._get_amenity_mappings(hotel_detail_model.hotel_amenities)
+            hotel.hotel_details.photos = list(map(self._get_image, hotel_images_by_id.get(hotel.hotel_id) or []))
             hotel.hotel_details.thumbnail_url = hotel_detail_model.image_url_path
 
         logger.info("Enrichment: Complete")
+
+    @staticmethod
+    def _get_image(provider_image: ProviderImages):
+        return Image(
+            url=provider_image.image_url,
+            type=ImageType.UNKNOWN,
+            display_order=provider_image.display_order
+        )
 
     @staticmethod
     def _get_amenity_mappings(amenities: List[str]):
