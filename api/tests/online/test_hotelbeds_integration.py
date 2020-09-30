@@ -1,20 +1,22 @@
-import uuid
 from datetime import datetime, timedelta
 
-from django.test import TestCase
-
-from api.booking.booking_model import HotelBookingRequest, Customer, Traveler
+from api.booking import booking_service
+from api.common import cache_storage
 from api.common.models import RateType, RoomRate
+from api.hotel import hotel_service
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
 from api.hotel.hotel_model import (
     HotelLocationSearch,
     RoomOccupancy,
 )
-from api.tests import to_money
+from api.models.models import HotelBooking
+from api.tests import test_objects
+from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
-class TestHotelBedsIntegration(TestCase):
+class TestHotelBedsIntegration(SimplenightTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.hotelbeds = HotelBeds()
 
     def test_location_search(self):
@@ -42,42 +44,38 @@ class TestHotelBedsIntegration(TestCase):
         hotel_codes = ["123456", "654321"]
         self.hotelbeds.details(hotel_codes, "en_US")
 
-    def test_hotel_booking(self):
+    def test_hotelbeds_booking(self):
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
-        search_request = self.create_location_search(checkin=checkin, checkout=checkout)
-
-        response = self.hotelbeds.search_by_location(search_request)
-
-        room_rate_to_book = response[0].room_rates[0]
-
-        transaction_id = str(uuid.uuid4())[:8]
-        booking_request = HotelBookingRequest(
-            api_version=1,
-            transaction_id=transaction_id,
-            hotel_id="123",
-            checkin=checkin,
-            checkout=checkout,
-            language=search_request.language,
-            customer=Customer("John", "Smith", "5558675309", "john@smith.foo", "US"),
-            traveler=Traveler("John", "Smith", occupancy=search_request.occupancy),
-            room_rates=[
-                RoomRate(
-                    code=room_rate_to_book.code,
-                    rate_plan_code=room_rate_to_book.rate_plan_code,
-                    room_type_code=room_rate_to_book.room_type_code,
-                    rate_type=RateType.BOOKABLE,
-                    total_base_rate=to_money("0.0"),
-                    total_tax_rate=to_money("0.0"),
-                    total=to_money("0.0"),
-                    maximum_allowed_occupancy=room_rate_to_book.maximum_allowed_occupancy,
-                )
-            ],
-            payment=None,
+        search = HotelLocationSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=RoomOccupancy(adults=1),
+            location_id="SFO",
+            provider="hotelbeds",
         )
 
-        booking_response = self.hotelbeds.booking(booking_request)
-        self.assertIsNotNone(booking_response)
+        availability_response = hotel_service.search_by_location(search)
+
+        # Find first hotel with a bookable rate
+        room_to_book = None
+        for hotel in availability_response:
+            for room in hotel.room_types:
+                if room.rate_type == RateType.BOOKABLE:
+                    room_to_book = room
+                    break
+
+        self.assertIsNotNone(room_to_book)
+
+        booking_request = test_objects.booking_request(provider="hotelbeds", rate_code=room_to_book.code)
+        booking_response = booking_service.book(booking_request)
+
+        provider_rate: RoomRate = cache_storage.get(room_to_book.code)
+        assert booking_response.reservation.room_rates[0].code == provider_rate.code
+
+        hotel_booking = HotelBooking.objects.filter(record_locator=booking_response.reservation.locator.id).first()
+        assert hotel_booking.provider_total == provider_rate.total.amount
+        assert hotel_booking.total_price == room_to_book.total.amount
 
     def test_hotelbeds_facilities_types(self):
         response = self.hotelbeds.get_facilities_types()

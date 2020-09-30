@@ -5,4 +5,4 @@ from api.hotel.adapters.priceline.priceline_image_parser import PricelineImagePa
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        PricelineImageParser().parse_and_save(limit=5000)
+        PricelineImageParser().parse_and_save(pagination_limit=5000)

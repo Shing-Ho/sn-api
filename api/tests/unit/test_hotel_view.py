@@ -5,7 +5,7 @@ import requests_mock
 from api.common.models import RoomOccupancy
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_model import HotelLocationSearch, SimplenightHotel
-from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
+from api.tests.simplenight_api_testcase import SimplenightAPITestCase
 from api.tests.utils import load_test_resource
 
 BOOKING_ENDPOINT = "/api/v1/hotels/booking"

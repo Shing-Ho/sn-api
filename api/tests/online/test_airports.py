@@ -39,15 +39,15 @@ class TestAirports(TestCase):
 
         mapped_city = airport_mapping.map_airport(sfo_airport)
         self.assertIsNotNone(mapped_city)
-        self.assertEqual("San Francisco", mapped_city.location_id)
+        self.assertEqual("San Francisco", mapped_city.location_name)
 
         mapped_city = airport_mapping.map_airport(sea_airport)
         self.assertIsNotNone(mapped_city)
-        self.assertEqual("Seattle", mapped_city.location_id)
+        self.assertEqual("Seattle", mapped_city.location_name)
 
         mapped_city = airport_mapping.map_airport(jfk_airport)
         self.assertIsNotNone(mapped_city)
-        self.assertEqual("New York", mapped_city.location_id)
+        self.assertEqual("New York", mapped_city.location_name)
 
         # No mapping when multiple cities have same name in the country
         test_models.create_geoname(4, "San Francisco", "XX", "US")
@@ -65,4 +65,4 @@ class TestAirports(TestCase):
         sfo_airport = Airport(city_name="San Francisco", latitude=49.25, longitude=49.25, iso_country_code="US")
         mapped_city = airport_mapping.map_airport(sfo_airport)
 
-        self.assertEqual("Bar", mapped_city.location_id)
+        self.assertEqual("Bar", mapped_city.location_name)

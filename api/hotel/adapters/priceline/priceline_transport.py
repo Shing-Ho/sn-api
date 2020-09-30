@@ -16,7 +16,7 @@ class PricelineTransport(Transport):
         PHOTOS_DOWNLOAD = "/shared/getBOF2.Downloads.Hotel.Photos"
 
     CREDENTIALS = {
-        "refid": "10046",
+        "refid": "10047",
         "api_key": "990b98b0a0efaa7acf461ff6a60cf726",
     }
 

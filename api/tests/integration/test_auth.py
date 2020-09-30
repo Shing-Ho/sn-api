@@ -1,7 +1,7 @@
 from django.test import Client
 
 from api.auth.authentication import Organization, Feature
-from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
+from api.tests.simplenight_api_testcase import SimplenightAPITestCase
 
 ENDPOINT = "/api/v1/hotels/status"
 

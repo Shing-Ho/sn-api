@@ -28,10 +28,10 @@ class TestGeonamesCommand(TestCase):
         self.assertEqual(32, GeonameAlternateName.objects.count())
 
         location = Geoname.objects.get(geoname_id="5391959")
-        self.assertEqual("San Francisco", location.location_id)
+        self.assertEqual("San Francisco", location.location_name)
         self.assertEqual("CA", location.province)
         self.assertEqual("US", location.iso_country_code)
-        self.assertEqual("San Francisco", location.location_id)
+        self.assertEqual("San Francisco", location.location_name)
         self.assertEqual(decimal.Decimal("37.774930"), location.latitude)
         self.assertEqual(decimal.Decimal("-122.419420"), location.longitude)
         self.assertEqual(864816, location.population)

@@ -1,7 +1,5 @@
-from django.test import Client
-
 from api.tests.integration import test_models
-from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
+from api.tests.simplenight_api_testcase import SimplenightAPITestCase
 
 LOCATION_BY_PREFIX_ENDPOINT = "/api/v1/locations/prefix"
 LOCATION_BY_ID_ENDPOINT = "/api/v1/locations/id"
@@ -39,5 +37,5 @@ class TestLocationsView(SimplenightAPITestCase):
         location = response.json()
         self.assertEqual("Test One", location["location_name"])
         self.assertEqual("US", location["iso_country_code"])
-        self.assertEqual(1, location["location_id"])
+        self.assertEqual("1", location["location_id"])
         self.assertEqual("FOO", location["province"])

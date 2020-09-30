@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta
 
+from api.booking import booking_service
 from api.common.models import RoomOccupancy
+from api.hotel import hotel_service
 from api.hotel.adapters.priceline.priceline import PricelineAdapter
+from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch
 from api.models.models import CityMap
@@ -13,15 +16,15 @@ from api.tests.unit.simplenight_test_case import SimplenightTestCase
 class TestPricelineIntegration(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
-        provider = test_models.create_provider("priceline")
-        provider.save()
+        self.provider = test_models.create_provider("priceline")
+        self.provider.save()
 
         test_models.create_geoname(1, "San Francisco", "CA", "US", population=100)
         test_models.create_provider_city(
-            provider.name, code="800046992", name="San Francisco", province="CA", country="US"
+            self.provider.name, code="800046992", name="San Francisco", province="CA", country="US"
         )
 
-        CityMap.objects.create(simplenight_city_id=1, provider=provider, provider_city_id=800046992)
+        CityMap.objects.create(simplenight_city_id=1, provider=self.provider, provider_city_id=800046992)
 
     def test_transport_test_mode(self):
         transport = PricelineTransport(test_mode=True)
@@ -45,7 +48,8 @@ class TestPricelineIntegration(SimplenightTestCase):
         )
 
         results = priceline.search_by_location(search_request)
-        print(results)
+        self.assertIsNotNone(results)
+        self.assertTrue(len(results) > 1)
 
     def test_hotel_express_hotel_availability(self):
         transport = PricelineTransport(test_mode=True)
@@ -58,7 +62,9 @@ class TestPricelineIntegration(SimplenightTestCase):
         search = HotelSpecificSearch(start_date=checkin, end_date=checkout, occupancy=occupancy, hotel_id=hotel_id)
 
         results = priceline.search_by_id(search)
-        print(results)
+        self.assertIsNotNone(results)
+        self.assertEqual("700363264", results.hotel_id)
+        self.assertEqual("Best Western Plus Bayside Hotel", results.hotel_details.name)
 
     def test_recheck_room_rate(self):
         transport = PricelineTransport(test_mode=True)
@@ -74,7 +80,8 @@ class TestPricelineIntegration(SimplenightTestCase):
         self.assertTrue(len(results.room_rates) >= 1)
 
         verified_rate = priceline.recheck(results.room_rates[0])
-        print(verified_rate)
+        self.assertIsNotNone(verified_rate)
+        self.assertIsNotNone(verified_rate.code)
 
     def test_booking(self):
         transport = PricelineTransport(test_mode=True)
@@ -104,3 +111,25 @@ class TestPricelineIntegration(SimplenightTestCase):
 
         print(booking_response)
         self.assertIsNotNone(booking_response.reservation.locator)
+
+    def test_priceline_booking_service(self):
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=35)
+        search = HotelLocationSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=RoomOccupancy(adults=1),
+            location_id="1",
+            provider="priceline",
+        )
+
+        availability_response = hotel_service.search_by_location(search)
+        self.assertTrue(len(availability_response) >= 1)
+        self.assertTrue(len(availability_response[0].room_types) >= 1)
+
+        hotel_to_book = availability_response[0]
+        room_to_book = hotel_to_book.room_types[0]
+        booking_request = test_objects.booking_request(provider=PricelineInfo.name, rate_code=room_to_book.code)
+        booking_response = booking_service.book(booking_request)
+
+        print(booking_response)

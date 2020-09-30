@@ -14,7 +14,7 @@ from api.hotel.hotel_model import (
     SimplenightHotel,
 )
 from api.tests import test_objects
-from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
+from api.tests.simplenight_api_testcase import SimplenightAPITestCase
 from api.tests.utils import load_test_resource
 
 SEARCH_BY_ID = "/api/v1/hotels/search-by-id"
@@ -69,11 +69,16 @@ class TestHotelsView(SimplenightAPITestCase):
 
     def test_booking_invalid_payment(self):
         invalid_card_number_payment = test_objects.payment("4000000000000002")
-        booking_request = test_objects.booking_request(payment_obj=invalid_card_number_payment, provider="stub")
+        booking_request = test_objects.booking_request(
+            rate_code="simplenight_rate_key", payment_obj=invalid_card_number_payment, provider="stub"
+        )
 
         hotel = test_objects.hotel()
-        room_rate = test_objects.room_rate(rate_key="rate_key", total="100.00")
-        hotel_cache_service.save_provider_rate_in_cache(hotel, room_rate, room_rate)
+        provider_room_rate = test_objects.room_rate(rate_key="rate_key", total="100.00")
+        simplenight_room_rate = test_objects.room_rate(rate_key="simplenight_rate_key", total="120.00")
+        hotel_cache_service.save_provider_rate_in_cache(
+            hotel, room_rate=provider_room_rate, simplenight_rate=simplenight_room_rate
+        )
 
         response = self.post(endpoint=BOOKING, obj=booking_request)
 

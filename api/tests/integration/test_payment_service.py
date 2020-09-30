@@ -9,7 +9,7 @@ from api.models.models import PaymentTransaction
 from api.payments import payment_service
 from api.view.exceptions import PaymentException
 from api.tests import test_objects
-from api.tests.integration import test_stripe
+from api.tests.online import test_stripe
 
 
 class TestPaymentService(TestCase):

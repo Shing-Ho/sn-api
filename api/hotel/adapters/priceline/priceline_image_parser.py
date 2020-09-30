@@ -14,20 +14,20 @@ class PricelineImageParser:
         if self.transport is None:
             self.transport = PricelineTransport(test_mode=True)
 
-        self.persist_count = 0
-
-    def parse_and_save(self, limit=5):
+    def parse_and_save(self, pagination_limit=5, limit=None):
         ProviderImages.objects.all().delete()
 
-        initial_results = self._download_images(limit=limit)
-        self._bulk_save_provider_images(initial_results["photos"])
+        total_persisted = 0
+        initial_results = self._download_images(limit=pagination_limit)
+        total_persisted += self._bulk_save_provider_images(initial_results["photos"])
 
         resume_key = initial_results["resume_key"]
-        while resume_key is not None:
+        while resume_key and (limit is None or total_persisted < limit):
             try:
-                results = self._download_images(resume_key=resume_key, limit=limit)
+                results = self._download_images(resume_key=resume_key, limit=pagination_limit)
                 resume_key = results["resume_key"]
-                self._bulk_save_provider_images(results["photos"])
+                total_persisted += self._bulk_save_provider_images(results["photos"])
+                logger.info(f"Persisted {total_persisted} photos")
             except Exception:
                 logger.exception("Error downloading images")
 
@@ -39,8 +39,7 @@ class PricelineImageParser:
         models = list(map(self._create_provider_image_model, provider_images))
         ProviderImages.objects.bulk_create(models)
 
-        self.persist_count += len(models)
-        logger.info(f"Persisted {self.persist_count} photos")
+        return len(models)
 
     def _create_provider_image_model(self, result):
         return ProviderImages(

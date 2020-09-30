@@ -5,7 +5,7 @@ from api.common.context_middleware import RequestContextMiddleware
 from api.common.request_cache import RequestCacheMiddleware
 from api.hotel.adapters import adapter_service
 from api.tests import test_objects
-from api.tests.integration.simplenight_api_testcase import SimplenightAPITestCase
+from api.tests.simplenight_api_testcase import SimplenightAPITestCase
 
 
 class TestAdapterService(SimplenightAPITestCase):
