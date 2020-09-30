@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, date
 from typing import List
+from unittest.mock import patch
 
 import requests_mock
 
@@ -87,6 +88,27 @@ class TestHotelsView(SimplenightAPITestCase):
         self.assertIn("Your card was declined", response.json()["error"]["message"])
         self.assertEqual("PAYMENT_DECLINED", response.json()["error"]["type"])
         print(response.json())
+
+    def test_booking_unhandled_error(self):
+        invalid_card_number_payment = test_objects.payment("4242424242424242")
+        booking_request = test_objects.booking_request(
+            rate_code="simplenight_rate_key", payment_obj=invalid_card_number_payment, provider="stub"
+        )
+
+        hotel = test_objects.hotel()
+        provider_room_rate = test_objects.room_rate(rate_key="rate_key", total="100.00")
+        simplenight_room_rate = test_objects.room_rate(rate_key="simplenight_rate_key", total="120.00")
+        hotel_cache_service.save_provider_rate_in_cache(
+            hotel, room_rate=provider_room_rate, simplenight_rate=simplenight_room_rate
+        )
+
+        with patch("api.booking.booking_service.persist_reservation", side_effect=Exception("Boom")):
+            response = self.post(endpoint=BOOKING, obj=booking_request)
+
+        self.assertEqual(500, response.status_code)
+        self.assertIn("error", response.json())
+        self.assertIn("Boom", response.json()["error"]["message"])
+        self.assertEqual("UNHANDLED_ERROR", response.json()["error"]["type"])
 
     def test_availability_error_included_in_api_rest(self):
         error_response = load_test_resource("hotelbeds/error-response.json")

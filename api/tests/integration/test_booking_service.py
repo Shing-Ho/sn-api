@@ -1,21 +1,17 @@
 import decimal
-from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import pytest
+from stripe.error import CardError
 
 from api.booking import booking_service
 from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod, SubmitErrorType
-from api.common import cache_storage
-from api.common.models import RoomOccupancy, RoomRate, RateType, Address
-from api.hotel import hotel_service, hotel_cache_service
-from api.hotel.adapters.priceline.priceline_info import PricelineInfo
+from api.common.models import RoomOccupancy, Address
+from api.hotel import hotel_cache_service
 from api.hotel.adapters.stub.stub import StubHotelAdapter
-from api.hotel.hotel_model import HotelLocationSearch
 from api.models import models
-from api.models.models import Booking, BookingStatus, HotelBooking, CityMap
+from api.models.models import Booking, BookingStatus, PaymentTransaction
 from api.tests import test_objects
-from api.tests.integration import test_models
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.view.exceptions import PaymentException
 
@@ -112,6 +108,7 @@ class TestBookingService(SimplenightTestCase):
         room_rate = test_objects.room_rate("foo", "100.0", base_rate="80", tax_rate="20")
         simplenight_rate = test_objects.room_rate("sn-foo", "120", base_rate="96", tax_rate="24")
         hotel = test_objects.hotel()
+
         booking_request = test_objects.booking_request(
             payment_obj=invalid_card_number_payment, rate_code=simplenight_rate.code
         )
@@ -120,9 +117,26 @@ class TestBookingService(SimplenightTestCase):
             hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
         )
 
-        with pytest.raises(PaymentException) as e:
-            booking_service.book(booking_request)
+        with patch("stripe.Token.create") as stripe_token_mock:
+            stripe_token_mock.return_value = {"id": "pt_foo"}
+
+            with patch("stripe.Charge.create") as stripe_create_mock:
+                error = {"error": {"code": "card_declined"}}
+                stripe_create_mock.side_effect = CardError("card_declined", 1, 1, json_body=error)
+                with pytest.raises(PaymentException) as e:
+                    booking_service.book(booking_request)
 
         assert e.value.error_type == SubmitErrorType.PAYMENT_DECLINED
 
+    @staticmethod
+    def _get_payment_transaction():
+        transaction = PaymentTransaction()
+        transaction.provider_name = "stripe"
+        transaction.currency = "USD"
+        transaction.charge_id = "charge-id"
+        transaction.transaction_amount = 100.0
+        transaction.transaction_status = "success"
+        transaction.payment_token = "pt_foo"
+
+        return transaction
 

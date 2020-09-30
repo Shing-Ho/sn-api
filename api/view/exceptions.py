@@ -7,9 +7,12 @@ from common.exceptions import AppException
 
 class BookingErrorCode(Enum):
     PRICE_VERIFICATION = "PRICE_VERIFICATION"
+    UNHANDLED_ERROR = "UNHANDLED_ERROR"
+
 
 class AvailabilityErrorCode(Enum):
     LOCATION_NOT_FOUND = "LOCATION_NOT_FOUND"
+
 
 def handler(exc, context):
     # Call REST framework's default exception handler first,

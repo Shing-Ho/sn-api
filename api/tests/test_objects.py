@@ -111,6 +111,9 @@ def booking_request(payment_obj=None, rate_code=None, provider=None):
     if rate_code is None:
         rate_code = "rate_key"
 
+    if provider is None:
+        provider = "stub"
+
     return HotelBookingRequest(
         api_version=1,
         transaction_id=str(uuid.uuid4())[:8],

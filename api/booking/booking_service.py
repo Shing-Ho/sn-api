@@ -15,40 +15,43 @@ from common.exceptions import AppException
 
 
 def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
-    provider_rate_cache_payload = hotel_cache_service.get_cached_room_data(book_request.room_code)
-    provider = provider_rate_cache_payload.provider
-    simplenight_rate = provider_rate_cache_payload.simplenight_rate
-    adapter = adapter_service.get_adapter(provider)
+    try:
+        provider_rate_cache_payload = hotel_cache_service.get_cached_room_data(book_request.room_code)
+        provider = provider_rate_cache_payload.provider
+        simplenight_rate = provider_rate_cache_payload.simplenight_rate
+        adapter = adapter_service.get_adapter(provider)
 
-    total_payment_amount = simplenight_rate.total
-    auth_response = payment_service.authorize_payment(
-        amount=total_payment_amount,
-        payment=book_request.payment,
-        description=f"Simplenight Hotel Booking {book_request.hotel_id}",
-    )
+        total_payment_amount = simplenight_rate.total
+        auth_response = payment_service.authorize_payment(
+            amount=total_payment_amount,
+            payment=book_request.payment,
+            description=f"Simplenight Hotel Booking {book_request.hotel_id}",
+        )
 
-    if not auth_response:
-        logger.error(f"Could not authorize payment for booking: {book_request}")
-        raise AppException("Error authorizing payment")
+        if not auth_response:
+            logger.error(f"Could not authorize payment for booking: {book_request}")
+            raise AppException("Error authorizing payment")
 
-    # Save Simplenight Internal Room Rates
-    # Lookup Provider Rates in Cache
-    provider_rate = provider_rate_cache_payload.provider_rate
-    book_request.room_code = provider_rate.code
+        # Save Simplenight Internal Room Rates
+        # Lookup Provider Rates in Cache
+        provider_rate = provider_rate_cache_payload.provider_rate
+        book_request.room_code = provider_rate.code
 
-    # Reset room rates with verified rates.  If prices mismatch, error will raise
-    verified_rates = _price_verification(provider=provider, rate=provider_rate)
-    book_request.room_code = verified_rates.code
-    response = adapter.booking(book_request)
-    response.reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
+        # Reset room rates with verified rates.  If prices mismatch, error will raise
+        verified_rates = _price_verification(provider=provider, rate=provider_rate)
+        book_request.room_code = verified_rates.code
+        response = adapter.booking(book_request)
+        response.reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
 
-    if not response or not response.reservation.locator:
-        logger.error(f"Could not book request: {book_request}")
-        raise AppException("Error during booking")
+        if not response or not response.reservation.locator:
+            logger.error(f"Could not book request: {book_request}")
+            raise AppException("Error during booking")
 
-    persist_reservation(book_request, simplenight_rate, response)
+        persist_reservation(book_request, simplenight_rate, response)
 
-    return response
+        return response
+    except Exception as e:
+        raise BookingException(BookingErrorCode.UNHANDLED_ERROR, str(e))
 
 
 def _price_verification(provider: str, rate: Union[SimplenightRoomType, RoomRate]):
