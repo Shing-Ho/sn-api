@@ -186,6 +186,16 @@ class CancellationPolicy(BaseSchema):
 
 
 @dataclasses.dataclass
+class CancellationDetails:
+    cancellation_type: CancellationSummary
+    description: str
+    begin_date: Optional[date] = None
+    end_date: Optional[date] = None
+    penalty_amount: Optional[decimal.Decimal] = None
+    penalty_currency: Optional[str] = None
+
+
+@dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class RatePlan(BaseSchema):
     code: str

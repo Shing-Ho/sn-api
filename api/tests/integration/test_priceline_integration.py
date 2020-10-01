@@ -5,7 +5,7 @@ import requests_mock
 from api.common.models import RoomOccupancy, RateType
 from api.hotel.adapters.priceline.priceline import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
-from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch
+from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
 from api.models.models import CityMap
 from api.tests import test_objects
 from api.tests.integration import test_models
@@ -71,15 +71,19 @@ class TestPricelineUnit(SimplenightTestCase):
             start_date=checkin, end_date=checkout, occupancy=occupancy, location_id=location
         )
 
-        priceline_city_search_resource = load_test_resource("priceline/city_search_results.json")
+        resource_file = "priceline/priceline-hotel-express-city-cancellable-rates.json"
+        priceline_city_search_resource = load_test_resource(resource_file)
+
         endpoint = transport.endpoint(PricelineTransport.Endpoint.HOTEL_EXPRESS)
         with requests_mock.Mocker() as mocker:
             mocker.get(endpoint, text=priceline_city_search_resource)
             results = priceline.search_by_location(search_request)
 
-        self.assertEqual(2, len(results))
-        self.assertEqual("Club Wyndham Canterbury", results[0].hotel_details.name)
-        self.assertEqual("Best Western Plus Bayside Hotel", results[1].hotel_details.name)
+        self.assertEqual(10, len(results))
+        self.assertEqual("St. Regis San Francisco", results[0].hotel_details.name)
+        self.assertEqual("The Mosser Hotel", results[1].hotel_details.name)
+        self.assertEqual(CancellationSummary.NON_REFUNDABLE, results[0].rate_plans[0].cancellation_policy.summary)
+        self.assertEqual(CancellationSummary.FREE_CANCELLATION, results[1].rate_plans[0].cancellation_policy.summary)
 
     def test_priceline_booking(self):
         booking_request = test_objects.booking_request()

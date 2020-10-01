@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 import uuid
-from enum import Enum
+from enum import Enum, EnumMeta
+from typing import Tuple, List
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+
+from api.hotel.hotel_model import CancellationSummary
+
+
+def choices(cls: EnumMeta) -> List[Tuple]:
+    return [(x.value, x.value) for x in cls]
 
 
 class Geoname(models.Model):
@@ -243,11 +248,21 @@ class HotelBooking(models.Model):
     currency = models.CharField(max_length=3)
     provider_total = models.DecimalField(decimal_places=2, max_digits=8)
     provider_currency = models.CharField(max_length=3)
-    cancelable = models.BooleanField(default=False)
-    cancelable_hours = models.IntegerField(default=0)
-    refundable_amount = models.IntegerField(default=0)
-    checkindate = models.DateTimeField(blank=True,null=True)
-    checkoutdate = models.DateTimeField(blank=True,null=True)
+
+
+class HotelCancellationPolicy(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "api_hotel_cancellation_policy"
+
+    cancellation_policy_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    hotel_booking = models.ForeignKey(HotelBooking, on_delete=models.CASCADE)
+    cancellation_type = models.TextField(choices=choices(CancellationSummary))
+    description = models.TextField()
+    begin_date = models.DateField()
+    end_date = models.DateField()
+    penalty_amount = models.DecimalField(decimal_places=2, max_digits=8)
+    penalty_currency = models.CharField(max_length=3)
 
 
 class ProviderImages(models.Model):
@@ -284,27 +299,3 @@ class supplier_hotels(models.Model):
     longitude = models.FloatField(blank=True, null=True)
     state = models.CharField(max_length=2, default="X")
     provider_name = models.CharField(max_length=50, default="HotelBeds")
-
-
-class cancelationBookingPolicy(models.Model):
-    class Meta:
-        app_label = "api"
-    
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
-    refundable = models.BooleanField(default=False)
-    cancelable_hours = models.IntegerField(default=0,blank=True,null=True)
-    refundable_amount = models.IntegerField(default=0,blank=True,null=True)
-
-
-    # @receiver(post_save, sender=HotelBooking)
-    # def make_cancelation_policy(sender,instance,**kwargs):
-    #
-    #     cancelationBookingPolicy.objects.update_or_create(
-    #         booking=instance,
-    #         refundabe=False,
-    #         cancelable_hours=0,
-    #         refundable_amount=0
-    #
-    #     )
-    #
-    # post_save.connect(make_cancelation_policy,sender=HotelBooking)

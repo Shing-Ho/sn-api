@@ -1,9 +1,11 @@
-import uuid
+import distutils.util
 from collections import defaultdict
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from typing import List, Any, Dict, Union
+
+import pytz
 
 from api import logger
 from api.booking.booking_model import (
@@ -29,7 +31,7 @@ from api.hotel.hotel_model import (
     CancellationPolicy,
     CancellationSummary,
     GeoLocation,
-    BaseHotelSearch, SimplenightAmenities, Image, ImageType,
+    BaseHotelSearch, SimplenightAmenities, Image, ImageType, CancellationDetails,
 )
 from api.models.models import supplier_priceline, ProviderImages
 from api.view.exceptions import AvailabilityException, BookingException
@@ -42,13 +44,13 @@ class PricelineAdapter(HotelAdapter):
             self.transport = PricelineTransport(test_mode=True)
 
         self.adapter_info = PricelineInfo()
-        self.provider=self.adapter_info.get_or_create_provider_id()
+        self.provider = self.adapter_info.get_or_create_provider_id()
 
     def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
         request = self._create_city_search(search_request)
         logger.info(f"Initiating Priceline City Express Search: {request}")
 
-        response = self.transport.hotel_express(**request)
+        response = self.transport.hotel_express(limit=10, **request)
         hotel_results = self._check_hotel_express_response_and_get_results(response)
 
         hotels = list(map(lambda result: self._create_hotel_from_response(search_request, result), hotel_results))
@@ -73,7 +75,7 @@ class PricelineAdapter(HotelAdapter):
         response = self.transport.express_contract(**params)
 
         hotel_data = self._check_hotel_express_contract_response_and_get_results(response)[0]
-        rate_plans = self._create_rate_plans()
+        rate_plans = self._create_rate_plans(hotel_data)
         room_data = hotel_data["room_data"][0]
         rate_data = room_data["rate_data"][0]
         room_id = room_data["id"]
@@ -103,7 +105,7 @@ class PricelineAdapter(HotelAdapter):
         contract_room_data = contract_data["hotel_data"][0]["room_data"][0]
         contract_room_id = contract_room_data["id"]
         booked_rate_data = contract_room_data["rate_data"][0]
-        booked_rate_plan = self._create_rate_plans()[0]
+        booked_rate_plan = self._create_rate_plans(contract_data["hotel_data"][0])[0]
         booked_room_rate = self._create_room_rate(contract_room_id, booked_rate_data, booked_rate_plan)
 
         reservation = Reservation(
@@ -240,7 +242,7 @@ class PricelineAdapter(HotelAdapter):
 
     def _create_hotel_from_response(self, search, hotel_response):
         room_types = self._create_room_types(hotel_response)
-        rate_plans = self._create_rate_plans()
+        rate_plans = self._create_rate_plans(hotel_response)
         room_rates = self._create_room_rates(hotel_response, rate_plans)
         hotel_details = self._create_hotel_details(hotel_response)
 
@@ -314,25 +316,88 @@ class PricelineAdapter(HotelAdapter):
 
         return room_rates
 
-    @staticmethod
-    def _create_rate_plans():
+    def _create_rate_plans(self, hotel_response):
         """
         Currently, we only support cancellable/non-cancellable rate plans.
         Priceline rooms are all non-cancellable.  So we return one rate plan.
         """
 
         rate_plans = []
-        rate_plan = RatePlan(
-            code=str(uuid.uuid4()),
-            name="Non-Refundable",
-            description="For the room type and rate that you've selected, you are not allowed to change or cancel "
-                        "your reservation",
-            amenities=[],
-            cancellation_policy=CancellationPolicy(summary=CancellationSummary.NON_REFUNDABLE),
-        )
+        for room in hotel_response["room_data"]:
+            for rate in room["rate_data"]:
+                cancellation_details = self._parse_cancellation_details(rate)
+                most_lenient_cancellation_policy = self._cancellation_summary_from_details(cancellation_details)
 
-        rate_plans.append(rate_plan)
+                rate_plan = RatePlan(
+                    code=rate["rate_plan_code"],
+                    name=rate["title"],
+                    description=rate["description"],
+                    amenities=[],
+                    cancellation_policy=most_lenient_cancellation_policy,
+                )
+                rate_plans.append(rate_plan)
+
         return rate_plans
+
+    @staticmethod
+    def _parse_cancellation_details(rate) -> List[CancellationDetails]:
+        """Parses Detailed Cancellation Data.  This is used when storing a booking,
+        but only a summary of this data is returned on availability
+        """
+
+        total_rate = rate["price_details"]["display_total"]
+        is_cancellable = distutils.util.strtobool(rate["is_cancellable"])
+        if not is_cancellable:
+            logger.debug(f"Found non-refundable rate for rate plan {rate['rate_plan_code']}")
+            return [CancellationDetails(
+                cancellation_type=CancellationSummary.NON_REFUNDABLE,
+                description="",
+            )]
+
+        cancellation_detail_lst = []
+        for cancellation_detail_response in rate["cancellation_details"]:
+            total_penalty = cancellation_detail_response["display_total_charges"]
+            penalty_currency = cancellation_detail_response["display_currency"]
+            description = cancellation_detail_response["description"]
+            begin_date = datetime.fromisoformat(cancellation_detail_response["date_after"])
+            end_date = datetime.fromisoformat(cancellation_detail_response["date_before"])
+
+            cancellation_type = CancellationSummary.NON_REFUNDABLE
+            current_time = datetime.now(tz=pytz.timezone("US/Pacific"))
+
+            if total_penalty == 0 and current_time < end_date:
+                cancellation_type = CancellationSummary.FREE_CANCELLATION
+            elif total_penalty < total_rate and current_time < end_date:
+                cancellation_type = CancellationSummary.PARTIAL_REFUND
+
+            cancellation_detail = CancellationDetails(
+                cancellation_type=cancellation_type,
+                description=description,
+                begin_date=begin_date,
+                end_date=end_date,
+                penalty_amount=total_penalty,
+                penalty_currency=penalty_currency
+            )
+
+            cancellation_detail_lst.append(cancellation_detail)
+
+        return cancellation_detail_lst
+
+    @staticmethod
+    def _cancellation_summary_from_details(cancellation_details: List[CancellationDetails]) -> CancellationPolicy:
+        sort_order = {
+            CancellationSummary.FREE_CANCELLATION: 0,
+            CancellationSummary.PARTIAL_REFUND: 1,
+            CancellationSummary.NON_REFUNDABLE: 2,
+        }
+
+        most_lenient_policy = sorted(cancellation_details, key=lambda x: sort_order.get(x.cancellation_type))[0]
+
+        return CancellationPolicy(
+            summary=most_lenient_policy.cancellation_type,
+            cancellation_deadline=most_lenient_policy.end_date,
+            unstructured_policy=most_lenient_policy.description
+        )
 
     @staticmethod
     def _create_room_types(hotel_response):
