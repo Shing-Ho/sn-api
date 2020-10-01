@@ -50,6 +50,7 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
         persist_reservation(book_request, simplenight_rate, response)
 
         return response
+
     except Exception as e:
         raise BookingException(BookingErrorCode.UNHANDLED_ERROR, str(e))
 
@@ -92,6 +93,23 @@ def _persist_hotel(book_request, room_rate, booking, response):
     )
 
     hotel_booking.save()
+
+    cancellation_details = response.reservation.cancellation_details
+    cancellation_policy_models = []
+    for cancellation_policy in cancellation_details:
+        cancellation_policy_models.append(models.HotelCancellationPolicy(
+            hotel_booking=hotel_booking,
+            cancellation_type=cancellation_policy.cancellation_type.value,
+            description=cancellation_policy.description,
+            begin_date=cancellation_policy.begin_date,
+            end_date=cancellation_policy.end_date,
+            penalty_amount=cancellation_policy.penalty_amount,
+            penalty_currency=cancellation_policy.penalty_currency
+        ))
+
+    if len(cancellation_policy_models) > 0:
+        logger.info(f"Persisting cancellation policies for booking: {hotel_booking.hotel_booking_id}")
+        models.HotelCancellationPolicy.objects.bulk_create(cancellation_policy_models)
 
 
 def _persist_booking_record(response, traveler):

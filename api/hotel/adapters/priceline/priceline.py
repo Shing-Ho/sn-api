@@ -85,7 +85,7 @@ class PricelineAdapter(HotelAdapter):
     def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
         params = self._create_booking_params(book_request.customer, book_request.payment, book_request.room_code)
         response = self.transport.express_book(**params)
-        print(response)
+
         if "getHotelExpress.Book" not in response:
             raise BookingException(PricelineErrorCodes.GENERIC_BOOKING_ERROR, response)
 
@@ -108,6 +108,8 @@ class PricelineAdapter(HotelAdapter):
         booked_rate_plan = self._create_rate_plans(contract_data["hotel_data"][0])[0]
         booked_room_rate = self._create_room_rate(contract_room_id, booked_rate_data, booked_rate_plan)
 
+        cancellation_details = self._parse_cancellation_details(booked_rate_data)
+
         reservation = Reservation(
             locator=Locator(id=booking_locator),
             hotel_locator=hotel_locators,
@@ -117,6 +119,7 @@ class PricelineAdapter(HotelAdapter):
             customer=book_request.customer,
             traveler=book_request.traveler,
             room_rate=booked_room_rate,
+            cancellation_details=cancellation_details,
         )
 
         return HotelBookingResponse(

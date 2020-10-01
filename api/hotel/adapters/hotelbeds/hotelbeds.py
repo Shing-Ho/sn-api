@@ -195,6 +195,7 @@ class HotelBeds(HotelAdapter):
             customer=book_request.customer,
             traveler=book_request.traveler,
             room_rate=None,
+            cancellation_details=[],
         )
 
         return HotelBookingResponse(

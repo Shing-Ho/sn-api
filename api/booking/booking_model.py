@@ -7,6 +7,7 @@ import marshmallow_dataclass
 from marshmallow import validates_schema
 
 from api.common.models import BaseSchema, RoomOccupancy, Address, RoomRate, RemoveNone
+from api.hotel.hotel_model import CancellationDetails
 
 
 class SubmitErrorType(Enum):
@@ -145,6 +146,7 @@ class Reservation(BaseSchema):
     customer: Customer
     traveler: Traveler
     room_rate: RoomRate
+    cancellation_details: List[CancellationDetails] = dataclasses.field(default_factory=list)
 
 
 @dataclasses.dataclass
