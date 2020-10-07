@@ -265,6 +265,20 @@ class HotelCancellationPolicy(models.Model):
     penalty_currency = models.CharField(max_length=3)
 
 
+class ProviderMapping(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "provider_mappings"
+        indexes = [
+            models.Index(fields=["provider", "provider_code"]),
+        ]
+
+    provider_mapping_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    giata_code = models.TextField()
+    provider_code = models.TextField()
+
+
 class ProviderImages(models.Model):
     class Meta:
         app_label = "api"
@@ -281,21 +295,24 @@ class ProviderImages(models.Model):
     image_url = models.TextField()
 
 
-class supplier_hotels(models.Model):
+class ProviderHotel(models.Model):
     class Meta:
         app_label = "api"
+        db_table = "provider_hotel"
+        indexes = [
+            models.Index(fields=["provider", "provider_code"]),
+        ]
 
-    provider_id = models.IntegerField()
-    hotel_codes = models.IntegerField(default=1)
-    hotel_name = models.CharField(max_length=50)
-    rating = models.FloatField(blank=True)
-    chain_name = models.CharField(max_length=50)
-    country_name = models.CharField(max_length=50)
-    destination_name = models.CharField(max_length=50)
-    address = models.CharField(max_length=75)
+    provider_hotel_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_code = models.TextField()
+    language_code = models.CharField(max_length=2, default="en")
+    hotel_name = models.TextField()
+    city_name = models.TextField(null=True)
+    state = models.TextField(null=True)
+    country_code = models.CharField(max_length=2, null=True)
+    address_line_1 = models.TextField(null=True)
+    address_line_2 = models.TextField(null=True)
     postal_code = models.CharField(max_length=10, null=True)
-    city = models.CharField(max_length=50)
     latitude = models.FloatField(blank=True, null=True)
     longitude = models.FloatField(blank=True, null=True)
-    state = models.CharField(max_length=2, default="X")
-    provider_name = models.CharField(max_length=50, default="HotelBeds")
