@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from .common.models import Address, HotelRate
 from .hotel.hotel_model import HotelAdapterHotel
-from .models.models import Geoname, supplier_hotels, hotel_listing
+from .models.models import hotel_listing
 
 
 class HotelListingSerializer(serializers.ModelSerializer):
@@ -11,13 +11,6 @@ class HotelListingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = hotel_listing
-        fields = "__all__"
-
-
-class mappingcodesSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = supplier_hotels
         fields = "__all__"
 
 

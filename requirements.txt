@@ -17,3 +17,5 @@ haversine
 pandas
 rauth
 django-redis
+aiohttp
+cryptography
