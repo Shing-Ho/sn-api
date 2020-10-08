@@ -64,8 +64,10 @@ class PricelineAdapter(HotelAdapter):
 
         response = self.transport.hotel_express(**request)
         hotel_results = self._check_hotel_express_response_and_get_results(response)
+        hotel = self._create_hotel_from_response(search, hotel_results[0])
+        self._enrich_hotels(hotel)
 
-        return self._create_hotel_from_response(search, hotel_results[0])
+        return hotel
 
     def details(self, *args) -> HotelDetails:
         pass
