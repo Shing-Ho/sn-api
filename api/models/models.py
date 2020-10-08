@@ -227,6 +227,7 @@ class ProviderMapping(models.Model):
         db_table = "provider_mappings"
         indexes = [
             models.Index(fields=["provider", "provider_code"]),
+            models.Index(fields=["provider", "giata_code"]),
         ]
 
     provider_mapping_id = models.UUIDField(primary_key=True, default=uuid.uuid4)

@@ -50,7 +50,7 @@ class PricelineAdapter(HotelAdapter):
         request = self._create_city_search(search_request)
         logger.info(f"Initiating Priceline City Express Search: {request}")
 
-        response = self.transport.hotel_express(limit=10, **request)
+        response = self.transport.hotel_express(limit=50, **request)
         hotel_results = self._check_hotel_express_response_and_get_results(response)
 
         hotels = list(map(lambda result: self._create_hotel_from_response(search_request, result), hotel_results))

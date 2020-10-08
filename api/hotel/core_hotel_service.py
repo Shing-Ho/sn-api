@@ -1,6 +1,8 @@
 from decimal import Decimal, ROUND_UP, getcontext
+from decimal import Decimal, ROUND_UP, getcontext
 from typing import List, Union, Tuple, Callable
 
+from api import logger
 from api.booking.booking_model import HotelBookingRequest
 from api.common.models import RoomRate
 from api.hotel import markups, hotel_cache_service
@@ -14,7 +16,10 @@ from api.hotel.hotel_model import (
     HotelDetailsSearchRequest,
     Hotel,
     BaseHotelSearch,
+    Image,
+    ImageType,
 )
+from api.models.models import ProviderImages, ProviderMapping
 from api.view.exceptions import SimplenightApiException
 
 
@@ -75,6 +80,7 @@ def _process_hotels(adapter_hotels: Union[List[AdapterHotel], AdapterHotel]) -> 
 
 def __process_hotels(adapter_hotel: AdapterHotel) -> Hotel:
     _markup_room_rates(adapter_hotel)
+    _enrich_hotels(adapter_hotel)
     average_nightly_base, average_nightly_tax, average_nightly_rate = _calculate_hotel_min_nightly_rates(adapter_hotel)
 
     return Hotel(
@@ -90,6 +96,54 @@ def __process_hotels(adapter_hotel: AdapterHotel) -> Hotel:
         average_nightly_base=average_nightly_base,
         average_nightly_tax=average_nightly_tax,
     )
+
+
+def _enrich_hotels(adapter_hotel: AdapterHotel):
+    provider_name = adapter_hotel.provider
+    provider_code = adapter_hotel.hotel_id
+    try:
+        provider_mapping = _get_provider_mapping(provider_name, provider_code=provider_code)
+        _enrich_images(adapter_hotel, provider_mapping)
+    except Exception:
+        logger.exception("Error while enriching hotel")
+
+
+def _enrich_images(adapter_hotel: AdapterHotel, provider_mapping: ProviderMapping):
+    if not provider_mapping:
+        return
+
+    iceportal_images = _get_iceportal_images_from_provider_code(provider_mapping)
+    if iceportal_images:
+        adapter_hotel.hotel_details.photos = list(map(_convert_image, iceportal_images))
+
+
+def _get_iceportal_images_from_provider_code(provider_mapping: ProviderMapping):
+    iceportal_mapping = _get_provider_mapping("iceportal", giata_code=provider_mapping.giata_code)
+
+    if not iceportal_mapping:
+        return []
+
+    images = ProviderImages.objects.filter(provider__name="iceportal", provider_code=iceportal_mapping.provider_code)
+    return images
+
+
+def _get_provider_mapping(provider_name, provider_code=None, giata_code=None):
+    try:
+        if giata_code:
+            provider_mapping = ProviderMapping.objects.get(provider__name=provider_name, giata_code=giata_code)
+        elif provider_code:
+            provider_mapping = ProviderMapping.objects.get(provider__name=provider_name, provider_code=provider_code)
+        else:
+            raise ValueError("Must provide provider_code or giata_code")
+
+        logger.info(f"Found provider mapping: {provider_mapping}")
+        return provider_mapping
+    except ProviderMapping.DoesNotExist:
+        logger.info(f"Could not find mapping info for provider hotel: {provider_name}/{provider_code}")
+
+
+def _convert_image(provider_image: ProviderImages):
+    return Image(url=provider_image.image_url, type=ImageType.UNKNOWN, display_order=provider_image.display_order)
 
 
 def _markup_room_rates(hotel: AdapterHotel):
