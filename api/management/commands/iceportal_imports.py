@@ -1,49 +1,56 @@
 #!/usr/bin/env python
 import warnings
+
+from django.core.management.base import BaseCommand
 from requests import Session
 from requests.auth import HTTPBasicAuth
 from zeep import Client, Transport
-from django.core.management.base import BaseCommand
-from zeep import helpers
-from api.models.models import sn_images_map
-import pandas as pd
+
+from api import logger
+from api.hotel.hotel_model import ImageType
+from api.models.models import ProviderImages, Provider
 
 
 class Command(BaseCommand):
+    def __init__(self):
+        super().__init__()
+        self.transport = IcePortalTransport()
+        self.provider = Provider.objects.get_or_create(name="iceportal")[0]
 
     def handle(self, *args, **options):
+        properties = self.transport.get_service().GetProperties(_soapheaders=self.transport.get_auth_header())
 
-        main_data = pd.read_csv(r"C:\Users\tony\Downloads\with_iceportal.csv")
-        main_data = main_data[main_data["provider"] == "IcePortal"]
-        print(len(main_data))
-        transport = IcePortalTransport()
-        service = transport.get_service()
-        sn_images_map.objects.all().delete()
-
-        for x in range(0, len(main_data)):
-
-            IceId = "ICE" + str(main_data.iloc[x]["hotelid"])
-            data = service.GetVisualsV2(
-                _soapheaders=transport.get_auth_header(), MappedID=IceId)
-            data_as_dict = helpers.serialize_object(data)
+        for iceportal_property in properties["info"]["PropertyIDInfo"]:
+            mapped_id = iceportal_property["mappedID"]
+            logger.info("Parsing images for IcePortal ID: " + mapped_id)
             try:
-                for item in data_as_dict['Property']['MediaGallery']['Pictures']['ImagesV2']['PropertyImageVisualsV2']:
+                self._parse_and_save_images(mapped_id)
+            except Exception:
+                logger.exception("Error while loading hotel")
 
-                    try:
-                        sn_images_map.objects.update_or_create(
-                            simplenight_id=main_data.iloc[x]["sn_id"],
+    def _parse_and_save_images(self, iceportal_id):
+        visuals = self.transport.get_service().GetVisualsV2(
+            _soapheaders=self.transport.get_auth_header(), MappedID=iceportal_id
+        )
 
-                            image_type=item["Tags"],
-                            image_url_path=item["mediaGalleryUrl"],
-                            image_provider_id="Ice Portal"
-                        )
+        iceportal_id = visuals["Property"]["PropertyInfo"]["iceID"]
+        images = visuals["Property"]["MediaGallery"]["Pictures"]["ImagesV2"]["PropertyImageVisualsV2"]
 
-                        print(item.keys())
-                        print(item["mediaGalleryUrl"])
-                    except:
-                        pass
-            except:
-                pass
+        provider_image_models = []
+        for image in images:
+            display_order = image["ordinal"]
+            fullsize_url = image["DirectLinks"]["Url"]
+            provider_image_models.append(
+                ProviderImages(
+                    provider=self.provider,
+                    provider_code=iceportal_id,
+                    display_order=display_order,
+                    type=ImageType.UNKNOWN.value,
+                    image_url=fullsize_url,
+                )
+            )
+
+        ProviderImages.objects.bulk_create(provider_image_models)
 
 
 class IcePortalTransport:
@@ -64,8 +71,7 @@ class IcePortalTransport:
 
     def _create_wsdl_session(self):
         session = Session()
-        session.auth = HTTPBasicAuth(
-            self._get_username(), self._get_password())
+        session.auth = HTTPBasicAuth(self._get_username(), self._get_password())
         return session
 
     def _get_wsdl_client(self):
@@ -89,29 +95,3 @@ class IcePortalTransport:
     @staticmethod
     def _get_url():
         return "http://services.iceportal.com/Service.asmx"
-
-
-# # transport = IcePortalTransport()
-# # service = transport.get_service()
-# # data = (service.GetVisualsV2(
-# #     _soapheaders=transport.get_auth_header(), MappedID=883))
-# # data_as_dict = helpers.serialize_object(data)
-# # for x in (data_as_dict['Property']['MediaGallery']['HD360s'].keys()):
-# #     print(x)
-# #     print(data_as_dict['Property']['MediaGallery']['HD360s'][x])
-# # # 20200
-# # transport = IcePortalTransport()
-# # service = transport.get_service()
-# # print(supplier_hotels.objects.filter(provider_name="Ice Portal").count())
-# # for x in supplier_hotels.objects.filter(provider_name="Ice Portal"):
-# #     IceId = "ICE" + str(x.provider_id)
-# #     print(IceId)
-# #     data = service.GetVisualsV2(
-# #         _soapheaders=transport.get_auth_header(), MappedID=IceId)
-# #     data_as_dict = helpers.serialize_object(data)
-
-# #     for item in data_as_dict['Property']['MediaGallery']['Pictures']['ImagesV2']['PropertyImageVisualsV2']:
-# #         try:
-# #             print(item["mediaGalleryUrl"])
-# #         except:
-# #             pass

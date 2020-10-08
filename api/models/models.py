@@ -69,29 +69,6 @@ class Airport(models.Model):
     )
 
 
-class hotel_listing(models.Model):
-    class Meta:
-        app_label = "api"
-
-    provider = models.TextField(null=True, blank=True)
-    hotelid = models.TextField(null=True, blank=True)
-    address = models.TextField(null=True, blank=True)
-    hotelname = models.TextField(null=True, blank=True)
-    zipcode = models.TextField(null=True, blank=True)
-    stars = models.FloatField(null=True, blank=True)
-    countrycode = models.TextField(null=True, blank=True)
-    city = models.TextField(null=True, blank=True)
-    simplenight_id = models.IntegerField(null=True)
-
-    def image(self):
-        if sn_images_map.objects.filter(simplenight_id=self.simplenight_id).count() == 0:
-            image = None
-        else:
-            image = sn_images_map.objects.filter(simplenight_id=self.simplenight_id)[0].image_url_path
-
-        return image
-
-
 def default_uuid_8():
     return str(uuid.uuid4())[:8]
 
@@ -135,27 +112,6 @@ class CityMap(models.Model):
     provider_city = models.ForeignKey(
         ProviderCity, to_field="provider_code", related_name="provider_city", on_delete=models.CASCADE
     )
-
-
-class sn_hotel_map(models.Model):
-    class Meta:
-        app_label = "api"
-
-    simplenight_id = models.IntegerField()
-    provider = models.CharField(max_length=50)
-    provider_id = models.IntegerField()
-
-
-class sn_images_map(models.Model):
-    class Meta:
-        app_label = "api"
-
-    # simplenight_id = models.ForeignKey((supplier_hotels,))
-    # on_delete.CASCADE: when object is deleted, delete all references to the object
-    simplenight_id = models.CharField(max_length=100, blank=True, null=True)
-    image_type = models.TextField(null=True, blank=True)
-    image_url_path = models.TextField(null=True, blank=True)
-    image_provider_id = models.CharField(max_length=100)
 
 
 class supplier_priceline(models.Model):

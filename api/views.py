@@ -3,26 +3,9 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api.models.models import hotel_listing
 from . import api_access
 from .api_access import ApiAccessRequest
 from .common.models import to_json
-from .serializers import HotelListingSerializer
-
-
-class HotellistView(viewsets.ModelViewSet):
-    queryset = hotel_listing.objects.all()
-    serializer_class = HotelListingSerializer
-
-    def get_queryset(self):
-
-        queryset = self.queryset
-        snid = self.request.GET.get("snid")
-
-        if snid:
-            queryset = queryset.filter(simplenight_id=snid)
-
-        return queryset
 
 
 def index(request):
