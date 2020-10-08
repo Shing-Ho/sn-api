@@ -1,0 +1,9 @@
+-r requirements.txt
+pre-commit
+pytest
+freezegun
+tox
+black
+flake8
+requests_mock
+pytest-mock

@@ -60,6 +60,7 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+settings_override.py
 db.sqlite3
 
 # pyenv
@@ -78,3 +79,4 @@ venv.bak/
 .mypy_cache/
 
 .vscode/
+
