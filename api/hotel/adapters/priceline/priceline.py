@@ -84,7 +84,7 @@ class PricelineAdapter(HotelAdapter):
 
         return self._create_room_rate(room_id, rate_data, rate_plans[0])
 
-    def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
+    def booking(self, book_request: HotelBookingRequest) -> Reservation:
         params = self._create_booking_params(book_request.customer, book_request.payment, book_request.room_code)
         response = self.transport.express_book(**params)
 
@@ -112,7 +112,7 @@ class PricelineAdapter(HotelAdapter):
 
         cancellation_details = self._parse_cancellation_details(booked_rate_data)
 
-        reservation = Reservation(
+        return Reservation(
             locator=Locator(id=booking_locator),
             hotel_locator=hotel_locators,
             hotel_id=book_request.hotel_id,
@@ -122,13 +122,6 @@ class PricelineAdapter(HotelAdapter):
             traveler=book_request.traveler,
             room_rate=booked_room_rate,
             cancellation_details=cancellation_details,
-        )
-
-        return HotelBookingResponse(
-            api_version=1,
-            transaction_id=book_request.transaction_id,
-            status=Status(True, "success"),
-            reservation=reservation,
         )
 
     def recheck(self, room_rate: RoomRate) -> RoomRate:

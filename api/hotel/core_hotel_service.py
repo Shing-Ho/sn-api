@@ -149,9 +149,9 @@ def _convert_image(provider_image: ProviderImages):
 def _markup_room_rates(hotel: AdapterHotel):
     room_rates = []
     for provider_rate in hotel.room_rates:
-        markup_rate = markups.markup_rate(provider_rate)
-        hotel_cache_service.save_provider_rate_in_cache(hotel, provider_rate, markup_rate)
-        room_rates.append(markup_rate)
+        simplenight_rate = markups.markup_rate(provider_rate)
+        hotel_cache_service.save_provider_rate_in_cache(hotel, provider_rate, simplenight_rate)
+        room_rates.append(simplenight_rate)
 
     hotel.room_rates = room_rates
 

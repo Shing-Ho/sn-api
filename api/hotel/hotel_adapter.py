@@ -1,7 +1,7 @@
 import abc
 from typing import List
 
-from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse
+from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse, Reservation
 from api.common.models import RoomRate
 from api.hotel.hotel_model import (
     HotelLocationSearch,
@@ -30,7 +30,7 @@ class HotelAdapter(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
+    def booking(self, book_request: HotelBookingRequest) -> Reservation:
         """Given a HotelBookingRequest, confirm a reservation with a hotel provider"""
         pass
 

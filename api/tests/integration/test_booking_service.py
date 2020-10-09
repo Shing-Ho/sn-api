@@ -74,7 +74,7 @@ class TestBookingService(SimplenightTestCase):
         self.assertEqual(1, response.api_version)
         self.assertIsNotNone(response.transaction_id)
         self.assertTrue(response.status.success)
-        self.assertEqual("Success", response.status.message)
+        self.assertEqual("success", response.status.message)
         self.assertEqual("100", response.reservation.hotel_id)
         self.assertIsNotNone(response.reservation.locator)
         self.assertEqual("2020-01-01", str(response.reservation.checkin))

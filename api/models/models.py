@@ -214,11 +214,11 @@ class HotelCancellationPolicy(models.Model):
     cancellation_policy_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     hotel_booking = models.ForeignKey(HotelBooking, on_delete=models.CASCADE)
     cancellation_type = models.TextField(choices=choices(CancellationSummary))
-    description = models.TextField()
-    begin_date = models.DateField()
-    end_date = models.DateField()
-    penalty_amount = models.DecimalField(decimal_places=2, max_digits=8)
-    penalty_currency = models.CharField(max_length=3)
+    description = models.TextField(null=True)
+    begin_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
+    penalty_amount = models.DecimalField(decimal_places=2, max_digits=8, null=True)
+    penalty_currency = models.CharField(max_length=3, null=True)
 
 
 class ProviderMapping(models.Model):

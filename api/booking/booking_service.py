@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Union
 
 from api import logger
-from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse
+from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse, Customer, Status
 from api.common.models import RoomRate
 from api.hotel import price_verification_service, hotel_cache_service
 from api.hotel.adapters import adapter_service
@@ -40,17 +40,25 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
         # Reset room rates with verified rates.  If prices mismatch, error will raise
         verified_rates = _price_verification(provider=provider, rate=provider_rate)
         book_request.room_code = verified_rates.code
-        response = adapter.booking(book_request)
-        response.reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
+        reservation = adapter.booking(book_request)
+        reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
 
-        if not response or not response.reservation.locator:
+        if not reservation or not reservation.locator:
             logger.error(f"Could not book request: {book_request}")
             raise AppException("Error during booking")
 
-        persist_reservation(book_request, simplenight_rate, response)
+        booking = persist_reservation(book_request, provider_rate, reservation)
 
-        return response
+        return HotelBookingResponse(
+            api_version=1,
+            transaction_id=book_request.transaction_id,
+            booking_id=booking.booking_id,
+            status=Status(success=True, message="success"),
+            reservation=reservation
+        )
 
+    except BookingException as e:
+        raise e
     except Exception as e:
         raise BookingException(BookingErrorCode.UNHANDLED_ERROR, str(e))
 
@@ -67,34 +75,34 @@ def _price_verification(provider: str, rate: Union[SimplenightRoomType, RoomRate
     return price_verification.verified_room_rate
 
 
-def persist_reservation(book_request, room_rate, response):
-    traveler = _persist_traveler(response)
-    booking = _persist_booking_record(response, traveler)
-    _persist_hotel(book_request, room_rate, booking, response)
+def persist_reservation(book_request, provider_rate, reservation):
+    traveler = _persist_traveler(reservation.customer)
+    booking = _persist_booking_record(book_request, traveler)
+    _persist_hotel(book_request, provider_rate, booking, reservation)
 
     return booking
 
 
-def _persist_hotel(book_request, room_rate, booking, response):
+def _persist_hotel(book_request, provider_rate, booking, reservation):
     # Takes the original room rates as a parameter
     # Persists both the provider rate (on book_request) and the original rates
-    provider_rate, rate = response.reservation.room_rate, room_rate
+    simplenight_rate = reservation.room_rate
     hotel_booking = models.HotelBooking(
         booking=booking,
         created_date=datetime.now(),
         hotel_name="Hotel Name",
         provider_name=book_request.provider,
         hotel_code=book_request.hotel_id,
-        record_locator=response.reservation.locator.id,
-        total_price=rate.total.amount,
-        currency=rate.total.currency,
+        record_locator=reservation.locator.id,
+        total_price=simplenight_rate.total.amount,
+        currency=simplenight_rate.total.currency,
         provider_total=provider_rate.total.amount,
         provider_currency=provider_rate.total.currency,
     )
 
     hotel_booking.save()
 
-    cancellation_details = response.reservation.cancellation_details
+    cancellation_details = reservation.cancellation_details
     cancellation_policy_models = []
     for cancellation_policy in cancellation_details:
         cancellation_policy_models.append(models.HotelCancellationPolicy(
@@ -112,10 +120,10 @@ def _persist_hotel(book_request, room_rate, booking, response):
         models.HotelCancellationPolicy.objects.bulk_create(cancellation_policy_models)
 
 
-def _persist_booking_record(response, traveler):
+def _persist_booking_record(booking_request, traveler):
     booking = models.Booking(
         booking_status=BookingStatus.BOOKED.value,
-        transaction_id=response.transaction_id,
+        transaction_id=booking_request.transaction_id,
         booking_date=datetime.now(),
         lead_traveler=traveler,
     )
@@ -124,13 +132,13 @@ def _persist_booking_record(response, traveler):
     return booking
 
 
-def _persist_traveler(response):
+def _persist_traveler(customer: Customer):
     traveler = Traveler(
-        first_name=response.reservation.customer.first_name,
-        last_name=response.reservation.customer.last_name,
-        phone_number=response.reservation.customer.phone_number,
-        email_address=response.reservation.customer.email,
-        country=response.reservation.customer.country[:2],
+        first_name=customer.first_name,
+        last_name=customer.last_name,
+        phone_number=customer.phone_number,
+        email_address=customer.email,
+        country=customer.country[:2],
     )
 
     traveler.save()

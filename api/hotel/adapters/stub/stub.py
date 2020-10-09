@@ -72,9 +72,9 @@ class StubHotelAdapter(HotelAdapter):
     def booking_availability(self, search_request: BaseHotelSearch):
         return self.search_by_id(search_request)
 
-    def booking(self, book_request: HotelBookingRequest) -> HotelBookingResponse:
+    def booking(self, book_request: HotelBookingRequest) -> Reservation:
         cached_room_data = hotel_cache_service.get_simplenight_rate(book_request.room_code)
-        reservation = Reservation(
+        return Reservation(
             locator=Locator(str(uuid.uuid4())),
             hotel_locator=[Locator(random_alphanumeric(6))],
             hotel_id=cached_room_data.hotel_id,
@@ -83,10 +83,6 @@ class StubHotelAdapter(HotelAdapter):
             customer=book_request.customer,
             traveler=book_request.traveler,
             room_rate=cached_room_data.simplenight_rate,
-        )
-
-        return HotelBookingResponse(
-            api_version=1, transaction_id=str(uuid.uuid4()), status=Status(True, "Success"), reservation=reservation
         )
 
     def _generate_room_types(self):

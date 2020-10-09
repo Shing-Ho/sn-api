@@ -107,10 +107,10 @@ class TestPricelineIntegration(SimplenightTestCase):
         booking_request.customer.last_name = "Morton"
         booking_request.customer.email = "jmorton@simplenight.com"
 
-        booking_response = priceline.booking(booking_request)
+        reservation = priceline.booking(booking_request)
 
-        print(booking_response)
-        self.assertIsNotNone(booking_response.reservation.locator)
+        print(reservation)
+        self.assertIsNotNone(reservation.locator)
 
     def test_priceline_booking_service(self):
         checkin = datetime.now().date() + timedelta(days=30)

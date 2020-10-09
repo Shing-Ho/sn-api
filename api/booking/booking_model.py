@@ -154,6 +154,7 @@ class Reservation(BaseSchema):
 class HotelBookingResponse(BaseSchema):
     api_version: int
     transaction_id: str
+    booking_id: str
     status: Status
     reservation: Reservation
 

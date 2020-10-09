@@ -100,20 +100,16 @@ class TestPricelineUnit(SimplenightTestCase):
 
         with requests_mock.Mocker() as mocker:
             mocker.post(endpoint, text=priceline_booking_response)
-            booking_response = priceline.booking(booking_request)
+            reservation = priceline.booking(booking_request)
 
-        self.assertEqual(1, booking_response.api_version)
-        self.assertIsNotNone(booking_response.transaction_id)
-        self.assertTrue(booking_response.status.success)
-        self.assertEqual("success", booking_response.status.message)
-        self.assertEqual("30796806215", booking_response.reservation.locator.id)
-        self.assertEqual("CONF0", booking_response.reservation.hotel_locator[0].id)
-        self.assertIsNotNone(booking_response.reservation.checkin)
-        self.assertIsNotNone(booking_response.reservation.checkout)
-        self.assertEqual(1, booking_response.reservation.traveler.occupancy.adults)
-        self.assertEqual("John", booking_response.reservation.traveler.first_name)
-        self.assertEqual("Simplenight", booking_response.reservation.traveler.last_name)
-        self.assertEqual(RateType.BOOKABLE, booking_response.reservation.room_rate.rate_type)
+        self.assertEqual("30796806215", reservation.locator.id)
+        self.assertEqual("CONF0", reservation.hotel_locator[0].id)
+        self.assertIsNotNone(reservation.checkin)
+        self.assertIsNotNone(reservation.checkout)
+        self.assertEqual(1, reservation.traveler.occupancy.adults)
+        self.assertEqual("John", reservation.traveler.first_name)
+        self.assertEqual("Simplenight", reservation.traveler.last_name)
+        self.assertEqual(RateType.BOOKABLE, reservation.room_rate.rate_type)
 
     @freeze_time("2020-10-01")
     def test_priceline_booking_service_cancellation_policies(self):

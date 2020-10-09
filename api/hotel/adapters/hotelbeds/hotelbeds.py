@@ -159,7 +159,7 @@ class HotelBeds(HotelAdapter):
 
         return HotelBedsCheckRatesRS.Schema().load(response.json())
 
-    def booking(self, book_request: HotelBookingRequest) -> Optional[HotelBookingResponse]:
+    def booking(self, book_request: HotelBookingRequest) -> Reservation:
         # To book a Priceline room, we first need to do a contract lookup call
         # We use the price verification framework to test if the room prices are equivalent
         # Currently, we don't handle the case where they are not.
@@ -186,7 +186,7 @@ class HotelBeds(HotelAdapter):
 
         hotelbeds_booking_response: HotelBedsBookingRS = HotelBedsBookingRS.Schema().loads(response.text)
 
-        reservation = Reservation(
+        return Reservation(
             locator=Locator(hotelbeds_booking_response.booking.reference),
             hotel_locator=None,
             hotel_id=book_request.hotel_id,
@@ -196,10 +196,6 @@ class HotelBeds(HotelAdapter):
             traveler=book_request.traveler,
             room_rate=None,
             cancellation_details=[],
-        )
-
-        return HotelBookingResponse(
-            api_version=1, transaction_id=str(uuid.uuid4()), status=Status(True, "Success"), reservation=reservation
         )
 
     def get_image_url(self, path):
