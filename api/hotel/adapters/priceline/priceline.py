@@ -1,5 +1,6 @@
 import distutils.util
 from collections import defaultdict
+from concurrent.futures.thread import ThreadPoolExecutor
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
@@ -12,12 +13,11 @@ from api.booking.booking_model import (
     HotelBookingRequest,
     Customer,
     Payment,
-    HotelBookingResponse,
-    Status,
     Reservation,
     Locator,
 )
-from api.common.models import RoomRate, RoomOccupancy, Money, RateType, Address
+from api.common.models import RoomRate, RoomOccupancy, Money, RateType, Address, PostpaidFees, LineItemType, \
+    PostpaidFeeLineItem
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_adapter import HotelAdapter
@@ -31,7 +31,11 @@ from api.hotel.hotel_model import (
     CancellationPolicy,
     CancellationSummary,
     GeoLocation,
-    BaseHotelSearch, SimplenightAmenities, Image, ImageType, CancellationDetails,
+    BaseHotelSearch,
+    SimplenightAmenities,
+    Image,
+    ImageType,
+    CancellationDetails,
 )
 from api.models.models import supplier_priceline, ProviderImages
 from api.view.exceptions import AvailabilityException, BookingException
@@ -65,24 +69,63 @@ class PricelineAdapter(HotelAdapter):
         response = self.transport.hotel_express(**request)
         hotel_results = self._check_hotel_express_response_and_get_results(response)
         hotel = self._create_hotel_from_response(search, hotel_results[0])
+
         self._enrich_hotels(hotel)
+        self._apply_room_details(hotel)
 
         return hotel
 
     def details(self, *args) -> HotelDetails:
         pass
 
-    def room_details(self, ppn_bundle: str) -> RoomRate:
+    def room_details(self, ppn_bundle: str) -> Dict:
         params = {"ppn_bundle": ppn_bundle}
         response = self.transport.express_contract(**params)
 
         hotel_data = self._check_hotel_express_contract_response_and_get_results(response)[0]
         rate_plans = self._create_rate_plans(hotel_data)
-        room_data = hotel_data["room_data"][0]
-        rate_data = room_data["rate_data"][0]
-        room_id = room_data["id"]
+        postpaid_fees = self._get_postpaid_fees(response)
 
-        return self._create_room_rate(room_id, rate_data, rate_plans[0])
+        return {
+            "hotel_data": hotel_data,
+            "rate_plans": rate_plans,
+            "postpaid_fees": postpaid_fees,
+            "room_date": hotel_data["room_data"][0],
+            "rate_data": hotel_data["room_data"][0]["rate_data"][0],
+            "room_id": hotel_data["room_data"][0]["id"],
+        }
+
+    def _get_postpaid_fees(self, contract_response):
+        results = contract_response["getHotelExpress.Contract"]["results"]
+        if results["status"] != "Success":
+            raise AvailabilityException("Could not parse postpaid fees")
+
+        room_data = results["hotel_data"][0]["room_data"][0]
+        rate_data = room_data["rate_data"][0]
+        mandatory_fees = rate_data["price_details"]["mandatory_fee_details"]
+
+        if not mandatory_fees:
+            return None
+
+        postpaid_fee_breakdown = mandatory_fees["breakdown"]["postpaid"]
+        postpaid_total_currency = postpaid_fee_breakdown["display_currency"]
+        postpaid_total_fee = Decimal(postpaid_fee_breakdown["display_total"])
+        postpaid_total = Money(round(postpaid_total_fee, 2), postpaid_total_currency)
+
+        postpaid_fees = []
+        for postpaid_fee in postpaid_fee_breakdown["breakdown"]:
+            fee = Money(round(Decimal(postpaid_fee["display_total"]), 2), postpaid_fee["display_currency"])
+            priceline_fee_type = postpaid_fee["type"]
+            fee_type = self._parse_postpaid_fee_type(priceline_fee_type)
+
+            postpaid_fees.append(PostpaidFeeLineItem(amount=fee, type=fee_type, description=priceline_fee_type))
+
+        return PostpaidFees(total=postpaid_total, fees=postpaid_fees)
+
+    @staticmethod
+    def _parse_postpaid_fee_type(fee_type):
+        default = LineItemType.UNKNOWN_FEES
+        return {}.get(fee_type, default)
 
     def booking(self, book_request: HotelBookingRequest) -> Reservation:
         params = self._create_booking_params(book_request.customer, book_request.payment, book_request.room_code)
@@ -124,8 +167,25 @@ class PricelineAdapter(HotelAdapter):
             cancellation_details=cancellation_details,
         )
 
+    def _apply_room_details(self, hotel: AdapterHotel):
+        room_details_map = self._room_details_map(hotel)
+        for rate in hotel.room_rates:
+            rate.postpaid_fees = room_details_map[rate.code]["postpaid_fees"]
+
+    def _room_details_map(self, hotel: AdapterHotel) -> Dict[str, Dict]:
+        room_codes = [rate.code for rate in hotel.room_rates]
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            results = executor.map(lambda room_code: (room_code, self.room_details(room_code)), room_codes)
+
+        return {room_code: room_details for room_code, room_details in results}
+
     def recheck(self, room_rate: RoomRate) -> RoomRate:
-        return self.room_details(room_rate.code)
+        room_details = self.room_details(room_rate.code)
+        room_id = room_details["room_id"]
+        rate_data = room_details["rate_data"]
+        rate_plan = room_details["rate_plans"][0]
+
+        return self._create_room_rate(room_id, rate_data, rate_plan)
 
     @staticmethod
     def _create_booking_params(customer: Customer, payment: Payment, rate_code: str):
@@ -196,11 +256,7 @@ class PricelineAdapter(HotelAdapter):
 
     @staticmethod
     def _get_image(provider_image: ProviderImages):
-        return Image(
-            url=provider_image.image_url,
-            type=ImageType.UNKNOWN,
-            display_order=provider_image.display_order
-        )
+        return Image(url=provider_image.image_url, type=ImageType.UNKNOWN, display_order=provider_image.display_order)
 
     @staticmethod
     def _get_amenity_mappings(amenities: List[str]):
@@ -347,10 +403,7 @@ class PricelineAdapter(HotelAdapter):
         is_cancellable = distutils.util.strtobool(rate["is_cancellable"])
         if not is_cancellable:
             logger.debug(f"Found non-refundable rate for rate plan {rate['rate_plan_code']}")
-            return [CancellationDetails(
-                cancellation_type=CancellationSummary.NON_REFUNDABLE,
-                description="",
-            )]
+            return [CancellationDetails(cancellation_type=CancellationSummary.NON_REFUNDABLE, description="",)]
 
         cancellation_detail_lst = []
         for cancellation_detail_response in rate["cancellation_details"]:
@@ -374,7 +427,7 @@ class PricelineAdapter(HotelAdapter):
                 begin_date=begin_date,
                 end_date=end_date,
                 penalty_amount=total_penalty,
-                penalty_currency=penalty_currency
+                penalty_currency=penalty_currency,
             )
 
             cancellation_detail_lst.append(cancellation_detail)
@@ -394,7 +447,7 @@ class PricelineAdapter(HotelAdapter):
         return CancellationPolicy(
             summary=most_lenient_policy.cancellation_type,
             cancellation_deadline=most_lenient_policy.end_date,
-            unstructured_policy=most_lenient_policy.description
+            unstructured_policy=most_lenient_policy.description,
         )
 
     @staticmethod

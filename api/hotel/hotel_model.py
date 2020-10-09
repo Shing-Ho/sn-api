@@ -17,7 +17,7 @@ from api.common.models import (
     RoomRate,
     Money,
     RateType,
-    DailyRate
+    DailyRate, PostpaidFees
 )
 
 
@@ -285,6 +285,7 @@ class SimplenightRoomType(BaseSchema):
     cancellation_policy: CancellationPolicy
     daily_rates: Optional[List[DailyRate]] = None
     unstructured_policies: Optional[str] = None
+    postpaid_fees: Optional[PostpaidFees] = None
 
 
 @dataclasses.dataclass

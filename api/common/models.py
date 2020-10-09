@@ -108,6 +108,35 @@ class DailyRate(BaseSchema):
     total: Money
 
 
+class LineItemType(Enum):
+    BASE_RATE = "BASE_RATE"
+    UNKNOWN_TAXES_AND_FEES = "UNKNOWN_TAXES_AND_FEES"
+    UNKNOWN_TAXES = "UNKNOWN_TAXES"
+    TAX_MUNICIPAL = "TAX_MUNICIPAL"
+    TAX_VAT = "TAX_VAT"
+    TAX_OTHER = "TAX_OTHER"
+    UNKNOWN_FEES = "UNKNOWN_FEES"
+    FEE_BOOKING = "FEE_BOOKING"
+    FEE_HOTEL = "FEE_HOTEL"
+    FEE_RESORT = "FEE_RESORT"
+    FEE_TRANSFER = "FEE_TRANSFER"
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class PostpaidFeeLineItem:
+    amount: Money
+    type: LineItemType
+    description: str
+
+
+@dataclasses.dataclass
+@marshmallow_dataclass.dataclass
+class PostpaidFees:
+    total: Money
+    fees: List[PostpaidFeeLineItem]
+
+
 @dataclasses.dataclass
 @marshmallow_dataclass.dataclass
 class RoomRate(BaseSchema):
@@ -120,4 +149,5 @@ class RoomRate(BaseSchema):
     total: Money
     rate_type: RateType
     daily_rates: Optional[List[DailyRate]] = None
+    postpaid_fees: Optional[PostpaidFees] = None
     partner_data: Optional[List[str]] = None

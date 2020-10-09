@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime
+from decimal import Decimal
 from unittest.mock import patch
 
 import requests_mock
@@ -41,10 +42,15 @@ class TestPricelineUnit(SimplenightTestCase):
         occupancy = RoomOccupancy()
         search = HotelSpecificSearch(start_date=checkin, end_date=checkout, occupancy=occupancy, hotel_id=hotel_id)
 
+        # Null mandatory fees
+        priceline_contract_response = load_test_resource("priceline/priceline-postpaid-contract2.json")
         priceline_hotel_id_response = load_test_resource("priceline/hotel_specific_search_response.json")
-        endpoint = transport.endpoint(PricelineTransport.Endpoint.HOTEL_EXPRESS)
+
+        avail_endpoint = transport.endpoint(PricelineTransport.Endpoint.HOTEL_EXPRESS)
+        contract_endpoint = transport.endpoint(PricelineTransport.Endpoint.EXPRESS_CONTRACT)
         with requests_mock.Mocker() as mocker:
-            mocker.get(endpoint, text=priceline_hotel_id_response)
+            mocker.get(avail_endpoint, text=priceline_hotel_id_response)
+            mocker.post(contract_endpoint, text=priceline_contract_response)
             results = priceline.search_by_id(search)
 
         self.assertEqual("priceline", results.provider)
@@ -178,3 +184,28 @@ class TestPricelineUnit(SimplenightTestCase):
         self.assertEqual("NON_REFUNDABLE", cancellation_policies[2].cancellation_type)
         self.assertEqual("2020-10-31", str(cancellation_policies[2].begin_date))
         self.assertEqual("2024-07-27", str(cancellation_policies[2].end_date))
+
+    @freeze_time("2020-10-09")
+    def test_priceline_postpaid_fees(self):
+        transport = PricelineTransport(test_mode=True)
+        priceline = PricelineAdapter(transport)
+
+        hotel_id = "700033110"
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=35)
+        occupancy = RoomOccupancy()
+        search = HotelSpecificSearch(start_date=checkin, end_date=checkout, occupancy=occupancy, hotel_id=hotel_id)
+
+        priceline_hotel_id_response = load_test_resource("priceline/priceline-postpaid-hotelavail.json")
+        priceline_contract_response = load_test_resource("priceline/priceline-postpaid-contract1.json")
+        avail_endpoint = transport.endpoint(PricelineTransport.Endpoint.HOTEL_EXPRESS)
+        contract_endpoint = transport.endpoint(PricelineTransport.Endpoint.EXPRESS_CONTRACT)
+        with requests_mock.Mocker() as mocker:
+            mocker.get(avail_endpoint, text=priceline_hotel_id_response)
+            mocker.post(contract_endpoint, text=priceline_contract_response)
+            results = priceline.search_by_id(search)
+
+        self.assertEqual(Decimal("233.20"), results.room_rates[0].postpaid_fees.total.amount)
+        self.assertEqual("USD", results.room_rates[0].postpaid_fees.total.currency)
+        self.assertEqual(1, len(results.room_rates[0].postpaid_fees.fees))
+        self.assertEqual("Extra Person Fee", results.room_rates[0].postpaid_fees.fees[0].description)

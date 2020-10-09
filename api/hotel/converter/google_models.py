@@ -12,7 +12,7 @@ import marshmallow_dataclass
 from marshmallow import EXCLUDE, validates_schema
 
 from api.booking.booking_model import Customer, PaymentMethod, CardType, Locator
-from api.common.models import BaseSchema, Address, Money, RemoveNone
+from api.common.models import BaseSchema, Address, Money, RemoveNone, LineItemType
 from api.hotel.hotel_model import GeoLocation, BedTypes, CancellationSummary
 
 
@@ -96,20 +96,6 @@ class GoogleRatePlan(BaseSchema):
     basic_amenities: BasicAmenities
     guarantee_type: GuaranteeType
     cancellation_policy: GoogleCancellationPolicy
-
-
-class LineItemType(Enum):
-    BASE_RATE = "BASE_RATE"
-    UNKNOWN_TAXES_AND_FEES = "UNKNOWN_TAXES_AND_FEES"
-    UNKNOWN_TAXES = "UNKNOWN_TAXES"
-    TAX_MUNICIPAL = "TAX_MUNICIPAL"
-    TAX_VAT = "TAX_VAT"
-    TAX_OTHER = "TAX_OTHER"
-    UNKNOWN_FEES = "UNKNOWN_FEES"
-    FEE_BOOKING = "FEE_BOOKING"
-    FEE_HOTEL = "FEE_HOTEL"
-    FEE_RESORT = "FEE_RESORT"
-    FEE_TRANSFER = "FEE_TRANSFER"
 
 
 @dataclasses.dataclass

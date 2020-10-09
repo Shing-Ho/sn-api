@@ -80,6 +80,7 @@ def _convert_hotel_to_front_end_format(hotel: Hotel) -> Optional[SimplenightHote
             cancellation_policy=rate_plan.cancellation_policy,
             daily_rates=room_rate.daily_rates,
             unstructured_policies=room_type.unstructured_policies,
+            postpaid_fees=room_rate.postpaid_fees
         )
 
         simplenight_room_types.append(simplenight_room_type)

@@ -70,7 +70,7 @@ class TestPricelineIntegration(SimplenightTestCase):
         transport = PricelineTransport(test_mode=True)
         priceline = PricelineAdapter(transport)
 
-        hotel_id = "700363264"
+        hotel_id = "700033110"
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         occupancy = RoomOccupancy()
@@ -82,6 +82,8 @@ class TestPricelineIntegration(SimplenightTestCase):
         verified_rate = priceline.recheck(results.room_rates[0])
         self.assertIsNotNone(verified_rate)
         self.assertIsNotNone(verified_rate.code)
+
+        print(results)
 
     def test_booking(self):
         transport = PricelineTransport(test_mode=True)
@@ -99,8 +101,7 @@ class TestPricelineIntegration(SimplenightTestCase):
 
         payment_object = test_objects.payment("4111111111111111")
 
-        room_rate_to_book = priceline.room_details(hotel.room_rates[0].code)
-
+        room_rate_to_book = priceline.recheck(hotel.room_rates[0])
         booking_request = test_objects.booking_request(payment_object, rate_code=room_rate_to_book.code)
 
         booking_request.customer.first_name = "James"
