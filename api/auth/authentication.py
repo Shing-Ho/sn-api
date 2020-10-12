@@ -52,10 +52,11 @@ class OrganizationFeatures(models.Model):
     class Meta:
         app_label = "api"
         db_table = "organization_features"
+        unique_together = ('organization', 'name')
 
     id = models.AutoField(primary_key=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="org")
-    name = models.TextField(unique=True, choices=Feature.choices())
+    name = models.TextField(choices=Feature.choices())
     value = models.TextField()
 
 

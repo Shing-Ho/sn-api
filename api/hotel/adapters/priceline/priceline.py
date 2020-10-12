@@ -84,7 +84,7 @@ class PricelineAdapter(HotelAdapter):
 
         hotel_data = self._check_hotel_express_contract_response_and_get_results(response)[0]
         rate_plans = self._create_rate_plans(hotel_data)
-        postpaid_fees = self._get_postpaid_fees(response)
+        postpaid_fees = self._get_postpaid_fees_from_contract_response(response)
 
         return {
             "hotel_data": hotel_data,
@@ -95,13 +95,17 @@ class PricelineAdapter(HotelAdapter):
             "room_id": hotel_data["room_data"][0]["id"],
         }
 
-    def _get_postpaid_fees(self, contract_response):
+    def _get_postpaid_fees_from_contract_response(self, contract_response):
         results = contract_response["getHotelExpress.Contract"]["results"]
         if results["status"] != "Success":
             raise AvailabilityException("Could not parse postpaid fees")
 
         room_data = results["hotel_data"][0]["room_data"][0]
         rate_data = room_data["rate_data"][0]
+
+        return self._parse_postpaid_fees_from_priceline_rate(rate_data)
+
+    def _parse_postpaid_fees_from_priceline_rate(self, rate_data):
         mandatory_fees = rate_data["price_details"]["mandatory_fee_details"]
 
         if not mandatory_fees:
@@ -168,9 +172,7 @@ class PricelineAdapter(HotelAdapter):
         )
 
     def _apply_room_details(self, hotel: AdapterHotel):
-        room_details_map = self._room_details_map(hotel)
-        for rate in hotel.room_rates:
-            rate.postpaid_fees = room_details_map[rate.code]["postpaid_fees"]
+        """Disabled, because postpaid fees are in initial hotel results"""
 
     def _room_details_map(self, hotel: AdapterHotel) -> Dict[str, Dict]:
         room_codes = [rate.code for rate in hotel.room_rates]
@@ -337,8 +339,7 @@ class PricelineAdapter(HotelAdapter):
             property_description=hotel_data["hotel_description"],
         )
 
-    @staticmethod
-    def _create_room_rate(room_id: str, rate_data: Dict[Any, Any], rate_plan) -> RoomRate:
+    def _create_room_rate(self, room_id: str, rate_data: Dict[Any, Any], rate_plan) -> RoomRate:
         rate_code = PricelineAdapter.get_ppn_bundle_code(rate_data)
         price_details = rate_data["price_details"]
         display_currency = price_details["display_currency"]
@@ -352,6 +353,7 @@ class PricelineAdapter(HotelAdapter):
             total_tax_rate=Money(Decimal(price_details["display_taxes"]), display_currency),
             total=Money(Decimal(price_details["display_total"]), display_currency),
             rate_type=RateType.BOOKABLE,
+            postpaid_fees=self._parse_postpaid_fees_from_priceline_rate(rate_data)
         )
 
     @staticmethod

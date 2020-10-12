@@ -133,4 +133,9 @@ class TestPricelineIntegration(SimplenightTestCase):
         booking_request = test_objects.booking_request(provider=PricelineInfo.name, rate_code=room_to_book.code)
         booking_response = booking_service.book(booking_request)
 
-        print(booking_response)
+        self.assertIsNotNone(booking_response.transaction_id)
+        self.assertIsNotNone(booking_response.booking_id)
+        self.assertTrue(booking_response.status.success)
+        self.assertIsNotNone(booking_response.reservation.locator.id)
+        self.assertEqual("John", booking_response.reservation.customer.first_name)
+        self.assertEqual("Simplenight", booking_response.reservation.customer.last_name)

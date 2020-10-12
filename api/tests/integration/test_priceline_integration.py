@@ -208,4 +208,4 @@ class TestPricelineUnit(SimplenightTestCase):
         self.assertEqual(Decimal("233.20"), results.room_rates[0].postpaid_fees.total.amount)
         self.assertEqual("USD", results.room_rates[0].postpaid_fees.total.currency)
         self.assertEqual(1, len(results.room_rates[0].postpaid_fees.fees))
-        self.assertEqual("Extra Person Fee", results.room_rates[0].postpaid_fees.fees[0].description)
+        self.assertEqual("Resort Fee", results.room_rates[0].postpaid_fees.fees[0].description)
