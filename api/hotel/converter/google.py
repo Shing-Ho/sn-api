@@ -1,4 +1,3 @@
-import uuid
 from decimal import Decimal
 from typing import List
 
@@ -31,7 +30,7 @@ from api.hotel.converter.google_models import (
     GoogleReservation,
     RoomParty,
 )
-from api.hotel.hotel_model import SimplenightAmenities, Image, HotelSpecificSearch, Hotel
+from api.hotel.hotel_model import SimplenightAmenities, Image, HotelSpecificSearch, Hotel, CancellationPolicy
 from api.tests import to_money
 
 
@@ -112,13 +111,13 @@ def convert_booking_response(
     if booking_response.status.success:
         status = GoogleStatus.SUCCESS
 
-    return GoogleBookingResponse(
+    google_booking_response = GoogleBookingResponse(
         api_version=booking_response.api_version,
         transaction_id=booking_response.transaction_id,
         status=status,
         reservation=GoogleReservation(
             locator=booking_response.reservation.locator,
-            hotel_locators=[booking_response.reservation.hotel_locator],
+            hotel_locators=[],
             hotel_id=booking_response.reservation.hotel_id,
             start_date=booking_response.reservation.checkin,
             end_date=booking_response.reservation.checkout,
@@ -135,10 +134,16 @@ def convert_booking_response(
         ),
     )
 
+    hotel_locators = booking_response.reservation.hotel_locator
+    if hotel_locators:
+        google_booking_response.reservation.hotel_locators.extend(hotel_locators)
+
+    return google_booking_response
+
 
 def convert_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Hotel) -> GoogleHotelApiResponse:
     room_types = _get_room_types(hotel, search_request.language)
-    rate_plans = _get_rate_plans(hotel, search_request.language)
+    rate_plans = _get_rate_plans(hotel)
 
     return GoogleHotelApiResponse(
         api_version=1,
@@ -154,21 +159,23 @@ def convert_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Hote
     )
 
 
-# TODO: Actually implement rate plan logic
-def _get_rate_plans(hotel: Hotel, language: str) -> List[GoogleRatePlan]:
-    rate_plan = GoogleRatePlan(
-        code="foo",
-        name=DisplayString("Rate Plan", language),
-        description=DisplayString("The Description", language),
-        basic_amenities=_get_basic_amenity_mapping(hotel.hotel_details.amenities),
-        guarantee_type=GuaranteeType.PAYMENT_CARD,
-        cancellation_policy=_get_google_cancellation_policy(language),
-    )
+def _get_rate_plans(hotel: Hotel) -> List[GoogleRatePlan]:
+    rate_plans = []
+    for rate_plan in hotel.rate_plans:
+        rate_plans.append(
+            GoogleRatePlan(
+                code=rate_plan.code,
+                name=DisplayString(rate_plan.name, language="en"),
+                description=DisplayString(rate_plan.description, language="en"),
+                basic_amenities=_get_basic_amenity_mapping(rate_plan.amenities),
+                guarantee_type=GuaranteeType.PAYMENT_CARD,
+                cancellation_policy=_get_google_cancellation_policy(rate_plan.cancellation_policy, language="en"),
+            )
+        )
 
-    return [rate_plan]
+    return rate_plans
 
 
-# TODO: Integrate photos into room types
 def _get_room_types(hotel: Hotel, language="en") -> List[GoogleRoomType]:
     room_types = []
     for room_type in hotel.room_types:
@@ -178,12 +185,16 @@ def _get_room_types(hotel: Hotel, language="en") -> List[GoogleRoomType]:
                 name=DisplayString(room_type.name, language),
                 description=DisplayString(room_type.description, language),
                 basic_amenities=BasicAmenities(False, False, False),
-                photos=[],
+                photos=list(map(_get_image_mapping, room_type.photos)),
                 capacity=RoomCapacity(room_type.capacity.adults, room_type.capacity.children),
             )
         )
 
     return room_types
+
+
+def _get_image_mapping(photo: Image) -> GoogleImage:
+    return GoogleImage(url=photo.url, description=DisplayString("", language="en"))
 
 
 def _get_basic_amenity_mapping(amenities: List[SimplenightAmenities]) -> BasicAmenities:
@@ -200,7 +211,7 @@ def _get_photos(images: List[Image], language: str) -> List[GoogleImage]:
 
 
 # TODO: Actually implement cancellation policies
-def _get_google_cancellation_policy(language):
+def _get_google_cancellation_policy(cancellation_policy: CancellationPolicy, language):
     return GoogleCancellationPolicy(
         summary=CancellationSummary.NON_REFUNDABLE,
         cancellation_deadline="10 days before",
@@ -214,7 +225,7 @@ def _get_room_rates(hotel: Hotel) -> List[GoogleRoomRate]:
         capacity = room_rate.maximum_allowed_occupancy
         room_rates.append(
             GoogleRoomRate(
-                code=str(uuid.uuid4()),
+                code=room_rate.code,
                 room_type_code=room_rate.room_type_code,
                 rate_plan_code=room_rate.rate_plan_code,
                 maximum_allowed_occupancy=RoomCapacity(capacity.adults, capacity.children),
