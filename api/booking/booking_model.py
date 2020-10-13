@@ -118,7 +118,6 @@ class HotelBookingRequest(BaseSchema):
     customer: Customer
     traveler: Traveler
     payment: Optional[Payment] = None
-    provider: str = "stub"
 
 
 @dataclasses.dataclass

@@ -315,6 +315,7 @@ class SimplenightHotel(BaseSchema):
     start_date: date
     end_date: date
     hotel_details: Optional[HotelDetails]
+    occupancy: RoomOccupancy
     room_types: Optional[List[SimplenightRoomType]] = None
     avg_nightly_rate: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
     avg_nightly_base: decimal.Decimal = field(metadata=dict(as_string=True), default=None)

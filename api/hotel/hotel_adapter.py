@@ -1,7 +1,7 @@
 import abc
 from typing import List
 
-from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse, Reservation
+from api.booking.booking_model import HotelBookingRequest, Reservation
 from api.common.models import RoomRate
 from api.hotel.hotel_model import (
     HotelLocationSearch,
@@ -46,7 +46,7 @@ class HotelAdapter(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def get_provider_name(self):
+    def get_provider_name(cls):
         pass
 
     def get_provider_location(self, search_request: HotelLocationSearch):

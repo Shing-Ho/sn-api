@@ -8,7 +8,6 @@ from api.booking import booking_service
 from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod, SubmitErrorType
 from api.common.models import RoomOccupancy, Address
 from api.hotel import hotel_cache_service
-from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.models import models
 from api.models.models import Booking, BookingStatus, PaymentTransaction
 from api.tests import test_objects
@@ -57,7 +56,6 @@ class TestBookingService(SimplenightTestCase):
                 payment_method=PaymentMethod.PAYMENT_TOKEN,
                 payment_token="token_foo",
             ),
-            provider=StubHotelAdapter.PROVIDER_NAME,
         )
 
         room_rate = test_objects.room_rate("foo", "100.0", base_rate="80", tax_rate="20")
@@ -139,4 +137,3 @@ class TestBookingService(SimplenightTestCase):
         transaction.payment_token = "pt_foo"
 
         return transaction
-

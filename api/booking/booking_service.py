@@ -47,7 +47,7 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
             logger.error(f"Could not book request: {book_request}")
             raise AppException("Error during booking")
 
-        booking = persist_reservation(book_request, provider_rate, reservation)
+        booking = persist_reservation(book_request, provider_rate_cache_payload, reservation)
 
         return HotelBookingResponse(
             api_version=1,
@@ -75,23 +75,24 @@ def _price_verification(provider: str, rate: Union[SimplenightRoomType, RoomRate
     return price_verification.verified_room_rate
 
 
-def persist_reservation(book_request, provider_rate, reservation):
+def persist_reservation(book_request, provider_rate_cache_payload, reservation):
     traveler = _persist_traveler(reservation.customer)
     booking = _persist_booking_record(book_request, traveler)
-    _persist_hotel(book_request, provider_rate, booking, reservation)
+    _persist_hotel(book_request, provider_rate_cache_payload, booking, reservation)
 
     return booking
 
 
-def _persist_hotel(book_request, provider_rate, booking, reservation):
+def _persist_hotel(book_request, provider_rate_cache_payload, booking, reservation):
     # Takes the original room rates as a parameter
     # Persists both the provider rate (on book_request) and the original rates
     simplenight_rate = reservation.room_rate
+    provider_rate = provider_rate_cache_payload.provider_rate
     hotel_booking = models.HotelBooking(
         booking=booking,
         created_date=datetime.now(),
         hotel_name="Hotel Name",
-        provider_name=book_request.provider,
+        provider_name=provider_rate_cache_payload.provider,
         hotel_code=book_request.hotel_id,
         record_locator=reservation.locator.id,
         total_price=simplenight_rate.total.amount,

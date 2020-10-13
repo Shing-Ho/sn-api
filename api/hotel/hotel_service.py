@@ -93,7 +93,8 @@ def _convert_hotel_to_front_end_format(hotel: Hotel) -> Optional[SimplenightHote
         room_types=simplenight_room_types,
         avg_nightly_rate=hotel.average_nightly_rate,
         avg_nightly_base=hotel.average_nightly_base,
-        avg_nightly_tax=hotel.average_nightly_tax
+        avg_nightly_tax=hotel.average_nightly_tax,
+        occupancy=hotel.occupancy,
     )
 
     if hotel.error:

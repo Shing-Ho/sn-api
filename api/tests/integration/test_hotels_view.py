@@ -1,20 +1,29 @@
 from datetime import datetime, timedelta, date
-from typing import List, TypeVar, Any, Type
+from typing import List
 from unittest.mock import patch
 
 import requests_mock
-from django.test import Client
 from freezegun import freeze_time
+from rest_framework.test import APIClient
 
 from api.auth.authentication import Feature, Organization
-from api.booking.booking_model import Customer, Traveler, PaymentMethod, CardType
+from api.booking.booking_model import Customer, PaymentMethod, CardType
 from api.common.models import to_json, from_json, Address
 from api.hotel import hotel_cache_service
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
-from api.hotel.converter.google_models import GoogleHotelSearchRequest, RoomParty, GoogleHotelApiResponse, \
-    GoogleBookingSubmitRequest, GoogleTraveler, GooglePayment, GooglePaymentCardParameters, GoogleBookingRoomRate, \
-    GoogleBookingResponse, GoogleStatus
+from api.hotel.converter.google_models import (
+    GoogleHotelSearchRequest,
+    RoomParty,
+    GoogleHotelApiResponse,
+    GoogleBookingSubmitRequest,
+    GoogleTraveler,
+    GooglePayment,
+    GooglePaymentCardParameters,
+    GoogleBookingRoomRate,
+    GoogleBookingResponse,
+    GoogleStatus,
+)
 from api.hotel.hotel_model import (
     HotelSpecificSearch,
     RoomOccupancy,
@@ -82,7 +91,7 @@ class TestHotelsView(SimplenightAPITestCase):
     def test_booking_invalid_payment(self):
         invalid_card_number_payment = test_objects.payment("4000000000000002")
         booking_request = test_objects.booking_request(
-            rate_code="simplenight_rate_key", payment_obj=invalid_card_number_payment, provider="stub"
+            rate_code="simplenight_rate_key", payment_obj=invalid_card_number_payment
         )
 
         hotel = test_objects.hotel()
@@ -103,7 +112,7 @@ class TestHotelsView(SimplenightAPITestCase):
     def test_booking_unhandled_error(self):
         invalid_card_number_payment = test_objects.payment("4242424242424242")
         booking_request = test_objects.booking_request(
-            rate_code="simplenight_rate_key", payment_obj=invalid_card_number_payment, provider="stub"
+            rate_code="simplenight_rate_key", payment_obj=invalid_card_number_payment
         )
 
         hotel = test_objects.hotel()
@@ -157,7 +166,7 @@ class TestHotelsView(SimplenightAPITestCase):
         organization = Organization.objects.get(name="Test_BOG_HotelAvail")
         organization.set_feature(Feature.TEST_MODE, True)
         organization.set_feature(Feature.ENABLED_ADAPTERS, "priceline")
-        client = Client(HTTP_X_API_KEY=api_key)
+        client = APIClient(HTTP_X_API_KEY=api_key)
 
         priceline_hotel_id_response = load_test_resource("priceline/bog1-availability-response.json")
         transport = PricelineTransport(test_mode=True)
@@ -193,13 +202,9 @@ class TestHotelsView(SimplenightAPITestCase):
                 last_name="Bog",
                 phone_number="555-867-5309",
                 email="johnbog@simplenight.com",
-                country="US"
+                country="US",
             ),
-            traveler=GoogleTraveler(
-                first_name="John",
-                last_name="Bog",
-                occupancy=RoomParty(children=[10], adults=1)
-            ),
+            traveler=GoogleTraveler(first_name="John", last_name="Bog", occupancy=RoomParty(children=[10], adults=1)),
             room_rate=GoogleBookingRoomRate(
                 code=availability_resp_obj.room_rates[0].code,
                 room_type_code=availability_resp_obj.room_rates[0].room_type_code,
@@ -213,11 +218,7 @@ class TestHotelsView(SimplenightAPITestCase):
             payment=GooglePayment(
                 type=PaymentMethod.PAYMENT_CARD,
                 billing_address=Address(
-                    city="San Francisco",
-                    province="CA",
-                    country="US",
-                    address1="123 Market Street",
-                    postal_code="94111"
+                    city="San Francisco", province="CA", country="US", address1="123 Market Street", postal_code="94111"
                 ),
                 payment_card_parameters=GooglePaymentCardParameters(
                     card_type=CardType.VI,
@@ -225,9 +226,9 @@ class TestHotelsView(SimplenightAPITestCase):
                     cardholder_name="John Bog",
                     expiration_year="2025",
                     expiration_month="05",
-                    cvc="123"
+                    cvc="123",
                 ),
-            )
+            ),
         )
 
         priceline_contract_response = load_test_resource("priceline/bog1-contract-response.json")
@@ -269,4 +270,4 @@ class TestHotelsView(SimplenightAPITestCase):
         if client is None:
             client = self.client
 
-        return client.post(path=endpoint, data=to_json(data), content_type="application/json", format="json")
+        return client.post(path=endpoint, data=to_json(data), format="json")

@@ -104,15 +104,12 @@ def payment(card_number=None):
     )
 
 
-def booking_request(payment_obj=None, rate_code=None, provider=None):
+def booking_request(payment_obj=None, rate_code=None):
     if payment_obj is None:
         payment_obj = payment(card_number="4242424242424242")
 
     if rate_code is None:
         rate_code = "rate_key"
-
-    if provider is None:
-        provider = "stub"
 
     return HotelBookingRequest(
         api_version=1,
@@ -123,7 +120,6 @@ def booking_request(payment_obj=None, rate_code=None, provider=None):
         traveler=traveler(),
         room_code=rate_code,
         payment=payment_obj,
-        provider=provider,
     )
 
 

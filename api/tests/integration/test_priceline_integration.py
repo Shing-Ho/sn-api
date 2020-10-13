@@ -9,7 +9,6 @@ from api.booking import booking_service
 from api.common.models import RoomOccupancy, RateType
 from api.hotel import hotel_service
 from api.hotel.adapters.priceline.priceline import PricelineAdapter
-from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
 from api.models.models import CityMap, Booking, HotelCancellationPolicy
@@ -161,9 +160,7 @@ class TestPricelineUnit(SimplenightTestCase):
 
                     hotel_to_book = availability_response[0]
                     room_to_book = hotel_to_book.room_types[0]
-                    booking_request = test_objects.booking_request(
-                        provider=PricelineInfo.name, rate_code=room_to_book.code
-                    )
+                    booking_request = test_objects.booking_request(rate_code=room_to_book.code)
 
                     booking_response = booking_service.book(booking_request)
                     print(booking_response)
@@ -209,3 +206,38 @@ class TestPricelineUnit(SimplenightTestCase):
         self.assertEqual("USD", results.room_rates[0].postpaid_fees.total.currency)
         self.assertEqual(1, len(results.room_rates[0].postpaid_fees.fees))
         self.assertEqual("Resort Fee", results.room_rates[0].postpaid_fees.fees[0].description)
+
+    @freeze_time("2020-10-12")
+    def test_multi_room(self):
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=31)
+        search = HotelSpecificSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=RoomOccupancy(adults=2, num_rooms=1),
+            hotel_id="700021105",
+            provider="priceline",
+        )
+
+        transport = PricelineTransport(test_mode=True)
+        avail_endpoint = transport.endpoint(PricelineTransport.Endpoint.HOTEL_EXPRESS)
+
+        single_room_response = load_test_resource("priceline/priceline-multiroom-numroom1.json")
+        multi_room_response = load_test_resource("priceline/priceline-multiroom-numroom2.json")
+
+        with requests_mock.Mocker() as mocker:
+            mocker.get(avail_endpoint, text=single_room_response)
+            availability_response = hotel_service.search_by_id(search)
+
+        self.assertEqual(1, availability_response.occupancy.num_rooms)
+        self.assertEqual(Decimal("243.25"), availability_response.room_types[0].total.amount)
+        self.assertEqual(Decimal("199.42"), availability_response.room_types[0].total_base_rate.amount)
+
+        search.occupancy.num_rooms = 2
+        with requests_mock.Mocker() as mocker:
+            mocker.get(avail_endpoint, text=multi_room_response)
+            availability_response = hotel_service.search_by_id(search)
+
+        self.assertEqual(2, availability_response.occupancy.num_rooms)
+        self.assertEqual(Decimal("479.42"), availability_response.room_types[0].total.amount)
+        self.assertEqual(Decimal("398.84"), availability_response.room_types[0].total_base_rate.amount)

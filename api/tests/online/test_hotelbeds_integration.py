@@ -66,7 +66,7 @@ class TestHotelBedsIntegration(SimplenightTestCase):
 
         self.assertIsNotNone(bookable_rooms)
 
-        booking_request = test_objects.booking_request(provider="hotelbeds", rate_code=room_to_book.code)
+        booking_request = test_objects.booking_request(rate_code=room_to_book.code)
         booking_response = booking_service.book(booking_request)
 
         saved_room_data = hotel_cache_service.get_cached_room_data(room_to_book.code)

@@ -271,6 +271,7 @@ class PricelineAdapter(HotelAdapter):
             "check_out": search.end_date,
             "adults": search.occupancy.adults,
             "children": search.occupancy.children,
+            "rooms": search.occupancy.num_rooms,
         }
 
         if search.currency:

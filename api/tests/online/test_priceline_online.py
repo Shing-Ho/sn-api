@@ -130,7 +130,7 @@ class TestPricelineIntegration(SimplenightTestCase):
 
         hotel_to_book = availability_response[0]
         room_to_book = hotel_to_book.room_types[0]
-        booking_request = test_objects.booking_request(provider=PricelineInfo.name, rate_code=room_to_book.code)
+        booking_request = test_objects.booking_request(rate_code=room_to_book.code)
         booking_response = booking_service.book(booking_request)
 
         self.assertIsNotNone(booking_response.transaction_id)

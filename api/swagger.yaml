@@ -481,6 +481,11 @@ components:
           type: integer
           example: 0
           description: The number of children per room
+        num_rooms:
+          type: integer
+          example: 1
+          description: The number of rooms requested.  Applies to the same room type.
+
 
     Capacity:
       type: object
