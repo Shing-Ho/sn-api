@@ -258,6 +258,7 @@ class ProviderHotel(models.Model):
         db_table = "provider_hotel"
         indexes = [
             models.Index(fields=["provider", "provider_code"]),
+
         ]
 
     provider_hotel_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
