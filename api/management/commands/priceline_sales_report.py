@@ -1,7 +1,9 @@
 import json
 import requests
 
+
 from typing import Dict
+from datetime import datetime, timedelta
 
 from django.core.management import BaseCommand
 
@@ -44,14 +46,21 @@ class Command(BaseCommand):
         for item in unmatched_sales_items:
             email_body += str(item) + "\n"
 
-        # print(email_body)
-        print(self.send_email(email_body))
+        if email_body != "":
+            print(self.send_email(email_body))
+        else:
+            print("No differences")
 
     def generate_endpoint(self):
-        time_start = "2020-09-01_00:00:00"
-        time_end = "2020-09-30_23:59:59"
+
+        today = datetime.now().date()
+
+        time_start = f"""{today - timedelta(days=7)}_00:00:00"""
+        time_end = f"""{today}_23:59:59"""
 
         end_point = f"""{ENDPOINT}refid={REF_ID}&api_key={API_KEY}&time_start={time_start}&time_end={time_end}"""
+
+        print(end_point)
         return end_point
 
     def get_sales_report(self):
