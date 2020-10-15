@@ -14,6 +14,7 @@ class PricelineTransport(Transport):
         EXPRESS_CONTRACT = "/hotel/getExpress.Contract"
         HOTELS_DOWNLOAD = "/shared/getBOF2.Downloads.Hotel.Hotels"
         PHOTOS_DOWNLOAD = "/shared/getBOF2.Downloads.Hotel.Photos"
+        SALES_REPORT = "/shared/getTRK.Sales.Select.Hotel"
 
     CREDENTIALS = {
         "refid": "10047",
@@ -83,3 +84,6 @@ class PricelineTransport(Transport):
             return "https://api.rezserver.com/api"
 
         return "https://api-sandbox.rezserver.com/api"
+
+    def sales_report(self, **params):
+        return self.get(self.Endpoint.SALES_REPORT, **params)

@@ -1,7 +1,6 @@
 import json
 import requests
 
-
 from typing import Dict
 from datetime import datetime, timedelta
 
@@ -60,7 +59,7 @@ class Command(BaseCommand):
 
         end_point = f"""{ENDPOINT}refid={REF_ID}&api_key={API_KEY}&time_start={time_start}&time_end={time_end}"""
 
-        print(end_point)
+        # print(end_point)
         return end_point
 
     def get_sales_report(self):
