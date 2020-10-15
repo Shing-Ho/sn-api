@@ -1,3 +1,5 @@
+import requests
+
 from typing import Dict
 from datetime import datetime, timedelta
 
@@ -5,6 +7,10 @@ from django.test import TestCase
 from api.models.models import HotelBooking
 
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
+
+MAIL_GUN_URL = "https://api.mailgun.net/v3/sandbox4d76d5beb24f4ba790d3ccf7cda332c4.mailgun.org/messages"
+MAIL_GUN_API_KEY = "4fc764e45639a2008a075f69a0706591-2fbe671d-1bc16189"
+MAIL_GUN_FROM = "Mailgun Sandbox <postmaster@sandbox4d76d5beb24f4ba790d3ccf7cda332c4.mailgun.org>"
 
 class UnmatchedSaleItem:
     def __init__(self, sale_item: Dict):
@@ -49,3 +55,15 @@ class TestPricelineSales(TestCase):
         response = sales_report.sales_report(time_start=time_start, time_end=time_end)
 
         return response["getSharedTRK.Sales.Select.Hotel"]["results"]["sales_data"]
+
+    def send_email(self, text):
+        return requests.post(
+            MAIL_GUN_URL,
+            auth=("api", MAIL_GUN_API_KEY),
+            data={
+                "from": MAIL_GUN_FROM,
+                "to": "rob@simplenight.com",
+                "subject": "Ghost Report - Priceline Sales Report",
+                "text": text
+            }
+        )
