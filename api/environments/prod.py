@@ -11,10 +11,10 @@ CACHES = {
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "simplenight-api-db",
-        "USER": "simplenight",
-        "PASSWORD": "daux!bauc7nooc7YIP",
-        "HOST": "35.231.161.65",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USERNAME"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
         "PORT": "5432",
         "OPTIONS": {
             "sslmode": "require",
