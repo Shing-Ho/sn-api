@@ -1,11 +1,10 @@
 from typing import Dict
-from datetime import datetime, timedelta
 
 from django.core.management import BaseCommand
 
 from api import logger
-from api.models.models import HotelBooking
-from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
+
+from api.hotel.adapters.priceline.priceline_sales_report import PricelineSalesReport
 
 class UnmatchedSaleItem:
     def __init__(self, sale_item: Dict):
@@ -23,16 +22,10 @@ class UnmatchedSaleItem:
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        sales_data = self.get_sales_report()
+        priceline_sales_report = PricelineSalesReport()
+        sales_data = priceline_sales_report.find_unmatched_bookings()
 
-        priceline_sales_ids = [x["sales_id"] for x in sales_data]
-
-        matching_records = HotelBooking.objects.filter(record_locator__in=priceline_sales_ids)
-
-        matching_records_locators = [x.record_locator for x in matching_records]
-        unmatched_record_locators = set(priceline_sales_ids) - set(matching_records_locators)
-
-        unmatched_sales_items = [UnmatchedSaleItem(x) for x in sales_data if x["sales_id"] in unmatched_record_locators]
+        unmatched_sales_items = [UnmatchedSaleItem(x) for x in sales_data]
 
         email_body = ""
         for item in unmatched_sales_items:
@@ -43,14 +36,3 @@ class Command(BaseCommand):
         else:
             logger.warn("No differences")
 
-    def get_sales_report(self):
-        sales_report = PricelineTransport()
-
-        today = datetime.now().date()
-
-        time_start = f"""{today - timedelta(days=7)}_00:00:00"""
-        time_end = f"""{today}_23:59:59"""
-
-        response = sales_report.sales_report(time_start=time_start, time_end=time_end)
-
-        return response["getSharedTRK.Sales.Select.Hotel"]["results"]["sales_data"]
