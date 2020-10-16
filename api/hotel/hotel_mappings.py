@@ -1,0 +1,38 @@
+from typing import Optional, Dict, List
+
+from api import logger
+from api.models.models import ProviderMapping, ProviderHotel
+
+
+def find_provider_hotel_id(simplenight_hotel_id: str, provider_name: str) -> Optional[str]:
+    logger.info(f"Searching for {provider_name} provider code using SN ID {simplenight_hotel_id}")
+
+    try:
+        mapping = ProviderMapping.objects.get(provider__name=provider_name, giata_code=simplenight_hotel_id)
+        logger.info(f"Found mapping {mapping.provider_code}")
+
+        return mapping.provider_code
+    except ProviderMapping.DoesNotExist:
+        logger.warn(f"Could not find Provider ID for SN ID {simplenight_hotel_id}")
+
+
+def find_provider_hotel(simplenight_hotel_id: str, provider_name: str) -> Optional[ProviderHotel]:
+    provider_code = find_provider_hotel_id(simplenight_hotel_id, provider_name)
+    if provider_code:
+        logger.info(f"Searching for provider hotel using provider code {provider_code}")
+
+        try:
+            provider_hotel = ProviderHotel.objects.get(provider__name=provider_name, provider_code=provider_code)
+            logger.info(f"Found provider hotel {provider_hotel.hotel_name}")
+
+            return provider_hotel
+        except ProviderHotel.DoesNotExist:
+            logger.warn(f"Could not find ProviderHotel for SN ID {simplenight_hotel_id}")
+
+
+def find_simplenight_to_provider_code_map(provider_name: str, provider_codes: List[str]) -> Dict[str, str]:
+    simplenight_hotel_mappings = ProviderMapping.objects.filter(
+        provider__name=provider_name, provider_code__in=provider_codes
+    )
+
+    return {x.giata_code: x.provider_code for x in simplenight_hotel_mappings}

@@ -3,6 +3,7 @@ from typing import List
 
 from api.booking.booking_model import HotelBookingRequest, Reservation
 from api.common.models import RoomRate
+from api.hotel import hotel_mappings
 from api.hotel.hotel_model import (
     HotelLocationSearch,
     HotelSpecificSearch,
@@ -60,3 +61,6 @@ class HotelAdapter(abc.ABC):
             )
 
         return provider_location
+
+    def get_provider_hotel_mapping(self, search_request: HotelSpecificSearch):
+        return hotel_mappings.find_provider_hotel_id(search_request.hotel_id, self.get_provider_name())
