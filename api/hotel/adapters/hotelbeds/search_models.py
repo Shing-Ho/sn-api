@@ -15,7 +15,8 @@ from api.hotel.adapters.hotelbeds.common_models import (
     HotelBedsCancellationPoliciesRS,
     HotelBedsPaymentType,
 )
-from api.hotel.hotel_api_model import HotelLocationSearch, BaseSchema
+from api.hotel.hotel_api_model import BaseSchema
+from api.hotel.hotel_models import AdapterLocationSearch
 
 
 @dataclasses.dataclass
@@ -143,7 +144,7 @@ class HotelBedsCheckRatesRS:
 
 class HotelBedsSearchBuilder:
     @staticmethod
-    def build(request: HotelLocationSearch) -> HotelBedsAvailabilityRQ:
+    def build(request: AdapterLocationSearch) -> HotelBedsAvailabilityRQ:
         stay = HotelBedsStayRQ(request.start_date, request.end_date)
         destination = HotelBedsDestinationRQ(request.location_id)
         language = get_language_mapping(request.language)
@@ -157,7 +158,6 @@ class HotelBedsSearchBuilder:
             stay=stay,
             occupancies=occupancy,
             destination=destination,
-            daily_rates=request.daily_rates,
             language=language,
         )
 

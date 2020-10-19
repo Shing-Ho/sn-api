@@ -2,14 +2,13 @@ import decimal
 import random
 import uuid
 from datetime import timedelta
-from typing import List, Union
+from typing import List
 
-from api.booking.booking_model import Reservation, HotelBookingRequest, HotelBookingResponse, Locator, Status
+from api.booking.booking_model import Reservation, HotelBookingRequest, Locator
 from api.common.models import RateType, RoomRate, DailyRate, Money
 from api.hotel import hotel_cache_service
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_api_model import (
-    HotelLocationSearch,
     AdapterHotel,
     RoomOccupancy,
     RoomType,
@@ -26,6 +25,7 @@ from api.hotel.hotel_api_model import (
     SimplenightAmenities,
     CancellationSummary,
 )
+from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
 
@@ -35,12 +35,12 @@ class StubHotelAdapter(HotelAdapter):
 
     PROVIDER_NAME = "stub"
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
+    def search_by_location(self, search: AdapterLocationSearch) -> List[AdapterHotel]:
         num_hotels_to_return = random.randint(10, 50)
 
-        return [self.search_by_id(search_request) for _ in range(num_hotels_to_return)]
+        return [self.search_by_id(search) for _ in range(num_hotels_to_return)]
 
-    def search_by_id(self, search_request: Union[BaseHotelSearch, HotelSpecificSearch]) -> AdapterHotel:
+    def search_by_id(self, search_request: AdapterBaseSearch) -> AdapterHotel:
         hotel_code = random_string(5).upper()
         if isinstance(search_request, HotelSpecificSearch) and search_request.hotel_id:
             hotel_code = search_request.hotel_id
@@ -69,7 +69,7 @@ class StubHotelAdapter(HotelAdapter):
     def details(self, *args):
         return self._generate_hotel_details(city="Foo")
 
-    def booking_availability(self, search_request: BaseHotelSearch):
+    def booking_availability(self, search_request: AdapterBaseSearch):
         return self.search_by_id(search_request)
 
     def booking(self, book_request: HotelBookingRequest) -> Reservation:

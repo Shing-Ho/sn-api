@@ -48,12 +48,17 @@ class TestHotelsView(SimplenightAPITestCase):
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
 
-        search = HotelSpecificSearch(start_date=checkin, end_date=checkout, occupancy=RoomOccupancy(adults=1))
-        response = self._post(SEARCH_BY_ID, search)
+        search = HotelSpecificSearch(
+            hotel_id="SN123", start_date=checkin, end_date=checkout, occupancy=RoomOccupancy(adults=1), provider="stub"
+        )
+
+        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+            mock_find_provider.return_value = "ABC123"
+            response = self._post(SEARCH_BY_ID, search)
+
         self.assertEqual(200, response.status_code)
 
         hotel: Hotel = SimplenightHotel.Schema().load(response.json())
-
         self.assertIsNotNone(hotel.hotel_id)
 
     def test_search_by_location(self):
@@ -155,7 +160,7 @@ class TestHotelsView(SimplenightAPITestCase):
         search = GoogleHotelSearchRequest(
             api_version=1,
             transaction_id="foo",
-            hotel_id="700363264",
+            hotel_id="ABC123",
             start_date=checkin,
             end_date=checkout,
             party=RoomParty(children=[10], adults=1),
@@ -172,9 +177,11 @@ class TestHotelsView(SimplenightAPITestCase):
         transport = PricelineTransport(test_mode=True)
 
         avail_endpoint = transport.endpoint(transport.Endpoint.HOTEL_EXPRESS)
-        with requests_mock.Mocker() as mocker:
-            mocker.get(avail_endpoint, text=priceline_hotel_id_response)
-            response = self._post(endpoint=BOG_SEARCH_BY_ID, data=search, client=client)
+        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+            mock_find_provider.return_value = "700363264"
+            with requests_mock.Mocker() as mocker:
+                mocker.get(avail_endpoint, text=priceline_hotel_id_response)
+                response = self._post(endpoint=BOG_SEARCH_BY_ID, data=search, client=client)
 
         self.assertEqual(200, response.status_code)
 

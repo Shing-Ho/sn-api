@@ -11,6 +11,7 @@ from api.hotel import hotel_service
 from api.hotel.adapters.priceline.priceline import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
+from api.hotel.hotel_models import AdapterHotelSearch, AdapterOccupancy, AdapterLocationSearch
 from api.models.models import CityMap, Booking, HotelCancellationPolicy
 from api.tests import test_objects
 from api.tests.integration import test_models
@@ -38,8 +39,14 @@ class TestPricelineUnit(SimplenightTestCase):
         hotel_id = "700363264"
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
-        occupancy = RoomOccupancy()
-        search = HotelSpecificSearch(start_date=checkin, end_date=checkout, occupancy=occupancy, hotel_id=hotel_id)
+        occupancy = AdapterOccupancy()
+        search = AdapterHotelSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=occupancy,
+            provider_hotel_id=hotel_id,
+            simplenight_hotel_id="SN123",
+        )
 
         # Null mandatory fees
         priceline_contract_response = load_test_resource("priceline/priceline-postpaid-contract2.json")
@@ -76,9 +83,8 @@ class TestPricelineUnit(SimplenightTestCase):
         location = "1"
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
-        occupancy = RoomOccupancy()
-        search_request = HotelLocationSearch(
-            start_date=checkin, end_date=checkout, occupancy=occupancy, location_id=location
+        search_request = AdapterLocationSearch(
+            start_date=checkin, end_date=checkout, occupancy=AdapterOccupancy(), location_id=location
         )
 
         resource_file = "priceline/priceline-hotel-express-city-cancellable-rates.json"
@@ -190,8 +196,13 @@ class TestPricelineUnit(SimplenightTestCase):
         hotel_id = "700033110"
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
-        occupancy = RoomOccupancy()
-        search = HotelSpecificSearch(start_date=checkin, end_date=checkout, occupancy=occupancy, hotel_id=hotel_id)
+        search = AdapterHotelSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=AdapterOccupancy(),
+            provider_hotel_id=hotel_id,
+            simplenight_hotel_id="SN123",
+        )
 
         priceline_hotel_id_response = load_test_resource("priceline/priceline-postpaid-hotelavail.json")
         priceline_contract_response = load_test_resource("priceline/priceline-postpaid-contract1.json")
@@ -225,18 +236,22 @@ class TestPricelineUnit(SimplenightTestCase):
         single_room_response = load_test_resource("priceline/priceline-multiroom-numroom1.json")
         multi_room_response = load_test_resource("priceline/priceline-multiroom-numroom2.json")
 
-        with requests_mock.Mocker() as mocker:
-            mocker.get(avail_endpoint, text=single_room_response)
-            availability_response = hotel_service.search_by_id(search)
+        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+            mock_find_provider.return_value = "ABC123"
+            with requests_mock.Mocker() as mocker:
+                mocker.get(avail_endpoint, text=single_room_response)
+                availability_response = hotel_service.search_by_id(search)
 
         self.assertEqual(1, availability_response.occupancy.num_rooms)
         self.assertEqual(Decimal("243.25"), availability_response.room_types[0].total.amount)
         self.assertEqual(Decimal("199.42"), availability_response.room_types[0].total_base_rate.amount)
 
         search.occupancy.num_rooms = 2
-        with requests_mock.Mocker() as mocker:
-            mocker.get(avail_endpoint, text=multi_room_response)
-            availability_response = hotel_service.search_by_id(search)
+        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+            mock_find_provider.return_value = "ABC123"
+            with requests_mock.Mocker() as mocker:
+                mocker.get(avail_endpoint, text=multi_room_response)
+                availability_response = hotel_service.search_by_id(search)
 
         self.assertEqual(2, availability_response.occupancy.num_rooms)
         self.assertEqual(Decimal("479.42"), availability_response.room_types[0].total.amount)

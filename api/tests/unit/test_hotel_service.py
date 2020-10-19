@@ -1,12 +1,12 @@
 from datetime import date
-
-from django.test import TestCase
+from unittest.mock import patch
 
 from api.hotel import hotel_service
 from api.hotel.hotel_api_model import HotelSpecificSearch, RoomOccupancy, HotelLocationSearch, SimplenightHotel
+from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
-class TestHotelService(TestCase):
+class TestHotelService(SimplenightTestCase):
     def test_search_by_hotel_id(self):
         search_request = HotelSpecificSearch(
             hotel_id="A1H2J6",
@@ -16,7 +16,10 @@ class TestHotelService(TestCase):
             provider="stub",
         )
 
-        hotel = hotel_service.search_by_id(search_request)
+        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+            mock_find_provider.return_value = "ABC123"
+            hotel = hotel_service.search_by_id(search_request)
+
         self.assertIsNotNone(hotel)
         self.assertTrue(isinstance(hotel, SimplenightHotel))
 

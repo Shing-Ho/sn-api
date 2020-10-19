@@ -16,29 +16,35 @@ from api.booking.booking_model import (
     Reservation,
     Locator,
 )
-from api.common.models import RoomRate, RoomOccupancy, Money, RateType, Address, PostpaidFees, LineItemType, \
-    PostpaidFeeLineItem
+from api.common.models import (
+    RoomRate,
+    RoomOccupancy,
+    Money,
+    RateType,
+    Address,
+    PostpaidFees,
+    LineItemType,
+    PostpaidFeeLineItem,
+)
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_api_model import (
     HotelDetails,
-    HotelSpecificSearch,
     AdapterHotel,
-    HotelLocationSearch,
     RoomType,
     RatePlan,
     CancellationPolicy,
     CancellationSummary,
     GeoLocation,
-    BaseHotelSearch,
     SimplenightAmenities,
     Image,
     ImageType,
     CancellationDetails,
 )
+from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelSearch
 from api.models.models import supplier_priceline, ProviderImages
-from api.view.exceptions import AvailabilityException, BookingException
+from api.view.exceptions import AvailabilityException, BookingException, AvailabilityErrorCode
 
 
 class PricelineAdapter(HotelAdapter):
@@ -50,19 +56,19 @@ class PricelineAdapter(HotelAdapter):
         self.adapter_info = PricelineInfo()
         self.provider = self.adapter_info.get_or_create_provider_id()
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
-        request = self._create_city_search(search_request)
+    def search_by_location(self, search: AdapterLocationSearch) -> List[AdapterHotel]:
+        request = self._create_city_search(search)
         logger.info(f"Initiating Priceline City Express Search: {request}")
 
         response = self.transport.hotel_express(limit=50, **request)
         hotel_results = self._check_hotel_express_response_and_get_results(response)
 
-        hotels = list(map(lambda result: self._create_hotel_from_response(search_request, result), hotel_results))
+        hotels = list(map(lambda result: self._create_hotel_from_response(search, result), hotel_results))
         self._enrich_hotels(hotels)
 
         return hotels
 
-    def search_by_id(self, search: HotelSpecificSearch) -> AdapterHotel:
+    def search_by_id(self, search: AdapterHotelSearch) -> AdapterHotel:
         request = self._create_hotel_id_search(search)
         logger.info(f"Initiating Priceline Hotel Express Search: {request}")
 
@@ -98,7 +104,9 @@ class PricelineAdapter(HotelAdapter):
     def _get_postpaid_fees_from_contract_response(self, contract_response):
         results = contract_response["getHotelExpress.Contract"]["results"]
         if results["status"] != "Success":
-            raise AvailabilityException("Could not parse postpaid fees")
+            raise AvailabilityException(
+                detail="Could not parse postpaid fees", error_type=AvailabilityErrorCode.PROVIDER_ERROR
+            )
 
         room_data = results["hotel_data"][0]["room_data"][0]
         rate_data = room_data["rate_data"][0]
@@ -211,13 +219,13 @@ class PricelineAdapter(HotelAdapter):
             "cvc_code": payment_card_params.cvv,
         }
 
-    def _create_hotel_id_search(self, search: HotelSpecificSearch):
+    def _create_hotel_id_search(self, search: AdapterHotelSearch):
         return {
             **self._create_base_search(search),
-            "hotel_ids": search.hotel_id,
+            "hotel_ids": search.provider_hotel_id,
         }
 
-    def _create_city_search(self, search: HotelLocationSearch):
+    def _create_city_search(self, search: AdapterLocationSearch):
         priceline_location = self.get_provider_location(search)
         priceline_location_code = priceline_location.provider_code
 
@@ -265,7 +273,7 @@ class PricelineAdapter(HotelAdapter):
         return list(map(SimplenightAmenities.from_value, amenities))
 
     @staticmethod
-    def _create_base_search(search: BaseHotelSearch):
+    def _create_base_search(search: AdapterBaseSearch):
         params = {
             "check_in": search.start_date,
             "check_out": search.end_date,
@@ -282,12 +290,14 @@ class PricelineAdapter(HotelAdapter):
     @staticmethod
     def _check_hotel_express_operation_response_and_get_results(response, operation):
         if response is None or operation not in response:
-            raise AvailabilityException(code=PricelineErrorCodes.GENERIC_ERROR, detail="Could not retrieve response")
+            raise AvailabilityException(
+                error_type=AvailabilityErrorCode.PROVIDER_ERROR, detail="Could not retrieve response"
+            )
 
         results = response[operation]
         if "error" in results:
             error_message = results["error"]["status"]
-            raise AvailabilityException(code=PricelineErrorCodes.AVAILABILITY_ERROR, detail=error_message)
+            raise AvailabilityException(error_type=AvailabilityErrorCode.PROVIDER_ERROR, detail=error_message)
 
         return results["results"]["hotel_data"]
 
@@ -354,7 +364,7 @@ class PricelineAdapter(HotelAdapter):
             total_tax_rate=Money(Decimal(price_details["display_taxes"]), display_currency),
             total=Money(Decimal(price_details["display_total"]), display_currency),
             rate_type=RateType.BOOKABLE,
-            postpaid_fees=self._parse_postpaid_fees_from_priceline_rate(rate_data)
+            postpaid_fees=self._parse_postpaid_fees_from_priceline_rate(rate_data),
         )
 
     @staticmethod

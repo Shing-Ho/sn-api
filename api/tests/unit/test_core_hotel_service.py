@@ -71,21 +71,27 @@ class TestCoreHotelService(SimplenightTestCase):
         hotel.room_types = [room_type_one, room_type_two]
 
         # Room Nights = 1
-        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(hotel)
+        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(
+            hotel
+        )
         assert min_nightly_base == 85
         assert min_nightly_tax == 15
         assert min_nightly_total == 100
 
         # Room Nights = 2
         hotel.end_date = date(2020, 1, 3)
-        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(hotel)
+        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(
+            hotel
+        )
         assert min_nightly_base == 42.5
         assert min_nightly_tax == 7.50
         assert min_nightly_total == 50
 
         # Same Date, Room Nights = 1
         hotel.end_date = date(2020, 1, 1)
-        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(hotel)
+        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(
+            hotel
+        )
         assert min_nightly_base == 85
         assert min_nightly_tax == 15
         assert min_nightly_total == 100
@@ -108,8 +114,10 @@ class TestCoreHotelService(SimplenightTestCase):
             party=RoomParty(adults=search_request.occupancy.adults, children=[]),
         )
 
-        hotel = core_hotel_service.search_by_id(search_request)
-        google_hotel = converter.google.convert_hotel_response(google_search_request, hotel)
+        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+            mock_find_provider.return_value = "ABC123"
+            hotel = core_hotel_service.search_by_id(search_request)
+            google_hotel = converter.google.convert_hotel_response(google_search_request, hotel)
 
         self.assertIsNotNone(google_hotel)
 

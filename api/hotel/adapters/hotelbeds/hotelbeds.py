@@ -1,8 +1,7 @@
-import uuid
 from typing import List, Union, Optional
 
 from api import logger
-from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse, Reservation, Locator, Status
+from api.booking.booking_model import HotelBookingRequest, Reservation, Locator
 from api.common.models import RateType, RoomRate, Money
 from api.hotel.adapters.hotelbeds.booking_models import (
     HotelBedsBookingRQ,
@@ -34,16 +33,15 @@ from api.hotel.hotel_api_model import (
     HotelSpecificSearch,
     HotelDetails,
     AdapterHotel,
-    HotelLocationSearch,
     Address,
-    BaseHotelSearch,
     RoomOccupancy,
     RoomType,
     RatePlan,
     CancellationPolicy,
     CancellationSummary,
 )
-from api.view.exceptions import AvailabilityException
+from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch
+from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
 class HotelBeds(HotelAdapter):
@@ -55,17 +53,19 @@ class HotelBeds(HotelAdapter):
 
         self.transport = transport
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
-        availability_results = self._search_by_location(search_request)
+    def search_by_location(self, search: AdapterLocationSearch) -> List[AdapterHotel]:
+        availability_results = self._search_by_location(search)
 
         if availability_results.error or availability_results.results.total == 0:
             if availability_results.error:
-                raise AvailabilityException(detail=availability_results.error.message, code=1)
+                raise AvailabilityException(
+                    detail=availability_results.error.message, error_type=AvailabilityErrorCode.PROVIDER_ERROR
+                )
             else:
                 return []
 
         hotel_codes = list(map(lambda x: str(x.code), availability_results.results.hotels))
-        hotel_details = self._details(hotel_codes, search_request.language)
+        hotel_details = self._details(hotel_codes, search.language)
         hotel_details_map = {x.code: x for x in hotel_details.hotels}
 
         hotels = []
@@ -75,12 +75,12 @@ class HotelBeds(HotelAdapter):
             if hotel.code in hotel_details_map:
                 hotel_details = hotel_details_map[hotel.code]
 
-            hotel = self._create_hotel(search_request, hotel, hotel_details)
+            hotel = self._create_hotel(search, hotel, hotel_details)
             hotels.append(hotel)
 
         return hotels
 
-    def _search_by_location(self, search_request: HotelLocationSearch) -> HotelBedsAvailabilityRS:
+    def _search_by_location(self, search_request: AdapterLocationSearch) -> HotelBedsAvailabilityRS:
         request = HotelBedsSearchBuilder.build(search_request)
         endpoint = self.transport.get_hotels_url()
         response = self.transport.post(endpoint, request)
@@ -186,6 +186,7 @@ class HotelBeds(HotelAdapter):
 
         hotelbeds_booking_response: HotelBedsBookingRS = HotelBedsBookingRS.Schema().loads(response.text)
 
+        # TODO JLM: Parse checkin, checkout and room rate from HotelBeds booking response
         return Reservation(
             locator=Locator(hotelbeds_booking_response.booking.reference),
             hotel_locator=None,
@@ -206,7 +207,7 @@ class HotelBeds(HotelAdapter):
         return "http://photos.hotelbeds.com/giata/bigger/"
 
     def _create_hotel(
-        self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail
+        self, search: AdapterBaseSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail
     ) -> AdapterHotel:
 
         room_types = list(map(lambda x: self._create_room_type(x), hotel.rooms))
@@ -340,5 +341,3 @@ class HotelBeds(HotelAdapter):
     @classmethod
     def get_provider_name(cls):
         return cls.PROVIDER_NAME
-
-

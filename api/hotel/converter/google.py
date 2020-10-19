@@ -148,9 +148,9 @@ def convert_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Hote
     return GoogleHotelApiResponse(
         api_version=1,
         transaction_id=search_request.transaction_id,
-        hotel_id=search_request.hotel_id,
-        start_date=search_request.start_date,
-        end_date=search_request.end_date,
+        hotel_id=hotel.hotel_id,
+        start_date=hotel.start_date,
+        end_date=hotel.end_date,
         party=search_request.party,
         room_types=room_types,
         rate_plans=rate_plans,

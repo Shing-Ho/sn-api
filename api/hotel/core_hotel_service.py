@@ -1,11 +1,10 @@
 from decimal import Decimal, ROUND_UP, getcontext
-from decimal import Decimal, ROUND_UP, getcontext
 from typing import List, Union, Tuple, Callable
 
 from api import logger
 from api.booking.booking_model import HotelBookingRequest
 from api.common.models import RoomRate
-from api.hotel import markups, hotel_cache_service
+from api.hotel import markups, hotel_cache_service, hotel_mappings
 from api.hotel.adapters import adapter_service
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_api_model import (
@@ -19,8 +18,9 @@ from api.hotel.hotel_api_model import (
     Image,
     ImageType,
 )
+from api.hotel.hotel_models import AdapterHotelSearch, AdapterOccupancy
 from api.models.models import ProviderImages, ProviderMapping
-from api.view.exceptions import SimplenightApiException
+from api.view.exceptions import SimplenightApiException, AvailabilityException, AvailabilityErrorCode
 
 
 def search_by_location(search_request: HotelLocationSearch) -> List[Hotel]:
@@ -32,10 +32,12 @@ def search_by_id(search_request: HotelSpecificSearch) -> Hotel:
     adapters_to_search = adapter_service.get_adapters_to_search(search_request)
     adapters = adapter_service.get_adapters(adapters_to_search)
 
+    adapter_search_request = _adapter_search_request(search_request, adapters[0].get_provider_name())
+
     if len(adapters) > 1:
         raise SimplenightApiException("More than one adapter specified in hotel specific search", 500)
 
-    hotel = adapters[0].search_by_id(search_request)
+    hotel = adapters[0].search_by_id(adapter_search_request)
     return _process_hotels(hotel)
 
 
@@ -171,3 +173,27 @@ def _calculate_hotel_min_nightly_rates(hotel: Union[Hotel, AdapterHotel]) -> Tup
     min_nightly_base = _get_nightly_rate(hotel, least_cost_rate.total_base_rate.amount)
 
     return min_nightly_base, min_nightly_tax, min_nightly_total
+
+
+def _adapter_search_request(search: HotelSpecificSearch, provider_name: str) -> AdapterHotelSearch:
+    provider_hotel_id = hotel_mappings.find_provider_hotel_id(search.hotel_id, provider_name)
+    if not provider_hotel_id:
+        raise AvailabilityException(
+            detail="Provider hotel mapping not found", error_type=AvailabilityErrorCode.HOTEL_NOT_FOUND
+        )
+
+    occupancy = AdapterOccupancy(
+        adults=search.occupancy.adults,
+        children=search.occupancy.children,
+        num_rooms=search.occupancy.num_rooms
+    )
+
+    return AdapterHotelSearch(
+        start_date=search.start_date,
+        end_date=search.end_date,
+        occupancy=occupancy,
+        language=search.language,
+        currency=search.currency,
+        provider_hotel_id=provider_hotel_id,
+        simplenight_hotel_id=search.hotel_id
+    )

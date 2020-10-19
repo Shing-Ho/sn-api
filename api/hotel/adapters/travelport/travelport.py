@@ -8,7 +8,6 @@ from api.hotel.adapters.travelport.search import TravelportHotelSearchBuilder
 from api.hotel.adapters.travelport.transport import TravelportTransport
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_api_model import (
-    HotelLocationSearch,
     HotelAdapterHotel,
     Address,
     HotelRate,
@@ -18,6 +17,7 @@ from api.hotel.hotel_api_model import (
     AdapterHotel,
     GeoLocation,
 )
+from api.hotel.hotel_models import AdapterLocationSearch
 
 secrets = {
     "url": "https://americas.universal-api.travelport.com/B2BGateway/connect/uAPI/HotelService",
@@ -33,9 +33,9 @@ class TravelportHotelAdapter(HotelAdapter):
         if transport is None:
             self.transport = TravelportTransport()
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelAdapterHotel]:
+    def search_by_location(self, search: AdapterLocationSearch) -> List[HotelAdapterHotel]:
         hotel_search_service = self.transport.create_hotel_search_service()
-        request = TravelportHotelSearchBuilder().build(search_request)
+        request = TravelportHotelSearchBuilder().build(search)
         response = hotel_search_service.service(**request)
 
         hotel_response = response["HotelSuperShopperResults"]
