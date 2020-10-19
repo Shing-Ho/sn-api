@@ -1,7 +1,6 @@
 from decimal import Decimal, ROUND_UP, getcontext
 from typing import List, Union, Dict, Optional
 
-from api.booking.booking_model import HotelBookingRequest
 from api.common.models import RoomRate, Money
 from api.hotel import core_hotel_service
 from api.hotel.hotel_api_model import (
@@ -39,10 +38,6 @@ def details(hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:
 
 def recheck(provider: str, room_rate: RoomRate) -> RoomRate:
     return core_hotel_service.recheck(provider, room_rate)
-
-
-def booking(book_request: HotelBookingRequest):
-    return core_hotel_service.booking(book_request)
 
 
 def _get_nightly_rate(hotel: Union[Hotel, AdapterHotel], amount: Decimal):

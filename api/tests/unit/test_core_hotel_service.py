@@ -28,7 +28,10 @@ class TestCoreHotelService(SimplenightTestCase):
             provider="stub",
         )
 
-        hotels = core_hotel_service.search_by_location(search_request)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            hotels = core_hotel_service.search_by_location(search_request)
+
         room_rates = [room_rate for hotel in hotels for room_rate in hotel.room_rates]
         assert len(room_rates) > 10
 
@@ -114,10 +117,12 @@ class TestCoreHotelService(SimplenightTestCase):
             party=RoomParty(adults=search_request.occupancy.adults, children=[]),
         )
 
-        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
-            mock_find_provider.return_value = "ABC123"
-            hotel = core_hotel_service.search_by_id(search_request)
-            google_hotel = converter.google.convert_hotel_response(google_search_request, hotel)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+                mock_find_provider.return_value = "ABC123"
+                hotel = core_hotel_service.search_by_id(search_request)
+                google_hotel = converter.google.convert_hotel_response(google_search_request, hotel)
 
         self.assertIsNotNone(google_hotel)
 
@@ -141,9 +146,11 @@ class TestCoreHotelService(SimplenightTestCase):
         stub_adapter = StubHotelAdapter()
         stub_adapter.search_by_location = lambda x: [hotel]
 
-        with patch("api.hotel.adapters.adapter_service.get_adapters") as mock_adapter_service:
-            mock_adapter_service.return_value = [stub_adapter]
-            hotels = core_hotel_service.search_by_location(search_request)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            with patch("api.hotel.adapters.adapter_service.get_adapters") as mock_adapter_service:
+                mock_adapter_service.return_value = [stub_adapter]
+                hotels = core_hotel_service.search_by_location(search_request)
 
         # Two Room Nights, So average nightly rate is 0.5 Total
         # Average is applied after default markup of 18%

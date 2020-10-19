@@ -1,5 +1,6 @@
 import random
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from api.booking import booking_service
 from api.common.models import RateType
@@ -57,7 +58,9 @@ class TestHotelBedsOnline(SimplenightTestCase):
             provider="hotelbeds",
         )
 
-        availability_response = hotel_service.search_by_location(search)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            availability_response = hotel_service.search_by_location(search)
 
         # Find first hotel with a bookable rate
         all_rooms = [room for hotel in availability_response for room in hotel.room_types]

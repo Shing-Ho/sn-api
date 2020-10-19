@@ -50,9 +50,11 @@ class TestHotelsView(SimplenightAPITestCase):
             hotel_id="SN123", start_date=checkin, end_date=checkout, occupancy=RoomOccupancy(adults=1), provider="stub"
         )
 
-        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
-            mock_find_provider.return_value = "ABC123"
-            response = self._post(SEARCH_BY_ID, search)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+                mock_find_provider.return_value = "ABC123"
+                response = self._post(SEARCH_BY_ID, search)
 
         self.assertEqual(200, response.status_code)
 
@@ -66,7 +68,10 @@ class TestHotelsView(SimplenightAPITestCase):
             start_date=checkin, end_date=checkout, occupancy=RoomOccupancy(adults=1), location_id="SFO"
         )
 
-        response = self._post(SEARCH_BY_LOCATION, search)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            response = self._post(SEARCH_BY_LOCATION, search)
+
         self.assertEqual(200, response.status_code)
 
         hotels = from_json(response.content, SimplenightHotel, many=True)
@@ -84,7 +89,10 @@ class TestHotelsView(SimplenightAPITestCase):
             provider="hotelbeds",
         )
 
-        response = self._post(SEARCH_BY_LOCATION, search)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            response = self._post(SEARCH_BY_LOCATION, search)
+
         self.assertEqual(200, response.status_code)
 
         hotels = from_json(response.content, SimplenightHotel, many=True)
@@ -175,11 +183,13 @@ class TestHotelsView(SimplenightAPITestCase):
         transport = PricelineTransport(test_mode=True)
 
         avail_endpoint = transport.endpoint(transport.Endpoint.HOTEL_EXPRESS)
-        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
-            mock_find_provider.return_value = "700363264"
-            with requests_mock.Mocker() as mocker:
-                mocker.get(avail_endpoint, text=priceline_hotel_id_response)
-                response = self._post(endpoint=BOG_SEARCH_BY_ID, data=search, client=client)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+                mock_find_provider.return_value = "700363264"
+                with requests_mock.Mocker() as mocker:
+                    mocker.get(avail_endpoint, text=priceline_hotel_id_response)
+                    response = self._post(endpoint=BOG_SEARCH_BY_ID, data=search, client=client)
 
         self.assertEqual(200, response.status_code)
 
@@ -187,7 +197,7 @@ class TestHotelsView(SimplenightAPITestCase):
         self.assertIsNotNone(availability_resp_obj)
         self.assertEqual(1, availability_resp_obj.api_version)
         self.assertEqual("foo", availability_resp_obj.transaction_id)
-        self.assertEqual("700363264", availability_resp_obj.hotel_id)
+        self.assertEqual("123", availability_resp_obj.hotel_id)
         self.assertEqual("2020-01-31", str(availability_resp_obj.start_date))
         self.assertEqual("2020-02-05", str(availability_resp_obj.end_date))
         self.assertEqual([10], availability_resp_obj.party.children)

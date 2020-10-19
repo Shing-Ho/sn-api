@@ -56,12 +56,12 @@ class Traveler(SimplenightModel):
 
 
 class CardType(Enum):
-    AX = "American Express"
-    DC = "Diner's Club"
-    DS = "Discovery"
-    JC = "JCB"
-    MC = "Mastercard"
-    VI = "Visa"
+    AX = "AX"
+    DC = "DC"
+    DS = "DS"
+    JC = "JC"
+    MC = "MC"
+    VI = "VI"
 
 
 class PaymentMethod(Enum):

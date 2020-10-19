@@ -1,9 +1,12 @@
 from typing import Optional, Dict, List
 
+from cachetools.func import ttl_cache
+
 from api import logger
 from api.models.models import ProviderMapping, ProviderHotel
 
 
+@ttl_cache(maxsize=65536, ttl=86400)
 def find_provider_hotel_id(simplenight_hotel_id: str, provider_name: str) -> Optional[str]:
     logger.info(f"Searching for {provider_name} provider code using SN ID {simplenight_hotel_id}")
 
@@ -16,6 +19,7 @@ def find_provider_hotel_id(simplenight_hotel_id: str, provider_name: str) -> Opt
         logger.warn(f"Could not find Provider ID for SN ID {simplenight_hotel_id}")
 
 
+@ttl_cache(maxsize=65536, ttl=86400)
 def find_provider_hotel(simplenight_hotel_id: str, provider_name: str) -> Optional[ProviderHotel]:
     provider_code = find_provider_hotel_id(simplenight_hotel_id, provider_name)
     if provider_code:
@@ -28,6 +32,19 @@ def find_provider_hotel(simplenight_hotel_id: str, provider_name: str) -> Option
             return provider_hotel
         except ProviderHotel.DoesNotExist:
             logger.warn(f"Could not find ProviderHotel for SN ID {simplenight_hotel_id}")
+
+
+@ttl_cache(maxsize=65536, ttl=86400)
+def find_simplenight_hotel_id(provider_hotel_id: str, provider_name: str) -> Optional[str]:
+    logger.info(f"Searching for Simplenight hotel ID using {provider_name} ID {provider_hotel_id}")
+
+    try:
+        mapping = ProviderMapping.objects.get(provider__name=provider_name, provider_code=provider_hotel_id)
+        logger.info(f"Found mapping {mapping.provider_code}")
+
+        return mapping.giata_code
+    except ProviderMapping.DoesNotExist:
+        logger.warn(f"Could not find Simplenight ID for {provider_name }ID {provider_hotel_id}")
 
 
 def find_simplenight_to_provider_code_map(provider_name: str, provider_codes: List[str]) -> Dict[str, str]:

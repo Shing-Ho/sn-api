@@ -154,22 +154,22 @@ class TestPricelineUnit(SimplenightTestCase):
                     "amount": 100.00,
                     "object": "settled",
                 }
+                with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+                    mock_find_simplenight_id.return_value = "123"
+                    with requests_mock.Mocker() as mocker:
+                        mocker.get(avail_endpoint, text=priceline_city_search_resource)
+                        mocker.post(recheck_endpoint, text=priceline_recheck_response)
+                        mocker.post(book_endpoint, text=priceline_booking_response)
+                        availability_response = hotel_service.search_by_location(search)
 
-                with requests_mock.Mocker() as mocker:
-                    mocker.get(avail_endpoint, text=priceline_city_search_resource)
-                    mocker.post(recheck_endpoint, text=priceline_recheck_response)
-                    mocker.post(book_endpoint, text=priceline_booking_response)
-                    availability_response = hotel_service.search_by_location(search)
+                        self.assertTrue(len(availability_response) >= 1)
+                        self.assertTrue(len(availability_response[0].room_types) >= 1)
 
-                    self.assertTrue(len(availability_response) >= 1)
-                    self.assertTrue(len(availability_response[0].room_types) >= 1)
+                        hotel_to_book = availability_response[0]
+                        room_to_book = hotel_to_book.room_types[0]
+                        booking_request = test_objects.booking_request(rate_code=room_to_book.code)
 
-                    hotel_to_book = availability_response[0]
-                    room_to_book = hotel_to_book.room_types[0]
-                    booking_request = test_objects.booking_request(rate_code=room_to_book.code)
-
-                    booking_response = booking_service.book(booking_request)
-                    print(booking_response)
+                        booking_response = booking_service.book(booking_request)
 
         booking = Booking.objects.get(transaction_id=booking_response.transaction_id)
         booking_id = booking.booking_id
@@ -236,22 +236,27 @@ class TestPricelineUnit(SimplenightTestCase):
         single_room_response = load_test_resource("priceline/priceline-multiroom-numroom1.json")
         multi_room_response = load_test_resource("priceline/priceline-multiroom-numroom2.json")
 
-        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
-            mock_find_provider.return_value = "ABC123"
-            with requests_mock.Mocker() as mocker:
-                mocker.get(avail_endpoint, text=single_room_response)
-                availability_response = hotel_service.search_by_id(search)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+                mock_find_provider.return_value = "ABC123"
+                with requests_mock.Mocker() as mocker:
+                    mocker.get(avail_endpoint, text=single_room_response)
+                    availability_response = hotel_service.search_by_id(search)
 
         self.assertEqual(1, availability_response.occupancy.num_rooms)
         self.assertEqual(Decimal("243.25"), availability_response.room_types[0].total.amount)
         self.assertEqual(Decimal("199.42"), availability_response.room_types[0].total_base_rate.amount)
 
         search.occupancy.num_rooms = 2
-        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
-            mock_find_provider.return_value = "ABC123"
-            with requests_mock.Mocker() as mocker:
-                mocker.get(avail_endpoint, text=multi_room_response)
-                availability_response = hotel_service.search_by_id(search)
+
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+                mock_find_provider.return_value = "ABC123"
+                with requests_mock.Mocker() as mocker:
+                    mocker.get(avail_endpoint, text=multi_room_response)
+                    availability_response = hotel_service.search_by_id(search)
 
         self.assertEqual(2, availability_response.occupancy.num_rooms)
         self.assertEqual(Decimal("479.42"), availability_response.room_types[0].total.amount)

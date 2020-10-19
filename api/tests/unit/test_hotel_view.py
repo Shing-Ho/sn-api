@@ -1,4 +1,5 @@
 from datetime import date
+from unittest.mock import patch
 
 import requests_mock
 
@@ -25,10 +26,12 @@ class TestBookingView(SimplenightAPITestCase):
             provider="hotelbeds",
         )
 
-        with requests_mock.Mocker() as mocker:
-            mocker.post(HotelBedsTransport.get_hotels_url(), text=hotelbeds_location_response)
-            mocker.get(HotelBedsTransport.get_hotel_content_url(), text=hotelbeds_content_response)
-            response = self.post(SEARCH_BY_LOCATION, search_request)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            with requests_mock.Mocker() as mocker:
+                mocker.post(HotelBedsTransport.get_hotels_url(), text=hotelbeds_location_response)
+                mocker.get(HotelBedsTransport.get_hotel_content_url(), text=hotelbeds_content_response)
+                response = self.post(SEARCH_BY_LOCATION, search_request)
 
         hotels = from_json(response.content, SimplenightHotel, many=True)
         assert len(hotels) == 24

@@ -1,8 +1,7 @@
 from decimal import Decimal, ROUND_UP, getcontext
-from typing import List, Union, Tuple, Callable
+from typing import List, Union, Tuple, Callable, Optional
 
 from api import logger
-from api.booking.booking_model import HotelBookingRequest
 from api.common.models import RoomRate
 from api.hotel import markups, hotel_cache_service, hotel_mappings
 from api.hotel.adapters import adapter_service
@@ -51,11 +50,6 @@ def recheck(provider: str, room_rate: RoomRate) -> RoomRate:
     return adapter.recheck(room_rate)
 
 
-def booking(book_request: HotelBookingRequest):
-    adapter = adapter_service.get_adapters(book_request.provider)[0]
-    return adapter.booking(book_request)
-
-
 def _search_all_adapters(search_request: BaseHotelSearch, adapter_fn: Callable):
     adapters_to_search = adapter_service.get_adapters_to_search(search_request)
     adapters = adapter_service.get_adapters(adapters_to_search)
@@ -75,18 +69,26 @@ def _process_hotels(adapter_hotels: Union[List[AdapterHotel], AdapterHotel]) -> 
     """
 
     if isinstance(adapter_hotels, AdapterHotel):
-        return __process_hotels(adapter_hotels)
+        return _process_hotel(adapter_hotels)
 
-    return list(map(__process_hotels, adapter_hotels))
+    return list(filter(lambda x: x is not None, map(_process_hotel, adapter_hotels)))
 
 
-def __process_hotels(adapter_hotel: AdapterHotel) -> Hotel:
+def _process_hotel(adapter_hotel: AdapterHotel) -> Optional[Hotel]:
+    simplenight_hotel_id = hotel_mappings.find_simplenight_hotel_id(
+        provider_hotel_id=adapter_hotel.hotel_id, provider_name=adapter_hotel.provider
+    )
+
+    if not simplenight_hotel_id:
+        logger.warn(f"Skipping {adapter_hotel.provider} hotel {adapter_hotel.hotel_id} because no SN mapping found")
+        return None
+
     _markup_room_rates(adapter_hotel)
     _enrich_hotels(adapter_hotel)
     average_nightly_base, average_nightly_tax, average_nightly_rate = _calculate_hotel_min_nightly_rates(adapter_hotel)
 
     return Hotel(
-        hotel_id=adapter_hotel.hotel_id,
+        hotel_id=simplenight_hotel_id,
         start_date=adapter_hotel.start_date,
         end_date=adapter_hotel.end_date,
         occupancy=adapter_hotel.occupancy,
@@ -183,9 +185,7 @@ def _adapter_search_request(search: HotelSpecificSearch, provider_name: str) -> 
         )
 
     occupancy = AdapterOccupancy(
-        adults=search.occupancy.adults,
-        children=search.occupancy.children,
-        num_rooms=search.occupancy.num_rooms
+        adults=search.occupancy.adults, children=search.occupancy.children, num_rooms=search.occupancy.num_rooms
     )
 
     return AdapterHotelSearch(
@@ -195,5 +195,5 @@ def _adapter_search_request(search: HotelSpecificSearch, provider_name: str) -> 
         language=search.language,
         currency=search.currency,
         provider_hotel_id=provider_hotel_id,
-        simplenight_hotel_id=search.hotel_id
+        simplenight_hotel_id=search.hotel_id,
     )

@@ -16,9 +16,11 @@ class TestHotelService(SimplenightTestCase):
             provider="stub",
         )
 
-        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
-            mock_find_provider.return_value = "ABC123"
-            hotel = hotel_service.search_by_id(search_request)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+                mock_find_provider.return_value = "ABC123"
+                hotel = hotel_service.search_by_id(search_request)
 
         self.assertIsNotNone(hotel)
         self.assertTrue(isinstance(hotel, SimplenightHotel))
@@ -32,7 +34,10 @@ class TestHotelService(SimplenightTestCase):
             provider="stub",
         )
 
-        hotel = hotel_service.search_by_location(search_request)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            hotel = hotel_service.search_by_location(search_request)
+
         self.assertIsNotNone(hotel)
         self.assertEqual("2020-01-20", str(hotel[0].start_date))
         self.assertEqual("2020-01-27", str(hotel[0].end_date))

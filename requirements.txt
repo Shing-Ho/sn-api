@@ -19,3 +19,4 @@ rauth
 django-redis
 cryptography
 pytz
+cachetools==4.1.1
