@@ -4,7 +4,7 @@ from typing import Dict, Any
 import requests
 
 from api import logger
-from api.common.models import BaseSchema, to_json, to_jsons
+from api.common.models import to_jsons, SimplenightModel
 
 
 class Transport(abc.ABC):
@@ -20,8 +20,8 @@ class Transport(abc.ABC):
     def _get_default_headers(self):
         return self._headers.copy()
 
-    def post(self, url, request: BaseSchema, **kwargs):
-        response = requests.post(url, json=to_json(request), headers=self._get_headers(**kwargs))
+    def post(self, url, request: SimplenightModel, **kwargs):
+        response = requests.post(url, data=request.json(by_alias=True), headers=self._get_headers(**kwargs))
         self._log_request(url, request, response)
 
         return response

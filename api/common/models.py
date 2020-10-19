@@ -7,12 +7,18 @@ from typing import Optional, List, Dict, Any, TypeVar, Type
 
 import marshmallow_dataclass
 from marshmallow import EXCLUDE, post_dump
+from pydantic.main import BaseModel
 
 
 class BaseSchema:
     class Meta:
         ordered = True
         unknown = EXCLUDE
+
+
+class SimplenightModel(BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
 
 
 def to_json(obj):

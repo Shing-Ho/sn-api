@@ -2,20 +2,20 @@ import random
 from datetime import datetime, timedelta
 
 from api.booking import booking_service
-from api.common import cache_storage
-from api.common.models import RateType, RoomRate
+from api.common.models import RateType
 from api.hotel import hotel_service, hotel_cache_service
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
 from api.hotel.hotel_api_model import (
     HotelLocationSearch,
     RoomOccupancy,
 )
+from api.hotel.hotel_models import AdapterLocationSearch, AdapterOccupancy
 from api.models.models import HotelBooking
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
-class TestHotelBedsIntegration(SimplenightTestCase):
+class TestHotelBedsOnline(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.hotelbeds = HotelBeds()
@@ -92,12 +92,11 @@ class TestHotelBedsIntegration(SimplenightTestCase):
         if checkout is None:
             checkout = datetime.now().date() + timedelta(days=35)
 
-        search_request = HotelLocationSearch(
+        search_request = AdapterLocationSearch(
             location_id=location_name,
             start_date=checkin,
             end_date=checkout,
-            daily_rates=True,
-            occupancy=RoomOccupancy(),
+            occupancy=AdapterOccupancy(),
         )
 
         return search_request

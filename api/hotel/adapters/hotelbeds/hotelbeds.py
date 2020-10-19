@@ -30,7 +30,6 @@ from api.hotel.adapters.hotelbeds.search_models import (
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_api_model import (
-    HotelSpecificSearch,
     HotelDetails,
     AdapterHotel,
     Address,
@@ -40,7 +39,7 @@ from api.hotel.hotel_api_model import (
     CancellationPolicy,
     CancellationSummary,
 )
-from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch
+from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelSearch
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
@@ -85,10 +84,9 @@ class HotelBeds(HotelAdapter):
         endpoint = self.transport.get_hotels_url()
         response = self.transport.post(endpoint, request)
 
-        results = response.json()
-        return HotelBedsAvailabilityRS.Schema().load(results)
+        return HotelBedsAvailabilityRS.parse_raw(response.text)
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> AdapterHotel:
+    def search_by_id(self, search_request: AdapterHotelSearch) -> AdapterHotel:
         pass
 
     def details(self, hotel_codes: Union[List[str], str], language: str) -> List[HotelDetails]:
@@ -109,7 +107,7 @@ class HotelBeds(HotelAdapter):
         response = self.transport.get(url, params)
 
         if response.ok:
-            return HotelBedsHotelDetailsRS.Schema().load(response.json())
+            return HotelBedsHotelDetailsRS.parse_raw(response.text)
 
         logger.error(f"Error retrieving hotel details (status_code={response.status_code}): {response.text}")
 
@@ -149,7 +147,7 @@ class HotelBeds(HotelAdapter):
         return self._create_room_rate(verified_hotel.hotel.rooms[0].rates[0], room_type_code)
 
     def _recheck_request(self, room_rate: RoomRate) -> HotelBedsCheckRatesRS:
-        room_to_check = HotelBedsCheckRatesRoom(rate_key=room_rate.code)
+        room_to_check = HotelBedsCheckRatesRoom(rateKey=room_rate.code)
         request = HotelBedsCheckRatesRQ(rooms=[room_to_check])
 
         response = self.transport.post(self.transport.get_checkrates_url(), request)
@@ -157,14 +155,16 @@ class HotelBeds(HotelAdapter):
         if not response.ok:
             raise HotelBedsException("Could not recheck price for booking")
 
-        return HotelBedsCheckRatesRS.Schema().load(response.json())
+        return HotelBedsCheckRatesRS.parse_raw(response.text)
 
     def booking(self, book_request: HotelBookingRequest) -> Reservation:
         # To book a Priceline room, we first need to do a contract lookup call
         # We use the price verification framework to test if the room prices are equivalent
         # Currently, we don't handle the case where they are not.
 
-        lead_traveler = HotelBedsPax(1, "AD", book_request.customer.first_name, book_request.customer.last_name)
+        lead_traveler = HotelBedsPax(
+            roomId=1, type="AD", name=book_request.customer.first_name, surname=book_request.customer.last_name
+        )
 
         room_code = book_request.room_code
         booking_room = HotelBedsBookingRoom(rateKey=room_code, paxes=[lead_traveler])
@@ -184,7 +184,7 @@ class HotelBeds(HotelAdapter):
             logger.error(response.text)
             raise HotelBedsException(f"Error During Booking: {response.text}")
 
-        hotelbeds_booking_response: HotelBedsBookingRS = HotelBedsBookingRS.Schema().loads(response.text)
+        hotelbeds_booking_response: HotelBedsBookingRS = HotelBedsBookingRS.parse_raw(response.text)
 
         # TODO JLM: Parse checkin, checkout and room rate from HotelBeds booking response
         return Reservation(
@@ -302,6 +302,10 @@ class HotelBeds(HotelAdapter):
             address1=detail.address.content,
         )
 
+        hotel_description = ""
+        if detail.description:
+            hotel_description = detail.description.content
+
         return HotelDetails(
             name=detail.name.content,
             address=address,
@@ -311,7 +315,7 @@ class HotelBeds(HotelAdapter):
             checkout_time=None,
             amenities=list(amenities),
             star_rating=HotelBeds._get_star_rating(detail.category_code),
-            property_description=detail.description.content,
+            property_description=hotel_description,
         )
 
     @staticmethod

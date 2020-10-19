@@ -1,69 +1,55 @@
-import dataclasses
 from typing import List, Optional
 
-import marshmallow_dataclass
-from dataclasses import field
+from pydantic import Field
 
+from api.common.models import SimplenightModel
 from api.hotel.adapters.hotelbeds.common_models import HotelBedsAuditDataRS, HotelBedsCoordinates
-from api.hotel.hotel_api_model import BaseSchema
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsContent(BaseSchema):
+class HotelBedsContent(SimplenightModel):
     content: str
     street: Optional[str]
     number: Optional[str]
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsPhone(BaseSchema):
-    phone_number: str = field(metadata=dict(data_key="phoneNumber"))
-    phone_type: str = field(metadata=dict(data_key="phoneType"))
+class HotelBedsPhone(SimplenightModel):
+    phone_number: str = Field(alias="phoneNumber")
+    phone_type: str = Field(alias="phoneType")
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsImage(BaseSchema):
-    image_type: str = field(metadata=dict(data_key="imageTypeCode"))
-    path: str = field(metadata=dict(data_key="path"))
-    order: int = field(metadata=dict(data_key="order"))
+class HotelBedsImage(SimplenightModel):
+    image_type: str = Field(alias="imageTypeCode")
+    path: str = Field(alias="path")
+    order: int = Field(alias="order")
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsAmenity(BaseSchema):
-    facility_code: int = field(metadata=dict(data_key="facilityCode"))
-    facility_group_code: int = field(metadata=dict(data_key="facilityGroupCode"))
+class HotelBedsAmenity(SimplenightModel):
+    facility_code: int = Field(alias="facilityCode")
+    facility_group_code: int = Field(alias="facilityGroupCode")
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsHotelDetail(BaseSchema):
-    code: int = field(metadata=dict(data_key="code"))
-    name: HotelBedsContent = field(metadata=dict(data_key="name"))
-    description: HotelBedsContent = field(metadata=dict(data_key="description"))
-    category_code: str = field(metadata=dict(data_key="categoryCode"))
-    country_code: str = field(metadata=dict(data_key="countryCode"))
-    state_code: str = field(metadata=dict(data_key="stateCode"))
-    coordinates: HotelBedsCoordinates = field(metadata=dict(data_key="coordinates"))
-    chain_code: Optional[str] = field(metadata=dict(data_key="chainCode"))
-    amenities: Optional[List[HotelBedsAmenity]] = field(metadata=dict(data_key="facilities"))
-    accommodation_type: str = field(metadata=dict(data_key="accommodationTypeCode"))
-    address: HotelBedsContent = field(metadata=dict(data_key="address"))
-    postal_code: Optional[str] = field(metadata=dict(data_key="postalCode"))
-    city: HotelBedsContent = field(metadata=dict(data_key="city"))
-    email: Optional[str] = field(metadata=dict(data_key="email"))
-    phones: List[HotelBedsPhone] = field(metadata=dict(data_key="phones"), default_factory=list)
-    images: List[HotelBedsImage] = field(metadata=dict(data_key="images"), default_factory=list)
+class HotelBedsHotelDetail(SimplenightModel):
+    code: int = Field(alias="code")
+    name: HotelBedsContent = Field(alias="name")
+    description: Optional[HotelBedsContent] = Field(alias="description")
+    category_code: str = Field(alias="categoryCode")
+    country_code: str = Field(alias="countryCode")
+    state_code: str = Field(alias="stateCode")
+    coordinates: HotelBedsCoordinates = Field(alias="coordinates")
+    chain_code: Optional[str] = Field(alias="chainCode")
+    amenities: Optional[List[HotelBedsAmenity]] = Field(alias="facilities")
+    accommodation_type: str = Field(alias="accommodationTypeCode")
+    address: HotelBedsContent = Field(alias="address")
+    postal_code: Optional[str] = Field(alias="postalCode")
+    city: HotelBedsContent = Field(alias="city")
+    email: Optional[str] = Field(alias="email")
+    phones: List[HotelBedsPhone] = Field(alias="phones", default_factory=list)
+    images: List[HotelBedsImage] = Field(alias="images", default_factory=list)
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsHotelDetailsRS(BaseSchema):
-    start: int = field(metadata=dict(data_key="from"))
-    end: int = field(metadata=dict(data_key="to"))
-    total: int = field(metadata=dict(data_key="total"))
-    audit_data: HotelBedsAuditDataRS = field(metadata=dict(data_key="auditData"))
+class HotelBedsHotelDetailsRS(SimplenightModel):
+    start: int = Field(alias="from")
+    end: int = Field(alias="to")
+    total: int = Field(alias="total")
+    audit_data: HotelBedsAuditDataRS = Field(alias="auditData")
     hotels: List[HotelBedsHotelDetail]

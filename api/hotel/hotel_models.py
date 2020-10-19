@@ -15,7 +15,7 @@ class AdapterOccupancy(AdapterModel):
     num_rooms: Optional[int] = 1
 
 
-class AdapterBaseSearch(BaseModel):
+class AdapterBaseSearch(AdapterModel):
     start_date: date
     end_date: date
     occupancy: AdapterOccupancy

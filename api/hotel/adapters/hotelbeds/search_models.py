@@ -1,11 +1,10 @@
-import dataclasses
 import decimal
-from dataclasses import field
 from datetime import date
 from typing import List, Optional
 
-import marshmallow_dataclass
+from pydantic import Field
 
+from api.common.models import SimplenightModel
 from api.hotel.adapters.hotelbeds.common_models import (
     HotelBedsAuditDataRS,
     get_language_mapping,
@@ -15,138 +14,108 @@ from api.hotel.adapters.hotelbeds.common_models import (
     HotelBedsCancellationPoliciesRS,
     HotelBedsPaymentType,
 )
-from api.hotel.hotel_api_model import BaseSchema
 from api.hotel.hotel_models import AdapterLocationSearch
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsStayRQ(BaseSchema):
-    checkin: date = field(metadata=dict(data_key="checkIn"))
-    checkout: date = field(metadata=dict(data_key="checkOut"))
+class HotelBedsStayRQ(SimplenightModel):
+    checkIn: date = Field(alias="checkIn")
+    checkOut: date = Field(alias="checkOut")
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsOccupancyRQ(BaseSchema):
+class HotelBedsOccupancyRQ(SimplenightModel):
     rooms: int
     adults: int
     children: int
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsDestinationRQ(BaseSchema):
+class HotelBedsDestinationRQ(SimplenightModel):
     code: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsAvailabilityRQ(BaseSchema):
+class HotelBedsAvailabilityRQ(SimplenightModel):
     stay: HotelBedsStayRQ
     occupancies: List[HotelBedsOccupancyRQ]
     destination: HotelBedsDestinationRQ
-    daily_rates: bool = field(metadata=dict(data_key="dailyRate"), default=False)
-    language: str = field(metadata=dict(data_key="language"), default="ENG")
+    daily_rates: bool = Field(alias="dailyRate", default=False)
+    language: str = Field(alias="language", default="ENG")
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsRoomRateRS(BaseSchema):
-    rate_key: Optional[str] = field(metadata=dict(data_key="rateKey"))
-    rate_class: str = field(metadata=dict(data_key="rateClass"))
-    rate_type: HotelBedsRateType = field(metadata=dict(data_key="rateType"))
-    net: decimal.Decimal = field(metadata=dict(data_key="net", as_string=True))
-    allotment: Optional[int] = field(metadata=dict(data_key="allotment"))
-    payment_type: HotelBedsPaymentType = field(metadata=dict(data_key="paymentType", by_value=True))
-    packaging: bool = field(metadata=dict(data_key="packaging"))
-    rooms: int = field(metadata=dict(data_key="rooms"))
-    adults: int = field(metadata=dict(data_key="adults"))
-    children: int = field(metadata=dict(data_key="children"))
-    taxes: Optional[HotelBedsTaxesRS] = field(metadata=dict(data_key="taxes"))
-    promotions: Optional[List[HotelBedsPromotionsRS]] = field(
-        metadata=dict(data_key="promotions"), default_factory=list
-    )
-    cancellation_policies: Optional[List[HotelBedsCancellationPoliciesRS]] = field(
-        metadata=dict(data_key="cancellationPolicies"), default_factory=list
-    )
+class HotelBedsRoomRateRS(SimplenightModel):
+    rate_key: Optional[str] = Field(alias="rateKey")
+    rate_class: str = Field(alias="rateClass")
+    rate_type: HotelBedsRateType = Field(alias="rateType")
+    net: decimal.Decimal = Field(alias="net", as_string=True)
+    allotment: Optional[int] = Field(alias="allotment")
+    payment_type: HotelBedsPaymentType = Field(alias="paymentType", by_value=True)
+    packaging: bool = Field(alias="packaging")
+    rooms: int = Field(alias="rooms")
+    adults: int = Field(alias="adults")
+    children: int = Field(alias="children")
+    taxes: Optional[HotelBedsTaxesRS] = Field(alias="taxes")
+    promotions: Optional[List[HotelBedsPromotionsRS]] = Field(alias="promotions", default_factory=list)
+    cancellation_policies: Optional[List[HotelBedsCancellationPoliciesRS]] = Field(alias="cancellationPolicies",
+                                                                                   default_factory=list)
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsRoomRS(BaseSchema):
+class HotelBedsRoomRS(SimplenightModel):
     code: str
     name: str
     rates: List[HotelBedsRoomRateRS]
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsHotel(BaseSchema):
-    code: int = field(metadata=dict(data_key="code"))
-    name: str = field(metadata=dict(data_key="name"))
-    category_code: str = field(metadata=dict(data_key="categoryCode"))
-    category_name: str = field(metadata=dict(data_key="categoryName"))
-    destination_code: str = field(metadata=dict(data_key="destinationCode"))
-    destination_name: str = field(metadata=dict(data_key="destinationName"))
-    zone_code: int = field(metadata=dict(data_key="zoneCode"))
-    zone_name: str = field(metadata=dict(data_key="zoneName"))
-    latitude: str = field(metadata=dict(data_key="latitude"))
-    longitude: str = field(metadata=dict(data_key="longitude"))
-    rooms: List[HotelBedsRoomRS] = field(metadata=dict(data_key="rooms"))
-    min_rate: Optional[str] = field(metadata=dict(data_key="minRate"))
-    max_rate: Optional[str] = field(metadata=dict(data_key="maxRate"))
-    currency: Optional[str] = field(metadata=dict(data_key="currency"))
+class HotelBedsHotel(SimplenightModel):
+    code: int = Field(alias="code")
+    name: str = Field(alias="name")
+    category_code: str = Field(alias="categoryCode")
+    category_name: str = Field(alias="categoryName")
+    destination_code: str = Field(alias="destinationCode")
+    destination_name: str = Field(alias="destinationName")
+    zone_code: int = Field(alias="zoneCode")
+    zone_name: str = Field(alias="zoneName")
+    latitude: str = Field(alias="latitude")
+    longitude: str = Field(alias="longitude")
+    rooms: List[HotelBedsRoomRS] = Field(alias="rooms")
+    min_rate: Optional[str] = Field(alias="minRate")
+    max_rate: Optional[str] = Field(alias="maxRate")
+    currency: Optional[str] = Field(alias="currency")
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsHotelRS(BaseSchema):
-    checkin: Optional[date] = field(metadata=dict(data_key="checkIn"))
-    checkout: Optional[date] = field(metadata=dict(data_key="checkOut"))
-    total: int = field(metadata=dict(data_key="total"))
-    hotels: Optional[List[HotelBedsHotel]] = field(default_factory=list)
+class HotelBedsHotelRS(SimplenightModel):
+    checkin: Optional[date] = Field(alias="checkIn")
+    checkout: Optional[date] = Field(alias="checkOut")
+    total: int = Field(alias="total")
+    hotels: Optional[List[HotelBedsHotel]] = Field(default_factory=list)
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsError(BaseSchema):
+class HotelBedsError(SimplenightModel):
     code: str
     message: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsAvailabilityRS(BaseSchema):
-    audit_data: HotelBedsAuditDataRS = field(metadata=dict(data_key="auditData"))
-    results: Optional[HotelBedsHotelRS] = field(default=None, metadata=dict(data_key="hotels"))
-    error: Optional[HotelBedsError] = field(default=None, metadata=dict(data_key="error"))
+class HotelBedsAvailabilityRS(SimplenightModel):
+    audit_data: HotelBedsAuditDataRS = Field(alias="auditData")
+    results: Optional[HotelBedsHotelRS] = Field(default=None, alias="hotels")
+    error: Optional[HotelBedsError] = Field(default=None, alias="error")
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsCheckRatesRoom:
-    rate_key: str = field(metadata=dict(data_key="rateKey"))
+class HotelBedsCheckRatesRoom(SimplenightModel):
+    rate_key: str = Field(alias="rateKey")
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsCheckRatesRQ(BaseSchema):
+class HotelBedsCheckRatesRQ(SimplenightModel):
     rooms: List[HotelBedsCheckRatesRoom]
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsCheckRatesRS:
-    audit_data: HotelBedsAuditDataRS = field(metadata=dict(data_key="auditData"))
+class HotelBedsCheckRatesRS(SimplenightModel):
+    audit_data: HotelBedsAuditDataRS = Field(alias="auditData")
     hotel: HotelBedsHotel
 
 
 class HotelBedsSearchBuilder:
     @staticmethod
     def build(request: AdapterLocationSearch) -> HotelBedsAvailabilityRQ:
-        stay = HotelBedsStayRQ(request.start_date, request.end_date)
-        destination = HotelBedsDestinationRQ(request.location_id)
+        stay = HotelBedsStayRQ(checkIn=request.start_date, checkOut=request.end_date)
+        destination = HotelBedsDestinationRQ(code=request.location_id)
         language = get_language_mapping(request.language)
         occupancy = [
             HotelBedsOccupancyRQ(
