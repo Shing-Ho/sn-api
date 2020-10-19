@@ -7,7 +7,7 @@ from typing import Optional, List
 
 import marshmallow_dataclass
 
-from api.hotel.hotel_model import BaseSchema, SimplenightAmenities
+from api.hotel.hotel_api_model import BaseSchema, SimplenightAmenities
 
 HOTELBEDS_LANGUAGE_MAP = {
     "en_US": "ENG",

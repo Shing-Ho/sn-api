@@ -8,7 +8,7 @@ from api.common.models import RoomRate
 from api.hotel import markups, hotel_cache_service
 from api.hotel.adapters import adapter_service
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_model import (
+from api.hotel.hotel_api_model import (
     HotelDetails,
     HotelSpecificSearch,
     AdapterHotel,

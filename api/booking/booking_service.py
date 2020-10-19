@@ -6,7 +6,7 @@ from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse,
 from api.common.models import RoomRate
 from api.hotel import price_verification_service, hotel_cache_service
 from api.hotel.adapters import adapter_service
-from api.hotel.hotel_model import SimplenightRoomType
+from api.hotel.hotel_api_model import SimplenightRoomType
 from api.models import models
 from api.models.models import BookingStatus, Traveler
 from api.payments import payment_service

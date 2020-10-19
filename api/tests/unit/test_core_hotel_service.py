@@ -11,7 +11,7 @@ from api.hotel import core_hotel_service, hotel_service, converter, hotel_cache_
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.converter.google_models import RoomParty, GoogleHotelSearchRequest
-from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch
+from api.hotel.hotel_api_model import HotelLocationSearch, HotelSpecificSearch
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource

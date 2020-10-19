@@ -13,7 +13,7 @@ from marshmallow import EXCLUDE, validates_schema
 
 from api.booking.booking_model import Customer, PaymentMethod, CardType, Locator, SubmitErrorType
 from api.common.models import BaseSchema, Address, Money, RemoveNone, LineItemType
-from api.hotel.hotel_model import GeoLocation, BedTypes, CancellationSummary
+from api.hotel.hotel_api_model import GeoLocation, BedTypes, CancellationSummary
 
 
 class ApiVersion(Enum):

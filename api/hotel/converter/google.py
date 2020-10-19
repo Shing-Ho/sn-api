@@ -30,7 +30,7 @@ from api.hotel.converter.google_models import (
     GoogleReservation,
     RoomParty,
 )
-from api.hotel.hotel_model import SimplenightAmenities, Image, HotelSpecificSearch, Hotel, CancellationPolicy
+from api.hotel.hotel_api_model import SimplenightAmenities, Image, HotelSpecificSearch, Hotel, CancellationPolicy
 from api.tests import to_money
 
 

@@ -8,7 +8,7 @@ from api.booking.booking_model import Reservation, HotelBookingRequest, HotelBoo
 from api.common.models import RateType, RoomRate, DailyRate, Money
 from api.hotel import hotel_cache_service
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_model import (
+from api.hotel.hotel_api_model import (
     HotelLocationSearch,
     AdapterHotel,
     RoomOccupancy,

@@ -3,7 +3,7 @@ from datetime import date
 from django.test import TestCase
 
 from api.hotel import hotel_service
-from api.hotel.hotel_model import HotelSpecificSearch, RoomOccupancy, HotelLocationSearch, SimplenightHotel
+from api.hotel.hotel_api_model import HotelSpecificSearch, RoomOccupancy, HotelLocationSearch, SimplenightHotel
 
 
 class TestHotelService(TestCase):

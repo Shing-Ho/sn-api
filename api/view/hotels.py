@@ -9,7 +9,7 @@ from api.booking.booking_model import HotelBookingRequest
 from api.common.request_cache import get_request_cache
 from api.hotel import hotel_service, google_hotel_service
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
-from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch
+from api.hotel.hotel_api_model import HotelLocationSearch, HotelSpecificSearch
 from api.views import _response
 
 

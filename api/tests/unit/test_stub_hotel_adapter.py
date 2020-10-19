@@ -5,7 +5,7 @@ from api.booking.booking_model import Customer, Traveler, PaymentCardParameters,
 from api.common.models import Address
 from api.hotel import hotel_cache_service
 from api.hotel.adapters.stub.stub import StubHotelAdapter
-from api.hotel.hotel_model import (
+from api.hotel.hotel_api_model import (
     HotelSpecificSearch,
     RoomOccupancy,
 )

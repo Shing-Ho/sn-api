@@ -4,7 +4,7 @@ from typing import List
 from api.booking.booking_model import HotelBookingRequest, Reservation
 from api.common.models import RoomRate
 from api.hotel import hotel_mappings
-from api.hotel.hotel_model import (
+from api.hotel.hotel_api_model import (
     HotelLocationSearch,
     HotelSpecificSearch,
     AdapterHotel,

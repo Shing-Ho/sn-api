@@ -6,7 +6,7 @@ from api.common import cache_storage
 from api.common.models import RateType, RoomRate
 from api.hotel import hotel_service, hotel_cache_service
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
-from api.hotel.hotel_model import (
+from api.hotel.hotel_api_model import (
     HotelLocationSearch,
     RoomOccupancy,
 )

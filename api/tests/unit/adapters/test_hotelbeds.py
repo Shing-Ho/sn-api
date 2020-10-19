@@ -10,7 +10,7 @@ from api.hotel.adapters.hotelbeds.common_models import HotelBedsRateType, HotelB
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
 from api.hotel.adapters.hotelbeds.search_models import HotelBedsSearchBuilder
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
-from api.hotel.hotel_model import HotelLocationSearch, SimplenightAmenities
+from api.hotel.hotel_api_model import HotelLocationSearch, SimplenightAmenities
 from api.tests import test_objects
 from api.tests.utils import load_test_resource, load_test_json_resource
 

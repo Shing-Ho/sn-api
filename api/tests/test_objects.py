@@ -12,7 +12,7 @@ from api.booking.booking_model import (
     HotelBookingRequest,
 )
 from api.common.models import RoomRate, RateType, RoomOccupancy, Address
-from api.hotel.hotel_model import AdapterHotel, RoomType, HotelSpecificSearch, HotelLocationSearch
+from api.hotel.hotel_api_model import AdapterHotel, RoomType, HotelSpecificSearch, HotelLocationSearch
 from api.tests import to_money
 
 

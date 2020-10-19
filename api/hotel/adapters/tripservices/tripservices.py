@@ -3,7 +3,7 @@ from api.common.models import RoomRate
 from api.hotel.adapters.tripservices.transport import TripServicesTransport
 from api.hotel.adapters.tripservices.tripservices_info import TripservicesInfo
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_model import (
+from api.hotel.hotel_api_model import (
     HotelDetails,
     HotelLocationSearch,
     HotelSpecificSearch,

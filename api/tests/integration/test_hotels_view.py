@@ -24,7 +24,7 @@ from api.hotel.converter.google_models import (
     GoogleBookingResponse,
     GoogleStatus,
 )
-from api.hotel.hotel_model import (
+from api.hotel.hotel_api_model import (
     HotelSpecificSearch,
     RoomOccupancy,
     HotelLocationSearch,

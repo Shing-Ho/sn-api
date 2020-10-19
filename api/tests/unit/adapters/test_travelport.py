@@ -5,7 +5,7 @@ import pytest
 
 from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBuilder
 from api.hotel.adapters.travelport.travelport import TravelportHotelSearchBuilder, TravelportHotelAdapter
-from api.hotel.hotel_model import HotelLocationSearch, RoomOccupancy
+from api.hotel.hotel_api_model import HotelLocationSearch, RoomOccupancy
 from api.tests.utils import load_test_json_resource
 
 

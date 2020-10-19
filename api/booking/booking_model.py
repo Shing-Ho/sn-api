@@ -7,7 +7,7 @@ import marshmallow_dataclass
 from marshmallow import validates_schema
 
 from api.common.models import BaseSchema, RoomOccupancy, Address, RoomRate, RemoveNone
-from api.hotel.hotel_model import CancellationDetails
+from api.hotel.hotel_api_model import CancellationDetails
 
 
 class SubmitErrorType(Enum):

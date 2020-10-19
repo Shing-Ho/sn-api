@@ -6,7 +6,7 @@ from api.hotel import hotel_service
 from api.hotel.adapters.priceline.priceline import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
-from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch
+from api.hotel.hotel_api_model import HotelLocationSearch, HotelSpecificSearch
 from api.models.models import CityMap
 from api.tests import test_objects
 from api.tests.integration import test_models

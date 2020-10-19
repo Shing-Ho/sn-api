@@ -10,7 +10,7 @@ from api.common.models import RoomOccupancy, RateType
 from api.hotel import hotel_service
 from api.hotel.adapters.priceline.priceline import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
-from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
+from api.hotel.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
 from api.models.models import CityMap, Booking, HotelCancellationPolicy
 from api.tests import test_objects
 from api.tests.integration import test_models

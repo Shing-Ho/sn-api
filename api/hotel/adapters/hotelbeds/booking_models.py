@@ -15,7 +15,7 @@ from api.hotel.adapters.hotelbeds.common_models import (
     HotelBedsPromotionsRS,
     HotelBedsCancellationPoliciesRS,
 )
-from api.hotel.hotel_model import BaseSchema
+from api.hotel.hotel_api_model import BaseSchema
 
 
 @dataclasses.dataclass
