@@ -1,23 +1,20 @@
-import dataclasses
 import decimal
-from dataclasses import field
 from datetime import date, datetime
 from enum import Enum
 from typing import List, Optional, Union
 
-import marshmallow_dataclass
 from marshmallow import EXCLUDE
+from pydantic import Field
 
 from api.common.models import (
-    BaseSchema,
-    RemoveNone,
     RoomOccupancy,
     Address,
-    HotelRate,
     RoomRate,
     Money,
     RateType,
-    DailyRate, PostpaidFees
+    DailyRate,
+    PostpaidFees,
+    SimplenightModel,
 )
 
 
@@ -52,9 +49,7 @@ class SimplenightAmenities(Enum):
         return cls.value_map[value]
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class BaseHotelSearch(BaseSchema, RemoveNone):
+class BaseHotelSearch(SimplenightModel):
     start_date: date
     end_date: date
     occupancy: Optional[RoomOccupancy]
@@ -66,21 +61,15 @@ class BaseHotelSearch(BaseSchema, RemoveNone):
     provider: Optional[str] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
 class HotelLocationSearch(BaseHotelSearch):
     location_id: str = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
 class HotelSpecificSearch(BaseHotelSearch):
     hotel_id: str = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelDetailsSearchRequest(BaseSchema):
+class HotelDetailsSearchRequest(SimplenightModel):
     hotel_code: str
     start_date: date
     end_date: date
@@ -91,57 +80,19 @@ class HotelDetailsSearchRequest(BaseSchema):
     chain_code: Optional[str] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelAdapterHotel(BaseSchema):
-    name: str
-    address: Address
-    rate: HotelRate
-    chain_code: Optional[str]
-    star_rating: Optional[int] = None
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelCommission(BaseSchema):
-    has_commission: bool
-    percent: int
-    amount: int = 0
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class RateCancelInfo(BaseSchema):
-    refundable: bool
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Amenity(Enum):
-    FREE_WIFI = "Free Wifi"
-    FREE_PARKING = "Free Parking"
-    FREE_BREAKFAST = "Free Breakfast"
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
 class ImageType(Enum):
     EXTERIOR = "Exterior"
     ROOM = "Room"
     UNKNOWN = ""
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Image(BaseSchema):
+class Image(SimplenightModel):
     url: str
     type: ImageType
     display_order: Optional[int] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class BedTypes(BaseSchema):
+class BedTypes(SimplenightModel):
     total: int = 0
     king: int = 0
     queen: int = 0
@@ -153,9 +104,7 @@ class BedTypes(BaseSchema):
     other: int = 0
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class RoomType(BaseSchema):
+class RoomType(SimplenightModel):
     class Meta:
         unknown = EXCLUDE
 
@@ -177,16 +126,13 @@ class CancellationSummary(Enum):
     PARTIAL_REFUND = "PARTIAL_REFUND"
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class CancellationPolicy(BaseSchema):
+class CancellationPolicy(SimplenightModel):
     summary: CancellationSummary
     cancellation_deadline: Optional[date] = None
     unstructured_policy: Optional[str] = None
 
 
-@dataclasses.dataclass
-class CancellationDetails:
+class CancellationDetails(SimplenightModel):
     cancellation_type: CancellationSummary
     description: str
     begin_date: Optional[date] = None
@@ -195,9 +141,7 @@ class CancellationDetails:
     penalty_currency: Optional[str] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class RatePlan(BaseSchema):
+class RatePlan(SimplenightModel):
     code: str
     name: str
     description: str
@@ -205,26 +149,19 @@ class RatePlan(BaseSchema):
     cancellation_policy: CancellationPolicy
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GeoLocation(BaseSchema):
+class GeoLocation(SimplenightModel):
     latitude: float
     longitude: float
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelDetails(BaseSchema):
-    class Meta:
-        ordered = True
-
+class HotelDetails(SimplenightModel):
     name: str
     address: Address
     hotel_code: str
     checkin_time: Optional[str]
     checkout_time: Optional[str]
-    photos: List[Image] = field(default_factory=list)
-    amenities: Optional[List[SimplenightAmenities]] = field(default_factory=list)
+    photos: List[Image] = Field(default_factory=list)
+    amenities: Optional[List[SimplenightAmenities]] = Field(default_factory=list)
     thumbnail_url: str = None
     geolocation: Optional[GeoLocation] = None
     phone_number: Optional[str] = None
@@ -235,16 +172,12 @@ class HotelDetails(BaseSchema):
     property_description: Optional[str] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class ErrorResponse(BaseSchema):
+class ErrorResponse(SimplenightModel):
     type: str
     message: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class AdapterHotel(BaseSchema):
+class AdapterHotel(SimplenightModel):
     provider: str
     hotel_id: str
     start_date: date
@@ -257,18 +190,12 @@ class AdapterHotel(BaseSchema):
     error: Optional[ErrorResponse] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class SimplenightRoomType(BaseSchema):
+class SimplenightRoomType(SimplenightModel):
     """
     Defines an API model for Simplenight's Front End API.
     This differs from the models returned by adapters, and the models returned in the Google API
     In this model, room types, rate plans, and rates are combined into a simple list
     """
-
-    class Meta:
-        unknown = EXCLUDE
-        ordered = True
 
     code: str
     name: str
@@ -288,9 +215,7 @@ class SimplenightRoomType(BaseSchema):
     postpaid_fees: Optional[PostpaidFees] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Hotel(BaseSchema):
+class Hotel(SimplenightModel):
     hotel_id: str
     start_date: date
     end_date: date
@@ -299,43 +224,39 @@ class Hotel(BaseSchema):
     room_types: Optional[List[RoomType]] = None
     room_rates: Optional[List[RoomRate]] = None
     rate_plans: Optional[List[RatePlan]] = None
-    average_nightly_rate: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
-    average_nightly_base: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
-    average_nightly_tax: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
+    average_nightly_rate: decimal.Decimal = None
+    average_nightly_base: decimal.Decimal = None
+    average_nightly_tax: decimal.Decimal = None
     error: Optional[ErrorResponse] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class SimplenightHotel(BaseSchema):
-    class Meta:
-        ordered = True
-
+class SimplenightHotel(SimplenightModel):
     hotel_id: str
     start_date: date
     end_date: date
     hotel_details: Optional[HotelDetails]
     occupancy: RoomOccupancy
     room_types: Optional[List[SimplenightRoomType]] = None
-    avg_nightly_rate: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
-    avg_nightly_base: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
-    avg_nightly_tax: decimal.Decimal = field(metadata=dict(as_string=True), default=None)
+    avg_nightly_rate: decimal.Decimal = None
+    avg_nightly_base: decimal.Decimal = None
+    avg_nightly_tax: decimal.Decimal = None
     error: Optional[ErrorResponse] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelPriceVerification(BaseSchema):
+class SimplenightHotelList(SimplenightModel):
+    __root__: List[SimplenightHotel]
+
+
+class HotelPriceVerification(SimplenightModel):
     is_allowed_change: bool
     is_exact_price: bool
     verified_room_rate: RoomRate
-    original_total: decimal.Decimal = field(metadata=dict(as_string=True))
-    recheck_total: decimal.Decimal = field(metadata=dict(as_string=True))
-    price_difference: decimal.Decimal = field(metadata=dict(as_string=True))
+    original_total: decimal.Decimal
+    recheck_total: decimal.Decimal
+    price_difference: decimal.Decimal
 
 
-@dataclasses.dataclass
-class ProviderRoomDataCachePayload:
+class ProviderRoomDataCachePayload(SimplenightModel):
     hotel_id: str
     provider: str
     checkin: date
@@ -343,4 +264,3 @@ class ProviderRoomDataCachePayload:
     room_code: str
     provider_rate: RoomRate
     simplenight_rate: RoomRate
-

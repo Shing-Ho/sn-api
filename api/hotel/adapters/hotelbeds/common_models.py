@@ -1,13 +1,12 @@
-import dataclasses
 import decimal
-from dataclasses import field
 from datetime import datetime
 from enum import Enum
 from typing import Optional, List
 
-import marshmallow_dataclass
+from pydantic import Field
 
-from api.hotel.hotel_model import BaseSchema, SimplenightAmenities
+from api.common.models import SimplenightModel
+from api.hotel.hotel_api_model import SimplenightAmenities
 
 HOTELBEDS_LANGUAGE_MAP = {
     "en_US": "ENG",
@@ -18,15 +17,13 @@ class HotelBedsException(Exception):
     pass
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsAuditDataRS(BaseSchema):
+class HotelBedsAuditDataRS(SimplenightModel):
     timestamp: datetime
     environment: str
     release: str
-    process_time: str = field(metadata=dict(data_key="processTime"))
-    request_host: str = field(metadata=dict(data_key="requestHost"))
-    server_id: str = field(metadata=dict(data_key="serverId"))
+    process_time: str = Field(alias="processTime")
+    request_host: str = Field(alias="requestHost")
+    server_id: str = Field(alias="serverId")
 
 
 class HotelBedsRateType(Enum):
@@ -34,9 +31,7 @@ class HotelBedsRateType(Enum):
     RECHECK = "RECHECK"
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsCoordinates(BaseSchema):
+class HotelBedsCoordinates(SimplenightModel):
     latitude: float
     longitude: float
 
@@ -52,34 +47,26 @@ class HotelBedsPaymentType(Enum):
     AT_WEB = "AT_WEB"
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsCancellationPoliciesRS(BaseSchema):
-    deadline: datetime = field(metadata=dict(data_key="from"))
-    amount: str = field(metadata=dict(data_key="amount"))
+class HotelBedsCancellationPoliciesRS(SimplenightModel):
+    deadline: datetime = Field(alias="from")
+    amount: str = Field(alias="amount")
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsPromotionsRS(BaseSchema):
+class HotelBedsPromotionsRS(SimplenightModel):
     code: str
     name: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsTaxRS(BaseSchema):
+class HotelBedsTaxRS(SimplenightModel):
     included: bool
-    amount: Optional[decimal.Decimal] = field(metadata=dict(as_string=True))
+    amount: Optional[decimal.Decimal]
     currency: Optional[str]
     type: Optional[HotelBedsTaxType]
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBedsTaxesRS(BaseSchema):
-    taxes: List[HotelBedsTaxRS] = field(metadata=dict(data_key="taxes"))
-    all_included: bool = field(metadata=dict(data_key="allIncluded"))
+class HotelBedsTaxesRS(SimplenightModel):
+    taxes: List[HotelBedsTaxRS] = Field(alias="taxes")
+    all_included: bool = Field(alias="allIncluded")
 
 
 def get_language_mapping(language):

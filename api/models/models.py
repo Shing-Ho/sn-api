@@ -6,7 +6,7 @@ from typing import Tuple, List
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
-from api.hotel.hotel_model import CancellationSummary
+from api.hotel.hotel_api_model import CancellationSummary
 
 
 def choices(cls: EnumMeta) -> List[Tuple]:

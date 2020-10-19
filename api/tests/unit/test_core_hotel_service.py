@@ -11,7 +11,7 @@ from api.hotel import core_hotel_service, hotel_service, converter, hotel_cache_
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.converter.google_models import RoomParty, GoogleHotelSearchRequest
-from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch
+from api.hotel.hotel_api_model import HotelLocationSearch, HotelSpecificSearch
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
@@ -24,11 +24,14 @@ class TestCoreHotelService(SimplenightTestCase):
             location_id="SFO",
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
-            occupancy=RoomOccupancy(2, 1),
+            occupancy=RoomOccupancy(adults=2, children=1),
             provider="stub",
         )
 
-        hotels = core_hotel_service.search_by_location(search_request)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            hotels = core_hotel_service.search_by_location(search_request)
+
         room_rates = [room_rate for hotel in hotels for room_rate in hotel.room_rates]
         assert len(room_rates) > 10
 
@@ -47,7 +50,7 @@ class TestCoreHotelService(SimplenightTestCase):
                 location_id="SFO",
                 start_date=date(2020, 1, 20),
                 end_date=date(2020, 1, 27),
-                occupancy=RoomOccupancy(2, 1),
+                occupancy=RoomOccupancy(adults=2, children=1),
                 provider="hotelbeds",
             )
 
@@ -71,21 +74,27 @@ class TestCoreHotelService(SimplenightTestCase):
         hotel.room_types = [room_type_one, room_type_two]
 
         # Room Nights = 1
-        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(hotel)
+        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(
+            hotel
+        )
         assert min_nightly_base == 85
         assert min_nightly_tax == 15
         assert min_nightly_total == 100
 
         # Room Nights = 2
         hotel.end_date = date(2020, 1, 3)
-        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(hotel)
+        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(
+            hotel
+        )
         assert min_nightly_base == 42.5
         assert min_nightly_tax == 7.50
         assert min_nightly_total == 50
 
         # Same Date, Room Nights = 1
         hotel.end_date = date(2020, 1, 1)
-        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(hotel)
+        min_nightly_base, min_nightly_tax, min_nightly_total = core_hotel_service._calculate_hotel_min_nightly_rates(
+            hotel
+        )
         assert min_nightly_base == 85
         assert min_nightly_tax == 15
         assert min_nightly_total == 100
@@ -95,7 +104,7 @@ class TestCoreHotelService(SimplenightTestCase):
             hotel_id="A1H2J6",
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
-            occupancy=RoomOccupancy(2, 1),
+            occupancy=RoomOccupancy(adults=2, children=1),
             provider="stub",
         )
 
@@ -108,8 +117,12 @@ class TestCoreHotelService(SimplenightTestCase):
             party=RoomParty(adults=search_request.occupancy.adults, children=[]),
         )
 
-        hotel = core_hotel_service.search_by_id(search_request)
-        google_hotel = converter.google.convert_hotel_response(google_search_request, hotel)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider:
+                mock_find_provider.return_value = "ABC123"
+                hotel = core_hotel_service.search_by_id(search_request)
+                google_hotel = converter.google.convert_hotel_response(google_search_request, hotel)
 
         self.assertIsNotNone(google_hotel)
 
@@ -118,7 +131,7 @@ class TestCoreHotelService(SimplenightTestCase):
             location_id="SFO",
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 22),
-            occupancy=RoomOccupancy(2, 1),
+            occupancy=RoomOccupancy(adults=2, children=1),
             provider="stub",
         )
 
@@ -133,9 +146,11 @@ class TestCoreHotelService(SimplenightTestCase):
         stub_adapter = StubHotelAdapter()
         stub_adapter.search_by_location = lambda x: [hotel]
 
-        with patch("api.hotel.adapters.adapter_service.get_adapters") as mock_adapter_service:
-            mock_adapter_service.return_value = [stub_adapter]
-            hotels = core_hotel_service.search_by_location(search_request)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            with patch("api.hotel.adapters.adapter_service.get_adapters") as mock_adapter_service:
+                mock_adapter_service.return_value = [stub_adapter]
+                hotels = core_hotel_service.search_by_location(search_request)
 
         # Two Room Nights, So average nightly rate is 0.5 Total
         # Average is applied after default markup of 18%

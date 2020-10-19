@@ -12,6 +12,8 @@ class BookingErrorCode(Enum):
 
 class AvailabilityErrorCode(Enum):
     LOCATION_NOT_FOUND = "LOCATION_NOT_FOUND"
+    HOTEL_NOT_FOUND = "HOTEL_NOT_FOUND"
+    PROVIDER_ERROR = "PROVIDER_ERROR"
 
 
 def handler(exc, context):
@@ -38,8 +40,9 @@ class SimplenightApiException(AppException):
         self.detail = detail
 
 
-class AvailabilityException(AppException):
-    pass
+class AvailabilityException(SimplenightApiException):
+    def __init__(self, detail: str, error_type: AvailabilityErrorCode):
+        super().__init__(detail=detail, error_type=error_type)
 
 
 class BookingException(SimplenightApiException):

@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from api.booking import booking_service
 from api.common.models import RoomOccupancy
 from api.hotel import hotel_service
 from api.hotel.adapters.priceline.priceline import PricelineAdapter
-from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
-from api.hotel.hotel_model import HotelLocationSearch, HotelSpecificSearch
+from api.hotel.hotel_api_model import HotelLocationSearch
+from api.hotel.hotel_models import AdapterLocationSearch, AdapterOccupancy, AdapterHotelSearch
 from api.models.models import CityMap
 from api.tests import test_objects
 from api.tests.integration import test_models
@@ -42,8 +43,8 @@ class TestPricelineIntegration(SimplenightTestCase):
         location = "1"
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
-        occupancy = RoomOccupancy()
-        search_request = HotelLocationSearch(
+        occupancy = AdapterOccupancy()
+        search_request = AdapterLocationSearch(
             start_date=checkin, end_date=checkout, occupancy=occupancy, location_id=location
         )
 
@@ -58,8 +59,13 @@ class TestPricelineIntegration(SimplenightTestCase):
         hotel_id = "700363264"
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
-        occupancy = RoomOccupancy()
-        search = HotelSpecificSearch(start_date=checkin, end_date=checkout, occupancy=occupancy, hotel_id=hotel_id)
+        search = AdapterHotelSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=AdapterOccupancy(),
+            provider_hotel_id=hotel_id,
+            simplenight_hotel_id="SN123",
+        )
 
         results = priceline.search_by_id(search)
         self.assertIsNotNone(results)
@@ -73,8 +79,13 @@ class TestPricelineIntegration(SimplenightTestCase):
         hotel_id = "700033110"
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
-        occupancy = RoomOccupancy()
-        search = HotelSpecificSearch(start_date=checkin, end_date=checkout, occupancy=occupancy, hotel_id=hotel_id)
+        search = AdapterHotelSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=AdapterOccupancy(),
+            provider_hotel_id=hotel_id,
+            simplenight_hotel_id="SN123",
+        )
 
         results = priceline.search_by_id(search)
         self.assertTrue(len(results.room_rates) >= 1)
@@ -91,10 +102,8 @@ class TestPricelineIntegration(SimplenightTestCase):
 
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
-        occupancy = RoomOccupancy()
-        search = HotelLocationSearch(
-            start_date=checkin, end_date=checkout, occupancy=occupancy, location_id="1"
-        )
+        occupancy = AdapterOccupancy()
+        search = AdapterLocationSearch(start_date=checkin, end_date=checkout, occupancy=occupancy, location_id="1")
 
         availability_response = priceline.search_by_location(search)
         hotel = availability_response[0]
@@ -124,7 +133,10 @@ class TestPricelineIntegration(SimplenightTestCase):
             provider="priceline",
         )
 
-        availability_response = hotel_service.search_by_location(search)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            availability_response = hotel_service.search_by_location(search)
+
         self.assertTrue(len(availability_response) >= 1)
         self.assertTrue(len(availability_response[0].room_types) >= 1)
 

@@ -12,7 +12,8 @@ from api.booking.booking_model import (
     HotelBookingRequest,
 )
 from api.common.models import RoomRate, RateType, RoomOccupancy, Address
-from api.hotel.hotel_model import AdapterHotel, RoomType, HotelSpecificSearch, HotelLocationSearch
+from api.hotel.hotel_api_model import AdapterHotel, RoomType, HotelSpecificSearch
+from api.hotel.hotel_models import AdapterLocationSearch, AdapterOccupancy, AdapterHotelSearch
 from api.tests import to_money
 
 
@@ -123,7 +124,7 @@ def booking_request(payment_obj=None, rate_code=None):
     )
 
 
-def hotel_specific_search(start_date=None, end_date=None, hotel_id="123", adapter="stub"):
+def hotel_specific_search(start_date=None, end_date=None, hotel_id="123", provider="stub"):
     if start_date is None:
         start_date = date(2020, 1, 1)
 
@@ -131,21 +132,33 @@ def hotel_specific_search(start_date=None, end_date=None, hotel_id="123", adapte
         end_date = date(2020, 1, 7)
 
     return HotelSpecificSearch(
-        start_date=start_date,
-        end_date=end_date,
-        occupancy=RoomOccupancy(),
-        daily_rates=False,
-        hotel_id=hotel_id,
-        provider=adapter,
+        start_date=start_date, end_date=end_date, occupancy=RoomOccupancy(), hotel_id=hotel_id, provider=provider
     )
 
 
-def hotel_location_search(start_date=None, end_date=None, location_id="123", adapter="stub"):
-    return HotelLocationSearch(
+def adapter_hotel_search(start_date=None, end_date=None, hotel_id="123", adapter="stub"):
+    if start_date is None:
+        start_date = date(2020, 1, 1)
+
+    if end_date is None:
+        end_date = date(2020, 1, 7)
+
+    return AdapterHotelSearch(
         start_date=start_date,
         end_date=end_date,
-        occupancy=RoomOccupancy(),
-        daily_rates=False,
-        location_id=location_id,
-        provider=adapter,
+        occupancy=AdapterOccupancy(),
+        simplenight_hotel_id=hotel_id,
+        provider_hotel_id="123",
+    )
+
+
+def adapter_location_search(start_date=None, end_date=None, location_id="123"):
+    if start_date is None:
+        start_date = date(2020, 1, 1)
+
+    if end_date is None:
+        end_date = date(2020, 1, 7)
+
+    return AdapterLocationSearch(
+        start_date=start_date, end_date=end_date, occupancy=AdapterOccupancy(), location_id=location_id,
     )

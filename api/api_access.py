@@ -1,26 +1,15 @@
-import dataclasses
-from typing import ClassVar, Type
-
-import marshmallow_dataclass
-from marshmallow import Schema
-
 from api import logger
 from api.auth.authentication import OrganizationAPIKey, Organization
+from api.common.models import SimplenightModel
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class ApiAccessRequest:
+class ApiAccessRequest(SimplenightModel):
     name: str
-    Schema: ClassVar[Type[Schema]] = Schema
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class ApiAccessResponse:
+class ApiAccessResponse(SimplenightModel):
     api_key: str
     key: str
-    Schema: ClassVar[Type[Schema]] = Schema
 
 
 def create_anonymous_api_user(request: ApiAccessRequest):
@@ -30,6 +19,3 @@ def create_anonymous_api_user(request: ApiAccessRequest):
     api_key, key = OrganizationAPIKey.objects.create_key(name=request.name, organization=anonymous_org)
 
     return ApiAccessResponse(api_key=api_key, key=key)
-
-
-

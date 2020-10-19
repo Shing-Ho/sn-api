@@ -1,9 +1,8 @@
-import dataclasses
 from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
-import marshmallow_dataclass
+from api.common.models import SimplenightModel
 
 
 class LocationType(Enum):
@@ -11,11 +10,10 @@ class LocationType(Enum):
     CITY = "CITY"
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass(frozen=True)
-class LocationResponse:
-    class Meta:
-        ordered = True
+class LocationResponse(SimplenightModel):
+    # Make LocationResponse hashable
+    def __hash__(self):
+        return hash((type(self),) + tuple(self.__dict__.values()))
 
     location_id: str
     language_code: str

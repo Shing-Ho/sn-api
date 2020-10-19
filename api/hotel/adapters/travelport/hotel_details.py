@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Dict, Any, Optional, Union
 
-from api.hotel.hotel_model import HotelDetailsSearchRequest
+from api.hotel.hotel_api_model import HotelDetailsSearchRequest
 from api.hotel.adapters.travelport.settings import TARGET_BRANCH
 
 

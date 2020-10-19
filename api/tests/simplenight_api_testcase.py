@@ -2,8 +2,6 @@ import uuid
 
 from rest_framework.test import APITestCase, APIClient
 
-from api.common.models import to_jsons
-
 
 class SimplenightAPITestCase(APITestCase):
     def setUp(self) -> None:
@@ -24,7 +22,7 @@ class SimplenightAPITestCase(APITestCase):
         return key
 
     def post(self, endpoint, obj, content_type="application/json"):
-        data = to_jsons(obj)
+        data = obj.json()
         return self.client.post(endpoint, data=data, content_type=content_type)
 
     def get(self, endpoint, **kwargs):

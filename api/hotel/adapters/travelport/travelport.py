@@ -7,17 +7,15 @@ from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBu
 from api.hotel.adapters.travelport.search import TravelportHotelSearchBuilder
 from api.hotel.adapters.travelport.transport import TravelportTransport
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_model import (
-    HotelLocationSearch,
-    HotelAdapterHotel,
+from api.hotel.hotel_api_model import (
     Address,
-    HotelRate,
     HotelDetailsSearchRequest,
     HotelDetails,
     HotelSpecificSearch,
     AdapterHotel,
     GeoLocation,
 )
+from api.hotel.hotel_models import AdapterLocationSearch
 
 secrets = {
     "url": "https://americas.universal-api.travelport.com/B2BGateway/connect/uAPI/HotelService",
@@ -33,15 +31,16 @@ class TravelportHotelAdapter(HotelAdapter):
         if transport is None:
             self.transport = TravelportTransport()
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[HotelAdapterHotel]:
+    def search_by_location(self, search: AdapterLocationSearch) -> List[AdapterHotel]:
         hotel_search_service = self.transport.create_hotel_search_service()
-        request = TravelportHotelSearchBuilder().build(search_request)
+        request = TravelportHotelSearchBuilder().build(search)
         response = hotel_search_service.service(**request)
 
         hotel_response = response["HotelSuperShopperResults"]
         hotels_with_rates = filter(lambda x: x["HotelRateDetail"], hotel_response)
 
-        return list(map(self._parse_hotel, hotels_with_rates))
+        hotels = list(map(self._parse_hotel, hotels_with_rates))
+        return hotels
 
     def details(self, hotel_details: HotelDetailsSearchRequest) -> HotelDetails:
         hotel_details_service = self.transport.create_hotel_details_service()
@@ -64,16 +63,19 @@ class TravelportHotelAdapter(HotelAdapter):
 
     def _parse_hotel(self, hotel):
         hotel_property = hotel["HotelProperty"]
-        chain = hotel_property["HotelChain"]
-        name = hotel_property["Name"]
-
         tax, total = self._parse_hotel_min_max_rate(hotel)
-        address = self._parse_hotel_address(hotel_property)
 
-        hotel_rate = HotelRate(total, tax)
-        star_rating = self._parse_hotel_star_rating(hotel_property)
-
-        return HotelAdapterHotel(name=name, chain_code=chain, address=address, rate=hotel_rate, star_rating=star_rating)
+        return AdapterHotel(
+            provider=self.get_provider_name(),
+            hotel_id=None,
+            start_date=None,
+            end_date=None,
+            occupancy=None,
+            room_types=[],
+            rate_plans=[],
+            room_rates=[],
+            hotel_details=None,
+        )
 
     @staticmethod
     def _parse_hotel_address(hotel_property):
