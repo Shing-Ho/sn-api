@@ -248,4 +248,5 @@ def _get_hotel_details(hotel: Hotel) -> GoogleHotelDetails:
         geolocation=hotel.hotel_details.geolocation,
         phone_number=hotel.hotel_details.phone_number,
         email=hotel.hotel_details.email,
+        photos=list(map(_get_image_mapping, hotel.hotel_details.photos))
     )

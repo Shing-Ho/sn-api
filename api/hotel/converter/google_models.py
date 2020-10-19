@@ -106,6 +106,7 @@ class GoogleHotelDetails(SimplenightModel):
     geolocation: Optional[GeoLocation] = None
     phone_number: Optional[str] = None
     email: Optional[str] = None
+    photos: List[GoogleImage] = Field(default_factory=list)
 
 
 class GoogleHotelApiResponse(SimplenightModel):
