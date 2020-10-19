@@ -122,12 +122,15 @@ class PricelineAdapter(HotelAdapter):
         postpaid_fee_breakdown = mandatory_fees["breakdown"]["postpaid"]
         postpaid_total_currency = postpaid_fee_breakdown["display_currency"]
         postpaid_total_fee = Decimal(postpaid_fee_breakdown["display_total"])
-        postpaid_total = Money(round(postpaid_total_fee, 2), postpaid_total_currency)
+        postpaid_total = Money(amount=round(postpaid_total_fee, 2), currency=postpaid_total_currency)
 
         postpaid_fees = []
         for postpaid_fee in postpaid_fee_breakdown["breakdown"]:
-            fee = Money(round(Decimal(postpaid_fee["display_total"]), 2), postpaid_fee["display_currency"])
+            fee_amount = round(Decimal(postpaid_fee["display_total"]), 2)
+            fee_currency = postpaid_fee["display_currency"]
             priceline_fee_type = postpaid_fee["type"]
+
+            fee = Money(amount=fee_amount, currency=fee_currency)
             fee_type = self._parse_postpaid_fee_type(priceline_fee_type)
 
             postpaid_fees.append(PostpaidFeeLineItem(amount=fee, type=fee_type, description=priceline_fee_type))
@@ -344,7 +347,7 @@ class PricelineAdapter(HotelAdapter):
             checkout_time=None,
             photos=[],
             amenities=[],
-            geolocation=GeoLocation(hotel_data["geo"]["latitude"], hotel_data["geo"]["longitude"]),
+            geolocation=GeoLocation(latitude=hotel_data["geo"]["latitude"], longitude=hotel_data["geo"]["longitude"]),
             chain_code=hotel_data["hotel_chain"]["chain_codes_t"],
             star_rating=hotel_data["star_rating"],
             property_description=hotel_data["hotel_description"],
@@ -360,9 +363,9 @@ class PricelineAdapter(HotelAdapter):
             room_type_code=room_id,
             rate_plan_code=rate_plan.code,
             maximum_allowed_occupancy=RoomOccupancy(adults=rate_data["occupancy_limit"]),
-            total_base_rate=Money(Decimal(price_details["display_sub_total"]), display_currency),
-            total_tax_rate=Money(Decimal(price_details["display_taxes"]), display_currency),
-            total=Money(Decimal(price_details["display_total"]), display_currency),
+            total_base_rate=Money(amount=Decimal(price_details["display_sub_total"]), currency=display_currency),
+            total_tax_rate=Money(amount=Decimal(price_details["display_taxes"]), currency=display_currency),
+            total=Money(amount=Decimal(price_details["display_total"]), currency=display_currency),
             rate_type=RateType.BOOKABLE,
             postpaid_fees=self._parse_postpaid_fees_from_priceline_rate(rate_data),
         )

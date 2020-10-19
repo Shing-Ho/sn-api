@@ -6,17 +6,21 @@ from api.common.models import Address
 from api.hotel import hotel_cache_service
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.hotel_api_model import (
-    HotelSpecificSearch,
     RoomOccupancy,
 )
+from api.hotel.hotel_models import AdapterHotelSearch, AdapterOccupancy
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
 class TestStubHotelAdapter(SimplenightTestCase):
     def test_search_by_hotel_id(self):
-        search_request = HotelSpecificSearch(
-            hotel_id="A1H2J6", start_date=date(2020, 1, 20), end_date=date(2020, 1, 27), occupancy=RoomOccupancy(2, 1),
+        search_request = AdapterHotelSearch(
+            provider_hotel_id="A1H2J6",
+            simplenight_hotel_id="SN123",
+            start_date=date(2020, 1, 20),
+            end_date=date(2020, 1, 27),
+            occupancy=AdapterOccupancy(adults=2, children=1),
         )
 
         stub_adapter = StubHotelAdapter()
@@ -35,12 +39,6 @@ class TestStubHotelAdapter(SimplenightTestCase):
         self.assertIsNotNone(response.room_rates[0].total)
         self.assertIsNotNone(response.room_rates[0].total_tax_rate)
         self.assertIsNotNone(response.room_rates[0].total_base_rate)
-        self.assertIsNotNone(response.room_rates[0].daily_rates)
-        self.assertIsNotNone(response.room_rates[0].daily_rates[0].total)
-        self.assertIsNotNone(response.room_rates[0].daily_rates[0].tax)
-        self.assertIsNotNone(response.room_rates[0].daily_rates[0].base_rate)
-
-        print(response)
 
     def test_booking(self):
         customer = Customer(
@@ -52,8 +50,12 @@ class TestStubHotelAdapter(SimplenightTestCase):
         )
 
         traveler = Traveler(first_name="Jane", last_name="Smith", occupancy=RoomOccupancy(adults=1, children=0))
-        provider_room_rate = test_objects.room_rate(rate_key="rate-key", base_rate="526.22", total="589.51", tax_rate="63.29")
-        simplenight_room_rate = test_objects.room_rate(rate_key="sn-rate-key", base_rate="526.22", total="589.51", tax_rate="63.29")
+        provider_room_rate = test_objects.room_rate(
+            rate_key="rate-key", base_rate="526.22", total="589.51", tax_rate="63.29"
+        )
+        simplenight_room_rate = test_objects.room_rate(
+            rate_key="sn-rate-key", base_rate="526.22", total="589.51", tax_rate="63.29"
+        )
 
         payment_card_params = PaymentCardParameters(
             card_type=CardType.VI,
@@ -64,7 +66,10 @@ class TestStubHotelAdapter(SimplenightTestCase):
             cvv="123",
         )
 
-        address = Address("San Francisco", "CA", "94111", "US", "120 Market Street")
+        address = Address(
+            city="San Francisco", province="CA", postal_code="94111", country="US", address1="120 Market Street"
+        )
+
         payment = Payment(billing_address=address, payment_card_parameters=payment_card_params)
 
         booking_request = HotelBookingRequest(

@@ -31,7 +31,6 @@ from api.hotel.converter.google_models import (
     RoomParty,
 )
 from api.hotel.hotel_api_model import SimplenightAmenities, Image, HotelSpecificSearch, Hotel, CancellationPolicy
-from api.tests import to_money
 
 
 def convert_hotel_specific_search(google_search_request: GoogleHotelSearchRequest) -> HotelSpecificSearch:
@@ -65,9 +64,9 @@ def convert_booking_request(google_booking_request: GoogleBookingSubmitRequest) 
         room_type_code=google_booking_request.room_rate.room_type_code,
         maximum_allowed_occupancy=room_occupancy,
         rate_type=RateType.BOOKABLE,
-        total_base_rate=Money(total_price, "USD"),
-        total_tax_rate=to_money("0"),
-        total=Money(total_price, "USD"),
+        total_base_rate=Money(amount=total_price, currency="USD"),
+        total_tax_rate=Money(amount=Decimal("0"), currency="USD"),
+        total=Money(amount=total_price, currency="USD"),
     )
 
     google_payment = google_booking_request.payment
@@ -165,8 +164,8 @@ def _get_rate_plans(hotel: Hotel) -> List[GoogleRatePlan]:
         rate_plans.append(
             GoogleRatePlan(
                 code=rate_plan.code,
-                name=DisplayString(rate_plan.name, language="en"),
-                description=DisplayString(rate_plan.description, language="en"),
+                name=DisplayString(text=rate_plan.name, language="en"),
+                description=DisplayString(text=rate_plan.description, language="en"),
                 basic_amenities=_get_basic_amenity_mapping(rate_plan.amenities),
                 guarantee_type=GuaranteeType.PAYMENT_CARD,
                 cancellation_policy=_get_google_cancellation_policy(rate_plan.cancellation_policy, language="en"),
@@ -182,11 +181,11 @@ def _get_room_types(hotel: Hotel, language="en") -> List[GoogleRoomType]:
         room_types.append(
             GoogleRoomType(
                 code=room_type.code,
-                name=DisplayString(room_type.name, language),
-                description=DisplayString(room_type.description, language),
-                basic_amenities=BasicAmenities(False, False, False),
+                name=DisplayString(text=room_type.name, language=language),
+                description=DisplayString(text=room_type.description, language=language),
+                basic_amenities=BasicAmenities(free_breakfast=False, free_wifi=False, free_parking=False),
                 photos=list(map(_get_image_mapping, room_type.photos)),
-                capacity=RoomCapacity(room_type.capacity.adults, room_type.capacity.children),
+                capacity=RoomCapacity(adults=room_type.capacity.adults, children=room_type.capacity.children),
             )
         )
 
@@ -194,7 +193,7 @@ def _get_room_types(hotel: Hotel, language="en") -> List[GoogleRoomType]:
 
 
 def _get_image_mapping(photo: Image) -> GoogleImage:
-    return GoogleImage(url=photo.url, description=DisplayString("", language="en"))
+    return GoogleImage(url=photo.url, description=DisplayString(text="", language="en"))
 
 
 def _get_basic_amenity_mapping(amenities: List[SimplenightAmenities]) -> BasicAmenities:
@@ -207,7 +206,10 @@ def _get_basic_amenity_mapping(amenities: List[SimplenightAmenities]) -> BasicAm
 
 # TODO: Add descriptive text for images
 def _get_photos(images: List[Image], language: str) -> List[GoogleImage]:
-    return list(GoogleImage(image.url, DisplayString(image.type.value, language)) for image in images)
+    return list(
+        GoogleImage(url=image.url, description=DisplayString(text=image.type.value, language=language))
+        for image in images
+    )
 
 
 # TODO: Actually implement cancellation policies
@@ -215,7 +217,7 @@ def _get_google_cancellation_policy(cancellation_policy: CancellationPolicy, lan
     return GoogleCancellationPolicy(
         summary=CancellationSummary.NON_REFUNDABLE,
         cancellation_deadline="10 days before",
-        unstructured_policy=DisplayString("The cancellation details", language),
+        unstructured_policy=DisplayString(text="The cancellation details", language=language),
     )
 
 
@@ -228,9 +230,9 @@ def _get_room_rates(hotel: Hotel) -> List[GoogleRoomRate]:
                 code=room_rate.code,
                 room_type_code=room_rate.room_type_code,
                 rate_plan_code=room_rate.rate_plan_code,
-                maximum_allowed_occupancy=RoomCapacity(capacity.adults, capacity.children),
+                maximum_allowed_occupancy=RoomCapacity(adults=capacity.adults, children=capacity.children),
                 total_price_at_booking=room_rate.total,
-                total_price_at_checkout=Money(Decimal("0.00"), room_rate.total.currency),
+                total_price_at_checkout=Money(amount=Decimal("0.00"), currency=room_rate.total.currency),
                 line_items=[],
                 partner_data=[],
             )

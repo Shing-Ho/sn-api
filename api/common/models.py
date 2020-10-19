@@ -1,19 +1,10 @@
-import dataclasses
 import decimal
-from dataclasses import field
+import json
 from datetime import date
 from enum import Enum
-from typing import Optional, List, Dict, Any, TypeVar, Type
+from typing import Optional, List, Union, TypeVar, Type
 
-import marshmallow_dataclass
-from marshmallow import EXCLUDE, post_dump
 from pydantic.main import BaseModel
-
-
-class BaseSchema:
-    class Meta:
-        ordered = True
-        unknown = EXCLUDE
 
 
 class SimplenightModel(BaseModel):
@@ -21,54 +12,13 @@ class SimplenightModel(BaseModel):
         arbitrary_types_allowed = True
 
 
-def to_json(obj):
-    if isinstance(obj, list):
-        if not obj:
-            return []
-        return obj[0].Schema(many=True).dump(obj)
-
-    return obj.Schema().dump(obj)
-
-
-def to_jsons(obj):
-    if isinstance(obj, list):
-        return obj[0].Schema(many=True).dumps(obj)
-
-    return obj.Schema().dumps(obj)
-
-
-T = TypeVar("T")
-
-
-def from_json(obj: Dict[Any, Any], cls: Type[T]) -> T:
-    return cls.Schema().load(obj)
-
-
-def from_jsons(obj: Dict[Any, Any], cls: Type[T]) -> T:
-    return cls.Schema().loads(obj)
-
-
-# noinspection PyUnusedLocal
-class RemoveNone:
-    @post_dump
-    def remove_nones(self, data, **kwargs):
-        none_keys = [key for key, value in data.items() if value is None]
-        for key in none_keys:
-            data.pop(key)
-        return data
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class RoomOccupancy(BaseSchema):
+class RoomOccupancy(SimplenightModel):
     adults: Optional[int] = 1
     children: Optional[int] = 0
     num_rooms: Optional[int] = 1
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Address(BaseSchema):
+class Address(SimplenightModel):
     city: str
     province: str
     country: str
@@ -78,16 +28,12 @@ class Address(BaseSchema):
     postal_code: Optional[str] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelRate(BaseSchema):
+class HotelRate(SimplenightModel):
     total_price: float
     taxes: float
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Phone(BaseSchema):
+class Phone(SimplenightModel):
     type: str
     number: str
     extension: str
@@ -98,16 +44,12 @@ class RateType(Enum):
     BOOKABLE = "BOOKABLE"
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Money(BaseSchema):
-    amount: decimal.Decimal = field(metadata=dict(as_string=True))
+class Money(SimplenightModel):
+    amount: decimal.Decimal
     currency: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class DailyRate(BaseSchema):
+class DailyRate(SimplenightModel):
     rate_date: date
     base_rate: Money
     tax: Money
@@ -128,24 +70,18 @@ class LineItemType(Enum):
     FEE_TRANSFER = "FEE_TRANSFER"
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class PostpaidFeeLineItem:
+class PostpaidFeeLineItem(SimplenightModel):
     amount: Money
     type: LineItemType
     description: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class PostpaidFees:
+class PostpaidFees(SimplenightModel):
     total: Money
     fees: List[PostpaidFeeLineItem]
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class RoomRate(BaseSchema):
+class RoomRate(SimplenightModel):
     code: str
     room_type_code: str
     rate_plan_code: str
@@ -157,3 +93,26 @@ class RoomRate(BaseSchema):
     daily_rates: Optional[List[DailyRate]] = None
     postpaid_fees: Optional[PostpaidFees] = None
     partner_data: Optional[List[str]] = None
+
+
+T = TypeVar("T")
+
+
+def from_json(obj, cls: Type[T], many=False) -> Union[List[T], T]:
+    if many:
+        return list(map(cls.parse_obj, json.loads(obj)))
+
+    if isinstance(obj, str):
+        return cls.parse_raw(obj)
+
+    return cls.parse_obj(obj)
+
+
+def to_json(obj: Union[SimplenightModel, List[SimplenightModel]], many=False, indent=2):
+    class ItemList(SimplenightModel):
+        __root__: List[SimplenightModel]
+
+    if many:
+        return ItemList.parse_obj(obj).json(indent=indent)
+
+    return obj.json(indent=indent)

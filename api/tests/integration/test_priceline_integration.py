@@ -177,7 +177,7 @@ class TestPricelineUnit(SimplenightTestCase):
 
         self.assertEqual(3, len(cancellation_policies))
         self.assertEqual("FREE_CANCELLATION", cancellation_policies[0].cancellation_type)
-        self.assertEqual("2017-02-04", str(cancellation_policies[0].begin_date))
+        self.assertEqual("2017-02-03", str(cancellation_policies[0].begin_date))
         self.assertEqual("2020-10-29", str(cancellation_policies[0].end_date))
 
         self.assertEqual("PARTIAL_REFUND", cancellation_policies[1].cancellation_type)

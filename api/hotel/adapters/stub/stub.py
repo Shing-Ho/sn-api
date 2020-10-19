@@ -5,7 +5,7 @@ from datetime import timedelta
 from typing import List
 
 from api.booking.booking_model import Reservation, HotelBookingRequest, Locator
-from api.common.models import RateType, RoomRate, DailyRate, Money
+from api.common.models import RateType, RoomRate, Money
 from api.hotel import hotel_cache_service
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.hotel_api_model import (
@@ -25,7 +25,7 @@ from api.hotel.hotel_api_model import (
     SimplenightAmenities,
     CancellationSummary,
 )
-from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch
+from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelList
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
 
@@ -35,10 +35,11 @@ class StubHotelAdapter(HotelAdapter):
 
     PROVIDER_NAME = "stub"
 
-    def search_by_location(self, search: AdapterLocationSearch) -> List[AdapterHotel]:
+    def search_by_location(self, search: AdapterLocationSearch) -> AdapterHotelList:
         num_hotels_to_return = random.randint(10, 50)
+        hotels = [self.search_by_id(search) for _ in range(num_hotels_to_return)]
 
-        return [self.search_by_id(search) for _ in range(num_hotels_to_return)]
+        return hotels
 
     def search_by_id(self, search_request: AdapterBaseSearch) -> AdapterHotel:
         hotel_code = random_string(5).upper()
@@ -75,8 +76,8 @@ class StubHotelAdapter(HotelAdapter):
     def booking(self, book_request: HotelBookingRequest) -> Reservation:
         cached_room_data = hotel_cache_service.get_simplenight_rate(book_request.room_code)
         return Reservation(
-            locator=Locator(str(uuid.uuid4())),
-            hotel_locator=[Locator(random_alphanumeric(6))],
+            locator=Locator(id=str(uuid.uuid4())),
+            hotel_locator=[Locator(id=random_alphanumeric(6))],
             hotel_id=cached_room_data.hotel_id,
             checkin=cached_room_data.checkin,
             checkout=cached_room_data.checkout,
@@ -162,16 +163,6 @@ class StubHotelAdapter(HotelAdapter):
                 total_rate = round(decimal.Decimal(random.random() * 1200), 2)
                 total_tax_rate = round(decimal.Decimal(total_rate / 10), 2)
                 total_base_rate = decimal.Decimal(total_rate - total_tax_rate)
-                base_rate = round(decimal.Decimal(total_rate / room_nights), 2)
-                tax_rate = round(decimal.Decimal(total_tax_rate / room_nights), 2)
-
-                daily_rates = []
-                for night in range(room_nights):
-                    rate_date = search_request.start_date + timedelta(days=night)
-                    daily_base_rate = Money(base_rate, "USD")
-                    daily_tax_rate = Money(tax_rate, "USD")
-                    daily_total_rate = Money(base_rate + tax_rate, "USD")
-                    daily_rates.append(DailyRate(rate_date, daily_base_rate, daily_tax_rate, daily_total_rate))
 
                 room_rates.append(
                     RoomRate(
@@ -179,10 +170,9 @@ class StubHotelAdapter(HotelAdapter):
                         room_type_code=room_types.code,
                         rate_plan_code=rate_plan.code,
                         maximum_allowed_occupancy=RoomOccupancy(adults=2, children=2),
-                        total_base_rate=Money(total_base_rate, "USD"),
-                        total_tax_rate=Money(total_tax_rate, "USD"),
-                        total=Money(total_rate, "USD"),
-                        daily_rates=daily_rates,
+                        total_base_rate=Money(amount=total_base_rate, currency="USD"),
+                        total_tax_rate=Money(amount=total_tax_rate, currency="USD"),
+                        total=Money(amount=total_rate, currency="USD"),
                         rate_type=RateType.BOOKABLE,
                     )
                 )
@@ -204,7 +194,7 @@ class StubHotelAdapter(HotelAdapter):
 
         latitude = random.random() * 100
         longitude = random.random() * 100
-        geolocation = GeoLocation(latitude, longitude)
+        geolocation = GeoLocation(latitude=latitude, longitude=longitude)
 
         star_rating = random.choice([2, 2.5, 3, 3.5, 4, 4.5, 5])
 
@@ -245,20 +235,13 @@ class StubHotelAdapter(HotelAdapter):
         photos = []
         for i in range(random.randint(1, 10)):
             url = f"https://i.simplenight-api-278418.ue.r.appspot.com/i/{code}.{i}.jpg"
-            photos.append(Image(url, ImageType.ROOM))
+            photos.append(Image(url=url, type=ImageType.ROOM))
 
         return photos
 
     @staticmethod
     def _get_property_description():
-        return (
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore "
-            "et dolore magna aliqua. Eros in cursus turpis massa. Libero nunc consequat interdum varius sit amet "
-            "mattis vulputate. Tristique magna sit amet purus gravida. Fermentum posuere urna nec tincidunt "
-            "praesent semper. Vitae semper quis lectus nulla. Dui nunc mattis enim ut tellus elementum sagittis "
-            "vitae et. Purus viverra accumsan in nisl. Pharetra sit amet aliquam id diam. Vulputate sapien nec "
-            "sagittis aliquam malesuada. Bibendum enim facilisis gravida neque. "
-        )
+        return "This is the property description."
 
     @classmethod
     def factory(cls, test_mode=True):

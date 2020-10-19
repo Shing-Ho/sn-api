@@ -1,3 +1,4 @@
+import json
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 
@@ -10,7 +11,8 @@ from api.hotel.adapters.hotelbeds.common_models import HotelBedsRateType, HotelB
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
 from api.hotel.adapters.hotelbeds.search_models import HotelBedsSearchBuilder
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
-from api.hotel.hotel_api_model import HotelLocationSearch, SimplenightAmenities
+from api.hotel.hotel_api_model import SimplenightAmenities
+from api.hotel.hotel_models import AdapterLocationSearch, AdapterOccupancy
 from api.tests import test_objects
 from api.tests.utils import load_test_resource, load_test_json_resource
 
@@ -35,21 +37,21 @@ class TestHotelBeds(TestCase):
 
     def test_build_search_request(self):
         search_builder = HotelBedsSearchBuilder()
-        location_search = HotelLocationSearch(
+        location_search = AdapterLocationSearch(
             location_id="SFO",
             start_date=date(2020, 1, 1),
             end_date=date(2020, 1, 7),
-            occupancy=RoomOccupancy(adults=2, children=1),
+            occupancy=AdapterOccupancy(adults=2, children=1),
         )
 
         hotelbeds_request = search_builder.build(location_search)
         self.assertEqual("SFO", hotelbeds_request.destination.code)
-        self.assertEqual("2020-01-01", str(hotelbeds_request.stay.checkin))
-        self.assertEqual("2020-01-07", str(hotelbeds_request.stay.checkout))
+        self.assertEqual("2020-01-01", str(hotelbeds_request.stay.checkIn))
+        self.assertEqual("2020-01-07", str(hotelbeds_request.stay.checkOut))
         self.assertEqual(2, hotelbeds_request.occupancies[0].adults)
         self.assertEqual(1, hotelbeds_request.occupancies[0].children)
 
-        hotelbeds_request_json = to_json(hotelbeds_request)
+        hotelbeds_request_json = json.loads(to_json(hotelbeds_request))
         self.assertEqual("SFO", hotelbeds_request_json["destination"]["code"])
         self.assertEqual("2020-01-01", hotelbeds_request_json["stay"]["checkIn"])
         self.assertEqual("2020-01-07", hotelbeds_request_json["stay"]["checkOut"])
@@ -60,11 +62,11 @@ class TestHotelBeds(TestCase):
         resource = load_test_resource("hotelbeds/search-by-location-response.json")
         hotelbeds = HotelBeds()
 
-        search = HotelLocationSearch(
+        search = AdapterLocationSearch(
             location_id="FOO",
             start_date=date(2020, 1, 1),
             end_date=date(2020, 1, 7),
-            occupancy=RoomOccupancy(adults=1),
+            occupancy=AdapterOccupancy(adults=1),
         )
 
         with requests_mock.Mocker() as mocker:
@@ -141,8 +143,10 @@ class TestHotelBeds(TestCase):
             transaction_id="tx",
             hotel_id="123",
             language="en",
-            customer=Customer("John", "Smith", "5558675309", "john@smith.foo", "US"),
-            traveler=Traveler("John", "Smith", occupancy=RoomOccupancy(adults=1)),
+            customer=Customer(
+                first_name="John", last_name="Smith", phone_number="5558675309", email="john@smith.foo", country="US"
+            ),
+            traveler=Traveler(first_name="John", last_name="Smith", occupancy=RoomOccupancy(adults=1)),
             room_code=room_rate.code,
             payment=None,
         )
@@ -229,12 +233,8 @@ class TestHotelBeds(TestCase):
     def create_location_search(location_id="TVL"):
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
-        search_request = HotelLocationSearch(
-            location_id=location_id,
-            start_date=checkin,
-            end_date=checkout,
-            daily_rates=True,
-            occupancy=RoomOccupancy(),
+        search_request = AdapterLocationSearch(
+            location_id=location_id, start_date=checkin, end_date=checkout, occupancy=AdapterOccupancy(),
         )
 
         return search_request

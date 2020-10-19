@@ -4,7 +4,7 @@ from typing import Dict, Any
 import requests
 
 from api import logger
-from api.common.models import to_jsons, SimplenightModel
+from api.common.models import SimplenightModel
 
 
 class Transport(abc.ABC):
@@ -42,8 +42,8 @@ class Transport(abc.ABC):
 
     @staticmethod
     def _log_request(url, request, response):
-        if hasattr(request, "Schema"):
-            request = to_jsons(request)
+        if hasattr(request, "json"):
+            request = request.json()
 
         logger.debug(
             {

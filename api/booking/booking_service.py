@@ -52,7 +52,7 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
         return HotelBookingResponse(
             api_version=1,
             transaction_id=book_request.transaction_id,
-            booking_id=booking.booking_id,
+            booking_id=str(booking.booking_id),
             status=Status(success=True, message="success"),
             reservation=reservation
         )

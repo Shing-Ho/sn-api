@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiThrottle
 from api.booking import booking_service
 from api.booking.booking_model import HotelBookingRequest
+from api.common.models import from_json
 from api.common.request_cache import get_request_cache
 from api.hotel import hotel_service, google_hotel_service
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
@@ -19,35 +20,35 @@ class HotelViewSet(viewsets.ViewSet):
 
     @action(detail=False, url_path="search-by-location", methods=["GET", "POST"], name="Search Hotels")
     def search_by_location(self, request: Request):
-        request = HotelLocationSearch.Schema().load(request.data)
+        request = from_json(request.data, HotelLocationSearch)
         hotels = hotel_service.search_by_location(request)
 
         return _response(hotels)
 
     @action(detail=False, url_path="search-by-id", methods=["GET", "POST"], name="Search Hotels")
     def search_by_id(self, request):
-        request = HotelSpecificSearch.Schema().load(request.data)
+        request = from_json(request.data, HotelSpecificSearch)
         hotels = hotel_service.search_by_id(request)
 
         return _response(hotels)
 
     @action(detail=False, url_path="google/search-by-id", methods=["GET", "POST"], name="Search Hotels Google API")
     def search_by_id_google(self, request):
-        google_search_request = GoogleHotelSearchRequest.Schema().load(request.data)
+        google_search_request = from_json(request.data, GoogleHotelSearchRequest)
         google_search_response = google_hotel_service.search_by_id(google_search_request)
 
         return _response(google_search_response)
 
     @action(detail=False, url_path="booking", methods=["POST"], name="Hotel Booking")
     def booking(self, request):
-        booking_request = HotelBookingRequest.Schema().load(request.data)
+        booking_request = from_json(request.data, HotelBookingRequest)
         booking_response = booking_service.book(booking_request)
 
         return _response(booking_response)
 
     @action(detail=False, url_path="google/booking", methods=["POST"], name="GoogleHotel Booking")
     def booking_google(self, request):
-        google_booking_request = GoogleBookingSubmitRequest.Schema().load(request.data)
+        google_booking_request = from_json(request.data, GoogleBookingSubmitRequest)
         return _response(google_hotel_service.booking(google_booking_request))
 
     @action(detail=False, url_path="status", methods=["GET"], name="Health Check")

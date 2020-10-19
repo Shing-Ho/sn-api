@@ -16,7 +16,7 @@ class TestAdapterService(SimplenightAPITestCase):
         self.request_cache.process_request(Mock())
 
     def test_get_adapters_to_search(self):
-        search = test_objects.hotel_specific_search(adapter="xyz")
+        search = test_objects.hotel_specific_search(provider="xyz")
         self.assertEqual("xyz", adapter_service.get_adapters_to_search(search))
 
         # Organization is identified by API key in request
@@ -54,4 +54,3 @@ class TestAdapterService(SimplenightAPITestCase):
 
         organization.set_feature(Feature.TEST_MODE, True)
         self.assertTrue(adapter_service.get_test_mode())
-

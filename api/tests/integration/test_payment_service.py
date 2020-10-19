@@ -16,7 +16,7 @@ class TestPaymentService(TestCase):
     def test_authorize_payment_token(self):
         payment_token = test_stripe.create_test_token("4242424242424242")
 
-        amount = Money(Decimal("1.00"), "USD")
+        amount = Money(amount=Decimal("1.00"), currency="USD")
         payment = Payment(
             payment_card_parameters=None,
             billing_address=Address(
@@ -38,7 +38,7 @@ class TestPaymentService(TestCase):
     def test_authorize_payment_card(self):
         payment = test_objects.payment("4000000000000077")
         payment_description = "Test Payment"
-        amount = Money(Decimal("1.05"), "USD")
+        amount = Money(amount=Decimal("1.05"), currency="USD")
 
         result = payment_service.authorize_payment(amount, payment, payment_description)
         assert result.charge_id is not None
@@ -49,7 +49,7 @@ class TestPaymentService(TestCase):
     def test_invalid_payment(self):
         payment = test_objects.payment("4000000000000002")  # Card fails
         payment_description = "Failing Payment"
-        amount = Money(Decimal("1.10"), "USD")
+        amount = Money(amount=Decimal("1.10"), currency="USD")
 
         with pytest.raises(PaymentException) as e:
             payment_service.authorize_payment(amount, payment, payment_description)

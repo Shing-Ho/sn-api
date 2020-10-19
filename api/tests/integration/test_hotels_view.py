@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, date
-from typing import List
 from unittest.mock import patch
 
 import requests_mock
@@ -8,7 +7,7 @@ from rest_framework.test import APIClient
 
 from api.auth.authentication import Feature, Organization
 from api.booking.booking_model import Customer, PaymentMethod, CardType
-from api.common.models import to_json, from_json, Address
+from api.common.models import Address, from_json
 from api.hotel import hotel_cache_service
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
@@ -28,7 +27,6 @@ from api.hotel.hotel_api_model import (
     HotelSpecificSearch,
     RoomOccupancy,
     HotelLocationSearch,
-    Hotel,
     SimplenightHotel,
 )
 from api.models.models import Booking
@@ -58,7 +56,7 @@ class TestHotelsView(SimplenightAPITestCase):
 
         self.assertEqual(200, response.status_code)
 
-        hotel: Hotel = SimplenightHotel.Schema().load(response.json())
+        hotel = SimplenightHotel.parse_raw(response.content)
         self.assertIsNotNone(hotel.hotel_id)
 
     def test_search_by_location(self):
@@ -71,7 +69,7 @@ class TestHotelsView(SimplenightAPITestCase):
         response = self._post(SEARCH_BY_LOCATION, search)
         self.assertEqual(200, response.status_code)
 
-        hotels: List[Hotel] = SimplenightHotel.Schema(many=True).load(response.json())
+        hotels = from_json(response.content, SimplenightHotel, many=True)
         self.assertTrue(len(hotels) > 1)
         self.assertIsNotNone(hotels[0].hotel_id)
 
@@ -89,7 +87,7 @@ class TestHotelsView(SimplenightAPITestCase):
         response = self._post(SEARCH_BY_LOCATION, search)
         self.assertEqual(200, response.status_code)
 
-        hotels: List[Hotel] = SimplenightHotel.Schema(many=True).load(response.json())
+        hotels = from_json(response.content, SimplenightHotel, many=True)
         self.assertTrue(len(hotels) > 1)
         self.assertIsNotNone(hotels[0].hotel_id)
 
@@ -143,7 +141,7 @@ class TestHotelsView(SimplenightAPITestCase):
                 location_id="SFO",
                 start_date=date(2020, 1, 20),
                 end_date=date(2020, 1, 27),
-                occupancy=RoomOccupancy(2, 1),
+                occupancy=RoomOccupancy(adults=2, children=1),
                 provider="hotelbeds",
             )
 
@@ -258,7 +256,7 @@ class TestHotelsView(SimplenightAPITestCase):
                     mocker.post(contract_endpoint, text=priceline_contract_response)
                     response = self._post(endpoint=BOG_BOOKING, data=booking_request, client=client)
 
-        booking_resp_obj = from_json(response.json(), GoogleBookingResponse)
+        booking_resp_obj = GoogleBookingResponse.parse_raw(response.content)
         self.assertIsNotNone(booking_resp_obj)
         self.assertEqual("booking-foo", booking_resp_obj.transaction_id)
         self.assertEqual(GoogleStatus.SUCCESS, booking_resp_obj.status)
@@ -277,4 +275,4 @@ class TestHotelsView(SimplenightAPITestCase):
         if client is None:
             client = self.client
 
-        return client.post(path=endpoint, data=to_json(data), format="json")
+        return client.post(path=endpoint, data=data.json(), format="json")

@@ -1,3 +1,5 @@
+from datetime import date
+from decimal import Decimal
 from typing import List, Union, Optional
 
 from api import logger
@@ -9,6 +11,7 @@ from api.hotel.adapters.hotelbeds.booking_models import (
     HotelBedsPax,
     HotelBedsBookingRoom,
     HotelBedsBookingRS,
+    HotelBedsBookingRoomRateRS,
 )
 from api.hotel.adapters.hotelbeds.common_models import (
     get_language_mapping,
@@ -187,15 +190,19 @@ class HotelBeds(HotelAdapter):
         hotelbeds_booking_response: HotelBedsBookingRS = HotelBedsBookingRS.parse_raw(response.text)
 
         # TODO JLM: Parse checkin, checkout and room rate from HotelBeds booking response
+
+        hotelbeds_room_rate = hotelbeds_booking_response.booking.hotel.rooms[0].rates[0]
+        room_rate = self._create_room_rate(hotelbeds_room_rate, room_type_code=book_request.room_code)
+
         return Reservation(
-            locator=Locator(hotelbeds_booking_response.booking.reference),
+            locator=Locator(id=hotelbeds_booking_response.booking.reference),
             hotel_locator=None,
             hotel_id=book_request.hotel_id,
-            checkin=None,
-            checkout=None,
+            checkin=date(2000, 1, 1),
+            checkout=date(2000, 1, 1),
             customer=book_request.customer,
             traveler=book_request.traveler,
-            room_rate=None,
+            room_rate=room_rate,
             cancellation_details=[],
         )
 
@@ -254,22 +261,33 @@ class HotelBeds(HotelAdapter):
             unstructured_policies=None,
         )
 
-    def _create_room_rate(self, rate: HotelBedsRoomRateRS, room_type_code: str, currency=None):
-        total_base_rate = Money(rate.net, currency)
+    def _create_room_rate(
+        self, rate: Union[HotelBedsBookingRoomRateRS, HotelBedsRoomRateRS], room_type_code: str, currency="USD"
+    ):
+        net_amount = rate.net
+        if net_amount is None:
+            net_amount = Decimal("0.0")
+
+        total_base_rate = Money(amount=net_amount, currency=currency)
         total_taxes = 0
         if rate.taxes:
             total_taxes = sum(x.amount for x in rate.taxes.taxes if x.amount is not None)
 
-        total_tax_rate = Money(total_taxes, currency)
-        total_rate = Money(total_base_rate.amount + total_tax_rate.amount, currency)
+        total_tax_rate = Money(amount=total_taxes, currency=currency)
+        total_amount = total_base_rate.amount + total_tax_rate.amount
+        total_rate = Money(amount=total_amount, currency=currency)
 
         occupancy = RoomOccupancy(adults=rate.adults, children=rate.children, num_rooms=rate.rooms)
 
+        rate_type = RateType.BOOKABLE
+        if isinstance(rate, HotelBedsRoomRateRS):
+            rate_type = self._get_rate_type(rate.rate_type)
+
         return RoomRate(
-            code=rate.rate_key,
+            code=rate.rate_key or room_type_code,
             rate_plan_code="temporary-scaffolding",
             room_type_code=room_type_code,
-            rate_type=self._get_rate_type(rate.rate_type),
+            rate_type=rate_type,
             total_base_rate=total_base_rate,
             total_tax_rate=total_tax_rate,
             total=total_rate,

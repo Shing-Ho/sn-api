@@ -12,7 +12,7 @@ class TestHotelService(SimplenightTestCase):
             hotel_id="A1H2J6",
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
-            occupancy=RoomOccupancy(2, 1),
+            occupancy=RoomOccupancy(adults=2, children=1),
             provider="stub",
         )
 
@@ -28,7 +28,7 @@ class TestHotelService(SimplenightTestCase):
             location_id="SFO",
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
-            occupancy=RoomOccupancy(2, 1),
+            occupancy=RoomOccupancy(adults=2, children=1),
             provider="stub",
         )
 

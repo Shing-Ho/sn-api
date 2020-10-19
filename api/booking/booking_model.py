@@ -1,12 +1,10 @@
-import dataclasses
 from datetime import date
 from enum import Enum
-from typing import Optional, List, Union
+from typing import Optional, List
 
-import marshmallow_dataclass
-from marshmallow import validates_schema
+from pydantic import Field
 
-from api.common.models import BaseSchema, RoomOccupancy, Address, RoomRate, RemoveNone
+from api.common.models import RoomOccupancy, Address, RoomRate, SimplenightModel
 from api.hotel.hotel_api_model import CancellationDetails
 
 
@@ -43,9 +41,7 @@ class SubmitErrorType(Enum):
     SUPPLIER_ERROR = "SUPPLIER_ERROR"
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Customer(BaseSchema):
+class Customer(SimplenightModel):
     first_name: str
     last_name: str
     phone_number: str
@@ -53,9 +49,7 @@ class Customer(BaseSchema):
     country: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Traveler(BaseSchema):
+class Traveler(SimplenightModel):
     first_name: str
     last_name: str
     occupancy: RoomOccupancy
@@ -76,9 +70,7 @@ class PaymentMethod(Enum):
     PAYMENT_CARD = "PAYMENT_CARD"
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class PaymentCardParameters(BaseSchema):
+class PaymentCardParameters(SimplenightModel):
     card_type: CardType
     card_number: str
     cardholder_name: str
@@ -87,29 +79,14 @@ class PaymentCardParameters(BaseSchema):
     cvv: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Payment(BaseSchema):
+class Payment(SimplenightModel):
     billing_address: Address
     payment_card_parameters: Optional[PaymentCardParameters] = None
     payment_token: Optional[str] = None
     payment_method: Optional[PaymentMethod] = None
 
-    # noinspection PyUnusedLocal
-    @validates_schema
-    def validate(self, data, *args, **kwargs):
-        if data["payment_method"] == PaymentMethod.PAYMENT_TOKEN and not data["payment_token"]:
-            raise ValueError(f"Must set payment_token when payment_method is {PaymentMethod.PAYMENT_TOKEN.value}")
 
-        if data["payment_method"] == PaymentMethod.CREDIT_CARD and not data["payment_card_parameters"]:
-            raise ValueError(
-                f"Must set payment_card_parameters when payment_method is {PaymentMethod.CREDIT_CARD.value}"
-            )
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBookingRequest(BaseSchema):
+class HotelBookingRequest(SimplenightModel):
     api_version: int
     transaction_id: str
     hotel_id: str
@@ -120,37 +97,29 @@ class HotelBookingRequest(BaseSchema):
     payment: Optional[Payment] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Status(BaseSchema):
+class Status(SimplenightModel):
     success: bool
     message: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Locator(BaseSchema, RemoveNone):
+class Locator(SimplenightModel):
     id: str
     pin: Optional[str] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class Reservation(BaseSchema):
+class Reservation(SimplenightModel):
     locator: Locator
-    hotel_locator: Optional[Union[List[Locator], Locator]]
+    hotel_locator: Optional[List[Locator]]
     hotel_id: str
     checkin: date
     checkout: date
     customer: Customer
     traveler: Traveler
     room_rate: RoomRate
-    cancellation_details: List[CancellationDetails] = dataclasses.field(default_factory=list)
+    cancellation_details: List[CancellationDetails] = Field(default_factory=list)
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelBookingResponse(BaseSchema):
+class HotelBookingResponse(SimplenightModel):
     api_version: int
     transaction_id: str
     booking_id: str
@@ -158,8 +127,6 @@ class HotelBookingResponse(BaseSchema):
     reservation: Reservation
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class HotelPriceVerificationHolder:
+class HotelPriceVerificationHolder(SimplenightModel):
     original_room_rates: List[RoomRate]
     verified_room_rates: List[RoomRate]

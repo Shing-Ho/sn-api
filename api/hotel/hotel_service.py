@@ -76,11 +76,13 @@ def _convert_hotel_to_front_end_format(hotel: Hotel) -> Optional[SimplenightHote
             total_tax_rate=room_rate.total_tax_rate,
             total=room_rate.total,
             rate_type=room_rate.rate_type,
-            avg_nightly_rate=Money(_get_nightly_rate(hotel, room_rate.total.amount), room_rate.total.currency),
             cancellation_policy=rate_plan.cancellation_policy,
             daily_rates=room_rate.daily_rates,
             unstructured_policies=room_type.unstructured_policies,
-            postpaid_fees=room_rate.postpaid_fees
+            postpaid_fees=room_rate.postpaid_fees,
+            avg_nightly_rate=Money(
+                amount=_get_nightly_rate(hotel, room_rate.total.amount), currency=room_rate.total.currency
+            ),
         )
 
         simplenight_room_types.append(simplenight_room_type)

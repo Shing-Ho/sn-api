@@ -2,17 +2,14 @@
 #   Google Hotel Booking API Schema   #
 #######################################
 
-import dataclasses
-from dataclasses import field
 from datetime import date
 from enum import Enum
 from typing import List, Optional
 
-import marshmallow_dataclass
-from marshmallow import EXCLUDE, validates_schema
+from pydantic import Field
 
 from api.booking.booking_model import Customer, PaymentMethod, CardType, Locator, SubmitErrorType
-from api.common.models import BaseSchema, Address, Money, RemoveNone, LineItemType
+from api.common.models import Address, Money, LineItemType, SimplenightModel
 from api.hotel.hotel_api_model import GeoLocation, BedTypes, CancellationSummary
 
 
@@ -20,41 +17,28 @@ class ApiVersion(Enum):
     VERSION_1: 1
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class DisplayString:
+class DisplayString(SimplenightModel):
     text: str
     language: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class BasicAmenities:
+class BasicAmenities(SimplenightModel):
     free_breakfast: bool
     free_wifi: bool
     free_parking: bool
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleImage(BaseSchema):
+class GoogleImage(SimplenightModel):
     url: str
     description: DisplayString
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class RoomCapacity(RemoveNone):
+class RoomCapacity(SimplenightModel):
     adults: int = 2
     children: Optional[int] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleRoomType(BaseSchema, RemoveNone):
-    class Meta:
-        unknown = EXCLUDE
-
+class GoogleRoomType(SimplenightModel):
     code: str
     name: DisplayString
     description: Optional[DisplayString]
@@ -67,10 +51,8 @@ class GoogleRoomType(BaseSchema, RemoveNone):
 
 # Room Occupancy, but Google-required format
 # Children are specified as a list of integers representing child age
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class RoomParty(BaseSchema):
-    children: List[int] = field(default_factory=list)
+class RoomParty(SimplenightModel):
+    children: List[int] = Field(default_factory=list)
     adults: int = 0
 
 
@@ -79,17 +61,13 @@ class GuaranteeType(Enum):
     PAYMENT_CARD = "PAYMENT_CARD"
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleCancellationPolicy(BaseSchema):
+class GoogleCancellationPolicy(SimplenightModel):
     summary: CancellationSummary
     cancellation_deadline: str
     unstructured_policy: DisplayString
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleRatePlan(BaseSchema):
+class GoogleRatePlan(SimplenightModel):
     code: str
     name: DisplayString
     description: DisplayString
@@ -98,17 +76,13 @@ class GoogleRatePlan(BaseSchema):
     cancellation_policy: GoogleCancellationPolicy
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class RoomRateLineItem(BaseSchema):
+class RoomRateLineItem(SimplenightModel):
     price: Money
     type: LineItemType
     paid_at_checkout: bool
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class BaseGoogleRoomRate(BaseSchema):
+class BaseGoogleRoomRate(SimplenightModel):
     code: str
     room_type_code: str
     rate_plan_code: str
@@ -118,21 +92,15 @@ class BaseGoogleRoomRate(BaseSchema):
     partner_data: Optional[List[str]]
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
 class GoogleRoomRate(BaseGoogleRoomRate):
     line_items: List[RoomRateLineItem]
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
 class GoogleBookingRoomRate(BaseGoogleRoomRate):
     line_items: Optional[List[RoomRateLineItem]]
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleHotelDetails(BaseSchema):
+class GoogleHotelDetails(SimplenightModel):
     name: str
     address: Address
     geolocation: Optional[GeoLocation] = None
@@ -140,9 +108,7 @@ class GoogleHotelDetails(BaseSchema):
     email: Optional[str] = None
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleHotelApiResponse(BaseSchema):
+class GoogleHotelApiResponse(SimplenightModel):
     api_version: int
     transaction_id: str
     hotel_id: str
@@ -155,9 +121,7 @@ class GoogleHotelApiResponse(BaseSchema):
     hotel_details: GoogleHotelDetails
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleHotelSearchRequest(BaseSchema):
+class GoogleHotelSearchRequest(SimplenightModel):
     api_version: int
     transaction_id: str
     hotel_id: str
@@ -168,17 +132,13 @@ class GoogleHotelSearchRequest(BaseSchema):
     currency: str = "USD"
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleTraveler(BaseSchema):
+class GoogleTraveler(SimplenightModel):
     first_name: str
     last_name: str
     occupancy: RoomParty
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GooglePaymentCardParameters(BaseSchema):
+class GooglePaymentCardParameters(SimplenightModel):
     card_type: CardType
     card_number: str
     cardholder_name: str
@@ -187,44 +147,24 @@ class GooglePaymentCardParameters(BaseSchema):
     cvc: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GooglePayment(BaseSchema):
+class GooglePayment(SimplenightModel):
     type: PaymentMethod
     billing_address: Address
     payment_card_parameters: Optional[GooglePaymentCardParameters] = None
     payment_token: Optional[str] = None
 
-    # noinspection PyUnusedLocal
-    @validates_schema
-    def validate(self, data, *args, **kwargs):
-        if data["type"] == PaymentMethod.PAYMENT_TOKEN and not data["payment_token"]:
-            raise ValueError(f"Must set payment_token when payment_method is {PaymentMethod.PAYMENT_TOKEN.value}")
 
-        payment_card_types = [PaymentMethod.CREDIT_CARD, PaymentMethod.PAYMENT_CARD]
-        if data["type"] in payment_card_types and not data["payment_card_parameters"]:
-            raise ValueError(
-                f"Must set payment_card_parameters when payment_method is {PaymentMethod.CREDIT_CARD.value}"
-            )
-
-
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleTracking:
+class GoogleTracking(SimplenightModel):
     campaign_id: Optional[str]
     pos_url: Optional[str]
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleSubmitError:
+class GoogleSubmitError(SimplenightModel):
     type: SubmitErrorType
     message: str
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleBookingSubmitRequest(BaseSchema):
+class GoogleBookingSubmitRequest(SimplenightModel):
     api_version: int
     transaction_id: str
     hotel_id: str
@@ -244,9 +184,7 @@ class GoogleStatus(Enum):
     FAILURE = "FAILURE"
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleReservation(BaseSchema):
+class GoogleReservation(SimplenightModel):
     locator: Locator
     hotel_locators: List[Locator]
     hotel_id: str
@@ -257,9 +195,7 @@ class GoogleReservation(BaseSchema):
     room_rate: GoogleBookingRoomRate
 
 
-@dataclasses.dataclass
-@marshmallow_dataclass.dataclass
-class GoogleBookingResponse(BaseSchema):
+class GoogleBookingResponse(SimplenightModel):
     api_version: int
     transaction_id: str
     status: GoogleStatus

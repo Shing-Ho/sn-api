@@ -2,7 +2,7 @@ from datetime import date
 
 import requests_mock
 
-from api.common.models import RoomOccupancy
+from api.common.models import RoomOccupancy, from_json
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_api_model import HotelLocationSearch, SimplenightHotel
 from api.tests.simplenight_api_testcase import SimplenightAPITestCase
@@ -21,7 +21,7 @@ class TestBookingView(SimplenightAPITestCase):
             location_id="SFO",
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
-            occupancy=RoomOccupancy(2, 1),
+            occupancy=RoomOccupancy(adults=2, children=1),
             provider="hotelbeds",
         )
 
@@ -30,5 +30,5 @@ class TestBookingView(SimplenightAPITestCase):
             mocker.get(HotelBedsTransport.get_hotel_content_url(), text=hotelbeds_content_response)
             response = self.post(SEARCH_BY_LOCATION, search_request)
 
-        hotels = SimplenightHotel.Schema(many=True).load(response.data)
+        hotels = from_json(response.content, SimplenightHotel, many=True)
         assert len(hotels) == 24
