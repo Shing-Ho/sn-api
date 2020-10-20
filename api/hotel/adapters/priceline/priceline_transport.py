@@ -15,15 +15,17 @@ class PricelineTransport(Transport):
         HOTELS_DOWNLOAD = "/shared/getBOF2.Downloads.Hotel.Hotels"
         PHOTOS_DOWNLOAD = "/shared/getBOF2.Downloads.Hotel.Photos"
         SALES_REPORT = "/shared/getTRK.Sales.Select.Hotel"
+        AMENITIES = "/shared/getBOF2.Downloads.Hotel.Amenities"
 
-    CREDENTIALS = {
-        "refid": "10047",
-        "api_key": "990b98b0a0efaa7acf461ff6a60cf726",
-    }
-
-    def __init__(self, test_mode=True):
+    def __init__(self, test_mode=True, refid="10046"):
         super().__init__()
         self.test_mode = test_mode
+        self.priceline_refid = refid
+
+        self.CREDENTIALS = {
+            "refid": self.priceline_refid,
+            "api_key": "990b98b0a0efaa7acf461ff6a60cf726",
+        }
 
     def get(self, endpoint: Endpoint, **params):
         url = self.endpoint(endpoint)
@@ -36,6 +38,9 @@ class PricelineTransport(Transport):
             logger.error(f"Error while searching Priceline: {response.text}")
 
         return response.json()
+
+    def get2(self, endpoint: Endpoint, **params):
+        return self.get(endpoint, **params)
 
     def post(self, endpoint: Endpoint, **params):
         url = self.endpoint(endpoint)

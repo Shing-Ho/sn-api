@@ -1,5 +1,5 @@
 from api import logger
-from api.hotel.adapters.priceline.priceline import PricelineAdapter
+from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.models.models import ProviderHotel
 
@@ -37,25 +37,28 @@ class PricelineDetailsParser:
         total_loaded = 0
         resume_key = None
 
-        ProviderHotel.objects.filter(provider=self.provider).delete()
-
         while True:
-            response = self.transport.hotels_download(resume_key=resume_key, limit=1000)
+            logger.info(f"Making hotels download request to Priceline with resume key {resume_key}")
+            response = self.transport.hotels_download(resume_key=resume_key, limit=10000)
             resume_key = response["getSharedBOF2.Downloads.Hotel.Hotels"]["results"]["resume_key"]
-            hotel_data = response["getSharedBOF2.Downloads.Hotel.Hotels"]["results"]["hotels"]
 
+            hotel_data = response["getSharedBOF2.Downloads.Hotel.Hotels"]["results"]["hotels"]
             models = list(map(self.parse_hotel, hotel_data))
             ProviderHotel.objects.bulk_create(models)
             total_loaded += len(models)
 
             logger.info(f"Loaded {total_loaded} hotels")
-            if resume_key is None:
+            if resume_key is None or len(hotel_data) < 10000:
                 logger.info(f"Complete loading hotels")
                 return
 
             if limit and total_loaded >= limit:
                 logger.info(f"Reached loading limit of {limit}")
                 return
+
+    @classmethod
+    def remove_old_data(cls):
+        ProviderHotel.objects.filter(provider__name=PricelineAdapter.get_provider_name()).delete()
 
     def parse_hotel(self, hotel_data):
         amenities = []
@@ -79,4 +82,5 @@ class PricelineDetailsParser:
             star_rating=hotel_data["star_rating"],
             property_description=hotel_data["property_description"],
             amenities=amenities,
+            provider_reference=self.transport.priceline_refid
         )

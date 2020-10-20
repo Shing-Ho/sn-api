@@ -26,6 +26,7 @@ from api.common.models import (
     LineItemType,
     PostpaidFeeLineItem,
 )
+from api.hotel.adapters.priceline import priceline_amenity_mappings
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_adapter import HotelAdapter
@@ -43,7 +44,7 @@ from api.hotel.hotel_api_model import (
     CancellationDetails,
 )
 from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelSearch
-from api.models.models import supplier_priceline, ProviderImages
+from api.models.models import ProviderImages, ProviderHotel
 from api.view.exceptions import AvailabilityException, BookingException, AvailabilityErrorCode
 
 
@@ -245,7 +246,10 @@ class PricelineAdapter(HotelAdapter):
 
         hotel_codes = list(x.hotel_id for x in hotels)
         logger.info(f"Enrichment: Looking up {len(hotel_codes)} hotels")
-        hotel_details_map = {x.hotelid_ppn: x for x in supplier_priceline.objects.filter(hotelid_ppn__in=hotel_codes)}
+        priceline_hotels = ProviderHotel.objects.filter(
+            provider__name=self.get_provider_name(), provider_code__in=hotel_codes
+        )
+        hotel_details_map = {x.provider_code: x for x in priceline_hotels}
         logger.info(f"Enrichment: Found {len(hotel_details_map)} stored hotels")
 
         logger.info(f"Enrichment: Looking up images for {len(hotel_codes)} hotels")
@@ -261,9 +265,11 @@ class PricelineAdapter(HotelAdapter):
                 continue
 
             hotel_detail_model = hotel_details_map[hotel.hotel_id]
-            hotel.hotel_details.amenities = self._get_amenity_mappings(hotel_detail_model.hotel_amenities)
             hotel.hotel_details.photos = list(map(self._get_image, hotel_images_by_id.get(hotel.hotel_id) or []))
-            hotel.hotel_details.thumbnail_url = hotel_detail_model.image_url_path
+            hotel.hotel_details.thumbnail_url = hotel_detail_model.thumbnail_url
+            hotel.hotel_details.amenities = priceline_amenity_mappings.get_simplenight_amenity_mappings(
+                hotel_detail_model.amenities
+            )
 
         logger.info("Enrichment: Complete")
 

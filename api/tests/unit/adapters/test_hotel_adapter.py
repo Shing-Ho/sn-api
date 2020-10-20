@@ -1,4 +1,4 @@
-from api.hotel.adapters.priceline.priceline import PricelineAdapter
+from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.models.models import CityMap
 from api.tests import test_objects
 from api.tests.integration import test_models

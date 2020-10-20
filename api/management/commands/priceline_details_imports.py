@@ -7,7 +7,8 @@ from api.hotel.parsers.priceline_details_parser import PricelineDetailsParser
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        transport = PricelineTransport(test_mode=True)
-        parser = PricelineDetailsParser(transport=transport)
+        PricelineDetailsParser.remove_old_data()
 
-        parser.load()
+        for refid in ["10046", "10047"]:
+            parser = PricelineDetailsParser(transport=PricelineTransport(test_mode=True, refid=refid))
+            parser.load()

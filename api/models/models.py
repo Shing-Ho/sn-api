@@ -114,29 +114,6 @@ class CityMap(models.Model):
     )
 
 
-class supplier_priceline(models.Model):
-    class Meta:
-        app_label = "api"
-        indexes = [
-            models.Index(fields=["hotelid_ppn"]),
-        ]
-
-    supplier = models.CharField(max_length=50, default="Priceline")
-    supplier_id = models.CharField(max_length=100, blank=True, null=False)
-    hotel_name = models.CharField(max_length=100)
-    hotel_address = models.CharField(max_length=100)
-    hotel_city = models.CharField(max_length=100)
-    hotel_state = models.CharField(max_length=25)
-    hotel_country_code = models.CharField(max_length=3)
-    hotel_postal_code = models.CharField(max_length=15)
-    hotel_rating = models.FloatField()
-    hotel_description = models.TextField(max_length=100)
-    hotel_amenities = ArrayField(ArrayField(models.CharField(max_length=100, blank=True), size=8,), size=8,)
-    hotelid_ppn = models.TextField(max_length=100)
-    cityid_ppn = models.TextField(max_length=100)
-    image_url_path = models.TextField(null=True, blank=True)
-
-
 class PaymentTransaction(models.Model):
     class Meta:
         app_label = "api"
@@ -258,7 +235,6 @@ class ProviderHotel(models.Model):
         db_table = "provider_hotel"
         indexes = [
             models.Index(fields=["provider", "provider_code"]),
-
         ]
 
     provider_hotel_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -278,3 +254,4 @@ class ProviderHotel(models.Model):
     star_rating = models.DecimalField(max_digits=2, decimal_places=1, null=True)
     property_description = models.TextField(blank=True, null=True)
     amenities = ArrayField(models.CharField(max_length=100, blank=True), null=True)
+    provider_reference = models.TextField(null=True)

@@ -8,7 +8,7 @@ from freezegun import freeze_time
 from api.booking import booking_service
 from api.common.models import RoomOccupancy, RateType
 from api.hotel import hotel_service
-from api.hotel.adapters.priceline.priceline import PricelineAdapter
+from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
 from api.hotel.hotel_models import AdapterHotelSearch, AdapterOccupancy, AdapterLocationSearch

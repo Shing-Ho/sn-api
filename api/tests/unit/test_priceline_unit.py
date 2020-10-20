@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 
-from api.hotel.adapters.priceline.priceline import PricelineAdapter
+from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
