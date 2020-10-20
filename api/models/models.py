@@ -6,7 +6,7 @@ from typing import Tuple, List
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
-from api.hotel.hotel_model import CancellationSummary
+from api.hotel.hotel_api_model import CancellationSummary
 
 
 def choices(cls: EnumMeta) -> List[Tuple]:
@@ -112,29 +112,6 @@ class CityMap(models.Model):
     provider_city = models.ForeignKey(
         ProviderCity, to_field="provider_code", related_name="provider_city", on_delete=models.CASCADE
     )
-
-
-class supplier_priceline(models.Model):
-    class Meta:
-        app_label = "api"
-        indexes = [
-            models.Index(fields=["hotelid_ppn"]),
-        ]
-
-    supplier = models.CharField(max_length=50, default="Priceline")
-    supplier_id = models.CharField(max_length=100, blank=True, null=False)
-    hotel_name = models.CharField(max_length=100)
-    hotel_address = models.CharField(max_length=100)
-    hotel_city = models.CharField(max_length=100)
-    hotel_state = models.CharField(max_length=25)
-    hotel_country_code = models.CharField(max_length=3)
-    hotel_postal_code = models.CharField(max_length=15)
-    hotel_rating = models.FloatField()
-    hotel_description = models.TextField(max_length=100)
-    hotel_amenities = ArrayField(ArrayField(models.CharField(max_length=100, blank=True), size=8,), size=8,)
-    hotelid_ppn = models.TextField(max_length=100)
-    cityid_ppn = models.TextField(max_length=100)
-    image_url_path = models.TextField(null=True, blank=True)
 
 
 class PaymentTransaction(models.Model):
@@ -270,6 +247,11 @@ class ProviderHotel(models.Model):
     country_code = models.CharField(max_length=2, null=True)
     address_line_1 = models.TextField(null=True)
     address_line_2 = models.TextField(null=True)
-    postal_code = models.CharField(max_length=10, null=True)
+    postal_code = models.TextField(null=True)
     latitude = models.FloatField(blank=True, null=True)
     longitude = models.FloatField(blank=True, null=True)
+    thumbnail_url = models.TextField(null=True)
+    star_rating = models.DecimalField(max_digits=2, decimal_places=1, null=True)
+    property_description = models.TextField(blank=True, null=True)
+    amenities = ArrayField(models.CharField(max_length=100, blank=True), null=True)
+    provider_reference = models.TextField(null=True)

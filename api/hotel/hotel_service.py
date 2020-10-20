@@ -1,10 +1,9 @@
 from decimal import Decimal, ROUND_UP, getcontext
 from typing import List, Union, Dict, Optional
 
-from api.booking.booking_model import HotelBookingRequest
 from api.common.models import RoomRate, Money
 from api.hotel import core_hotel_service
-from api.hotel.hotel_model import (
+from api.hotel.hotel_api_model import (
     HotelDetails,
     HotelSpecificSearch,
     AdapterHotel,
@@ -41,10 +40,6 @@ def recheck(provider: str, room_rate: RoomRate) -> RoomRate:
     return core_hotel_service.recheck(provider, room_rate)
 
 
-def booking(book_request: HotelBookingRequest):
-    return core_hotel_service.booking(book_request)
-
-
 def _get_nightly_rate(hotel: Union[Hotel, AdapterHotel], amount: Decimal):
     room_nights = max((hotel.end_date - hotel.start_date).days, 1)
 
@@ -76,11 +71,13 @@ def _convert_hotel_to_front_end_format(hotel: Hotel) -> Optional[SimplenightHote
             total_tax_rate=room_rate.total_tax_rate,
             total=room_rate.total,
             rate_type=room_rate.rate_type,
-            avg_nightly_rate=Money(_get_nightly_rate(hotel, room_rate.total.amount), room_rate.total.currency),
             cancellation_policy=rate_plan.cancellation_policy,
             daily_rates=room_rate.daily_rates,
             unstructured_policies=room_type.unstructured_policies,
-            postpaid_fees=room_rate.postpaid_fees
+            postpaid_fees=room_rate.postpaid_fees,
+            avg_nightly_rate=Money(
+                amount=_get_nightly_rate(hotel, room_rate.total.amount), currency=room_rate.total.currency
+            ),
         )
 
         simplenight_room_types.append(simplenight_room_type)
@@ -93,7 +90,8 @@ def _convert_hotel_to_front_end_format(hotel: Hotel) -> Optional[SimplenightHote
         room_types=simplenight_room_types,
         avg_nightly_rate=hotel.average_nightly_rate,
         avg_nightly_base=hotel.average_nightly_base,
-        avg_nightly_tax=hotel.average_nightly_tax
+        avg_nightly_tax=hotel.average_nightly_tax,
+        occupancy=hotel.occupancy,
     )
 
     if hotel.error:

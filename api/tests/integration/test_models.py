@@ -1,4 +1,4 @@
-from api.models.models import Geoname, GeonameAlternateName, ProviderCity, Provider, CityMap, Airport
+from api.models.models import Geoname, GeonameAlternateName, ProviderCity, Provider, CityMap, Airport, ProviderHotel
 
 
 def create_geoname(geoname_id, location_name, province, country_code, population=0, latitude=None, longitude=None):
@@ -84,4 +84,17 @@ def create_airport(airport_id, airport_code, airport_name):
     airport = Airport(
         airport_id=airport_id, airport_code=airport_code, airport_name=airport_name, latitude=50.0, longitude=50.0
     )
+
     airport.save()
+    return airport
+
+
+def create_provider_hotel(provider, provider_code, hotel_name):
+    provider_hotel = ProviderHotel(
+        provider=provider,
+        hotel_name=hotel_name,
+        provider_code=provider_code
+    )
+
+    provider_hotel.save()
+    return provider_hotel

@@ -1,4 +1,4 @@
-from api.hotel.adapters.priceline.priceline import PricelineAdapter
+from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.models.models import CityMap
 from api.tests import test_objects
 from api.tests.integration import test_models
@@ -15,7 +15,7 @@ class TestHotelAdapter(SimplenightTestCase):
         CityMap.objects.create(simplenight_city_id=1, provider=provider, provider_city_id=10)
 
         priceline = PricelineAdapter.factory()
-        search = test_objects.hotel_location_search(location_id=1)
+        search = test_objects.adapter_location_search(location_id=1)
 
         provider_location = priceline.get_provider_location(search)
         self.assertEqual("San Francisco", provider_location.location_name)

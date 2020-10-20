@@ -4,8 +4,9 @@ from api.models.models import Provider
 
 
 class AdapterInfo(abc.ABC):
+    @classmethod
     @abc.abstractmethod
-    def get_name(self):
+    def get_name(cls):
         pass
 
     def get_or_create_provider_id(self):

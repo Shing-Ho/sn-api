@@ -1,8 +1,9 @@
-import uuid
+from datetime import date
+from decimal import Decimal
 from typing import List, Union, Optional
 
 from api import logger
-from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse, Reservation, Locator, Status
+from api.booking.booking_model import HotelBookingRequest, Reservation, Locator
 from api.common.models import RateType, RoomRate, Money
 from api.hotel.adapters.hotelbeds.booking_models import (
     HotelBedsBookingRQ,
@@ -10,6 +11,7 @@ from api.hotel.adapters.hotelbeds.booking_models import (
     HotelBedsPax,
     HotelBedsBookingRoom,
     HotelBedsBookingRS,
+    HotelBedsBookingRoomRateRS,
 )
 from api.hotel.adapters.hotelbeds.common_models import (
     get_language_mapping,
@@ -30,20 +32,18 @@ from api.hotel.adapters.hotelbeds.search_models import (
 )
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_model import (
-    HotelSpecificSearch,
+from api.hotel.hotel_api_model import (
     HotelDetails,
     AdapterHotel,
-    HotelLocationSearch,
     Address,
-    BaseHotelSearch,
     RoomOccupancy,
     RoomType,
     RatePlan,
     CancellationPolicy,
     CancellationSummary,
 )
-from api.view.exceptions import AvailabilityException
+from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelSearch
+from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
 class HotelBeds(HotelAdapter):
@@ -55,17 +55,19 @@ class HotelBeds(HotelAdapter):
 
         self.transport = transport
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
-        availability_results = self._search_by_location(search_request)
+    def search_by_location(self, search: AdapterLocationSearch) -> List[AdapterHotel]:
+        availability_results = self._search_by_location(search)
 
         if availability_results.error or availability_results.results.total == 0:
             if availability_results.error:
-                raise AvailabilityException(detail=availability_results.error.message, code=1)
+                raise AvailabilityException(
+                    detail=availability_results.error.message, error_type=AvailabilityErrorCode.PROVIDER_ERROR
+                )
             else:
                 return []
 
         hotel_codes = list(map(lambda x: str(x.code), availability_results.results.hotels))
-        hotel_details = self._details(hotel_codes, search_request.language)
+        hotel_details = self._details(hotel_codes, search.language)
         hotel_details_map = {x.code: x for x in hotel_details.hotels}
 
         hotels = []
@@ -75,20 +77,19 @@ class HotelBeds(HotelAdapter):
             if hotel.code in hotel_details_map:
                 hotel_details = hotel_details_map[hotel.code]
 
-            hotel = self._create_hotel(search_request, hotel, hotel_details)
+            hotel = self._create_hotel(search, hotel, hotel_details)
             hotels.append(hotel)
 
         return hotels
 
-    def _search_by_location(self, search_request: HotelLocationSearch) -> HotelBedsAvailabilityRS:
+    def _search_by_location(self, search_request: AdapterLocationSearch) -> HotelBedsAvailabilityRS:
         request = HotelBedsSearchBuilder.build(search_request)
         endpoint = self.transport.get_hotels_url()
         response = self.transport.post(endpoint, request)
 
-        results = response.json()
-        return HotelBedsAvailabilityRS.Schema().load(results)
+        return HotelBedsAvailabilityRS.parse_raw(response.text)
 
-    def search_by_id(self, search_request: HotelSpecificSearch) -> AdapterHotel:
+    def search_by_id(self, search_request: AdapterHotelSearch) -> AdapterHotel:
         pass
 
     def details(self, hotel_codes: Union[List[str], str], language: str) -> List[HotelDetails]:
@@ -109,7 +110,7 @@ class HotelBeds(HotelAdapter):
         response = self.transport.get(url, params)
 
         if response.ok:
-            return HotelBedsHotelDetailsRS.Schema().load(response.json())
+            return HotelBedsHotelDetailsRS.parse_raw(response.text)
 
         logger.error(f"Error retrieving hotel details (status_code={response.status_code}): {response.text}")
 
@@ -149,7 +150,7 @@ class HotelBeds(HotelAdapter):
         return self._create_room_rate(verified_hotel.hotel.rooms[0].rates[0], room_type_code)
 
     def _recheck_request(self, room_rate: RoomRate) -> HotelBedsCheckRatesRS:
-        room_to_check = HotelBedsCheckRatesRoom(rate_key=room_rate.code)
+        room_to_check = HotelBedsCheckRatesRoom(rateKey=room_rate.code)
         request = HotelBedsCheckRatesRQ(rooms=[room_to_check])
 
         response = self.transport.post(self.transport.get_checkrates_url(), request)
@@ -157,14 +158,16 @@ class HotelBeds(HotelAdapter):
         if not response.ok:
             raise HotelBedsException("Could not recheck price for booking")
 
-        return HotelBedsCheckRatesRS.Schema().load(response.json())
+        return HotelBedsCheckRatesRS.parse_raw(response.text)
 
     def booking(self, book_request: HotelBookingRequest) -> Reservation:
         # To book a Priceline room, we first need to do a contract lookup call
         # We use the price verification framework to test if the room prices are equivalent
         # Currently, we don't handle the case where they are not.
 
-        lead_traveler = HotelBedsPax(1, "AD", book_request.customer.first_name, book_request.customer.last_name)
+        lead_traveler = HotelBedsPax(
+            roomId=1, type="AD", name=book_request.customer.first_name, surname=book_request.customer.last_name
+        )
 
         room_code = book_request.room_code
         booking_room = HotelBedsBookingRoom(rateKey=room_code, paxes=[lead_traveler])
@@ -184,17 +187,22 @@ class HotelBeds(HotelAdapter):
             logger.error(response.text)
             raise HotelBedsException(f"Error During Booking: {response.text}")
 
-        hotelbeds_booking_response: HotelBedsBookingRS = HotelBedsBookingRS.Schema().loads(response.text)
+        hotelbeds_booking_response: HotelBedsBookingRS = HotelBedsBookingRS.parse_raw(response.text)
+
+        # TODO JLM: Parse checkin, checkout and room rate from HotelBeds booking response
+
+        hotelbeds_room_rate = hotelbeds_booking_response.booking.hotel.rooms[0].rates[0]
+        room_rate = self._create_room_rate(hotelbeds_room_rate, room_type_code=book_request.room_code)
 
         return Reservation(
-            locator=Locator(hotelbeds_booking_response.booking.reference),
+            locator=Locator(id=hotelbeds_booking_response.booking.reference),
             hotel_locator=None,
             hotel_id=book_request.hotel_id,
-            checkin=None,
-            checkout=None,
+            checkin=date(2000, 1, 1),
+            checkout=date(2000, 1, 1),
             customer=book_request.customer,
             traveler=book_request.traveler,
-            room_rate=None,
+            room_rate=room_rate,
             cancellation_details=[],
         )
 
@@ -206,7 +214,7 @@ class HotelBeds(HotelAdapter):
         return "http://photos.hotelbeds.com/giata/bigger/"
 
     def _create_hotel(
-        self, search: BaseHotelSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail
+        self, search: AdapterBaseSearch, hotel: HotelBedsHotel, detail: HotelBedsHotelDetail
     ) -> AdapterHotel:
 
         room_types = list(map(lambda x: self._create_room_type(x), hotel.rooms))
@@ -253,22 +261,33 @@ class HotelBeds(HotelAdapter):
             unstructured_policies=None,
         )
 
-    def _create_room_rate(self, rate: HotelBedsRoomRateRS, room_type_code: str, currency=None):
-        total_base_rate = Money(rate.net, currency)
+    def _create_room_rate(
+        self, rate: Union[HotelBedsBookingRoomRateRS, HotelBedsRoomRateRS], room_type_code: str, currency="USD"
+    ):
+        net_amount = rate.net
+        if net_amount is None:
+            net_amount = Decimal("0.0")
+
+        total_base_rate = Money(amount=net_amount, currency=currency)
         total_taxes = 0
         if rate.taxes:
             total_taxes = sum(x.amount for x in rate.taxes.taxes if x.amount is not None)
 
-        total_tax_rate = Money(total_taxes, currency)
-        total_rate = Money(total_base_rate.amount + total_tax_rate.amount, currency)
+        total_tax_rate = Money(amount=total_taxes, currency=currency)
+        total_amount = total_base_rate.amount + total_tax_rate.amount
+        total_rate = Money(amount=total_amount, currency=currency)
 
         occupancy = RoomOccupancy(adults=rate.adults, children=rate.children, num_rooms=rate.rooms)
 
+        rate_type = RateType.BOOKABLE
+        if isinstance(rate, HotelBedsRoomRateRS):
+            rate_type = self._get_rate_type(rate.rate_type)
+
         return RoomRate(
-            code=rate.rate_key,
+            code=rate.rate_key or room_type_code,
             rate_plan_code="temporary-scaffolding",
             room_type_code=room_type_code,
-            rate_type=self._get_rate_type(rate.rate_type),
+            rate_type=rate_type,
             total_base_rate=total_base_rate,
             total_tax_rate=total_tax_rate,
             total=total_rate,
@@ -301,6 +320,10 @@ class HotelBeds(HotelAdapter):
             address1=detail.address.content,
         )
 
+        hotel_description = ""
+        if detail.description:
+            hotel_description = detail.description.content
+
         return HotelDetails(
             name=detail.name.content,
             address=address,
@@ -310,7 +333,7 @@ class HotelBeds(HotelAdapter):
             checkout_time=None,
             amenities=list(amenities),
             star_rating=HotelBeds._get_star_rating(detail.category_code),
-            property_description=detail.description.content,
+            property_description=hotel_description,
         )
 
     @staticmethod
@@ -340,5 +363,3 @@ class HotelBeds(HotelAdapter):
     @classmethod
     def get_provider_name(cls):
         return cls.PROVIDER_NAME
-
-

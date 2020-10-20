@@ -1,16 +1,15 @@
+from typing import List
+
 from api.booking.booking_model import HotelBookingRequest
 from api.common.models import RoomRate
 from api.hotel.adapters.tripservices.transport import TripServicesTransport
 from api.hotel.adapters.tripservices.tripservices_info import TripservicesInfo
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_model import (
+from api.hotel.hotel_api_model import (
     HotelDetails,
-    HotelLocationSearch,
-    HotelSpecificSearch,
     AdapterHotel,
-    BaseHotelSearch,
 )
-from typing import List
+from api.hotel.hotel_models import AdapterHotelSearch, AdapterLocationSearch, AdapterBaseSearch
 
 
 class TripservicesAdapter(HotelAdapter):
@@ -19,11 +18,11 @@ class TripservicesAdapter(HotelAdapter):
         if self.transport is None:
             self.transport = TripServicesTransport()
 
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
+    def search_by_location(self, search: AdapterLocationSearch) -> List[AdapterHotel]:
         # request = self._create_city_search(search_request)
         pass
 
-    def search_by_id(self, search: HotelSpecificSearch) -> AdapterHotel:
+    def search_by_id(self, search: AdapterHotelSearch) -> AdapterHotel:
         pass
 
     def details(self, *args) -> HotelDetails:
@@ -32,14 +31,14 @@ class TripservicesAdapter(HotelAdapter):
     def booking(self, book_request: HotelBookingRequest):
         pass
 
-    def _create_city_search(self, search: HotelLocationSearch):
+    def _create_city_search(self, search: AdapterLocationSearch):
         return {
             **self._create_base_search(search),
             "city": search.location_id,
         }
 
     @staticmethod
-    def _create_base_search(search: BaseHotelSearch):
+    def _create_base_search(search: AdapterBaseSearch):
         params = {
             "check_in": search.start_date,
             "check_out": search.end_date,
@@ -60,7 +59,5 @@ class TripservicesAdapter(HotelAdapter):
     def factory(cls, test_mode=True):
         return TripservicesAdapter(TripservicesAdapter())
 
-    @classmethod
-    def get_provider_name(cls):
+    def get_provider_name(self):
         TripservicesInfo.get_name()
-

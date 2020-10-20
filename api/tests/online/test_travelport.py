@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from api.common.models import RoomOccupancy
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
-from api.hotel.hotel_model import HotelLocationSearch, HotelDetailsSearchRequest
+from api.hotel.hotel_api_model import HotelLocationSearch, HotelDetailsSearchRequest
 
 
 class TestTravelport(unittest.TestCase):

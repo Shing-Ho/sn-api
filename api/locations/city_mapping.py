@@ -56,7 +56,7 @@ class CityMappingService:
 
             closest_distance_match = self._nearby_matches(simplenight_city)
             if closest_distance_match:
-                logger.info(f"Nearby Match: {simplenight_city.location_id} = {closest_distance_match.location_name}")
+                logger.info(f"Nearby Match: {simplenight_city.location_name} = {closest_distance_match.location_name}")
                 self._create_match(simplenight_city, closest_distance_match)
                 continue
 
@@ -72,7 +72,13 @@ class CityMappingService:
 
             if not provider_city.province:
                 simplenight_city_matches = self.simplenight_city_name_map[simplenight_city.location_name]
-                if len(provider_name_matches) == 1 and len(simplenight_city_matches) == 1:
+                simplenight_country = simplenight_city.iso_country_code
+                provider_name_by_country = [x for x in provider_name_matches if x.country_code == simplenight_country]
+                sn_city_match_by_country = [
+                    x for x in simplenight_city_matches if x.iso_country_code == simplenight_country
+                ]
+
+                if len(provider_name_by_country) == 1 and len(sn_city_match_by_country) == 1:
                     return provider_city
 
         return None

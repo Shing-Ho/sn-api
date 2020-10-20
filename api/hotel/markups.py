@@ -26,4 +26,4 @@ def markup(total: Money):
     markup_pct = Decimal("1.18")
     markup_price = round(total.amount * markup_pct, 2)
 
-    return Money(markup_price, total.currency)
+    return Money(amount=markup_price, currency=total.currency)

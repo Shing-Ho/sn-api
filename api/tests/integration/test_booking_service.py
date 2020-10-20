@@ -8,7 +8,6 @@ from api.booking import booking_service
 from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod, SubmitErrorType
 from api.common.models import RoomOccupancy, Address
 from api.hotel import hotel_cache_service
-from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.models import models
 from api.models.models import Booking, BookingStatus, PaymentTransaction
 from api.tests import test_objects
@@ -20,25 +19,6 @@ class TestBookingService(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_booking_request_validation(self):
-        address = {
-            "city": "San Francisco",
-            "province": "CA",
-            "postal_code": "94111",
-            "country": "US",
-            "address1": "One Market Street",
-        }
-
-        with pytest.raises(ValueError) as e:
-            Payment.Schema().load({"payment_method": "CREDIT_CARD", "billing_address": address})
-
-        self.assertIn("Must set payment_card_parameters when payment_method is CREDIT_CARD", str(e))
-
-        with pytest.raises(ValueError) as e:
-            Payment.Schema().load({"payment_method": "PAYMENT_TOKEN", "billing_address": address})
-
-        self.assertIn("Must set payment_token when payment_method is PAYMENT_TOKEN", str(e))
-
     def test_stub_booking(self):
         booking_request = HotelBookingRequest(
             api_version=1,
@@ -48,7 +28,7 @@ class TestBookingService(SimplenightTestCase):
             customer=Customer(
                 first_name="John", last_name="Doe", phone_number="5558675309", email="john@doe.foo", country="US"
             ),
-            traveler=Traveler("John", "Doe", occupancy=RoomOccupancy(adults=1)),
+            traveler=Traveler(first_name="John", last_name="Doe", occupancy=RoomOccupancy(adults=1)),
             room_code="sn-foo",
             payment=Payment(
                 billing_address=Address(
@@ -57,7 +37,6 @@ class TestBookingService(SimplenightTestCase):
                 payment_method=PaymentMethod.PAYMENT_TOKEN,
                 payment_token="token_foo",
             ),
-            provider=StubHotelAdapter.PROVIDER_NAME,
         )
 
         room_rate = test_objects.room_rate("foo", "100.0", base_rate="80", tax_rate="20")
@@ -139,4 +118,3 @@ class TestBookingService(SimplenightTestCase):
         transaction.payment_token = "pt_foo"
 
         return transaction
-

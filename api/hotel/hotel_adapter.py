@@ -1,26 +1,27 @@
 import abc
 from typing import List
 
-from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse, Reservation
+from api.booking.booking_model import HotelBookingRequest, Reservation
 from api.common.models import RoomRate
-from api.hotel.hotel_model import (
-    HotelLocationSearch,
+from api.hotel import hotel_mappings
+from api.hotel.hotel_api_model import (
     HotelSpecificSearch,
     AdapterHotel,
     HotelDetails,
 )
+from api.hotel.hotel_models import AdapterHotelSearch, AdapterLocationSearch
 from api.locations import location_service
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
 class HotelAdapter(abc.ABC):
     @abc.abstractmethod
-    def search_by_location(self, search_request: HotelLocationSearch) -> List[AdapterHotel]:
+    def search_by_location(self, search: AdapterLocationSearch) -> List[AdapterHotel]:
         """Search a provider for a particular location"""
         pass
 
     @abc.abstractmethod
-    def search_by_id(self, search_request: HotelSpecificSearch) -> AdapterHotel:
+    def search_by_id(self, search_request: AdapterHotelSearch) -> AdapterHotel:
         """Search a hotel provider for a specific hotel"""
         pass
 
@@ -46,17 +47,20 @@ class HotelAdapter(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def get_provider_name(self):
+    def get_provider_name(cls):
         pass
 
-    def get_provider_location(self, search_request: HotelLocationSearch):
+    def get_provider_location(self, search_request: AdapterLocationSearch):
         provider_location = location_service.find_provider_location(
             self.get_provider_name(), search_request.location_id
         )
 
         if provider_location is None:
             raise AvailabilityException(
-                detail="Could not find provider location mapping", code=AvailabilityErrorCode.LOCATION_NOT_FOUND
+                detail="Could not find provider location mapping", error_type=AvailabilityErrorCode.LOCATION_NOT_FOUND
             )
 
         return provider_location
+
+    def get_provider_hotel_mapping(self, search_request: HotelSpecificSearch):
+        return hotel_mappings.find_provider_hotel_id(search_request.hotel_id, self.get_provider_name())

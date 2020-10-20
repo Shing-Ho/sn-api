@@ -1,21 +1,22 @@
 import random
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from api.booking import booking_service
-from api.common import cache_storage
-from api.common.models import RateType, RoomRate
+from api.common.models import RateType
 from api.hotel import hotel_service, hotel_cache_service
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
-from api.hotel.hotel_model import (
+from api.hotel.hotel_api_model import (
     HotelLocationSearch,
     RoomOccupancy,
 )
+from api.hotel.hotel_models import AdapterLocationSearch, AdapterOccupancy
 from api.models.models import HotelBooking
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
-class TestHotelBedsIntegration(SimplenightTestCase):
+class TestHotelBedsOnline(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.hotelbeds = HotelBeds()
@@ -57,7 +58,9 @@ class TestHotelBedsIntegration(SimplenightTestCase):
             provider="hotelbeds",
         )
 
-        availability_response = hotel_service.search_by_location(search)
+        with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+            mock_find_simplenight_id.return_value = "123"
+            availability_response = hotel_service.search_by_location(search)
 
         # Find first hotel with a bookable rate
         all_rooms = [room for hotel in availability_response for room in hotel.room_types]
@@ -66,7 +69,7 @@ class TestHotelBedsIntegration(SimplenightTestCase):
 
         self.assertIsNotNone(bookable_rooms)
 
-        booking_request = test_objects.booking_request(provider="hotelbeds", rate_code=room_to_book.code)
+        booking_request = test_objects.booking_request(rate_code=room_to_book.code)
         booking_response = booking_service.book(booking_request)
 
         saved_room_data = hotel_cache_service.get_cached_room_data(room_to_book.code)
@@ -92,12 +95,11 @@ class TestHotelBedsIntegration(SimplenightTestCase):
         if checkout is None:
             checkout = datetime.now().date() + timedelta(days=35)
 
-        search_request = HotelLocationSearch(
+        search_request = AdapterLocationSearch(
             location_id=location_name,
             start_date=checkin,
             end_date=checkout,
-            daily_rates=True,
-            occupancy=RoomOccupancy(),
+            occupancy=AdapterOccupancy(),
         )
 
         return search_request

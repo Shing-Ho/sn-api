@@ -1,4 +1,4 @@
-from api.hotel.adapters.priceline.priceline_image_parser import PricelineImageParser
+from api.hotel.parsers.priceline_image_parser import PricelineImageParser
 from api.models.models import ProviderImages
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
