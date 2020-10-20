@@ -12,7 +12,6 @@ from api import logger
 from api.booking.booking_model import (
     HotelBookingRequest,
     Customer,
-    Payment,
     Reservation,
     Locator,
 )
@@ -26,6 +25,7 @@ from api.common.models import (
     LineItemType,
     PostpaidFeeLineItem,
 )
+from api.hotel.adapters import adapter_common
 from api.hotel.adapters.priceline import priceline_amenity_mappings
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
@@ -144,7 +144,7 @@ class PricelineAdapter(HotelAdapter):
         return {}.get(fee_type, default)
 
     def booking(self, book_request: HotelBookingRequest) -> Reservation:
-        params = self._create_booking_params(book_request.customer, book_request.payment, book_request.room_code)
+        params = self._create_booking_params(book_request.customer, book_request.room_code)
         response = self.transport.express_book(**params)
 
         if "getHotelExpress.Book" not in response:
@@ -201,8 +201,8 @@ class PricelineAdapter(HotelAdapter):
 
         return self._create_room_rate(room_id, rate_data, rate_plan)
 
-    @staticmethod
-    def _create_booking_params(customer: Customer, payment: Payment, rate_code: str):
+    def _create_booking_params(self, customer: Customer, rate_code: str):
+        payment = adapter_common.get_virtual_credit_card(self.transport.test_mode)
         payment_card_params = payment.payment_card_parameters
         expires_string = f"{int(payment_card_params.expiration_month):02d}{payment_card_params.expiration_year}"
         return {
@@ -211,7 +211,7 @@ class PricelineAdapter(HotelAdapter):
             "name_last": customer.last_name,
             "phone_number": customer.phone_number,
             "email": customer.email,
-            "card_holder": f"{customer.first_name} {customer.last_name}",
+            "card_holder": payment_card_params.cardholder_name,
             "address_line_one": payment.billing_address.address1,
             "address_city": payment.billing_address.city,
             "address_state_code": payment.billing_address.province,
