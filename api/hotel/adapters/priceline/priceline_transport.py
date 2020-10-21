@@ -39,9 +39,6 @@ class PricelineTransport(Transport):
 
         return response.json()
 
-    def get2(self, endpoint: Endpoint, **params):
-        return self.get(endpoint, **params)
-
     def post(self, endpoint: Endpoint, **params):
         url = self.endpoint(endpoint)
         params.update(self._get_default_params())

@@ -1,30 +1,8 @@
 from api import logger
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
+from api.hotel.parsers import priceline_loader
 from api.models.models import ProviderHotel
-
-amenities_dict = {
-    "10": "Free Parking",
-    "24": "Parking",
-    "44": "Breakfast",
-    "121": "Free Wi-Fi",
-    "145": "Free Airport Shuttle",
-    "146": "Kitchen",
-    "748": "Pet Friendly",
-    "1104": "Air Conditioned",
-    "1316": "Casino Shuttle",
-    "1955": "Water Park",
-    "1019": "All Inclusive",
-    "1375": "Spa",
-    "1625": "Washer and Dryer",
-    "1638": "Laundry Services",
-    "2012": "Hot Tub",
-    "2181": "Bar",
-    "671": "Mini Bar",
-    "1676": "Health Club or Gym",
-    "1817": "Restaurant",
-    "2106": "Dry Sauna",
-}
 
 
 class PricelineDetailsParser:
@@ -33,27 +11,21 @@ class PricelineDetailsParser:
         self.priceline = PricelineAdapter(transport=transport)
         self.provider = self.priceline.adapter_info.get_or_create_provider_id()
 
-    def load(self, limit=None):
-        total_loaded = 0
-        resume_key = None
+    def load(self, chunk_size=10000, limit=None):
+        num_loaded = 0
+        chunked_hotel_data = priceline_loader.load_data(
+            self.transport, PricelineTransport.Endpoint.HOTELS_DOWNLOAD, chunk_size=chunk_size
+        )
 
-        while True:
-            logger.info(f"Making hotels download request to Priceline with resume key {resume_key}")
-            response = self.transport.hotels_download(resume_key=resume_key, limit=10000)
-            resume_key = response["getSharedBOF2.Downloads.Hotel.Hotels"]["results"]["resume_key"]
-
-            hotel_data = response["getSharedBOF2.Downloads.Hotel.Hotels"]["results"]["hotels"]
-            models = list(map(self.parse_hotel, hotel_data))
+        for chunk in chunked_hotel_data:
+            models = list(map(self.parse_hotel, chunk))
             ProviderHotel.objects.bulk_create(models)
-            total_loaded += len(models)
 
-            logger.info(f"Loaded {total_loaded} hotels")
-            if resume_key is None or len(hotel_data) < 10000:
-                logger.info(f"Complete loading hotels")
-                return
+            num_loaded += len(models)
+            logger.info(f"Loaded {num_loaded} hotels")
 
-            if limit and total_loaded >= limit:
-                logger.info(f"Reached loading limit of {limit}")
+            if limit and num_loaded >= limit:
+                logger.info(f"Limit reached ({num_loaded} of {limit}). Exiting.")
                 return
 
     @classmethod
@@ -61,6 +33,7 @@ class PricelineDetailsParser:
         ProviderHotel.objects.filter(provider__name=PricelineAdapter.get_provider_name()).delete()
 
     def parse_hotel(self, hotel_data):
+
         amenities = []
         amenities_response = hotel_data["amenity_codes"]
         if amenities_response:
@@ -82,5 +55,5 @@ class PricelineDetailsParser:
             star_rating=hotel_data["star_rating"],
             property_description=hotel_data["property_description"],
             amenities=amenities,
-            provider_reference=self.transport.priceline_refid
+            provider_reference=self.transport.priceline_refid,
         )

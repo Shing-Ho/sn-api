@@ -9,4 +9,4 @@ class TestPricelineDetailsParser(TestCase):
         transport = PricelineTransport(test_mode=True, refid="10047")
         parser = PricelineDetailsParser(transport=transport)
 
-        parser.load(limit=10000)
+        parser.load(limit=1000)
