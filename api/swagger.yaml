@@ -73,6 +73,29 @@ paths:
           description: Bad request
         '500':
           description: Internal error while completing a booking
+  /hotels/cancel:
+    post:
+      tags:
+        - Hotel
+      summary: Lookup cancel info
+      description: Lookup a booking with a Booking ID and Lead Traveler Last Name, and return current Cancellation Policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelRequest'
+      responses:
+        '200':
+          description: The current matching cancellation policy, or an error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal error while completing a booking
 
   /hotels/search-by-id:
     post:
@@ -1082,3 +1105,51 @@ components:
           example: 174225
           description: PIN code used to access the reservation
 
+    CancelRequest:
+      type: object
+      description: Cancellation information request.  Returns the current matching cancellation policy
+      required:
+        - booking_id
+        - last_name
+      properties:
+        booking_id:
+          type: string
+          example: eb276848-9093-4f50-9185-1515d658586c
+          description: The booking ID returned in the booking message
+        last_name:
+          type: string
+          example: Doe
+          description: The lead traveler last name
+
+    CancelDetails:
+      type: object
+      description: Cancellation policy details
+      properties:
+        type:
+          $ref: '#/components/schemas/CancellationSummary'
+        description:
+          type: string
+          description: Textual description of the cancellation policy
+        begin_date:
+          type: string
+          description: The ISO date that the policy is valid from
+        end_date:
+          type: string
+          description: The ISO date that the policy is valid to
+        penalty_amount:
+          type: integer
+          description: The amount of the cancellation penalty, if any
+        penalty_currency:
+          type: string
+          description: The currency for the penalty amount
+
+
+    CancelResponse:
+      type: object
+      description: The current matching cancellation policy
+      properties:
+        is_cancellable:
+          type: boolean
+          description: Whether, or not the booking is currently cancellable
+        details:
+          $ref: '#/components/schemas/CancelDetails'

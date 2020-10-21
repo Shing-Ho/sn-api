@@ -9,7 +9,7 @@ from api.common.models import from_json
 from api.common.request_cache import get_request_cache
 from api.hotel import hotel_service, google_hotel_service, booking_service
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
-from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch
+from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancelRequest
 from api.views import _response
 
 
@@ -44,6 +44,13 @@ class HotelViewSet(viewsets.ViewSet):
         booking_response = booking_service.book(booking_request)
 
         return _response(booking_response)
+
+    @action(detail=False, url_path="cancel", methods=["POST"], name="Cancel Booking")
+    def cancel(self, request):
+        cancel_request = from_json(request.data, CancelRequest)
+        cancel_response = booking_service.cancel(cancel_request)
+
+        return _response(cancel_response)
 
     @action(detail=False, url_path="google/booking", methods=["POST"], name="GoogleHotel Booking")
     def booking_google(self, request):

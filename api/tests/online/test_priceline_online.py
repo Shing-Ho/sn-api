@@ -5,10 +5,14 @@ from api.common.models import RoomOccupancy
 from api.hotel import hotel_service, booking_service
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
-from api.hotel.models.hotel_api_model import HotelLocationSearch
-from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy, AdapterHotelSearch, \
-    AdapterCancelRequest
-from api.models.models import CityMap
+from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch
+from api.hotel.models.adapter_models import (
+    AdapterLocationSearch,
+    AdapterOccupancy,
+    AdapterHotelSearch,
+    AdapterCancelRequest,
+)
+from api.models.models import CityMap, HotelBooking
 from api.tests import test_objects
 from api.tests.integration import test_models
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
@@ -156,7 +160,36 @@ class TestPricelineIntegration(SimplenightTestCase):
         transport = PricelineTransport(test_mode=True)
         adapter = PricelineAdapter(transport=transport)
 
-        cancel_request = AdapterCancelRequest(record_locator="67418209545", email_address="james@simplenight.com")
-        cancel_response = adapter.cancel(cancel_request)
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=31)
+        search = HotelSpecificSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=RoomOccupancy(adults=1),
+            hotel_id="14479",
+            provider="priceline",
+        )
 
-        print(cancel_response)
+        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider_hotel_id:
+            mock_find_provider_hotel_id.return_value = "700243838"
+            with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+                mock_find_simplenight_id.return_value = "14779"
+                availability_response = hotel_service.search_by_id(search)
+
+        self.assertIsNotNone(availability_response)
+        room_to_book = availability_response.room_types[0]
+        booking_request = test_objects.booking_request(rate_code=room_to_book.code)
+        booking_response = booking_service.book(booking_request)
+
+        hotel_booking = HotelBooking.objects.get(booking_id=booking_response.booking_id)
+
+        cancel_response = adapter.cancel(
+            AdapterCancelRequest(
+                hotel_id=hotel_booking.provider_hotel_id,
+                record_locator=hotel_booking.record_locator,
+                email_address=booking_request.customer.email,
+            )
+        )
+
+        self.assertTrue(cancel_response.is_cancelled)
+

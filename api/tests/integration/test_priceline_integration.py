@@ -2,6 +2,7 @@ from datetime import timedelta, datetime
 from decimal import Decimal
 from unittest.mock import patch
 
+import pytest
 import requests_mock
 from freezegun import freeze_time
 
@@ -9,13 +10,19 @@ from api.common.models import RoomOccupancy, RateType
 from api.hotel import hotel_service, booking_service
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
+from api.hotel.models.adapter_models import (
+    AdapterHotelSearch,
+    AdapterOccupancy,
+    AdapterLocationSearch,
+    AdapterCancelRequest,
+)
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
-from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterOccupancy, AdapterLocationSearch
 from api.models.models import CityMap, Booking, HotelCancellationPolicy
 from api.tests import test_objects
 from api.tests.integration import test_models
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
+from api.view.exceptions import BookingException
 
 
 class TestPricelineUnit(SimplenightTestCase):
@@ -260,3 +267,40 @@ class TestPricelineUnit(SimplenightTestCase):
         self.assertEqual(2, availability_response.occupancy.num_rooms)
         self.assertEqual(Decimal("479.42"), availability_response.room_types[0].total.amount)
         self.assertEqual(Decimal("398.84"), availability_response.room_types[0].total_base_rate.amount)
+
+    def test_priceline_cancel(self):
+        transport = PricelineTransport(test_mode=True)
+        adapter = PricelineAdapter(transport=transport)
+
+        lookup_resource = load_test_resource("priceline/priceline-lookup-response.json")
+        lookup_endpoint = transport.endpoint(PricelineTransport.Endpoint.EXPRESS_LOOKUP)
+        cancel_endpoint = transport.endpoint(PricelineTransport.Endpoint.EXPRESS_CANCEL)
+        cancel_resource = load_test_resource("priceline/priceline-cancel-response.json")
+        with requests_mock.Mocker() as mocker:
+            mocker.post(lookup_endpoint, text=lookup_resource)
+            mocker.post(cancel_endpoint, text=cancel_resource)
+
+            cancel_response = adapter.cancel(
+                AdapterCancelRequest(hotel_id="14479", record_locator="700243838", email_address="foo@bar.baz")
+            )
+
+        self.assertTrue(cancel_response.is_cancelled)
+
+    def test_priceline_cancel_failure(self):
+        transport = PricelineTransport(test_mode=True)
+        adapter = PricelineAdapter(transport=transport)
+
+        lookup_resource = load_test_resource("priceline/priceline-lookup-response.json")
+        lookup_endpoint = transport.endpoint(PricelineTransport.Endpoint.EXPRESS_LOOKUP)
+        cancel_endpoint = transport.endpoint(PricelineTransport.Endpoint.EXPRESS_CANCEL)
+        cancel_resource = load_test_resource("priceline/priceline-cancel-failure-response.json")
+        with requests_mock.Mocker() as mocker:
+            mocker.post(lookup_endpoint, text=lookup_resource)
+            mocker.post(cancel_endpoint, text=cancel_resource)
+
+            with pytest.raises(BookingException) as e:
+                adapter.cancel(
+                    AdapterCancelRequest(hotel_id="14479", record_locator="700243838", email_address="foo@bar.baz")
+                )
+
+        self.assertIn("Could not cancel booking", str(e))

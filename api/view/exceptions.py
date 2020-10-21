@@ -8,6 +8,7 @@ from common.exceptions import AppException
 class BookingErrorCode(Enum):
     PRICE_VERIFICATION = "PRICE_VERIFICATION"
     UNHANDLED_ERROR = "UNHANDLED_ERROR"
+    CANCELLATION_FAILURE = "CANCELLATION_FAILURE"
 
 
 class AvailabilityErrorCode(Enum):

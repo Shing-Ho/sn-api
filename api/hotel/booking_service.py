@@ -1,14 +1,21 @@
 from datetime import datetime
-from typing import Union
+from typing import Union, List
 
 from api import logger
-from api.hotel.models.booking_model import HotelBookingRequest, HotelBookingResponse, Customer, Status
 from api.common.models import RoomRate
 from api.hotel import price_verification_service, hotel_cache_service
 from api.hotel.adapters import adapter_service
-from api.hotel.models.hotel_api_model import SimplenightRoomType
+from api.hotel.models.adapter_models import AdapterCancelRequest
+from api.hotel.models.booking_model import HotelBookingRequest, HotelBookingResponse, Customer, Status
+from api.hotel.models.hotel_api_model import (
+    SimplenightRoomType,
+    CancelRequest,
+    CancelResponse,
+    CancellationDetails,
+    CancellationSummary,
+)
 from api.models import models
-from api.models.models import BookingStatus, Traveler, Provider
+from api.models.models import BookingStatus, Traveler, Provider, HotelBooking, Booking, HotelCancellationPolicy
 from api.payments import payment_service
 from api.view.exceptions import BookingException, BookingErrorCode
 from common.exceptions import AppException
@@ -54,7 +61,7 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
             transaction_id=book_request.transaction_id,
             booking_id=str(booking.booking_id),
             status=Status(success=True, message="success"),
-            reservation=reservation
+            reservation=reservation,
         )
 
     except BookingException as e:
@@ -108,19 +115,86 @@ def _persist_hotel(book_request, provider_rate_cache_payload, booking, reservati
     cancellation_details = reservation.cancellation_details
     cancellation_policy_models = []
     for cancellation_policy in cancellation_details:
-        cancellation_policy_models.append(models.HotelCancellationPolicy(
-            hotel_booking=hotel_booking,
-            cancellation_type=cancellation_policy.cancellation_type.value,
-            description=cancellation_policy.description,
-            begin_date=cancellation_policy.begin_date,
-            end_date=cancellation_policy.end_date,
-            penalty_amount=cancellation_policy.penalty_amount,
-            penalty_currency=cancellation_policy.penalty_currency
-        ))
+        cancellation_policy_models.append(
+            models.HotelCancellationPolicy(
+                hotel_booking=hotel_booking,
+                cancellation_type=cancellation_policy.cancellation_type.value,
+                description=cancellation_policy.description,
+                begin_date=cancellation_policy.begin_date,
+                end_date=cancellation_policy.end_date,
+                penalty_amount=cancellation_policy.penalty_amount,
+                penalty_currency=cancellation_policy.penalty_currency,
+            )
+        )
 
     if len(cancellation_policy_models) > 0:
         logger.info(f"Persisting cancellation policies for booking: {hotel_booking.hotel_booking_id}")
         models.HotelCancellationPolicy.objects.bulk_create(cancellation_policy_models)
+
+
+def cancel(cancel_request: CancelRequest) -> CancelResponse:
+    booking_id = cancel_request.booking_id
+    last_name = cancel_request.last_name
+
+    try:
+        current_date = datetime.now().date()
+        cancellation_policy = HotelCancellationPolicy.objects.filter(hotel_booking__booking__booking_id=booking_id)
+
+        for policy in cancellation_policy:
+            if policy.begin_date < current_date < policy.end_date:
+                cancellable = policy.penalty_amount == 0
+                return CancelResponse(
+                    is_cancellable=cancellable,
+                    details=CancellationDetails(
+                        cancellation_type=CancellationSummary.from_value(policy.cancellation_type),
+                        description=policy.description,
+                        begin_date=policy.begin_date,
+                        end_date=policy.end_date,
+                        penalty_amount=policy.penalty_amount,
+                        penalty_currency=policy.penalty_currency,
+                    ),
+                )
+
+        raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Could not find eligible cancellation policy")
+
+    except Booking.DoesNotExist:
+        raise BookingException(
+            BookingErrorCode.CANCELLATION_FAILURE,
+            f"Could not find booking with ID {booking_id} for last name {last_name}",
+        )
+    except HotelCancellationPolicy.DoesNotExist:
+        raise BookingException(
+            BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
+        )
+
+
+def _is_cancellable(cancel_policies: List[HotelCancellationPolicy]):
+    pass
+
+
+def cancel_confirm(cancel_request: CancelRequest) -> CancelResponse:
+    booking_id = cancel_request.booking_id
+    last_name = cancel_request.last_name
+
+    try:
+        booking = Booking.objects.get(booking_id=booking_id)
+        hotel_bookings = list(booking.hotelbooking_set)
+        traveler = booking.lead_traveler
+
+        hotel_booking = hotel_bookings[0]
+        adapter_cancel_request = AdapterCancelRequest(
+            hotel_id=hotel_booking.provider_hotel_id,
+            record_locator=hotel_booking.record_locator,
+            email_address=traveler.email_address,
+        )
+
+        adapter = adapter_service.get_adapter(hotel_booking.provider.name)
+        cancellation_response = adapter.cancel(adapter_cancel_request)
+    except HotelBooking.DoesNotExist:
+        raise BookingException(
+            BookingErrorCode.CANCELLATION_FAILURE,
+            f"Could not find booking with ID {booking_id} for last name {last_name}",
+        )
 
 
 def _persist_booking_record(booking_request, traveler):

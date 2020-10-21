@@ -9,12 +9,6 @@ from typing import List, Any, Dict, Union
 import pytz
 
 from api import logger
-from api.hotel.models.booking_model import (
-    HotelBookingRequest,
-    Customer,
-    Reservation,
-    Locator,
-)
 from api.common.models import (
     RoomRate,
     RoomOccupancy,
@@ -30,6 +24,19 @@ from api.hotel.adapters.priceline import priceline_amenity_mappings
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_adapter import HotelAdapter
+from api.hotel.models.adapter_models import (
+    AdapterLocationSearch,
+    AdapterBaseSearch,
+    AdapterHotelSearch,
+    AdapterCancelRequest,
+    AdapterCancelResponse,
+)
+from api.hotel.models.booking_model import (
+    HotelBookingRequest,
+    Customer,
+    Reservation,
+    Locator,
+)
 from api.hotel.models.hotel_api_model import (
     HotelDetails,
     AdapterHotel,
@@ -43,15 +50,8 @@ from api.hotel.models.hotel_api_model import (
     ImageType,
     CancellationDetails,
 )
-from api.hotel.models.adapter_models import (
-    AdapterLocationSearch,
-    AdapterBaseSearch,
-    AdapterHotelSearch,
-    AdapterCancelRequest,
-    AdapterCancelResponse,
-)
 from api.models.models import ProviderImages, ProviderHotel
-from api.view.exceptions import AvailabilityException, BookingException, AvailabilityErrorCode
+from api.view.exceptions import AvailabilityException, BookingException, AvailabilityErrorCode, BookingErrorCode
 
 
 class PricelineAdapter(HotelAdapter):
@@ -94,11 +94,20 @@ class PricelineAdapter(HotelAdapter):
     def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
         # Priceline first requires a lookup call, to retrieve a "Cancel action"
         lookup_response = self.transport.express_lookup(
-            booking_id=cancel_request.record_locator, email=cancel_request.email_address
+            booking_id=cancel_request.record_locator, email=cancel_request.email_address,
         )
-        self._check_express_lookup_response_and_get_results(lookup_response)
+        lookup_response = self._check_express_lookup_response_and_get_results(lookup_response)
+        cancellation_code = lookup_response["result"]["actions"]["cancel"]
+        logger.info(f"Successfully looked up booking {cancel_request.record_locator}")
 
-        return lookup_response
+        cancel_response = self.transport.express_cancel(ppn_bundle=cancellation_code)
+        cancel_response = self._check_express_cancel_response_and_get_results(cancel_response)
+
+        if cancel_response["result"]["status"] != "Cancelled":
+            logger.error(f"Could not cancel booking {cancel_request}: {cancel_response}")
+            raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Could not cancel booking")
+
+        return AdapterCancelResponse(is_cancelled=True)
 
     def room_details(self, ppn_bundle: str) -> Dict:
         params = {"ppn_bundle": ppn_bundle}
@@ -335,6 +344,9 @@ class PricelineAdapter(HotelAdapter):
 
     def _check_express_lookup_response_and_get_results(self, response):
         return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.LookUp")
+
+    def _check_express_cancel_response_and_get_results(self, response):
+        return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Cancel")
 
     def _create_hotel_from_response(self, search, hotel_response):
         room_types = self._create_room_types(hotel_response)

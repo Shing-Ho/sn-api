@@ -66,10 +66,10 @@ class PricelineTransport(Transport):
         return self.post(self.Endpoint.EXPRESS_CONTRACT, **params)
 
     def express_lookup(self, **params):
-        return self.post(self.Endpoint.EXPRESS_CONTRACT, **params)
+        return self.post(self.Endpoint.EXPRESS_LOOKUP, **params)
 
     def express_cancel(self, **params):
-        return self.post(self.Endpoint.EXPRESS_CONTRACT, **params)
+        return self.post(self.Endpoint.EXPRESS_CANCEL, **params)
 
     def hotels_download(self, **params):
         return self.get(self.Endpoint.HOTELS_DOWNLOAD, **params)

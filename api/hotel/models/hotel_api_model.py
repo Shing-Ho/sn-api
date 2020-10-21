@@ -125,6 +125,13 @@ class CancellationSummary(Enum):
     NON_REFUNDABLE = "NON_REFUNDABLE"
     PARTIAL_REFUND = "PARTIAL_REFUND"
 
+    @classmethod
+    def from_value(cls, value):
+        if not hasattr(cls, "value_map"):
+            cls.value_map = {x.value: x for x in CancellationSummary}
+
+        return cls.value_map[value]
+
 
 class CancellationPolicy(SimplenightModel):
     summary: CancellationSummary
@@ -264,3 +271,13 @@ class ProviderRoomDataCachePayload(SimplenightModel):
     room_code: str
     provider_rate: RoomRate
     simplenight_rate: RoomRate
+
+
+class CancelRequest(SimplenightModel):
+    booking_id: str
+    last_name: str
+
+
+class CancelResponse(SimplenightModel):
+    is_cancellable: bool
+    details: CancellationDetails

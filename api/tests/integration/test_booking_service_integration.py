@@ -1,23 +1,42 @@
 import decimal
+from collections import Sequence
+from datetime import datetime, date
 from unittest.mock import patch
 
 import pytest
+from freezegun import freeze_time
 from stripe.error import CardError
 
-from api.hotel.models.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod, SubmitErrorType
 from api.common.models import RoomOccupancy, Address
 from api.hotel import hotel_cache_service, booking_service
+from api.hotel.models import booking_model
+from api.hotel.models.booking_model import (
+    Payment,
+    HotelBookingRequest,
+    Customer,
+    PaymentMethod,
+    SubmitErrorType,
+)
+from api.hotel.models.hotel_api_model import CancellationSummary, CancelRequest
 from api.models import models
-from api.models.models import Booking, BookingStatus, PaymentTransaction, Provider
+from api.models.models import (
+    Booking,
+    BookingStatus,
+    PaymentTransaction,
+    Provider,
+    Traveler,
+    HotelBooking,
+    HotelCancellationPolicy,
+)
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.view.exceptions import PaymentException
 
 
-class TestBookingService(SimplenightTestCase):
+class TestBookingServiceIntegration(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
-        Provider.objects.create(name="stub")
+        self.provider = Provider.objects.get_or_create(name="stub")[0]
 
     def test_stub_booking(self):
         booking_request = HotelBookingRequest(
@@ -28,7 +47,7 @@ class TestBookingService(SimplenightTestCase):
             customer=Customer(
                 first_name="John", last_name="Doe", phone_number="5558675309", email="john@doe.foo", country="US"
             ),
-            traveler=Traveler(first_name="John", last_name="Doe", occupancy=RoomOccupancy(adults=1)),
+            traveler=booking_model.Traveler(first_name="John", last_name="Doe", occupancy=RoomOccupancy(adults=1)),
             room_code="sn-foo",
             payment=Payment(
                 billing_address=Address(
@@ -76,7 +95,7 @@ class TestBookingService(SimplenightTestCase):
         hotel_bookings = models.HotelBooking.objects.filter(booking__booking_id=booking.booking_id)
 
         self.assertEqual("Hotel Name", hotel_bookings[0].hotel_name)
-        self.assertEqual(1, hotel_bookings[0].provider_id)
+        self.assertEqual(self.provider.id, hotel_bookings[0].provider_id)
         self.assertEqual("ABC123", hotel_bookings[0].simplenight_hotel_id)
         self.assertEqual("100", hotel_bookings[0].provider_hotel_id)
         self.assertIsNotNone("foo", hotel_bookings[0].record_locator)
@@ -107,6 +126,110 @@ class TestBookingService(SimplenightTestCase):
                     booking_service.book(booking_request)
 
         assert e.value.error_type == SubmitErrorType.PAYMENT_DECLINED
+
+    @freeze_time("2020-10-01")
+    def test_cancellation(self):
+        booking, hotel_booking, traveler = self._create_booking(first_name="John", last_name="Simplenight")
+        policy_one = HotelCancellationPolicy(
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.FREE_CANCELLATION.value,
+            description="Free cancellation before 11/1/2020",
+            begin_date=date(2020, 9, 1),
+            end_date=date(2020, 11, 1),
+            penalty_amount=decimal.Decimal(0),
+            penalty_currency="USD",
+        )
+
+        policy_two = HotelCancellationPolicy(
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.FREE_CANCELLATION.value,
+            description="Penalty after 11/2/2020",
+            begin_date=date(2020, 11, 2),
+            end_date=date(2025, 11, 1),
+            penalty_amount=decimal.Decimal("100.50"),
+            penalty_currency="USD",
+        )
+
+        policy_one.save()
+        policy_two.save()
+
+        cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight",)
+        cancel_response = booking_service.cancel(cancel_request)
+
+        self.assertTrue(cancel_response.is_cancellable)
+        self.assertEqual(CancellationSummary.FREE_CANCELLATION, cancel_response.details.cancellation_type)
+        self.assertEqual("Free cancellation before 11/1/2020", cancel_response.details.description)
+        self.assertEqual(date(2020, 9, 1), cancel_response.details.begin_date)
+        self.assertEqual(date(2020, 11, 1), cancel_response.details.end_date)
+        self.assertEqual(decimal.Decimal(0), cancel_response.details.penalty_amount)
+        self.assertEqual("USD", cancel_response.details.penalty_currency)
+
+    @freeze_time("2020-10-01")
+    def test_cancellation_non_refundable(self):
+        booking, hotel_booking, traveler = self._create_booking(first_name="John", last_name="Simplenight")
+        policy_one = HotelCancellationPolicy(
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.FREE_CANCELLATION.value,
+            description="Free cancellation before 9/1/2020",
+            begin_date=date(2015, 1, 1),
+            end_date=date(2020, 9, 1),
+            penalty_amount=decimal.Decimal(0),
+            penalty_currency="USD",
+        )
+
+        policy_two = HotelCancellationPolicy(
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.NON_REFUNDABLE.value,
+            description="Penalty after 11/2/2020",
+            begin_date=date(2020, 9, 2),
+            end_date=date(2025, 11, 1),
+            penalty_amount=decimal.Decimal("100.50"),
+            penalty_currency="USD",
+        )
+
+        policy_one.save()
+        policy_two.save()
+
+        cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight",)
+        cancel_response = booking_service.cancel(cancel_request)
+
+        self.assertFalse(cancel_response.is_cancellable)
+        self.assertEqual(CancellationSummary.NON_REFUNDABLE, cancel_response.details.cancellation_type)
+
+    @staticmethod
+    def _create_booking(first_name, last_name) -> Sequence:
+        provider = Provider.objects.get_or_create(name="Foo")[0]
+        provider.save()
+        traveler = Traveler(
+            first_name=first_name,
+            last_name=last_name,
+            email_address="john.simplenight@foo.bar",
+            phone_number="5558675309",
+        )
+        traveler.save()
+        booking = Booking(
+            transaction_id="foo",
+            booking_date=datetime.now(),
+            booking_status=BookingStatus.BOOKED,
+            lead_traveler=traveler,
+        )
+        booking.save()
+        hotel_booking = HotelBooking(
+            booking=booking,
+            created_date=datetime.now(),
+            hotel_name="Hotel Foo",
+            provider=provider,
+            simplenight_hotel_id="123",
+            provider_hotel_id="ABC",
+            record_locator="SN123",
+            total_price=decimal.Decimal("100.0"),
+            currency="USD",
+            provider_total=decimal.Decimal("80.0"),
+            provider_currency="USD",
+        )
+        hotel_booking.save()
+
+        return booking, hotel_booking, traveler
 
     @staticmethod
     def _get_payment_transaction():
