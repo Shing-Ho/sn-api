@@ -2,11 +2,11 @@ from datetime import datetime
 from typing import Union
 
 from api import logger
-from api.booking.booking_model import HotelBookingRequest, HotelBookingResponse, Customer, Status
+from api.hotel.models.booking_model import HotelBookingRequest, HotelBookingResponse, Customer, Status
 from api.common.models import RoomRate
 from api.hotel import price_verification_service, hotel_cache_service
 from api.hotel.adapters import adapter_service
-from api.hotel.hotel_api_model import SimplenightRoomType
+from api.hotel.models.hotel_api_model import SimplenightRoomType
 from api.models import models
 from api.models.models import BookingStatus, Traveler
 from api.payments import payment_service

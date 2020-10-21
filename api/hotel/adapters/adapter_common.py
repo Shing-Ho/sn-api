@@ -1,4 +1,4 @@
-from api.booking.booking_model import PaymentCardParameters, CardType, Payment, PaymentMethod
+from api.hotel.models.booking_model import PaymentCardParameters, CardType, Payment, PaymentMethod
 from api.common.models import Address
 
 

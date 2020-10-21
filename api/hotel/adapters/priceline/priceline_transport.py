@@ -11,6 +11,8 @@ class PricelineTransport(Transport):
         HOTEL_EXPRESS = "/hotel/getExpress.Results"
         HOTEL_DETAILS = "/hotel/getHotelDetails"
         EXPRESS_BOOK = "/hotel/getExpress.Book"
+        EXPRESS_LOOKUP = "/hotel/getExpress.LookUp"
+        EXPRESS_CANCEL = "/hotel/getExpress.Cancel"
         EXPRESS_CONTRACT = "/hotel/getExpress.Contract"
         HOTELS_DOWNLOAD = "/shared/getBOF2.Downloads.Hotel.Hotels"
         PHOTOS_DOWNLOAD = "/shared/getBOF2.Downloads.Hotel.Photos"
@@ -61,6 +63,12 @@ class PricelineTransport(Transport):
         return self.post(self.Endpoint.EXPRESS_BOOK, **params)
 
     def express_contract(self, **params):
+        return self.post(self.Endpoint.EXPRESS_CONTRACT, **params)
+
+    def express_lookup(self, **params):
+        return self.post(self.Endpoint.EXPRESS_CONTRACT, **params)
+
+    def express_cancel(self, **params):
         return self.post(self.Endpoint.EXPRESS_CONTRACT, **params)
 
     def hotels_download(self, **params):

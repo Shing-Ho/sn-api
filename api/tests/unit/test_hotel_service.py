@@ -2,7 +2,7 @@ from datetime import date
 from unittest.mock import patch
 
 from api.hotel import hotel_service
-from api.hotel.hotel_api_model import HotelSpecificSearch, RoomOccupancy, HotelLocationSearch, SimplenightHotel
+from api.hotel.models.hotel_api_model import HotelSpecificSearch, RoomOccupancy, HotelLocationSearch, SimplenightHotel
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 

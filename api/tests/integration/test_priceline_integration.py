@@ -5,13 +5,12 @@ from unittest.mock import patch
 import requests_mock
 from freezegun import freeze_time
 
-from api.booking import booking_service
 from api.common.models import RoomOccupancy, RateType
-from api.hotel import hotel_service
+from api.hotel import hotel_service, booking_service
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
-from api.hotel.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
-from api.hotel.hotel_models import AdapterHotelSearch, AdapterOccupancy, AdapterLocationSearch
+from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
+from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterOccupancy, AdapterLocationSearch
 from api.models.models import CityMap, Booking, HotelCancellationPolicy
 from api.tests import test_objects
 from api.tests.integration import test_models

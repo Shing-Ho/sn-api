@@ -1,14 +1,14 @@
 import uuid
 from datetime import date
 
-from api.booking.booking_model import Customer, Traveler, PaymentCardParameters, CardType, Payment, HotelBookingRequest
+from api.hotel.models.booking_model import Customer, Traveler, PaymentCardParameters, CardType, Payment, HotelBookingRequest
 from api.common.models import Address
 from api.hotel import hotel_cache_service
 from api.hotel.adapters.stub.stub import StubHotelAdapter
-from api.hotel.hotel_api_model import (
+from api.hotel.models.hotel_api_model import (
     RoomOccupancy,
 )
-from api.hotel.hotel_models import AdapterHotelSearch, AdapterOccupancy
+from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterOccupancy
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 

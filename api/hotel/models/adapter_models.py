@@ -2,7 +2,8 @@ from datetime import date
 from typing import Optional, List
 
 from api.common.models import SimplenightModel, RoomOccupancy, RoomRate
-from api.hotel.hotel_api_model import RoomType, RatePlan, HotelDetails, ErrorResponse
+from api.hotel.models.hotel_api_model import RoomType, RatePlan, HotelDetails, ErrorResponse, CancellationSummary, \
+    CancellationDetails
 
 
 class AdapterOccupancy(SimplenightModel):
@@ -43,3 +44,15 @@ class AdapterHotel(SimplenightModel):
 
 class AdapterHotelList(SimplenightModel):
     __root__: List[AdapterHotel]
+
+
+class AdapterCancelRequest:
+    record_locator: str
+    email_address: Optional[str] = None
+    lead_traveler_last_name: Optional[str] = None
+
+
+class AdapterCancelResponse:
+    is_cancelled: bool
+
+

@@ -7,7 +7,7 @@ from requests.auth import HTTPBasicAuth
 from zeep import Client, Transport
 
 from api import logger
-from api.hotel.hotel_api_model import ImageType
+from api.hotel.models.hotel_api_model import ImageType
 from api.models.models import ProviderImages, Provider
 
 

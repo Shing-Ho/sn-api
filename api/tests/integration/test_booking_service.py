@@ -4,10 +4,9 @@ from unittest.mock import patch
 import pytest
 from stripe.error import CardError
 
-from api.booking import booking_service
-from api.booking.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod, SubmitErrorType
+from api.hotel.models.booking_model import Payment, HotelBookingRequest, Customer, Traveler, PaymentMethod, SubmitErrorType
 from api.common.models import RoomOccupancy, Address
-from api.hotel import hotel_cache_service
+from api.hotel import hotel_cache_service, booking_service
 from api.models import models
 from api.models.models import Booking, BookingStatus, PaymentTransaction
 from api.tests import test_objects

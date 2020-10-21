@@ -1,7 +1,7 @@
 from api import logger
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
-from api.hotel.hotel_api_model import ImageType
+from api.hotel.models.hotel_api_model import ImageType
 from api.models.models import ProviderImages
 
 

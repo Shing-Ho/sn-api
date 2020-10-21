@@ -1,7 +1,7 @@
 import pytest
 from django.test import TestCase
 
-from api.booking.booking_model import SubmitErrorType
+from api.hotel.models.booking_model import SubmitErrorType
 from api.payments import stripe_service
 from api.view.exceptions import PaymentException
 from api.tests import test_objects

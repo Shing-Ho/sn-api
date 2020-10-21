@@ -5,14 +5,14 @@ from decimal import Decimal
 import requests_mock
 from django.test import TestCase
 
-from api.booking.booking_model import HotelBookingRequest, Customer, Traveler
+from api.hotel.models.booking_model import HotelBookingRequest, Customer, Traveler
 from api.common.models import to_json, RoomOccupancy
 from api.hotel.adapters.hotelbeds.common_models import HotelBedsRateType, HotelBedsPaymentType
 from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
 from api.hotel.adapters.hotelbeds.search_models import HotelBedsSearchBuilder
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
-from api.hotel.hotel_api_model import SimplenightAmenities
-from api.hotel.hotel_models import AdapterLocationSearch, AdapterOccupancy
+from api.hotel.models.hotel_api_model import SimplenightAmenities
+from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy
 from api.tests import test_objects
 from api.tests.utils import load_test_resource, load_test_json_resource
 

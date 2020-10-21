@@ -1,7 +1,7 @@
 from typing import Optional
 
 from api import logger
-from api.booking.booking_model import Payment, PaymentMethod, SubmitErrorType
+from api.hotel.models.booking_model import Payment, PaymentMethod, SubmitErrorType
 from api.common.models import Money
 from api.models.models import PaymentTransaction
 from api.payments import stripe_service

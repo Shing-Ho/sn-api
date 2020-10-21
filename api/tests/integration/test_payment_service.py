@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 from django.test import TestCase
 
-from api.booking.booking_model import Payment, PaymentMethod, SubmitErrorType
+from api.hotel.models.booking_model import Payment, PaymentMethod, SubmitErrorType
 from api.common.models import Money, Address
 from api.models.models import PaymentTransaction
 from api.payments import payment_service

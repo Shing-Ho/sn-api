@@ -14,7 +14,7 @@ from api.hotel.adapters.hotelbeds.common_models import (
     HotelBedsCancellationPoliciesRS,
     HotelBedsPaymentType,
 )
-from api.hotel.hotel_models import AdapterLocationSearch
+from api.hotel.models.adapter_models import AdapterLocationSearch
 
 
 class HotelBedsStayRQ(SimplenightModel):

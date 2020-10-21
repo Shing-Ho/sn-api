@@ -2,7 +2,7 @@ import decimal
 import uuid
 from datetime import date, timedelta, datetime
 
-from api.booking.booking_model import (
+from api.hotel.models.booking_model import (
     Customer,
     Traveler,
     Payment,
@@ -12,8 +12,8 @@ from api.booking.booking_model import (
     HotelBookingRequest,
 )
 from api.common.models import RoomRate, RateType, RoomOccupancy, Address
-from api.hotel.hotel_api_model import AdapterHotel, RoomType, HotelSpecificSearch
-from api.hotel.hotel_models import AdapterLocationSearch, AdapterOccupancy, AdapterHotelSearch
+from api.hotel.models.hotel_api_model import AdapterHotel, RoomType, HotelSpecificSearch
+from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy, AdapterHotelSearch
 from api.tests import to_money
 
 

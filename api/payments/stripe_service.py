@@ -2,7 +2,7 @@ import stripe
 from stripe.error import CardError
 
 from api import logger
-from api.booking.booking_model import Payment, SubmitErrorType
+from api.hotel.models.booking_model import Payment, SubmitErrorType
 from api.models.models import PaymentTransaction
 from api.view.exceptions import PaymentException
 from common import utils

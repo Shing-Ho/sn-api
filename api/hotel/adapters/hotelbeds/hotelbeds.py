@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import List, Union, Optional
 
 from api import logger
-from api.booking.booking_model import HotelBookingRequest, Reservation, Locator
+from api.hotel.models.booking_model import HotelBookingRequest, Reservation, Locator
 from api.common.models import RateType, RoomRate, Money
 from api.hotel.adapters.hotelbeds.booking_models import (
     HotelBedsBookingRQ,
@@ -32,7 +32,7 @@ from api.hotel.adapters.hotelbeds.search_models import (
 )
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_api_model import (
+from api.hotel.models.hotel_api_model import (
     HotelDetails,
     AdapterHotel,
     Address,
@@ -42,7 +42,8 @@ from api.hotel.hotel_api_model import (
     CancellationPolicy,
     CancellationSummary,
 )
-from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelSearch
+from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelSearch, \
+    AdapterCancelRequest, AdapterCancelResponse
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
@@ -205,6 +206,9 @@ class HotelBeds(HotelAdapter):
             room_rate=room_rate,
             cancellation_details=[],
         )
+
+    def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
+        raise NotImplemented("Cancel not implemented")
 
     def get_image_url(self, path):
         return self._get_image_base_url() + path

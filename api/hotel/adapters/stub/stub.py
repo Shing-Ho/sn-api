@@ -4,11 +4,11 @@ import uuid
 from datetime import timedelta
 from typing import List
 
-from api.booking.booking_model import Reservation, HotelBookingRequest, Locator
+from api.hotel.models.booking_model import Reservation, HotelBookingRequest, Locator
 from api.common.models import RateType, RoomRate, Money
 from api.hotel import hotel_cache_service
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_api_model import (
+from api.hotel.models.hotel_api_model import (
     AdapterHotel,
     RoomOccupancy,
     RoomType,
@@ -25,7 +25,8 @@ from api.hotel.hotel_api_model import (
     SimplenightAmenities,
     CancellationSummary,
 )
-from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelList
+from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelList, \
+    AdapterCancelRequest, AdapterCancelResponse
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
 
@@ -85,6 +86,9 @@ class StubHotelAdapter(HotelAdapter):
             traveler=book_request.traveler,
             room_rate=cached_room_data.simplenight_rate,
         )
+
+    def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
+        raise NotImplemented("Cancel not implemented")
 
     def _generate_room_types(self):
         bed_types = {

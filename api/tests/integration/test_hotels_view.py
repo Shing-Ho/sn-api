@@ -6,7 +6,7 @@ from freezegun import freeze_time
 from rest_framework.test import APIClient
 
 from api.auth.authentication import Feature, Organization
-from api.booking.booking_model import Customer, PaymentMethod, CardType
+from api.hotel.models.booking_model import Customer, PaymentMethod, CardType
 from api.common.models import Address, from_json
 from api.hotel import hotel_cache_service
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
@@ -23,7 +23,7 @@ from api.hotel.converter.google_models import (
     GoogleBookingResponse,
     GoogleStatus,
 )
-from api.hotel.hotel_api_model import (
+from api.hotel.models.hotel_api_model import (
     HotelSpecificSearch,
     RoomOccupancy,
     HotelLocationSearch,

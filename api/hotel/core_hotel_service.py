@@ -6,7 +6,7 @@ from api.common.models import RoomRate
 from api.hotel import markups, hotel_cache_service, hotel_mappings
 from api.hotel.adapters import adapter_service
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_api_model import (
+from api.hotel.models.hotel_api_model import (
     HotelDetails,
     HotelSpecificSearch,
     AdapterHotel,
@@ -17,7 +17,7 @@ from api.hotel.hotel_api_model import (
     Image,
     ImageType,
 )
-from api.hotel.hotel_models import AdapterHotelSearch, AdapterOccupancy
+from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterOccupancy
 from api.models.models import ProviderImages, ProviderMapping
 from api.view.exceptions import SimplenightApiException, AvailabilityException, AvailabilityErrorCode
 
