@@ -46,13 +46,14 @@ class AdapterHotelList(SimplenightModel):
     __root__: List[AdapterHotel]
 
 
-class AdapterCancelRequest:
+class AdapterCancelRequest(SimplenightModel):
+    hotel_id: str
     record_locator: str
     email_address: Optional[str] = None
     lead_traveler_last_name: Optional[str] = None
 
 
-class AdapterCancelResponse:
+class AdapterCancelResponse(SimplenightModel):
     is_cancelled: bool
 
 

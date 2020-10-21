@@ -6,7 +6,8 @@ from api.hotel import hotel_service, booking_service
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.models.hotel_api_model import HotelLocationSearch
-from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy, AdapterHotelSearch
+from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy, AdapterHotelSearch, \
+    AdapterCancelRequest
 from api.models.models import CityMap
 from api.tests import test_objects
 from api.tests.integration import test_models
@@ -150,3 +151,12 @@ class TestPricelineIntegration(SimplenightTestCase):
         self.assertIsNotNone(booking_response.reservation.locator.id)
         self.assertEqual("John", booking_response.reservation.customer.first_name)
         self.assertEqual("Simplenight", booking_response.reservation.customer.last_name)
+
+    def test_priceline_cancel(self):
+        transport = PricelineTransport(test_mode=True)
+        adapter = PricelineAdapter(transport=transport)
+
+        cancel_request = AdapterCancelRequest(record_locator="67418209545", email_address="james@simplenight.com")
+        cancel_response = adapter.cancel(cancel_request)
+
+        print(cancel_response)

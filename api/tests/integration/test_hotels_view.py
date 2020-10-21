@@ -133,7 +133,7 @@ class TestHotelsView(SimplenightAPITestCase):
             hotel, room_rate=provider_room_rate, simplenight_rate=simplenight_room_rate
         )
 
-        with patch("api.booking.booking_service.persist_reservation", side_effect=Exception("Boom")):
+        with patch("api.hotel.booking_service.persist_reservation", side_effect=Exception("Boom")):
             response = self.post(endpoint=BOOKING, obj=booking_request)
 
         self.assertEqual(500, response.status_code)

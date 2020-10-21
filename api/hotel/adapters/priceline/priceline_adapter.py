@@ -43,8 +43,13 @@ from api.hotel.models.hotel_api_model import (
     ImageType,
     CancellationDetails,
 )
-from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelSearch, \
-    AdapterCancelRequest, AdapterCancelResponse
+from api.hotel.models.adapter_models import (
+    AdapterLocationSearch,
+    AdapterBaseSearch,
+    AdapterHotelSearch,
+    AdapterCancelRequest,
+    AdapterCancelResponse,
+)
 from api.models.models import ProviderImages, ProviderHotel
 from api.view.exceptions import AvailabilityException, BookingException, AvailabilityErrorCode
 
@@ -87,7 +92,13 @@ class PricelineAdapter(HotelAdapter):
         pass
 
     def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
-        pass
+        # Priceline first requires a lookup call, to retrieve a "Cancel action"
+        lookup_response = self.transport.express_lookup(
+            booking_id=cancel_request.record_locator, email=cancel_request.email_address
+        )
+        self._check_express_lookup_response_and_get_results(lookup_response)
+
+        return lookup_response
 
     def room_details(self, ppn_bundle: str) -> Dict:
         params = {"ppn_bundle": ppn_bundle}
@@ -312,13 +323,18 @@ class PricelineAdapter(HotelAdapter):
             error_message = results["error"]["status"]
             raise AvailabilityException(error_type=AvailabilityErrorCode.PROVIDER_ERROR, detail=error_message)
 
-        return results["results"]["hotel_data"]
+        return results["results"]
 
     def _check_hotel_express_response_and_get_results(self, response):
-        return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Results")
+        results = self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Results")
+        return results["hotel_data"]
 
     def _check_hotel_express_contract_response_and_get_results(self, response):
-        return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Contract")
+        results = self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Contract")
+        return results["hotel_data"]
+
+    def _check_express_lookup_response_and_get_results(self, response):
+        return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.LookUp")
 
     def _create_hotel_from_response(self, search, hotel_response):
         room_types = self._create_room_types(hotel_response)

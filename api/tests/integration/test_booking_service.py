@@ -8,7 +8,7 @@ from api.hotel.models.booking_model import Payment, HotelBookingRequest, Custome
 from api.common.models import RoomOccupancy, Address
 from api.hotel import hotel_cache_service, booking_service
 from api.models import models
-from api.models.models import Booking, BookingStatus, PaymentTransaction
+from api.models.models import Booking, BookingStatus, PaymentTransaction, Provider
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.view.exceptions import PaymentException
@@ -17,6 +17,7 @@ from api.view.exceptions import PaymentException
 class TestBookingService(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
+        Provider.objects.create(name="stub")
 
     def test_stub_booking(self):
         booking_request = HotelBookingRequest(
@@ -75,8 +76,9 @@ class TestBookingService(SimplenightTestCase):
         hotel_bookings = models.HotelBooking.objects.filter(booking__booking_id=booking.booking_id)
 
         self.assertEqual("Hotel Name", hotel_bookings[0].hotel_name)
-        self.assertEqual("stub", hotel_bookings[0].provider_name)
-        self.assertEqual("ABC123", hotel_bookings[0].hotel_code)
+        self.assertEqual(1, hotel_bookings[0].provider_id)
+        self.assertEqual("ABC123", hotel_bookings[0].simplenight_hotel_id)
+        self.assertEqual("100", hotel_bookings[0].provider_hotel_id)
         self.assertIsNotNone("foo", hotel_bookings[0].record_locator)
         self.assertEqual(decimal.Decimal("120.00"), hotel_bookings[0].total_price)
         self.assertEqual("USD", hotel_bookings[0].currency)

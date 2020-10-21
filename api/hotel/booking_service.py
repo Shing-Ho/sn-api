@@ -8,7 +8,7 @@ from api.hotel import price_verification_service, hotel_cache_service
 from api.hotel.adapters import adapter_service
 from api.hotel.models.hotel_api_model import SimplenightRoomType
 from api.models import models
-from api.models.models import BookingStatus, Traveler
+from api.models.models import BookingStatus, Traveler, Provider
 from api.payments import payment_service
 from api.view.exceptions import BookingException, BookingErrorCode
 from common.exceptions import AppException
@@ -88,12 +88,14 @@ def _persist_hotel(book_request, provider_rate_cache_payload, booking, reservati
     # Persists both the provider rate (on book_request) and the original rates
     simplenight_rate = reservation.room_rate
     provider_rate = provider_rate_cache_payload.provider_rate
+    provider = Provider.objects.get(name=provider_rate_cache_payload.provider)
     hotel_booking = models.HotelBooking(
+        provider=provider,
         booking=booking,
         created_date=datetime.now(),
         hotel_name="Hotel Name",
-        provider_name=provider_rate_cache_payload.provider,
-        hotel_code=book_request.hotel_id,
+        simplenight_hotel_id=book_request.hotel_id,
+        provider_hotel_id=provider_rate_cache_payload.hotel_id,
         record_locator=reservation.locator.id,
         total_price=simplenight_rate.total.amount,
         currency=simplenight_rate.total.currency,
