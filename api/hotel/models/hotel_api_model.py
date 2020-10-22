@@ -281,10 +281,6 @@ class HotelItineraryItem(ItineraryItem):
     address: Address
 
 
-class Itinerary(SimplenightModel):
-    items: List[ItineraryItem]
-
-
 class CancelRequest(SimplenightModel):
     booking_id: str
     last_name: str
@@ -295,3 +291,8 @@ class CancelResponse(SimplenightModel):
     booking_status: BookingStatus
     itinerary: HotelItineraryItem
     details: CancellationDetails
+
+
+class CancelConfirmResponse(SimplenightModel):
+    booking_id: str
+    cancelled: bool

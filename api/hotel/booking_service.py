@@ -13,7 +13,7 @@ from api.hotel.models.hotel_api_model import (
     CancelResponse,
     CancellationDetails,
     CancellationSummary,
-    HotelItineraryItem,
+    HotelItineraryItem, CancelConfirmResponse,
 )
 from api.models import models
 from api.models.models import (
@@ -153,9 +153,9 @@ def cancel(cancel_request: CancelRequest) -> CancelResponse:
         booking = Booking.objects.get(booking_id=booking_id, lead_traveler__last_name__iexact=last_name)
         hotel_booking = HotelBooking.objects.get(booking_id=booking_id)
         cancellation_policy = HotelCancellationPolicy.objects.filter(hotel_booking__booking__booking_id=booking_id)
-        hotel = ProviderHotel.objects.get(
-            provider=hotel_booking.provider, provider_code=hotel_booking.provider_hotel_id
-        )
+        hotel = ProviderHotel.objects.filter(
+            provider=hotel_booking.provider, provider_code=hotel_booking.provider_hotel_id, language_code="en"
+        )[0]
 
         itinerary = HotelItineraryItem(
             name=hotel_booking.hotel_name,
@@ -200,7 +200,7 @@ def cancel(cancel_request: CancelRequest) -> CancelResponse:
         )
 
 
-def cancel_confirm(cancel_request: CancelRequest) -> CancelResponse:
+def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
     booking_id = cancel_request.booking_id
     last_name = cancel_request.last_name
 
@@ -217,7 +217,12 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelResponse:
         )
 
         adapter = adapter_service.get_adapter(hotel_booking.provider.name)
-        cancellation_response = adapter.cancel(adapter_cancel_request)
+        adapter_cancellation_response = adapter.cancel(adapter_cancel_request)
+        return CancelConfirmResponse(
+            booking_id=booking.booking_id,
+            cancelled=adapter_cancellation_response.is_cancelled
+        )
+
     except HotelBooking.DoesNotExist:
         raise BookingException(
             BookingErrorCode.CANCELLATION_FAILURE,

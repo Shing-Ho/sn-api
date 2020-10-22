@@ -52,6 +52,13 @@ class HotelViewSet(viewsets.ViewSet):
 
         return _response(cancel_response)
 
+    @action(detail=False, url_path="cancel-confirm", methods=["POST"], name="Confirm Cancel Booking")
+    def cancel_confirm(self, request):
+        cancel_request = from_json(request.data, CancelRequest)
+        cancel_response = booking_service.cancel_confirm(cancel_request)
+
+        return _response(cancel_response)
+
     @action(detail=False, url_path="google/booking", methods=["POST"], name="GoogleHotel Booking")
     def booking_google(self, request):
         google_booking_request = from_json(request.data, GoogleBookingSubmitRequest)
