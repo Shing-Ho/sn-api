@@ -7,9 +7,9 @@ from django.test import TestCase
 
 from api.hotel.models.booking_model import HotelBookingRequest, Customer, Traveler
 from api.common.models import to_json, RoomOccupancy
-from api.hotel.adapters.hotelbeds.common_models import HotelBedsRateType, HotelBedsPaymentType
-from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
-from api.hotel.adapters.hotelbeds.search_models import HotelBedsSearchBuilder
+from api.hotel.adapters.hotelbeds.hotelbeds_common_models import HotelBedsRateType, HotelBedsPaymentType
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBeds
+from api.hotel.adapters.hotelbeds.hotelbeds_search_models import HotelBedsSearchBuilder
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.models.hotel_api_model import SimplenightAmenities
 from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy

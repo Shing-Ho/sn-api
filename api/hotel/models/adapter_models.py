@@ -2,8 +2,7 @@ from datetime import date
 from typing import Optional, List
 
 from api.common.models import SimplenightModel, RoomOccupancy, RoomRate
-from api.hotel.models.hotel_api_model import RoomType, RatePlan, HotelDetails, ErrorResponse, CancellationSummary, \
-    CancellationDetails
+from api.hotel.models.hotel_api_model import RoomType, RatePlan, HotelDetails, ErrorResponse
 
 
 class AdapterOccupancy(SimplenightModel):
@@ -55,5 +54,3 @@ class AdapterCancelRequest(SimplenightModel):
 
 class AdapterCancelResponse(SimplenightModel):
     is_cancelled: bool
-
-

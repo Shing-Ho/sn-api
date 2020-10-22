@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import Field
 
 from api.common.models import SimplenightModel
-from api.hotel.adapters.hotelbeds.common_models import HotelBedsAuditDataRS, HotelBedsCoordinates
+from api.hotel.adapters.hotelbeds.hotelbeds_common_models import HotelBedsAuditDataRS, HotelBedsCoordinates
 
 
 class HotelBedsContent(SimplenightModel):

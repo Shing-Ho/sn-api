@@ -5,7 +5,7 @@ from typing import List, Union, Optional
 from api import logger
 from api.hotel.models.booking_model import HotelBookingRequest, Reservation, Locator
 from api.common.models import RateType, RoomRate, Money
-from api.hotel.adapters.hotelbeds.booking_models import (
+from api.hotel.adapters.hotelbeds.hotelbeds_booking_models import (
     HotelBedsBookingRQ,
     HotelBedsBookingLeadTraveler,
     HotelBedsPax,
@@ -13,14 +13,14 @@ from api.hotel.adapters.hotelbeds.booking_models import (
     HotelBedsBookingRS,
     HotelBedsBookingRoomRateRS,
 )
-from api.hotel.adapters.hotelbeds.common_models import (
+from api.hotel.adapters.hotelbeds.hotelbeds_common_models import (
     get_language_mapping,
     HotelBedsRateType,
     HotelBedsException,
     HOTELBEDS_AMENITY_MAPPING,
 )
-from api.hotel.adapters.hotelbeds.details_models import HotelBedsHotelDetailsRS, HotelBedsHotelDetail, HotelBedsAmenity
-from api.hotel.adapters.hotelbeds.search_models import (
+from api.hotel.adapters.hotelbeds.hotelbeds_hotel_details_models import HotelBedsHotelDetailsRS, HotelBedsHotelDetail, HotelBedsAmenity
+from api.hotel.adapters.hotelbeds.hotelbeds_search_models import (
     HotelBedsSearchBuilder,
     HotelBedsAvailabilityRS,
     HotelBedsHotel,

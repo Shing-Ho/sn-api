@@ -100,7 +100,7 @@ def _persist_hotel(book_request, provider_rate_cache_payload, booking, reservati
         provider=provider,
         booking=booking,
         created_date=datetime.now(),
-        hotel_name="Hotel Name",
+        hotel_name="Hotel Name",  # TODO:  Look at Hotel Name saved
         simplenight_hotel_id=book_request.hotel_id,
         provider_hotel_id=provider_rate_cache_payload.hotel_id,
         record_locator=reservation.locator.id,

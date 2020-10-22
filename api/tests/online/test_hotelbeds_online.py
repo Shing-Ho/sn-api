@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from api.common.models import RateType
 from api.hotel import hotel_service, hotel_cache_service, booking_service
-from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBeds
 from api.hotel.models.hotel_api_model import (
     HotelLocationSearch,
     RoomOccupancy,
