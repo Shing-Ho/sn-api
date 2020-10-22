@@ -295,4 +295,5 @@ class CancelResponse(SimplenightModel):
 
 class CancelConfirmResponse(SimplenightModel):
     booking_id: str
+    booking_status: BookingStatus
     cancelled: bool

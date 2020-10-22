@@ -205,8 +205,8 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
     last_name = cancel_request.last_name
 
     try:
-        booking = Booking.objects.get(booking_id=booking_id)
-        hotel_bookings = list(booking.hotelbooking_set)
+        booking = Booking.objects.get(booking_id=booking_id, lead_traveler__last_name__iexact=last_name)
+        hotel_bookings = list(HotelBooking.objects.filter(booking_id=booking_id))
         traveler = booking.lead_traveler
 
         hotel_booking = hotel_bookings[0]
@@ -218,8 +218,13 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
 
         adapter = adapter_service.get_adapter(hotel_booking.provider.name)
         adapter_cancellation_response = adapter.cancel(adapter_cancel_request)
+
+        booking.booking_status = BookingStatus.CANCELLED.value
+        booking.save()
+
         return CancelConfirmResponse(
-            booking_id=booking.booking_id,
+            booking_id=str(booking.booking_id),
+            booking_status=BookingStatus.CANCELLED,
             cancelled=adapter_cancellation_response.is_cancelled
         )
 
