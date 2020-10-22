@@ -1,6 +1,6 @@
 from api import logger
 from api.auth.authentication import OrganizationAPIKey, Organization
-from api.common.models import SimplenightModel
+from api.common.common_models import SimplenightModel
 
 
 class ApiAccessRequest(SimplenightModel):

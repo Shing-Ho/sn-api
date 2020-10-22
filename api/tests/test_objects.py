@@ -11,8 +11,8 @@ from api.hotel.models.booking_model import (
     PaymentMethod,
     HotelBookingRequest,
 )
-from api.common.models import RoomRate, RateType, RoomOccupancy, Address
-from api.hotel.models.hotel_api_model import AdapterHotel, RoomType, HotelSpecificSearch
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, RoomRate
+from api.hotel.models.hotel_api_model import AdapterHotel, RoomType, HotelSpecificSearch, HotelDetails
 from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy, AdapterHotelSearch
 from api.tests import to_money
 
@@ -30,7 +30,7 @@ def hotel(room_rates=None):
         room_rates=room_rates,
         room_types=[],
         rate_plans=[],
-        hotel_details=None,
+        hotel_details=HotelDetails(name="Hotel Foo", address=address(), hotel_code="SN123"),
     )
 
 

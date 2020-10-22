@@ -1,7 +1,7 @@
 from decimal import Decimal, ROUND_UP, getcontext
 from typing import List, Union, Dict, Optional
 
-from api.common.models import RoomRate, Money
+from api.hotel.models.hotel_common_models import Money, RoomRate
 from api.hotel import core_hotel_service
 from api.hotel.models.hotel_api_model import (
     HotelDetails,

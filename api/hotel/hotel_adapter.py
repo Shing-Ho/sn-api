@@ -2,7 +2,7 @@ import abc
 from typing import List
 
 from api.hotel.models.booking_model import HotelBookingRequest, Reservation
-from api.common.models import RoomRate
+from api.hotel.models.hotel_common_models import RoomRate
 from api.hotel import hotel_mappings
 from api.hotel.models.hotel_api_model import (
     HotelSpecificSearch,

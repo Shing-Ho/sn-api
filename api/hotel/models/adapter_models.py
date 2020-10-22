@@ -1,7 +1,8 @@
 from datetime import date
 from typing import Optional, List
 
-from api.common.models import SimplenightModel, RoomOccupancy, RoomRate
+from api.common.common_models import SimplenightModel
+from api.hotel.models.hotel_common_models import RoomOccupancy, RoomRate
 from api.hotel.models.hotel_api_model import RoomType, RatePlan, HotelDetails, ErrorResponse
 
 

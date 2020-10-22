@@ -9,16 +9,8 @@ from typing import List, Any, Dict, Union
 import pytz
 
 from api import logger
-from api.common.models import (
-    RoomRate,
-    RoomOccupancy,
-    Money,
-    RateType,
-    Address,
-    PostpaidFees,
-    LineItemType,
-    PostpaidFeeLineItem,
-)
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, LineItemType, PostpaidFeeLineItem, \
+    PostpaidFees, RoomRate
 from api.hotel.adapters import adapter_common
 from api.hotel.adapters.priceline import priceline_amenity_mappings
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo

@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiThrottle
 from api.hotel.models.booking_model import HotelBookingRequest
-from api.common.models import from_json
+from api.common.common_models import from_json
 from api.common.request_cache import get_request_cache
 from api.hotel import hotel_service, google_hotel_service, booking_service
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest

@@ -6,16 +6,11 @@ from typing import List, Optional, Union
 from marshmallow import EXCLUDE
 from pydantic import Field
 
-from api.common.models import (
-    RoomOccupancy,
-    Address,
-    RoomRate,
-    Money,
-    RateType,
-    DailyRate,
-    PostpaidFees,
+from api.common.common_models import (
     SimplenightModel,
 )
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, DailyRate, PostpaidFees, \
+    RoomRate, BookingStatus
 
 
 class SimplenightAmenities(Enum):
@@ -265,12 +260,29 @@ class HotelPriceVerification(SimplenightModel):
 
 class ProviderRoomDataCachePayload(SimplenightModel):
     hotel_id: str
+    adapter_hotel: AdapterHotel
     provider: str
     checkin: date
     checkout: date
     room_code: str
     provider_rate: RoomRate
     simplenight_rate: RoomRate
+
+
+class ItineraryItem(SimplenightModel):
+    name: str
+    price: Money
+    confirmation: str
+
+
+class HotelItineraryItem(ItineraryItem):
+    start_date: date
+    end_date: date
+    address: Address
+
+
+class Itinerary(SimplenightModel):
+    items: List[ItineraryItem]
 
 
 class CancelRequest(SimplenightModel):
@@ -280,4 +292,6 @@ class CancelRequest(SimplenightModel):
 
 class CancelResponse(SimplenightModel):
     is_cancellable: bool
+    booking_status: BookingStatus
+    itinerary: HotelItineraryItem
     details: CancellationDetails

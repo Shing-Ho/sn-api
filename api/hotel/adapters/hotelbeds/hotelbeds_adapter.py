@@ -4,7 +4,6 @@ from typing import List, Union, Optional
 
 from api import logger
 from api.hotel.models.booking_model import HotelBookingRequest, Reservation, Locator
-from api.common.models import RateType, RoomRate, Money
 from api.hotel.adapters.hotelbeds.hotelbeds_booking_models import (
     HotelBedsBookingRQ,
     HotelBedsBookingLeadTraveler,
@@ -35,13 +34,12 @@ from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.models.hotel_api_model import (
     HotelDetails,
     AdapterHotel,
-    Address,
-    RoomOccupancy,
     RoomType,
     RatePlan,
     CancellationPolicy,
     CancellationSummary,
 )
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, RoomRate
 from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelSearch, \
     AdapterCancelRequest, AdapterCancelResponse
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode

@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 import uuid
-from enum import Enum, EnumMeta
+from enum import EnumMeta
 from typing import Tuple, List
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+from api.hotel.models.hotel_common_models import Address, BookingStatus
 from api.hotel.models.hotel_api_model import CancellationSummary
 
 
@@ -147,12 +148,6 @@ class Traveler(models.Model):
     address_line_2 = models.TextField(null=True)
 
 
-class BookingStatus(Enum):
-    BOOKED = "booked"
-    CANCELLED = "cancelled"
-    PENDING = "pending"
-
-
 class Booking(models.Model):
     class Meta:
         app_label = "api"
@@ -182,6 +177,8 @@ class HotelBooking(models.Model):
     currency = models.CharField(max_length=3)
     provider_total = models.DecimalField(decimal_places=2, max_digits=8)
     provider_currency = models.CharField(max_length=3)
+    checkin = models.DateField()
+    checkout = models.DateField()
 
 
 class HotelCancellationPolicy(models.Model):
@@ -256,3 +253,13 @@ class ProviderHotel(models.Model):
     property_description = models.TextField(blank=True, null=True)
     amenities = ArrayField(models.CharField(max_length=100, blank=True), null=True)
     provider_reference = models.TextField(null=True)
+
+    def get_address(self):
+        return Address(
+            city=self.city_name,
+            province=self.state,
+            country=self.country_code,
+            address1=self.address_line_1,
+            address2=self.address_line_2,
+            postal_code=self.postal_code,
+        )

@@ -2,19 +2,18 @@ from datetime import date, timedelta
 from typing import List, Optional
 
 from api.hotel.models.booking_model import HotelBookingRequest
-from api.common.models import RoomRate, DailyRate, Money, RateType
 from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBuilder
 from api.hotel.adapters.travelport.search import TravelportHotelSearchBuilder
 from api.hotel.adapters.travelport.transport import TravelportTransport
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.models.hotel_api_model import (
-    Address,
     HotelDetailsSearchRequest,
     HotelDetails,
     HotelSpecificSearch,
     AdapterHotel,
     GeoLocation,
 )
+from api.hotel.models.hotel_common_models import Address, RateType, Money, DailyRate, RoomRate
 from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterCancelRequest, AdapterCancelResponse
 
 secrets = {

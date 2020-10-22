@@ -8,7 +8,7 @@ from api.hotel.models.booking_model import (
     PaymentCardParameters,
     HotelBookingResponse,
 )
-from api.common.models import Money, RoomOccupancy, RoomRate, RateType
+from api.hotel.models.hotel_common_models import RoomOccupancy, RateType, Money, RoomRate
 from api.hotel.converter.google_models import (
     GoogleHotelApiResponse,
     GoogleHotelSearchRequest,

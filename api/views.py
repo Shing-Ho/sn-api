@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from . import api_access
 from .api_access import ApiAccessRequest
-from .common.models import SimplenightModel, to_json
+from .common.common_models import SimplenightModel, to_json
 
 
 def index(request):

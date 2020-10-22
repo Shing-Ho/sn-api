@@ -2,7 +2,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
-from api.common.models import SimplenightModel
+from api.common.common_models import SimplenightModel
 
 
 class LocationType(Enum):

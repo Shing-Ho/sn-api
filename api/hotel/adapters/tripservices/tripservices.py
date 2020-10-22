@@ -1,7 +1,7 @@
 from typing import List
 
 from api.hotel.models.booking_model import HotelBookingRequest
-from api.common.models import RoomRate
+from api.hotel.models.hotel_common_models import RoomRate
 from api.hotel.adapters.tripservices.transport import TripServicesTransport
 from api.hotel.adapters.tripservices.tripservices_info import TripservicesInfo
 from api.hotel.hotel_adapter import HotelAdapter

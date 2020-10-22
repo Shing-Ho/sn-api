@@ -9,7 +9,8 @@ from typing import List, Optional
 from pydantic import Field
 
 from api.hotel.models.booking_model import Customer, PaymentMethod, CardType, Locator, SubmitErrorType
-from api.common.models import Address, Money, LineItemType, SimplenightModel
+from api.common.common_models import SimplenightModel
+from api.hotel.models.hotel_common_models import Address, Money, LineItemType
 from api.hotel.models.hotel_api_model import GeoLocation, BedTypes, CancellationSummary
 
 

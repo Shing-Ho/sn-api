@@ -3,7 +3,8 @@ from unittest.mock import patch
 
 import requests_mock
 
-from api.common.models import RoomOccupancy, from_json
+from api.common.common_models import from_json
+from api.hotel.models.hotel_common_models import RoomOccupancy
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.models.hotel_api_model import HotelLocationSearch, SimplenightHotel
 from api.tests.simplenight_api_testcase import SimplenightAPITestCase

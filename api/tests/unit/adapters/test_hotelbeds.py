@@ -6,7 +6,8 @@ import requests_mock
 from django.test import TestCase
 
 from api.hotel.models.booking_model import HotelBookingRequest, Customer, Traveler
-from api.common.models import to_json, RoomOccupancy
+from api.common.common_models import to_json
+from api.hotel.models.hotel_common_models import RoomOccupancy
 from api.hotel.adapters.hotelbeds.hotelbeds_common_models import HotelBedsRateType, HotelBedsPaymentType
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBeds
 from api.hotel.adapters.hotelbeds.hotelbeds_search_models import HotelBedsSearchBuilder

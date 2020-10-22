@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 import requests_mock
 
-from api.common.models import RoomOccupancy
+from api.hotel.models.hotel_common_models import RoomOccupancy
 from api.hotel import core_hotel_service, hotel_service, converter, hotel_cache_service
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.adapters.stub.stub import StubHotelAdapter

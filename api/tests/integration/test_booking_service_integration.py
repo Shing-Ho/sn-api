@@ -1,4 +1,5 @@
 import decimal
+import uuid
 from collections import Sequence
 from datetime import datetime, date
 from unittest.mock import patch
@@ -7,7 +8,7 @@ import pytest
 from freezegun import freeze_time
 from stripe.error import CardError
 
-from api.common.models import RoomOccupancy, Address
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address
 from api.hotel import hotel_cache_service, booking_service
 from api.hotel.models import booking_model
 from api.hotel.models.booking_model import (
@@ -27,10 +28,11 @@ from api.models.models import (
     Traveler,
     HotelBooking,
     HotelCancellationPolicy,
+    ProviderHotel,
 )
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
-from api.view.exceptions import PaymentException
+from api.view.exceptions import PaymentException, BookingException
 
 
 class TestBookingServiceIntegration(SimplenightTestCase):
@@ -94,7 +96,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         hotel_bookings = models.HotelBooking.objects.filter(booking__booking_id=booking.booking_id)
 
-        self.assertEqual("Hotel Name", hotel_bookings[0].hotel_name)
+        self.assertEqual("Hotel Foo", hotel_bookings[0].hotel_name)
         self.assertEqual(self.provider.id, hotel_bookings[0].provider_id)
         self.assertEqual("ABC123", hotel_bookings[0].simplenight_hotel_id)
         self.assertEqual("100", hotel_bookings[0].provider_hotel_id)
@@ -129,7 +131,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
     @freeze_time("2020-10-01")
     def test_cancellation(self):
-        booking, hotel_booking, traveler = self._create_booking(first_name="John", last_name="Simplenight")
+        booking, hotel_booking, traveler = self._create_booking(
+            first_name="John", last_name="Simplenight", provider_hotel_id="SN123"
+        )
+
         policy_one = HotelCancellationPolicy(
             hotel_booking=hotel_booking,
             cancellation_type=CancellationSummary.FREE_CANCELLATION.value,
@@ -153,6 +158,8 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         policy_one.save()
         policy_two.save()
 
+        self._create_provider_hotel("Hotel Foo", "SN123")
+
         cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight",)
         cancel_response = booking_service.cancel(cancel_request)
 
@@ -166,7 +173,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
     @freeze_time("2020-10-01")
     def test_cancellation_non_refundable(self):
-        booking, hotel_booking, traveler = self._create_booking(first_name="John", last_name="Simplenight")
+        booking, hotel_booking, traveler = self._create_booking(
+            first_name="John", last_name="Simplenight", provider_hotel_id="PROVIDER123"
+        )
+
         policy_one = HotelCancellationPolicy(
             hotel_booking=hotel_booking,
             cancellation_type=CancellationSummary.FREE_CANCELLATION.value,
@@ -190,14 +200,46 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         policy_one.save()
         policy_two.save()
 
+        self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
+
         cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight",)
         cancel_response = booking_service.cancel(cancel_request)
 
         self.assertFalse(cancel_response.is_cancellable)
+        self.assertEqual("Hotel Foo", cancel_response.itinerary.name)
+        self.assertEqual(decimal.Decimal("100.0"), cancel_response.itinerary.price.amount)
+        self.assertEqual("USD", cancel_response.itinerary.price.currency)
+        self.assertEqual("SN123", cancel_response.itinerary.confirmation)
+        self.assertEqual("2020-01-01", str(cancel_response.itinerary.start_date))
+        self.assertEqual("2020-01-07", str(cancel_response.itinerary.end_date))
+        self.assertEqual("123 Main Street", cancel_response.itinerary.address.address1)
+        self.assertEqual("10th Floor", cancel_response.itinerary.address.address2)
+        self.assertEqual("US", cancel_response.itinerary.address.country)
+        self.assertEqual("Simpleville", cancel_response.itinerary.address.city)
+        self.assertEqual("94111", cancel_response.itinerary.address.postal_code)
         self.assertEqual(CancellationSummary.NON_REFUNDABLE, cancel_response.details.cancellation_type)
+        self.assertEqual("Penalty after 11/2/2020", cancel_response.details.description)
+        self.assertEqual("2020-09-02", str(cancel_response.details.begin_date))
+        self.assertEqual("2025-11-01", str(cancel_response.details.end_date))
+        self.assertEqual(decimal.Decimal("100.50"), cancel_response.details.penalty_amount)
+        self.assertEqual("USD", cancel_response.details.penalty_currency)
+
+        # Incorrect Last Name
+        with pytest.raises(BookingException) as e:
+            cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="DoesNotExist")
+            booking_service.cancel(cancel_request)
+
+        self.assertIn("Could not find booking", str(e))
+
+        # Incorrect Booking ID
+        with pytest.raises(BookingException) as e:
+            cancel_request = CancelRequest(booking_id=str(uuid.uuid4()), last_name="Simplenight")
+            booking_service.cancel(cancel_request)
+
+        self.assertIn("Could not find booking", str(e))
 
     @staticmethod
-    def _create_booking(first_name, last_name) -> Sequence:
+    def _create_booking(first_name, last_name, provider_hotel_id) -> Sequence:
         provider = Provider.objects.get_or_create(name="Foo")[0]
         provider.save()
         traveler = Traveler(
@@ -210,7 +252,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         booking = Booking(
             transaction_id="foo",
             booking_date=datetime.now(),
-            booking_status=BookingStatus.BOOKED,
+            booking_status=BookingStatus.BOOKED.value,
             lead_traveler=traveler,
         )
         booking.save()
@@ -220,12 +262,14 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             hotel_name="Hotel Foo",
             provider=provider,
             simplenight_hotel_id="123",
-            provider_hotel_id="ABC",
+            provider_hotel_id=provider_hotel_id,
             record_locator="SN123",
             total_price=decimal.Decimal("100.0"),
             currency="USD",
             provider_total=decimal.Decimal("80.0"),
             provider_currency="USD",
+            checkin=date(2020, 1, 1),
+            checkout=date(2020, 1, 7),
         )
         hotel_booking.save()
 
@@ -242,3 +286,20 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         transaction.payment_token = "pt_foo"
 
         return transaction
+
+    @staticmethod
+    def _create_provider_hotel(hotel_name, provider_code):
+        provider_hotel = ProviderHotel(
+            hotel_name=hotel_name,
+            provider_code=provider_code,
+            provider=Provider.objects.get_or_create(name="Foo")[0],
+            city_name="Simpleville",
+            state="CA",
+            country_code="US",
+            postal_code="94111",
+            address_line_1="123 Main Street",
+            address_line_2="10th Floor",
+        )
+
+        provider_hotel.save()
+        return provider_hotel

@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Union, List
+from typing import Union
 
 from api import logger
-from api.common.models import RoomRate
+from api.hotel.models.hotel_common_models import Money, RoomRate
 from api.hotel import price_verification_service, hotel_cache_service
 from api.hotel.adapters import adapter_service
 from api.hotel.models.adapter_models import AdapterCancelRequest
@@ -13,9 +13,18 @@ from api.hotel.models.hotel_api_model import (
     CancelResponse,
     CancellationDetails,
     CancellationSummary,
+    HotelItineraryItem,
 )
 from api.models import models
-from api.models.models import BookingStatus, Traveler, Provider, HotelBooking, Booking, HotelCancellationPolicy
+from api.models.models import (
+    BookingStatus,
+    Traveler,
+    Provider,
+    HotelBooking,
+    Booking,
+    HotelCancellationPolicy,
+    ProviderHotel,
+)
 from api.payments import payment_service
 from api.view.exceptions import BookingException, BookingErrorCode
 from common.exceptions import AppException
@@ -95,19 +104,22 @@ def _persist_hotel(book_request, provider_rate_cache_payload, booking, reservati
     # Persists both the provider rate (on book_request) and the original rates
     simplenight_rate = reservation.room_rate
     provider_rate = provider_rate_cache_payload.provider_rate
+    adapter_hotel = provider_rate_cache_payload.adapter_hotel
     provider = Provider.objects.get(name=provider_rate_cache_payload.provider)
     hotel_booking = models.HotelBooking(
         provider=provider,
         booking=booking,
         created_date=datetime.now(),
-        hotel_name="Hotel Name",  # TODO:  Look at Hotel Name saved
-        simplenight_hotel_id=book_request.hotel_id,
+        hotel_name=adapter_hotel.hotel_details.name,
+        simplenight_hotel_id=book_request.hotel_id,  # TODO: Don't use hotel id from request
         provider_hotel_id=provider_rate_cache_payload.hotel_id,
         record_locator=reservation.locator.id,
         total_price=simplenight_rate.total.amount,
         currency=simplenight_rate.total.currency,
         provider_total=provider_rate.total.amount,
         provider_currency=provider_rate.total.currency,
+        checkin=adapter_hotel.start_date,
+        checkout=adapter_hotel.end_date
     )
 
     hotel_booking.save()
@@ -138,13 +150,29 @@ def cancel(cancel_request: CancelRequest) -> CancelResponse:
 
     try:
         current_date = datetime.now().date()
+        booking = Booking.objects.get(booking_id=booking_id, lead_traveler__last_name__iexact=last_name)
+        hotel_booking = HotelBooking.objects.get(booking_id=booking_id)
         cancellation_policy = HotelCancellationPolicy.objects.filter(hotel_booking__booking__booking_id=booking_id)
+        hotel = ProviderHotel.objects.get(
+            provider=hotel_booking.provider, provider_code=hotel_booking.provider_hotel_id
+        )
+
+        itinerary = HotelItineraryItem(
+            name=hotel_booking.hotel_name,
+            price=Money(amount=hotel_booking.total_price, currency=hotel_booking.currency),
+            confirmation=hotel_booking.record_locator,
+            start_date=hotel_booking.checkin,
+            end_date=hotel_booking.checkout,
+            address=hotel.get_address()
+        )
 
         for policy in cancellation_policy:
             if policy.begin_date < current_date < policy.end_date:
                 cancellable = policy.penalty_amount == 0
                 return CancelResponse(
                     is_cancellable=cancellable,
+                    booking_status=BookingStatus.from_value(booking.booking_status),
+                    itinerary=itinerary,
                     details=CancellationDetails(
                         cancellation_type=CancellationSummary.from_value(policy.cancellation_type),
                         description=policy.description,
@@ -166,10 +194,10 @@ def cancel(cancel_request: CancelRequest) -> CancelResponse:
         raise BookingException(
             BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
         )
-
-
-def _is_cancellable(cancel_policies: List[HotelCancellationPolicy]):
-    pass
+    except HotelBooking.DoesNotExist:
+        raise BookingException(
+            BookingErrorCode.CANCELLATION_FAILURE, "Could not load hotel booking",
+        )
 
 
 def cancel_confirm(cancel_request: CancelRequest) -> CancelResponse:

@@ -1,5 +1,5 @@
 from api.hotel.models.booking_model import PaymentCardParameters, CardType, Payment, PaymentMethod
-from api.common.models import Address
+from api.hotel.models.hotel_common_models import Address
 
 
 def get_virtual_credit_card(test_mode=True) -> Payment:

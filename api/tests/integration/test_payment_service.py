@@ -4,7 +4,7 @@ import pytest
 from django.test import TestCase
 
 from api.hotel.models.booking_model import Payment, PaymentMethod, SubmitErrorType
-from api.common.models import Money, Address
+from api.hotel.models.hotel_common_models import Address, Money
 from api.models.models import PaymentTransaction
 from api.payments import payment_service
 from api.view.exceptions import PaymentException

@@ -2,7 +2,7 @@ from decimal import Decimal, ROUND_UP, getcontext
 from typing import List, Union, Tuple, Callable, Optional
 
 from api import logger
-from api.common.models import RoomRate
+from api.hotel.models.hotel_common_models import RoomRate
 from api.hotel import markups, hotel_cache_service, hotel_mappings
 from api.hotel.adapters import adapter_service
 from api.hotel.hotel_adapter import HotelAdapter

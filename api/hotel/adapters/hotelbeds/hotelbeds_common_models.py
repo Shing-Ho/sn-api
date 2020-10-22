@@ -5,7 +5,7 @@ from typing import Optional, List
 
 from pydantic import Field
 
-from api.common.models import SimplenightModel
+from api.common.common_models import SimplenightModel
 from api.hotel.models.hotel_api_model import SimplenightAmenities
 
 HOTELBEDS_LANGUAGE_MAP = {

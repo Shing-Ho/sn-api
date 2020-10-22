@@ -5,19 +5,16 @@ from datetime import timedelta
 from typing import List
 
 from api.hotel.models.booking_model import Reservation, HotelBookingRequest, Locator
-from api.common.models import RateType, RoomRate, Money
 from api.hotel import hotel_cache_service
 from api.hotel.hotel_adapter import HotelAdapter
 from api.hotel.models.hotel_api_model import (
     AdapterHotel,
-    RoomOccupancy,
     RoomType,
     Image,
     ImageType,
     BedTypes,
     CancellationPolicy,
     HotelDetails,
-    Address,
     GeoLocation,
     RatePlan,
     BaseHotelSearch,
@@ -25,6 +22,7 @@ from api.hotel.models.hotel_api_model import (
     SimplenightAmenities,
     CancellationSummary,
 )
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, RoomRate
 from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelList, \
     AdapterCancelRequest, AdapterCancelResponse
 from api.tests.utils import random_alphanumeric

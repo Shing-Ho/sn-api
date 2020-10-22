@@ -4,7 +4,7 @@ from typing import Dict, Any
 import requests
 
 from api import logger
-from api.common.models import SimplenightModel
+from api.common.common_models import SimplenightModel
 
 
 class Transport(abc.ABC):
