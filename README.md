@@ -13,7 +13,7 @@ After pre-requisites are satisfied, from the root of the project, run:
 python3.7 -m venv .venv
 . .venv/bin/activate
 pip install --upgrade pip
-pip install -r requirements-dev.txt
+pip install -r requirements_dev.txt
 pre-commit install
 ```
 
@@ -40,3 +40,21 @@ For windows, run:
 #### PyCharm
 
 If you're running PyCharm Professional Edition, the Django test runner is supported directly.  Change your settings file under Languages & Frameworks -> Django to point to `api/environments/local.py`, and you'll be able to run tests directly within Django.
+
+
+#### Running the Server
+On OSX, you can use the helper scripts under the `bin/` folder.  To run the server, simply run `./bin/run-local`.
+On Windows, you can set the DJANGO_SETTINGS_MODULE to `api.environments.local` and run `python manage.py runserver`.
+
+### Loading Required Data
+To search, there are several sets of external data required.  You can either copy this data from the QA server,
+or load it locally into your own enviroment:
+
+* `./bin/manage-local geonames`
+* `./bin/manage-local airports`
+* `./bin/manage-local giata_imports`
+* `./bin/manage-local iceportal_imports`
+* `./bin/manage-local priceline_cities_import`
+* `./bin/manage-local priceline_details_imports`
+* `./bin/manage-local priceline_image_imports`
+* `./bin/manage-local city_mappings`
