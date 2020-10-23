@@ -8,6 +8,7 @@ import pytest
 from freezegun import freeze_time
 from stripe.error import CardError
 
+from api.hotel.models.adapter_models import AdapterCancelResponse
 from api.hotel.models.hotel_common_models import RoomOccupancy, Address
 from api.hotel import hotel_cache_service, booking_service
 from api.hotel.models import booking_model
@@ -161,7 +162,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self._create_provider_hotel("Hotel Foo", "SN123")
 
         cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight",)
-        cancel_response = booking_service.cancel(cancel_request)
+        cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertTrue(cancel_response.is_cancellable)
         self.assertEqual(CancellationSummary.FREE_CANCELLATION, cancel_response.details.cancellation_type)
@@ -203,7 +204,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
 
         cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight",)
-        cancel_response = booking_service.cancel(cancel_request)
+        cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertFalse(cancel_response.is_cancellable)
         self.assertEqual("Hotel Foo", cancel_response.itinerary.name)
@@ -227,14 +228,14 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         # Incorrect Last Name
         with pytest.raises(BookingException) as e:
             cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="DoesNotExist")
-            booking_service.cancel(cancel_request)
+            booking_service.cancel_lookup(cancel_request)
 
         self.assertIn("Could not find booking", str(e))
 
         # Incorrect Booking ID
         with pytest.raises(BookingException) as e:
             cancel_request = CancelRequest(booking_id=str(uuid.uuid4()), last_name="Simplenight")
-            booking_service.cancel(cancel_request)
+            booking_service.cancel_lookup(cancel_request)
 
         self.assertIn("Could not find booking", str(e))
 
@@ -246,18 +247,56 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         policy_one = HotelCancellationPolicy(
             hotel_booking=hotel_booking,
             cancellation_type=CancellationSummary.NON_REFUNDABLE.value,
-            description="Free cancellation before 9/1/2020",
         )
 
         policy_one.save()
 
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
         cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight",)
-        cancel_response = booking_service.cancel(cancel_request)
+        cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertFalse(cancel_response.is_cancellable)
         self.assertEqual("Booking is non-refundable", cancel_response.details.description)
         self.assertEqual("Hotel Foo", cancel_response.itinerary.name)
+
+    def test_cancel_confirm(self):
+        booking, hotel_booking, traveler = self._create_booking(
+            first_name="John", last_name="Simplenight", provider_hotel_id="PROVIDER123"
+        )
+
+        policy_one = HotelCancellationPolicy(
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.FREE_CANCELLATION.value,
+        )
+        policy_one.save()
+
+        self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
+        cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight", )
+
+        with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
+            mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
+            cancel_response = booking_service.cancel_confirm(cancel_request)
+
+        self.assertTrue(cancel_response.cancelled)
+
+    def test_cancel_confirm_non_refundable(self):
+        booking, hotel_booking, traveler = self._create_booking(
+            first_name="John", last_name="Simplenight", provider_hotel_id="PROVIDER123"
+        )
+
+        policy_one = HotelCancellationPolicy(
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.NON_REFUNDABLE.value,
+        )
+        policy_one.save()
+
+        self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
+        cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight", )
+
+        with pytest.raises(BookingException) as e:
+            booking_service.cancel_confirm(cancel_request)
+
+        self.assertIn("Booking is not cancellable", str(e))
 
     @staticmethod
     def _create_booking(first_name, last_name, provider_hotel_id) -> Sequence:

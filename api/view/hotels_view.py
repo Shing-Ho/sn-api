@@ -46,9 +46,9 @@ class HotelViewSet(viewsets.ViewSet):
         return _response(booking_response)
 
     @action(detail=False, url_path="cancel", methods=["POST"], name="Cancel Booking")
-    def cancel(self, request):
+    def cancel_lookup(self, request):
         cancel_request = from_json(request.data, CancelRequest)
-        cancel_response = booking_service.cancel(cancel_request)
+        cancel_response = booking_service.cancel_lookup(cancel_request)
 
         return _response(cancel_response)
 
