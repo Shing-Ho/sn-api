@@ -166,6 +166,18 @@ def cancel(cancel_request: CancelRequest) -> CancelResponse:
             address=hotel.get_address()
         )
 
+        if len(cancellation_policy) == 1:
+            if cancellation_policy[0].cancellation_type == CancellationSummary.NON_REFUNDABLE.value:
+                return CancelResponse(
+                    is_cancellable=False,
+                    booking_status=BookingStatus.from_value(booking.booking_status),
+                    itinerary=itinerary,
+                    details=CancellationDetails(
+                        cancellation_type=CancellationSummary.NON_REFUNDABLE,
+                        description="Booking is non-refundable",
+                    ),
+                )
+
         for policy in cancellation_policy:
             if policy.begin_date < current_date < policy.end_date:
                 cancellable = policy.penalty_amount == 0

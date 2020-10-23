@@ -238,6 +238,27 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         self.assertIn("Could not find booking", str(e))
 
+    def test_cancellation_policy_non_refundable_no_begin_end_date(self):
+        booking, hotel_booking, traveler = self._create_booking(
+            first_name="John", last_name="Simplenight", provider_hotel_id="PROVIDER123"
+        )
+
+        policy_one = HotelCancellationPolicy(
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.NON_REFUNDABLE.value,
+            description="Free cancellation before 9/1/2020",
+        )
+
+        policy_one.save()
+
+        self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
+        cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight",)
+        cancel_response = booking_service.cancel(cancel_request)
+
+        self.assertFalse(cancel_response.is_cancellable)
+        self.assertEqual("Booking is non-refundable", cancel_response.details.description)
+        self.assertEqual("Hotel Foo", cancel_response.itinerary.name)
+
     @staticmethod
     def _create_booking(first_name, last_name, provider_hotel_id) -> Sequence:
         provider = Provider.objects.get_or_create(name="Foo")[0]
