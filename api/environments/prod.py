@@ -18,9 +18,9 @@ DATABASES = {
         "PORT": "5432",
         "OPTIONS": {
             "sslmode": "require",
-            "sslrootcert": "api/secrets/server-ca.crt",
-            "sslcert": "api/secrets/client-cert.pem",
-            "sslkey": "api/secrets/client-key.pem",
+            "sslrootcert": "api/secrets/prod/server-ca.crt",
+            "sslcert": "api/secrets/prod/client-cert.pem",
+            "sslkey": "api/secrets/prod/client-key.pem",
         },
     }
 }
