@@ -1,6 +1,3 @@
-from typing import Optional
-
-from api import logger
 from api.hotel.models.booking_model import Payment, PaymentMethod, SubmitErrorType
 from api.hotel.models.hotel_common_models import Money
 from api.models.models import PaymentTransaction
@@ -9,7 +6,7 @@ from api.view.exceptions import PaymentException
 from common import utils
 
 
-def authorize_payment(amount: Money, payment: Payment, description: str) -> Optional[PaymentTransaction]:
+def authorize_payment(amount: Money, payment: Payment, description: str) -> PaymentTransaction:
     if payment.payment_method == PaymentMethod.PAYMENT_CARD:
         return _authorize_credit_card(amount, payment, description)
     elif payment.payment_method == PaymentMethod.PAYMENT_TOKEN:
@@ -26,11 +23,6 @@ def _authorize_credit_card(amount: Money, payment: Payment, description: str):
         description=description,
     )
 
-    masked_card = f"************{payment.payment_card_parameters.card_number[-4:]}"
-    if payment_transaction.charge_id is not None:
-        logger.info(f"Successfully charged payment card {masked_card}")
-        payment_transaction.save()
-
     return payment_transaction
 
 
@@ -42,9 +34,5 @@ def _authorize_payment_token(amount: Money, payment: Payment, description: str):
         currency_code=amount.currency,
         description=description,
     )
-
-    if payment_transaction.charge_id is not None:
-        logger.info(f"Successfully charged payment token {payment.payment_token}")
-        payment_transaction.save()
 
     return payment_transaction

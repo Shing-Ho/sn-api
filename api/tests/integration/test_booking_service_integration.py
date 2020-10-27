@@ -69,7 +69,14 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
         )
 
-        with patch("api.payments.payment_service.authorize_payment"):
+        payment_transaction = PaymentTransaction(
+            provider_name="stripe",
+            currency="USD",
+            transaction_amount=100.0,
+        )
+
+        with patch("api.payments.payment_service.authorize_payment") as mock_authorize_payment:
+            mock_authorize_payment.return_value = payment_transaction
             response = booking_service.book(booking_request)
 
         self.assertEqual(1, response.api_version)
@@ -104,6 +111,11 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self.assertIsNotNone("foo", hotel_bookings[0].record_locator)
         self.assertEqual(decimal.Decimal("120.00"), hotel_bookings[0].total_price)
         self.assertEqual("USD", hotel_bookings[0].currency)
+
+        retrieved_payments = PaymentTransaction.objects.filter(booking_id=booking.booking_id)
+        self.assertEqual(1, len(retrieved_payments))
+        self.assertEqual("stripe", retrieved_payments[0].provider_name)
+        self.assertEqual(100.0, retrieved_payments[0].transaction_amount)
 
     def test_stub_booking_with_invalid_payment(self):
         invalid_card_number_payment = test_objects.payment("4000000000000002")

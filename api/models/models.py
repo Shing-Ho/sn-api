@@ -116,22 +116,6 @@ class CityMap(models.Model):
     )
 
 
-class PaymentTransaction(models.Model):
-    class Meta:
-        app_label = "api"
-        db_table = "pmt_transaction"
-
-    sn_transaction_id = models.IntegerField(null=True)
-    provider_name = models.CharField(max_length=32)
-    charge_id = models.CharField(max_length=50)
-    transaction_type = models.CharField(max_length=12)
-    transaction_status = models.CharField(max_length=50)
-    transaction_amount = models.FloatField()
-    currency = models.CharField(max_length=3)
-    transaction_time = models.DateTimeField(auto_now_add=True)
-    payment_token = models.CharField(max_length=128)
-
-
 class Traveler(models.Model):
     class Meta:
         app_label = "api"
@@ -159,6 +143,23 @@ class Booking(models.Model):
     booking_date = models.DateTimeField(auto_now_add=True)
     booking_status = models.CharField(max_length=32, choices=[(x.value, x.value) for x in BookingStatus])
     lead_traveler = models.ForeignKey(Traveler, on_delete=models.CASCADE)
+
+
+class PaymentTransaction(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "payment_transaction"
+
+    sn_transaction_id = models.IntegerField(null=True)
+    booking = models.ForeignKey(Booking, null=True, on_delete=models.SET_NULL)
+    provider_name = models.CharField(max_length=32)
+    charge_id = models.CharField(max_length=50)
+    transaction_type = models.CharField(max_length=12)
+    transaction_status = models.CharField(max_length=50)
+    transaction_amount = models.FloatField()
+    currency = models.CharField(max_length=3)
+    transaction_time = models.DateTimeField(auto_now_add=True)
+    payment_token = models.CharField(max_length=128)
 
 
 class HotelBooking(models.Model):

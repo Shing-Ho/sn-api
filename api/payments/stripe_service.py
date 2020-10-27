@@ -79,7 +79,7 @@ def _is_success(stripe_response):
     return stripe_response["captured"] is True
 
 
-def _payment_transaction(token, stripe_response):
+def _payment_transaction(token, stripe_response) -> PaymentTransaction:
     transaction = PaymentTransaction()
     transaction.provider_name = "stripe"
     transaction.currency = str(stripe_response["currency"]).upper()

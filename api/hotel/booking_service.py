@@ -37,6 +37,9 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
         simplenight_rate = provider_rate_cache_payload.simplenight_rate
         adapter = adapter_service.get_adapter(provider)
 
+        traveler = _persist_traveler(book_request.customer)
+        booking = _persist_booking_record(book_request, traveler)
+
         total_payment_amount = simplenight_rate.total
         auth_response = payment_service.authorize_payment(
             amount=total_payment_amount,
@@ -47,6 +50,10 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
         if not auth_response:
             logger.error(f"Could not authorize payment for booking: {book_request}")
             raise AppException("Error authorizing payment")
+        elif auth_response.charge_id is not None:
+            logger.info(f"Successfully charged Charge ID {auth_response.charge_id}")
+            auth_response.booking = booking
+            auth_response.save()
 
         # Save Simplenight Internal Room Rates
         # Lookup Provider Rates in Cache
@@ -63,7 +70,8 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
             logger.error(f"Could not book request: {book_request}")
             raise AppException("Error during booking")
 
-        booking = persist_reservation(book_request, provider_rate_cache_payload, reservation)
+        _set_booked_status(booking)
+        _persist_hotel(book_request, provider_rate_cache_payload, booking, reservation)
 
         return HotelBookingResponse(
             api_version=1,
@@ -89,14 +97,6 @@ def _price_verification(provider: str, rate: Union[SimplenightRoomType, RoomRate
         raise BookingException(BookingErrorCode.PRICE_VERIFICATION, error_msg)
 
     return price_verification.verified_room_rate
-
-
-def persist_reservation(book_request, provider_rate_cache_payload, reservation):
-    traveler = _persist_traveler(reservation.customer)
-    booking = _persist_booking_record(book_request, traveler)
-    _persist_hotel(book_request, provider_rate_cache_payload, booking, reservation)
-
-    return booking
 
 
 def _persist_hotel(book_request, provider_rate_cache_payload, booking, reservation):
@@ -292,9 +292,14 @@ def adapter_cancel(hotel_booking: HotelBooking, traveler: Traveler):
     return adapter.cancel_lookup(adapter_cancel_request)
 
 
+def _set_booked_status(booking: Booking):
+    booking.booking_status = BookingStatus.BOOKED.value
+    booking.save()
+
+
 def _persist_booking_record(booking_request, traveler):
     booking = models.Booking(
-        booking_status=BookingStatus.BOOKED.value,
+        booking_status=BookingStatus.PENDING.value,
         transaction_id=booking_request.transaction_id,
         booking_date=datetime.now(),
         lead_traveler=traveler,
