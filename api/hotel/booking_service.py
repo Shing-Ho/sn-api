@@ -13,7 +13,8 @@ from api.hotel.models.hotel_api_model import (
     CancelResponse,
     CancellationDetails,
     CancellationSummary,
-    HotelItineraryItem, CancelConfirmResponse,
+    HotelItineraryItem,
+    CancelConfirmResponse,
 )
 from api.models import models
 from api.models.models import (
@@ -24,6 +25,7 @@ from api.models.models import (
     Booking,
     HotelCancellationPolicy,
     ProviderHotel,
+    PaymentTransaction,
 )
 from api.payments import payment_service
 from api.view.exceptions import BookingException, BookingErrorCode
@@ -39,6 +41,8 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
 
         traveler = _persist_traveler(book_request.customer)
         booking = _persist_booking_record(book_request, traveler)
+
+        logger.info(f"Saved booking {booking.booking_id}")
 
         total_payment_amount = simplenight_rate.total
         auth_response = payment_service.authorize_payment(
@@ -119,7 +123,7 @@ def _persist_hotel(book_request, provider_rate_cache_payload, booking, reservati
         provider_total=provider_rate.total.amount,
         provider_currency=provider_rate.total.currency,
         checkin=adapter_hotel.start_date,
-        checkout=adapter_hotel.end_date
+        checkout=adapter_hotel.end_date,
     )
 
     hotel_booking.save()
@@ -140,7 +144,7 @@ def _persist_hotel(book_request, provider_rate_cache_payload, booking, reservati
         )
 
     if len(cancellation_policy_models) > 0:
-        logger.info(f"Persisting cancellation policies for booking: {hotel_booking.hotel_booking_id}")
+        logger.info(f"Persisting cancellation policies for hotel booking: {hotel_booking.hotel_booking_id}")
         models.HotelCancellationPolicy.objects.bulk_create(cancellation_policy_models)
 
 
@@ -222,18 +226,23 @@ def _find_active_cancellation_policy(booking_id):
 
 
 def _create_itinerary(hotel_booking):
-    hotel = ProviderHotel.objects.filter(
-        provider=hotel_booking.provider, provider_code=hotel_booking.provider_hotel_id, language_code="en"
-    )
-
     return HotelItineraryItem(
         name=hotel_booking.hotel_name,
         price=Money(amount=hotel_booking.total_price, currency=hotel_booking.currency),
         confirmation=hotel_booking.record_locator,
         start_date=hotel_booking.checkin,
         end_date=hotel_booking.checkout,
-        address=hotel[0].get_address()
+        address=_get_itinerary_address(hotel_booking),
     )
+
+
+def _get_itinerary_address(hotel_booking):
+    hotel = ProviderHotel.objects.filter(
+        provider=hotel_booking.provider, provider_code=hotel_booking.provider_hotel_id, language_code="en"
+    )
+
+    if len(hotel) > 0:
+        return hotel[0].get_address()
 
 
 def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
@@ -242,6 +251,7 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
 
     try:
         booking = Booking.objects.get(booking_id=booking_id, lead_traveler__last_name__iexact=last_name)
+        original_payment = PaymentTransaction.objects.get(booking_id=booking_id)
         hotel_bookings = list(HotelBooking.objects.filter(booking_id=booking_id))
         traveler = booking.lead_traveler
 
@@ -254,6 +264,12 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
             raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not cancellable")
 
         adapter_cancellation_response = adapter_cancel(hotel_bookings[0], traveler)
+        refund_transaction = payment_service.refund_payment(
+            charge_id=original_payment.charge_id, amount=original_payment.transaction_amount
+        )
+
+        refund_transaction.booking = booking
+        refund_transaction.save()
 
         booking.booking_status = BookingStatus.CANCELLED.value
         booking.save()
@@ -261,7 +277,7 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         return CancelConfirmResponse(
             booking_id=str(booking.booking_id),
             booking_status=BookingStatus.CANCELLED,
-            cancelled=adapter_cancellation_response.is_cancelled
+            cancelled=adapter_cancellation_response.is_cancelled,
         )
 
     except HotelBooking.DoesNotExist:
@@ -289,10 +305,11 @@ def adapter_cancel(hotel_booking: HotelBooking, traveler: Traveler):
     )
 
     adapter = adapter_service.get_adapter(hotel_booking.provider.name)
-    return adapter.cancel_lookup(adapter_cancel_request)
+    return adapter.cancel(adapter_cancel_request)
 
 
 def _set_booked_status(booking: Booking):
+    logger.info(f"Updating booking {booking.booking_id} to BOOKED status")
     booking.booking_status = BookingStatus.BOOKED.value
     booking.save()
 

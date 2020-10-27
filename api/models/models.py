@@ -6,6 +6,7 @@ from typing import Tuple, List
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
+from django_enumfield import enum
 
 from api.hotel.models.hotel_api_model import CancellationSummary
 from api.hotel.models.hotel_common_models import Address, BookingStatus
@@ -145,6 +146,11 @@ class Booking(models.Model):
     lead_traveler = models.ForeignKey(Traveler, on_delete=models.CASCADE)
 
 
+class TransactionType(enum.Enum):
+    CHARGE = 0
+    REFUND = 1
+
+
 class PaymentTransaction(models.Model):
     class Meta:
         app_label = "api"
@@ -154,12 +160,12 @@ class PaymentTransaction(models.Model):
     booking = models.ForeignKey(Booking, null=True, on_delete=models.SET_NULL)
     provider_name = models.CharField(max_length=32)
     charge_id = models.CharField(max_length=50)
-    transaction_type = models.CharField(max_length=12)
+    transaction_type = enum.EnumField(TransactionType)
     transaction_status = models.CharField(max_length=50)
     transaction_amount = models.FloatField()
     currency = models.CharField(max_length=3)
     transaction_time = models.DateTimeField(auto_now_add=True)
-    payment_token = models.CharField(max_length=128)
+    payment_token = models.CharField(max_length=128, null=True)
 
 
 class HotelBooking(models.Model):
