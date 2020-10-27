@@ -9,8 +9,6 @@ from typing import List, Any, Dict, Union
 import pytz
 
 from api import logger
-from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, LineItemType, PostpaidFeeLineItem, \
-    PostpaidFees, RoomRate
 from api.hotel.adapters import adapter_common
 from api.hotel.adapters.priceline import priceline_amenity_mappings
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
@@ -41,6 +39,16 @@ from api.hotel.models.hotel_api_model import (
     Image,
     ImageType,
     CancellationDetails,
+)
+from api.hotel.models.hotel_common_models import (
+    RoomOccupancy,
+    Address,
+    RateType,
+    Money,
+    LineItemType,
+    PostpaidFeeLineItem,
+    PostpaidFees,
+    RoomRate,
 )
 from api.models.models import ProviderImages, ProviderHotel
 from api.view.exceptions import AvailabilityException, BookingException, AvailabilityErrorCode, BookingErrorCode
@@ -379,6 +387,7 @@ class PricelineAdapter(HotelAdapter):
             amenities=[],
             geolocation=GeoLocation(latitude=hotel_data["geo"]["latitude"], longitude=hotel_data["geo"]["longitude"]),
             chain_code=hotel_data["hotel_chain"]["chain_codes_t"],
+            chain_name=hotel_data["hotel_chain"]["name"],
             star_rating=hotel_data["star_rating"],
             property_description=hotel_data["hotel_description"],
         )

@@ -170,6 +170,7 @@ class HotelDetails(SimplenightModel):
     email: Optional[str] = None
     homepage_url: Optional[str] = None
     chain_code: Optional[str] = None
+    chain_name: Optional[str] = None
     star_rating: Optional[float] = None
     property_description: Optional[str] = None
 

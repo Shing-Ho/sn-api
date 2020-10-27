@@ -1,5 +1,10 @@
+from typing import Dict
+
+from cachetools.func import ttl_cache
+
 from api.hotel.models.booking_model import PaymentCardParameters, CardType, Payment, PaymentMethod
 from api.hotel.models.hotel_common_models import Address
+from api.models.models import ProviderChain
 
 
 def get_virtual_credit_card(test_mode=True) -> Payment:
@@ -20,3 +25,9 @@ def get_virtual_credit_card(test_mode=True) -> Payment:
         )
     else:
         raise NotImplemented("Virtual credit card does not exist in Production")
+
+
+@ttl_cache(maxsize=10, ttl=86400)
+def get_chain_mapping(provider_name) -> Dict[str, str]:
+    chain_mappings = ProviderChain.objects.filter(provider__name=provider_name)
+    return {chain_mappings.provider_code: chain_mappings.chain_name}

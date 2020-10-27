@@ -5,9 +5,10 @@ from typing import Tuple, List
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.utils import timezone
 
-from api.hotel.models.hotel_common_models import Address, BookingStatus
 from api.hotel.models.hotel_api_model import CancellationSummary
+from api.hotel.models.hotel_common_models import Address, BookingStatus
 
 
 def choices(cls: EnumMeta) -> List[Tuple]:
@@ -263,3 +264,17 @@ class ProviderHotel(models.Model):
             address2=self.address_line_2,
             postal_code=self.postal_code,
         )
+
+
+class ProviderChain(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "provider_chains"
+        indexes = [
+            models.Index(fields=["provider", "provider_code"]),
+        ]
+
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_code = models.TextField()
+    chain_name = models.TextField()
+    modified_date = models.DateTimeField(default=timezone.now)

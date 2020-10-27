@@ -72,6 +72,7 @@ class TestPricelineUnit(SimplenightTestCase):
         self.assertEqual(1, results.occupancy.adults)
 
         self.assertEqual("Best Western Plus Bayside Hotel", results.hotel_details.name)
+        self.assertEqual("Best Western International", results.hotel_details.chain_name)
         self.assertEqual("1717 Embarcadero", results.hotel_details.address.address1)
         self.assertEqual("Oakland", results.hotel_details.address.city)
         self.assertEqual("CA", results.hotel_details.address.province)

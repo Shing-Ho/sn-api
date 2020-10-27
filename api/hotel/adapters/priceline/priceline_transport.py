@@ -18,6 +18,7 @@ class PricelineTransport(Transport):
         PHOTOS_DOWNLOAD = "/shared/getBOF2.Downloads.Hotel.Photos"
         SALES_REPORT = "/shared/getTRK.Sales.Select.Hotel"
         AMENITIES = "/shared/getBOF2.Downloads.Hotel.Amenities"
+        HOTEL_CHAINS = "/shared/getBOF2.Downloads.Hotel.Chains"
 
     def __init__(self, test_mode=True, refid="10046"):
         super().__init__()
