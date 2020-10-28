@@ -118,7 +118,9 @@ def _enrich_images(adapter_hotel: AdapterHotel, provider_mapping: ProviderMappin
 
     iceportal_images = _get_iceportal_images_from_provider_code(provider_mapping)
     if iceportal_images:
-        adapter_hotel.hotel_details.photos = list(map(_convert_image, iceportal_images))
+        iceportal_images = list(map(_convert_image, iceportal_images))
+        adapter_hotel.hotel_details.thumbnail_url = iceportal_images[0]
+        adapter_hotel.hotel_details.photos = iceportal_images
 
 
 def _get_iceportal_images_from_provider_code(provider_mapping: ProviderMapping):
@@ -128,6 +130,8 @@ def _get_iceportal_images_from_provider_code(provider_mapping: ProviderMapping):
         return []
 
     images = ProviderImages.objects.filter(provider__name="iceportal", provider_code=iceportal_mapping.provider_code)
+    images.order_by("display_order")
+
     return images
 
 

@@ -23,7 +23,7 @@ def create_geoname(geoname_id, location_name, province, country_code, population
     return geoname
 
 
-def create_geoname_altname(pk_id, geoname, lang_code, name):
+def create_geoname_altname(pk_id, geoname, lang_code, name, is_preferred=False):
     alternate_name = GeonameAlternateName(
         alternate_name_id=pk_id,
         geoname=geoname,
@@ -31,6 +31,8 @@ def create_geoname_altname(pk_id, geoname, lang_code, name):
         iso_language_code=lang_code,
         name=name,
         is_colloquial=False,
+        is_short_name=False,
+        is_preferred=is_preferred,
     )
 
     alternate_name.save()
@@ -90,11 +92,7 @@ def create_airport(airport_id, airport_code, airport_name):
 
 
 def create_provider_hotel(provider, provider_code, hotel_name):
-    provider_hotel = ProviderHotel(
-        provider=provider,
-        hotel_name=hotel_name,
-        provider_code=provider_code
-    )
+    provider_hotel = ProviderHotel(provider=provider, hotel_name=hotel_name, provider_code=provider_code)
 
     provider_hotel.save()
     return provider_hotel

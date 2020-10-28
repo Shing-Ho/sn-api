@@ -32,7 +32,7 @@ class PricelineImageParser:
                 logger.exception("Error downloading images")
 
     def _download_images(self, limit, resume_key=None):
-        response = self.transport.photos_download(resume_key=resume_key, limit=limit)
+        response = self.transport.photos_download(resume_key=resume_key, limit=limit, image_size="large")
         return response["getSharedBOF2.Downloads.Hotel.Photos"]["results"]
 
     def _bulk_save_provider_images(self, provider_images):

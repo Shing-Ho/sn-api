@@ -25,7 +25,7 @@ class TestGeonamesCommand(TestCase):
         geonames_cmd.download_and_parse()
 
         self.assertEqual(4, Geoname.objects.count())
-        self.assertEqual(32, GeonameAlternateName.objects.count())
+        self.assertEqual(29, GeonameAlternateName.objects.count())
 
         location = Geoname.objects.get(geoname_id="5391959")
         self.assertEqual("San Francisco", location.location_name)

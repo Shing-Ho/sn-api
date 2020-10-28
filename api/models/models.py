@@ -31,6 +31,7 @@ class Geoname(models.Model):
     longitude = models.DecimalField(decimal_places=6, max_digits=10)
     timezone = models.CharField(max_length=40)
     population = models.IntegerField()
+    location_type = models.TextField(null=True)
 
 
 class GeonameAlternateName(models.Model):
@@ -43,6 +44,8 @@ class GeonameAlternateName(models.Model):
     alternate_name_id = models.IntegerField()
     iso_language_code = models.CharField(max_length=2)
     name = models.TextField()
+    is_preferred = models.BooleanField()
+    is_short_name = models.BooleanField()
     is_colloquial = models.BooleanField()
     iatacode = models.CharField(max_length=3)
 

@@ -166,6 +166,7 @@ GEONAMES_CITIES_URL = "https://download.geonames.org/export/dump/cities15000.zip
 GEONAMES_CITIES_FILENAME = "cities15000.txt"
 GEONAMES_ALT_NAMES_BASE_URL = "https://download.geonames.org/export/dump/alternatenames/"
 GEONAMES_SUPPORTED_LANGUAGES = {"en", "es", "fr", "de", "ja", "zh", "ko", "th"}
+GEONAMES_SUPPORTED_LOCATION_TYPES = {"PPL", "PPLA", "PPLA2", "PPLA3", "PPLA4", "PPLC", "PPLG"}
 
 
 class UTCFormatter(logging.Formatter):

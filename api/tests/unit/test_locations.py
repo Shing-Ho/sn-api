@@ -20,6 +20,8 @@ class TestLocationService(TestCase):
         geoname_lon = test_models.create_geoname(6, "London", "LON", "UK", population=200)
         geoname_man = test_models.create_geoname(7, "Manchester", "MAN", "UK", population=500)
 
+        geoname_lax = test_models.create_geoname(8, "Los Angeles", "LAX", "US", population=5000)
+
         test_models.create_geoname_altname(1, geoname_sfo, "en", "San Francisco")
         test_models.create_geoname_altname(1, geoname_sfo, "jp", "サンフランシスコ")
         test_models.create_geoname_altname(2, geoname_sea, "en", "Seattle")
@@ -29,6 +31,12 @@ class TestLocationService(TestCase):
 
         test_models.create_geoname_altname(6, geoname_lon, "en", "London")
         test_models.create_geoname_altname(7, geoname_man, "en", "Manchester")
+
+        test_models.create_geoname_altname(8, geoname_lax, "en", "LA")
+        test_models.create_geoname_altname(8, geoname_lax, "en", "Los Angeles2")
+        test_models.create_geoname_altname(8, geoname_lax, "en", "Los Angeles", is_preferred=True)
+        test_models.create_geoname_altname(8, geoname_lax, "en", "Los Angel")
+        test_models.create_geoname_altname(8, geoname_lax, "en", "Los Ang")
 
     def test_find_by_prefix(self):
         cities = location_service.find_by_prefix("San ")
@@ -136,3 +144,7 @@ class TestLocationService(TestCase):
 
         self.assertIsNone(location_service.find_provider_location(provider.name, 3))
 
+    def test_find_by_prefix_preferred_first(self):
+        cities = location_service.find_by_prefix("Los ")
+        self.assertEqual(1, len(cities))
+        self.assertEqual("Los Angeles", cities[0].location_name)

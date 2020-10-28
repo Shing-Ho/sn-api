@@ -18,6 +18,10 @@ class GeonameSettings:
         return settings.GEONAMES_SUPPORTED_LANGUAGES
 
     @property
+    def supported_location_types(self):
+        return settings.GEONAMES_SUPPORTED_LOCATION_TYPES
+
+    @property
     def geonames_cities_url(self):
         return settings.GEONAMES_CITIES_URL
 
@@ -48,8 +52,8 @@ class GeonamesParser:
         countries = set()
         logger.info("Parsing main cities DB")
 
-        for chunk in utils.chunks(self._download_parse_main_db(), 100):
-            models = [self._create_geoname_model(x) for x in chunk]
+        for chunk in utils.chunks(self._download_parse_main_db(), 1000):
+            models = list(filter(self._filter_main_db, map(self._create_geoname_model, chunk)))
             Geoname.objects.bulk_create(models)
 
             for model in models:
@@ -67,7 +71,7 @@ class GeonamesParser:
                 if alternate_name_model.geoname_id in cities:
                     models_to_save.append(alternate_name_model)
 
-                if len(models_to_save) > 100:
+                if len(models_to_save) > 1000:
                     GeonameAlternateName.objects.bulk_create(models_to_save)
                     models_to_save.clear()
 
@@ -82,11 +86,17 @@ class GeonamesParser:
 
         return self._download_and_parse(url, filename)
 
+    def _filter_main_db(self, geoname: Geoname):
+        return geoname.location_type in self.config.supported_location_types
+
     def _filter_alternate_names(self, alternate_name: GeonameAlternateName):
         if alternate_name.iso_language_code not in self.config.supported_languages:
             return False
 
         if alternate_name.is_colloquial:
+            return False
+
+        if alternate_name.is_short_name:
             return False
 
         return True
@@ -98,7 +108,9 @@ class GeonamesParser:
             geoname_id=row[1],
             iso_language_code=row[2],
             name=row[3],
-            is_colloquial=(row[6] == 1),
+            is_preferred=row[4] == "1",
+            is_short_name=row[5] == "1",
+            is_colloquial=row[6] == "1",
         )
 
     @staticmethod
@@ -111,7 +123,8 @@ class GeonamesParser:
             iso_country_code=row[8],
             province=row[10],
             population=row[14],
-            timezone=row[17]
+            timezone=row[17],
+            location_type=row[7]
         )
 
     @staticmethod
