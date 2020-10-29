@@ -354,6 +354,58 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         self.assertIn("Booking is not cancellable", str(e))
 
+    def test_cancel_twice(self):
+        booking, hotel_booking, traveler = self._create_booking(
+            first_name="John", last_name="Simplenight", provider_hotel_id="PROVIDER123"
+        )
+        simplenight_locator = RecordLocator.generate_record_locator(booking)
+
+        policy_one = HotelCancellationPolicy(
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.FREE_CANCELLATION.value,
+        )
+        policy_one.save()
+
+        payment_transaction = PaymentTransaction(
+            booking=booking,
+            currency="USD",
+            provider_name="test",
+            transaction_type=TransactionType.CHARGE,
+            transaction_amount=1.00,
+            charge_id="123"
+        )
+        payment_transaction.save()
+
+        mock_refund_transaction = PaymentTransaction(
+            charge_id="123",
+            transaction_amount=1.00,
+            transaction_type=TransactionType.REFUND,
+            provider_name="test",
+            currency="USD"
+        )
+
+        self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
+        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight", )
+
+        # First time cancelling, should succeed
+        with patch("api.payments.payment_service.refund_payment") as mock_refund:
+            mock_refund.return_value = mock_refund_transaction
+            with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
+                mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
+                response = booking_service.cancel_confirm(cancel_request)
+
+        self.assertTrue(response.cancelled)
+
+        # Second time cancelling, fails because already cancelled
+        with patch("api.payments.payment_service.refund_payment") as mock_refund:
+            mock_refund.return_value = mock_refund_transaction
+            with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
+                with pytest.raises(BookingException) as e:
+                    mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
+                    booking_service.cancel_confirm(cancel_request)
+
+        self.assertIn("Booking is not currently active", str(e))
+
     @staticmethod
     def _create_booking(first_name, last_name, provider_hotel_id) -> Sequence:
         provider = Provider.objects.get_or_create(name="Foo")[0]

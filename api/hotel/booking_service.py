@@ -253,13 +253,13 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
 
     try:
         booking = _find_booking_with_booking_id_and_lastname(simplenight_locator, last_name)
-        original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
-        hotel_bookings = list(HotelBooking.objects.filter(booking_id=booking.booking_id))
-        traveler = booking.lead_traveler
-
         booking_status = BookingStatus.from_value(booking.booking_status)
         if booking_status != BookingStatus.BOOKED:
             raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not currently active")
+
+        original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
+        hotel_bookings = list(HotelBooking.objects.filter(booking_id=booking.booking_id))
+        traveler = booking.lead_traveler
 
         cancellation_policy = _find_active_cancellation_policy(booking.booking_id)
         if not _is_cancellable(cancellation_policy):

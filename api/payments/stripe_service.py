@@ -63,7 +63,7 @@ def refund_token(charge_id: str, refund_amount: int, reason: str):
         return _payment_transaction(response, TransactionType.REFUND)
     except CardError as e:
         error_code = _get_error_mapping(e)
-        logger.exception("Exception whiel refunding Stripe card")
+        logger.exception("Exception while refunding Stripe card")
 
         raise PaymentException(error_type=error_code, detail=str(e))
 

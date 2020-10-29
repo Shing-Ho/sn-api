@@ -4,6 +4,7 @@ from django.http import HttpRequest
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework_api_key.permissions import KeyParser
 
+from api import logger
 from api.auth.authentication import OrganizationAPIKey
 from api.common.request_cache import get_request_cache
 
@@ -20,6 +21,8 @@ class RequestContextMiddleware(MiddlewareMixin):
         key_parser = KeyParser()
         api_key = key_parser.get(request)
         if api_key:
-            organization_api_key = OrganizationAPIKey.objects.get_from_key(api_key)
-            if organization_api_key:
+            try:
+                organization_api_key = OrganizationAPIKey.objects.get_from_key(api_key)
                 return organization_api_key.organization
+            except OrganizationAPIKey.DoesNotExist:
+                logger.error("Invalid API Key, could not set organization")

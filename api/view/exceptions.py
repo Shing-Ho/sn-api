@@ -5,6 +5,10 @@ from rest_framework.views import exception_handler
 from common.exceptions import AppException
 
 
+class AppErrorCode(Enum):
+    INVALID_API_KEY = "INVALID_API_KEY"
+
+
 class BookingErrorCode(Enum):
     PRICE_VERIFICATION = "PRICE_VERIFICATION"
     UNHANDLED_ERROR = "UNHANDLED_ERROR"
