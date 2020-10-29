@@ -67,7 +67,7 @@ class PricelineAdapter(HotelAdapter):
         request = self._create_city_search(search)
         logger.info(f"Initiating Priceline City Express Search: {request}")
 
-        response = self.transport.hotel_express(limit=50, **request)
+        response = self.transport.hotel_express(limit=250, **request)
         hotel_results = self._check_hotel_express_response_and_get_results(response)
 
         hotels = list(map(lambda result: self._create_hotel_from_response(search, result), hotel_results))
@@ -461,6 +461,15 @@ class PricelineAdapter(HotelAdapter):
             return [CancellationDetails(cancellation_type=CancellationSummary.NON_REFUNDABLE, description="",)]
 
         cancellation_detail_lst = []
+        priceline_cancellation_details = rate["cancellation_details"]
+        if not priceline_cancellation_details:
+            unknown_cancellation_policy = CancellationDetails(
+                cancellation_type=CancellationSummary.UNKNOWN_CANCELLATION_POLICY,
+                description="Cancellation policy unspecified"
+            )
+
+            return [unknown_cancellation_policy]
+
         for cancellation_detail_response in rate["cancellation_details"]:
             total_penalty = cancellation_detail_response["display_total_charges"]
             penalty_currency = cancellation_detail_response["display_currency"]
