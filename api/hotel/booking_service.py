@@ -26,6 +26,7 @@ from api.models.models import (
     HotelCancellationPolicy,
     ProviderHotel,
     PaymentTransaction,
+    RecordLocator,
 )
 from api.payments import payment_service
 from api.view.exceptions import BookingException, BookingErrorCode
@@ -41,6 +42,7 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
 
         traveler = _persist_traveler(book_request.customer)
         booking = _persist_booking_record(book_request, traveler)
+        simplenight_record_locator = RecordLocator.generate_record_locator(booking)
 
         logger.info(f"Saved booking {booking.booking_id}")
 
@@ -80,7 +82,7 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
         return HotelBookingResponse(
             api_version=1,
             transaction_id=book_request.transaction_id,
-            booking_id=str(booking.booking_id),
+            booking_id=simplenight_record_locator,
             status=Status(success=True, message="success"),
             reservation=reservation,
         )
@@ -149,14 +151,14 @@ def _persist_hotel(book_request, provider_rate_cache_payload, booking, reservati
 
 
 def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
-    booking_id = cancel_request.booking_id
+    simplenight_locator = cancel_request.booking_id
     last_name = cancel_request.last_name
 
     try:
-        booking = Booking.objects.get(booking_id=booking_id, lead_traveler__last_name__iexact=last_name)
-        hotel_booking = HotelBooking.objects.get(booking_id=booking_id)
+        booking = _find_booking_with_booking_id_and_lastname(simplenight_locator, last_name)
+        hotel_booking = HotelBooking.objects.get(booking_id=booking.booking_id)
+        policy = _find_active_cancellation_policy(booking.booking_id)
         itinerary = _create_itinerary(hotel_booking)
-        policy = _find_active_cancellation_policy(booking_id)
         cancellation_type = _get_cancellation_type(policy)
         description = _get_policy_description(policy)
 
@@ -177,7 +179,7 @@ def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
     except Booking.DoesNotExist:
         raise BookingException(
             BookingErrorCode.CANCELLATION_FAILURE,
-            f"Could not find booking with ID {booking_id} for last name {last_name}",
+            f"Could not find booking with ID {simplenight_locator} for last name {last_name}",
         )
     except HotelCancellationPolicy.DoesNotExist:
         raise BookingException(
@@ -246,20 +248,20 @@ def _get_itinerary_address(hotel_booking):
 
 
 def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
-    booking_id = cancel_request.booking_id
+    simplenight_locator = cancel_request.booking_id
     last_name = cancel_request.last_name
 
     try:
-        booking = Booking.objects.get(booking_id=booking_id, lead_traveler__last_name__iexact=last_name)
-        original_payment = PaymentTransaction.objects.get(booking_id=booking_id)
-        hotel_bookings = list(HotelBooking.objects.filter(booking_id=booking_id))
+        booking = _find_booking_with_booking_id_and_lastname(simplenight_locator, last_name)
+        original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
+        hotel_bookings = list(HotelBooking.objects.filter(booking_id=booking.booking_id))
         traveler = booking.lead_traveler
 
         booking_status = BookingStatus.from_value(booking.booking_status)
         if booking_status != BookingStatus.BOOKED:
             raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not currently active")
 
-        cancellation_policy = _find_active_cancellation_policy(booking_id)
+        cancellation_policy = _find_active_cancellation_policy(booking.booking_id)
         if not _is_cancellable(cancellation_policy):
             raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not cancellable")
 
@@ -283,17 +285,23 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
     except HotelBooking.DoesNotExist:
         raise BookingException(
             BookingErrorCode.CANCELLATION_FAILURE,
-            f"Could not find booking with ID {booking_id} for last name {last_name}",
+            f"Could not find booking with ID {simplenight_locator} for last name {last_name}",
         )
     except Booking.DoesNotExist:
         raise BookingException(
             BookingErrorCode.CANCELLATION_FAILURE,
-            f"Could not find booking with ID {booking_id} for last name {last_name}",
+            f"Could not find booking with ID {simplenight_locator} for last name {last_name}",
         )
     except HotelCancellationPolicy.DoesNotExist:
         raise BookingException(
             BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
         )
+
+
+def _find_booking_with_booking_id_and_lastname(booking_id, last_name):
+    return Booking.objects.get(
+        recordlocator__record_locator=booking_id, lead_traveler__last_name__iexact=last_name
+    )
 
 
 def adapter_cancel(hotel_booking: HotelBooking, traveler: Traveler):

@@ -2,15 +2,15 @@ from django.test import TestCase
 
 from api.hotel import hotel_mappings
 from api.models.models import ProviderMapping
-from api.tests.integration import test_models
+from api.tests import model_helper
 
 
 class TestHotelMappings(TestCase):
     def test_find_provider_hotel_mapping_id(self):
-        provider = test_models.create_provider(provider_name="foo")
-        test_models.create_provider_hotel(provider, "123", "Hotel 123")
-        test_models.create_provider_hotel(provider, "234", "Hotel 234")
-        test_models.create_provider_hotel(provider, "345", "Hotel 345")
+        provider = model_helper.create_provider(provider_name="foo")
+        model_helper.create_provider_hotel(provider, "123", "Hotel 123")
+        model_helper.create_provider_hotel(provider, "234", "Hotel 234")
+        model_helper.create_provider_hotel(provider, "345", "Hotel 345")
 
         ProviderMapping(provider=provider, giata_code="SN_123", provider_code="123").save()
         ProviderMapping(provider=provider, giata_code="SN_345", provider_code="345").save()
@@ -20,10 +20,10 @@ class TestHotelMappings(TestCase):
         self.assertIsNone(hotel_mappings.find_provider_hotel_id("SN_234", "foo"))
 
     def test_find_provider_hotel(self):
-        provider = test_models.create_provider(provider_name="foo")
-        test_models.create_provider_hotel(provider, "123", "Hotel 123")
-        test_models.create_provider_hotel(provider, "234", "Hotel 234")
-        test_models.create_provider_hotel(provider, "345", "Hotel 345")
+        provider = model_helper.create_provider(provider_name="foo")
+        model_helper.create_provider_hotel(provider, "123", "Hotel 123")
+        model_helper.create_provider_hotel(provider, "234", "Hotel 234")
+        model_helper.create_provider_hotel(provider, "345", "Hotel 345")
 
         ProviderMapping(provider=provider, giata_code="SN_123", provider_code="123").save()
         ProviderMapping(provider=provider, giata_code="SN_345", provider_code="345").save()
@@ -33,10 +33,10 @@ class TestHotelMappings(TestCase):
         self.assertIsNone(hotel_mappings.find_provider_hotel_id("SN_234", "foo"))
 
     def test_simplenight_to_provider_code_map(self):
-        provider = test_models.create_provider(provider_name="foo")
-        test_models.create_provider_hotel(provider, "123", "Hotel 123")
-        test_models.create_provider_hotel(provider, "234", "Hotel 234")
-        test_models.create_provider_hotel(provider, "345", "Hotel 345")
+        provider = model_helper.create_provider(provider_name="foo")
+        model_helper.create_provider_hotel(provider, "123", "Hotel 123")
+        model_helper.create_provider_hotel(provider, "234", "Hotel 234")
+        model_helper.create_provider_hotel(provider, "345", "Hotel 345")
 
         ProviderMapping(provider=provider, giata_code="SN_123", provider_code="123").save()
         ProviderMapping(provider=provider, giata_code="SN_345", provider_code="345").save()

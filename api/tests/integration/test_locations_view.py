@@ -1,4 +1,4 @@
-from api.tests.integration import test_models
+from api.tests import model_helper
 from api.tests.simplenight_api_testcase import SimplenightAPITestCase
 
 LOCATION_BY_PREFIX_ENDPOINT = "/api/v1/locations/prefix"
@@ -8,13 +8,13 @@ LOCATION_BY_ID_ENDPOINT = "/api/v1/locations/id"
 class TestLocationsView(SimplenightAPITestCase):
     def setUp(self) -> None:
         super().setUp()
-        geoname_one = test_models.create_geoname(1, "Test One", "FOO", "US")
-        geoname_two = test_models.create_geoname(2, "Test Two", "FOO", "CA")
+        geoname_one = model_helper.create_geoname(1, "Test One", "FOO", "US")
+        geoname_two = model_helper.create_geoname(2, "Test Two", "FOO", "CA")
 
-        test_models.create_geoname_altname(1, geoname_one, "en", "Test One")
-        test_models.create_geoname_altname(2, geoname_one, "es", "Prueba Uno")
-        test_models.create_geoname_altname(3, geoname_two, "en", "Test Two")
-        test_models.create_geoname_altname(4, geoname_two, "es", "Prueba Dos")
+        model_helper.create_geoname_altname(1, geoname_one, "en", "Test One")
+        model_helper.create_geoname_altname(2, geoname_one, "es", "Prueba Uno")
+        model_helper.create_geoname_altname(3, geoname_two, "en", "Test Two")
+        model_helper.create_geoname_altname(4, geoname_two, "es", "Prueba Dos")
 
     def test_locations_by_prefix(self):
         response = self.get(LOCATION_BY_PREFIX_ENDPOINT, prefix="Test")

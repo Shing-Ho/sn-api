@@ -18,8 +18,7 @@ from api.hotel.models.adapter_models import (
 )
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
 from api.models.models import CityMap, Booking, HotelCancellationPolicy
-from api.tests import test_objects
-from api.tests.integration import test_models
+from api.tests import test_objects, model_helper
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
 from api.view.exceptions import BookingException
@@ -28,11 +27,11 @@ from api.view.exceptions import BookingException
 class TestPricelineUnit(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
-        provider = test_models.create_provider("priceline")
+        provider = model_helper.create_provider("priceline")
         provider.save()
 
-        test_models.create_geoname(1, "San Francisco", "CA", "US", population=100)
-        test_models.create_provider_city(
+        model_helper.create_geoname(1, "San Francisco", "CA", "US", population=100)
+        model_helper.create_provider_city(
             provider.name, code="800046992", name="San Francisco", province="CA", country="US"
         )
 

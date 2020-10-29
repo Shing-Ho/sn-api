@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import random
+import string
 import uuid
 from enum import EnumMeta
 from typing import Tuple, List
@@ -8,6 +10,7 @@ from django.db import models
 from django.utils import timezone
 from django_enumfield import enum
 
+from api import logger
 from api.hotel.models.hotel_api_model import CancellationSummary
 from api.hotel.models.hotel_common_models import Address, BookingStatus
 
@@ -288,3 +291,29 @@ class ProviderChain(models.Model):
     provider_code = models.TextField()
     chain_name = models.TextField()
     modified_date = models.DateTimeField(default=timezone.now)
+
+
+class RecordLocator(models.Model):
+    record_locator = models.CharField(max_length=8)
+    booking = models.ForeignKey(to=Booking, on_delete=models.SET_NULL, null=True)
+
+    @classmethod
+    def generate_record_locator(cls, booking):
+        """
+        Generates an 8 digit record locator, ensuring one does not already exist in the DB
+        This is the identifier used by customers to find their Simplenight booking
+        """
+        valid_chars = string.ascii_uppercase + string.digits
+
+        for _ in range(10):
+            record_locator = str.join("", (random.choice(valid_chars) for _ in range(8)))
+            model, created = RecordLocator.objects.get_or_create(record_locator=record_locator)
+            if not created:
+                logger.info("Record locator already exists: " + record_locator)
+                continue
+
+            model.booking = booking
+            model.save()
+            return record_locator
+
+        raise RuntimeError("Could not find record locator")

@@ -13,19 +13,18 @@ from api.hotel.models.adapter_models import (
     AdapterCancelRequest,
 )
 from api.models.models import CityMap, HotelBooking
-from api.tests import test_objects
-from api.tests.integration import test_models
+from api.tests import test_objects, model_helper
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
 class TestPricelineIntegration(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.provider = test_models.create_provider("priceline")
+        self.provider = model_helper.create_provider("priceline")
         self.provider.save()
 
-        test_models.create_geoname(1, "San Francisco", "CA", "US", population=100)
-        test_models.create_provider_city(
+        model_helper.create_geoname(1, "San Francisco", "CA", "US", population=100)
+        model_helper.create_provider_city(
             self.provider.name, code="800046992", name="San Francisco", province="CA", country="US"
         )
 

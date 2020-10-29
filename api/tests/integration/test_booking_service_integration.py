@@ -1,5 +1,4 @@
 import decimal
-import uuid
 from collections import Sequence
 from datetime import datetime, date
 from unittest.mock import patch
@@ -8,10 +7,9 @@ import pytest
 from freezegun import freeze_time
 from stripe.error import CardError
 
-from api.hotel.models.adapter_models import AdapterCancelResponse
-from api.hotel.models.hotel_common_models import RoomOccupancy, Address
 from api.hotel import hotel_cache_service, booking_service
 from api.hotel.models import booking_model
+from api.hotel.models.adapter_models import AdapterCancelResponse
 from api.hotel.models.booking_model import (
     Payment,
     HotelBookingRequest,
@@ -20,6 +18,7 @@ from api.hotel.models.booking_model import (
     SubmitErrorType,
 )
 from api.hotel.models.hotel_api_model import CancellationSummary, CancelRequest
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address
 from api.models import models
 from api.models.models import (
     Booking,
@@ -29,7 +28,7 @@ from api.models.models import (
     Traveler,
     HotelBooking,
     HotelCancellationPolicy,
-    ProviderHotel, TransactionType,
+    ProviderHotel, TransactionType, RecordLocator,
 )
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
@@ -149,6 +148,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         booking, hotel_booking, traveler = self._create_booking(
             first_name="John", last_name="Simplenight", provider_hotel_id="SN123"
         )
+        simplenight_locator = RecordLocator.generate_record_locator(booking)
 
         policy_one = HotelCancellationPolicy(
             hotel_booking=hotel_booking,
@@ -175,7 +175,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         self._create_provider_hotel("Hotel Foo", "SN123")
 
-        cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight",)
+        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
         cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertTrue(cancel_response.is_cancellable)
@@ -191,6 +191,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         booking, hotel_booking, traveler = self._create_booking(
             first_name="John", last_name="Simplenight", provider_hotel_id="PROVIDER123"
         )
+        simplenight_locator = RecordLocator.generate_record_locator(booking)
 
         policy_one = HotelCancellationPolicy(
             hotel_booking=hotel_booking,
@@ -217,7 +218,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
 
-        cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight",)
+        cancel_request = CancelRequest(booking_id=str(simplenight_locator), last_name="Simplenight",)
         cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertFalse(cancel_response.is_cancellable)
@@ -241,14 +242,14 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         # Incorrect Last Name
         with pytest.raises(BookingException) as e:
-            cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="DoesNotExist")
+            cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="DoesNotExist")
             booking_service.cancel_lookup(cancel_request)
 
         self.assertIn("Could not find booking", str(e))
 
         # Incorrect Booking ID
         with pytest.raises(BookingException) as e:
-            cancel_request = CancelRequest(booking_id=str(uuid.uuid4()), last_name="Simplenight")
+            cancel_request = CancelRequest(booking_id="NOTEXISTS", last_name="Simplenight")
             booking_service.cancel_lookup(cancel_request)
 
         self.assertIn("Could not find booking", str(e))
@@ -257,6 +258,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         booking, hotel_booking, traveler = self._create_booking(
             first_name="John", last_name="Simplenight", provider_hotel_id="PROVIDER123"
         )
+        simplenight_locator = RecordLocator.generate_record_locator(booking)
 
         policy_one = HotelCancellationPolicy(
             hotel_booking=hotel_booking,
@@ -266,7 +268,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         policy_one.save()
 
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight",)
+        cancel_request = CancelRequest(booking_id=str(simplenight_locator), last_name="Simplenight",)
         cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertFalse(cancel_response.is_cancellable)
@@ -277,6 +279,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         booking, hotel_booking, traveler = self._create_booking(
             first_name="John", last_name="Simplenight", provider_hotel_id="PROVIDER123"
         )
+        simplenight_locator = RecordLocator.generate_record_locator(booking)
 
         payment_transaction = PaymentTransaction(
             booking=booking,
@@ -295,7 +298,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         policy_one.save()
 
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight", )
+        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight", )
 
         mock_refund_transaction = PaymentTransaction(
             charge_id="123",
@@ -325,6 +328,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         booking, hotel_booking, traveler = self._create_booking(
             first_name="John", last_name="Simplenight", provider_hotel_id="PROVIDER123"
         )
+        simplenight_locator = RecordLocator.generate_record_locator(booking)
 
         policy_one = HotelCancellationPolicy(
             hotel_booking=hotel_booking,
@@ -343,7 +347,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         payment_transaction.save()
 
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(booking_id=str(booking.booking_id), last_name="Simplenight", )
+        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight", )
 
         with pytest.raises(BookingException) as e:
             booking_service.cancel_confirm(cancel_request)

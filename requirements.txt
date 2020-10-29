@@ -13,6 +13,7 @@ marshmallow-dataclass[enum,union]
 django-cors-headers
 djangorestframework-api-key
 django_extensions
+django-sequences
 stripe
 haversine
 pandas
