@@ -1,5 +1,7 @@
 from api.settings import *
 
+LOGGING["root"] = {"handlers": ["console"], "level": "INFO"}
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
