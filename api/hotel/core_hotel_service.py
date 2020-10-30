@@ -31,13 +31,19 @@ def search_by_id(search_request: HotelSpecificSearch) -> Hotel:
     adapters_to_search = adapter_service.get_adapters_to_search(search_request)
     adapters = adapter_service.get_adapters(adapters_to_search)
 
-    adapter_search_request = _adapter_search_request(search_request, adapters[0].get_provider_name())
+    adapter_name = adapters[0].get_provider_name()
+    adapter_search_request = _adapter_search_request(search_request, adapter_name)
 
     if len(adapters) > 1:
         raise SimplenightApiException("More than one adapter specified in hotel specific search", 500)
 
-    hotel = adapters[0].search_by_id(adapter_search_request)
-    return _process_hotels(hotel)
+    try:
+        hotel = adapters[0].search_by_id(adapter_search_request)
+        return _process_hotels(hotel)
+    except Exception:
+        raise AvailabilityException(
+            f"Error: Exception while processing adapter {adapter_name}", error_type=AvailabilityErrorCode.PROVIDER_ERROR
+        )
 
 
 def details(hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:
