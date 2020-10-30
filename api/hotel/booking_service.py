@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Union
 
 from api import logger
@@ -165,7 +166,9 @@ def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
         description = _get_policy_description(policy)
 
         original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
-        refund_amount = original_payment.transaction_amount - policy.penalty_amount
+        refund_amount = _get_refund_amount(original_payment, policy)
+        penalty_amount = _get_penalty_amount(original_payment, policy)
+
         policy = CancelResponse(
             is_cancellable=_is_cancellable(policy),
             booking_status=BookingStatus.from_value(booking.booking_status),
@@ -175,10 +178,10 @@ def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
                 description=description,
                 begin_date=policy.begin_date,
                 end_date=policy.end_date,
-                penalty_amount=policy.penalty_amount,
-                penalty_currency=policy.penalty_currency,
+                penalty_amount=penalty_amount,
+                penalty_currency=original_payment.currency,
                 refund_amount=refund_amount,
-                refund_currency=policy.penalty_currency,
+                refund_currency=original_payment.currency,
             ),
         )
 
@@ -198,6 +201,24 @@ def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
         raise BookingException(
             BookingErrorCode.CANCELLATION_FAILURE, "Could not load hotel booking",
         )
+
+
+def _get_penalty_amount(payment: PaymentTransaction, policy: HotelCancellationPolicy) -> Decimal:
+    if policy.get_cancellation_type() == CancellationSummary.NON_REFUNDABLE:
+        penalty_amount = payment.transaction_amount
+    elif policy.get_cancellation_type() == CancellationSummary.FREE_CANCELLATION:
+        penalty_amount = 0
+    else:
+        penalty_amount = policy.penalty_amount
+
+    return penalty_amount
+
+
+def _get_refund_amount(payment: PaymentTransaction, policy: HotelCancellationPolicy) -> Decimal:
+    penalty_amount = _get_penalty_amount(payment, policy)
+
+    refund_amount = abs(payment.transaction_amount) - abs(penalty_amount)
+    return min(payment.transaction_amount, refund_amount)
 
 
 def _get_policy_description(policy):
@@ -223,7 +244,7 @@ def _get_cancellation_type(policy):
     return cancellation_type
 
 
-def _find_active_cancellation_policy(booking_id):
+def _find_active_cancellation_policy(booking_id) -> HotelCancellationPolicy:
     current_date = datetime.now().date()
     cancellation_policies = HotelCancellationPolicy.objects.filter(hotel_booking__booking__booking_id=booking_id)
     if len(cancellation_policies) == 1:
@@ -267,7 +288,6 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         if booking_status != BookingStatus.BOOKED:
             raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not currently active")
 
-        original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
         hotel_bookings = list(HotelBooking.objects.filter(booking_id=booking.booking_id))
         traveler = booking.lead_traveler
 
@@ -275,10 +295,19 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         if not _is_cancellable(cancellation_policy):
             raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not cancellable")
 
+        original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
+        refund_amount = _get_refund_amount(original_payment, cancellation_policy)
+        if refund_amount > 0 and original_payment.currency != cancellation_policy.penalty_currency:
+            raise BookingException(
+                BookingErrorCode.CANCELLATION_FAILURE, "Cancellation policy currency and booking do not match"
+            )
+
         adapter_cancellation_response = adapter_cancel(hotel_bookings[0], traveler)
 
-        refund_amount = abs(original_payment.transaction_amount - cancellation_policy.penalty_amount)
-        refund_amount = min(original_payment.transaction_amount, refund_amount)
+        if original_payment.currency != cancellation_policy.penalty_currency:
+            raise BookingException(
+                BookingErrorCode.CANCELLATION_FAILURE, "Cancellation policy currency and booking do not match"
+            )
 
         refund_transaction = payment_service.refund_payment(charge_id=original_payment.charge_id, amount=refund_amount)
 

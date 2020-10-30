@@ -7,6 +7,7 @@ from enum import Enum
 from typing import List, Any, Dict, Union
 
 import pytz
+from dateutil.relativedelta import relativedelta
 
 from api import logger
 from api.hotel.adapters import adapter_common
@@ -458,14 +459,27 @@ class PricelineAdapter(HotelAdapter):
         is_cancellable = distutils.util.strtobool(rate["is_cancellable"])
         if not is_cancellable:
             logger.debug(f"Found non-refundable rate for rate plan {rate['rate_plan_code']}")
-            return [CancellationDetails(cancellation_type=CancellationSummary.NON_REFUNDABLE, description="",)]
+            return [
+                CancellationDetails(
+                    cancellation_type=CancellationSummary.NON_REFUNDABLE,
+                    description="Non refundable room rate",
+                    begin_date=datetime.now() - relativedelta(years=1),
+                    end_date=datetime.now() + relativedelta(years=5),
+                    penalty_amount=total_rate,
+                    penalty_currency=rate["price_details"]["display_currency"],
+                )
+            ]
 
         cancellation_detail_lst = []
         priceline_cancellation_details = rate["cancellation_details"]
         if not priceline_cancellation_details:
             unknown_cancellation_policy = CancellationDetails(
                 cancellation_type=CancellationSummary.UNKNOWN_CANCELLATION_POLICY,
-                description="Cancellation policy unspecified"
+                description="Cancellation policy unspecified",
+                begin_date=datetime.now() - relativedelta(years=1),
+                end_date=datetime.now() + relativedelta(years=5),
+                penalty_amount=total_rate,
+                penalty_currency=rate["price_details"]["display_currency"],
             )
 
             return [unknown_cancellation_policy]

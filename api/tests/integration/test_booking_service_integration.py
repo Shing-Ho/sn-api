@@ -199,8 +199,6 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             description="Free cancellation before 9/1/2020",
             begin_date=date(2015, 1, 1),
             end_date=date(2020, 9, 1),
-            penalty_amount=decimal.Decimal(0),
-            penalty_currency="USD",
         )
 
         policy_two = HotelCancellationPolicy(
@@ -209,8 +207,6 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             description="Penalty after 11/2/2020",
             begin_date=date(2020, 9, 2),
             end_date=date(2025, 11, 1),
-            penalty_amount=decimal.Decimal("100.50"),
-            penalty_currency="USD",
         )
 
         policy_one.save()
@@ -285,7 +281,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self._create_payment_transaction(booking, 1.00)
 
         policy_one = HotelCancellationPolicy(
-            hotel_booking=hotel_booking, cancellation_type=CancellationSummary.FREE_CANCELLATION.value,
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.FREE_CANCELLATION.value,
+            penalty_amount=0,
+            penalty_currency="USD",
         )
         policy_one.save()
 
@@ -344,7 +343,9 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         simplenight_locator = RecordLocator.generate_record_locator(booking)
 
         policy_one = HotelCancellationPolicy(
-            hotel_booking=hotel_booking, cancellation_type=CancellationSummary.FREE_CANCELLATION.value,
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.FREE_CANCELLATION.value,
+            penalty_currency="USD",
         )
         policy_one.save()
 
@@ -410,6 +411,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             hotel_booking=hotel_booking,
             cancellation_type=CancellationSummary.PARTIAL_REFUND.value,
             penalty_amount=150.00,
+            penalty_currency="USD"
         )
         policy_one.save()
 
@@ -418,12 +420,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
 
         def mock_stripe_refund(**kwargs):
-            return {
-                "id": kwargs["charge"],
-                "amount": kwargs["amount"],
-                "currency": "USD",
-                "object": "foo"
-            }
+            return {"id": kwargs["charge"], "amount": kwargs["amount"], "currency": "USD", "object": "foo"}
 
         with patch("api.payments.stripe_service.stripe.Refund.create", mock_stripe_refund):
             with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:

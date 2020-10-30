@@ -209,6 +209,12 @@ class HotelCancellationPolicy(models.Model):
     penalty_amount = models.DecimalField(decimal_places=2, max_digits=8, default=0)
     penalty_currency = models.CharField(max_length=3, null=True)
 
+    def get_cancellation_type(self):
+        if not self.cancellation_type:
+            return None
+
+        return CancellationSummary.from_value(self.cancellation_type)
+
 
 class ProviderMapping(models.Model):
     class Meta:
