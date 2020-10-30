@@ -168,7 +168,7 @@ class PaymentTransaction(models.Model):
     charge_id = models.CharField(max_length=50)
     transaction_type = enum.EnumField(TransactionType)
     transaction_status = models.CharField(max_length=50)
-    transaction_amount = models.FloatField()
+    transaction_amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3)
     transaction_time = models.DateTimeField(auto_now_add=True)
     payment_token = models.CharField(max_length=128, null=True)
@@ -206,7 +206,7 @@ class HotelCancellationPolicy(models.Model):
     description = models.TextField(null=True)
     begin_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
-    penalty_amount = models.DecimalField(decimal_places=2, max_digits=8, null=True)
+    penalty_amount = models.DecimalField(decimal_places=2, max_digits=8, default=0)
     penalty_currency = models.CharField(max_length=3, null=True)
 
 

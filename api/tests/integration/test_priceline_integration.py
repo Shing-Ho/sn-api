@@ -82,6 +82,7 @@ class TestPricelineUnit(SimplenightTestCase):
         self.assertAlmostEqual(701.70, float(results.room_rates[0].total_base_rate.amount))
         self.assertEqual("USD", results.room_rates[0].total_base_rate.currency)
 
+    @freeze_time("2020-10-01")
     def test_hotel_express_location_search(self):
         transport = PricelineTransport(test_mode=True)
         priceline = PricelineAdapter(transport)

@@ -154,6 +154,8 @@ def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
     simplenight_locator = cancel_request.booking_id
     last_name = cancel_request.last_name
 
+    logger.info(f"Looking up cancellation policy for recloc={simplenight_locator}")
+
     try:
         booking = _find_booking_with_booking_id_and_lastname(simplenight_locator, last_name)
         hotel_booking = HotelBooking.objects.get(booking_id=booking.booking_id)
@@ -162,7 +164,9 @@ def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
         cancellation_type = _get_cancellation_type(policy)
         description = _get_policy_description(policy)
 
-        return CancelResponse(
+        original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
+        refund_amount = original_payment.transaction_amount - policy.penalty_amount
+        policy = CancelResponse(
             is_cancellable=_is_cancellable(policy),
             booking_status=BookingStatus.from_value(booking.booking_status),
             itinerary=itinerary,
@@ -173,8 +177,13 @@ def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
                 end_date=policy.end_date,
                 penalty_amount=policy.penalty_amount,
                 penalty_currency=policy.penalty_currency,
+                refund_amount=refund_amount,
+                refund_currency=policy.penalty_currency,
             ),
         )
+
+        logger.info(f"Found cancellation policy: {policy}")
+        return policy
 
     except Booking.DoesNotExist:
         raise BookingException(
@@ -252,6 +261,7 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
     last_name = cancel_request.last_name
 
     try:
+        logger.info(f"Confirming cancellation for recloc={simplenight_locator}")
         booking = _find_booking_with_booking_id_and_lastname(simplenight_locator, last_name)
         booking_status = BookingStatus.from_value(booking.booking_status)
         if booking_status != BookingStatus.BOOKED:
@@ -266,9 +276,11 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
             raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not cancellable")
 
         adapter_cancellation_response = adapter_cancel(hotel_bookings[0], traveler)
-        refund_transaction = payment_service.refund_payment(
-            charge_id=original_payment.charge_id, amount=original_payment.transaction_amount
-        )
+
+        refund_amount = abs(original_payment.transaction_amount - cancellation_policy.penalty_amount)
+        refund_amount = min(original_payment.transaction_amount, refund_amount)
+
+        refund_transaction = payment_service.refund_payment(charge_id=original_payment.charge_id, amount=refund_amount)
 
         refund_transaction.booking = booking
         refund_transaction.save()
@@ -276,10 +288,13 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         booking.booking_status = BookingStatus.CANCELLED.value
         booking.save()
 
+        logger.info(f"Successfully cancelled recloc {simplenight_locator}, booking ID {booking.booking_id}")
         return CancelConfirmResponse(
             booking_id=str(booking.booking_id),
+            record_locator=simplenight_locator,
             booking_status=BookingStatus.CANCELLED,
             cancelled=adapter_cancellation_response.is_cancelled,
+            amount_refunded=refund_amount,
         )
 
     except HotelBooking.DoesNotExist:
@@ -299,9 +314,7 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
 
 
 def _find_booking_with_booking_id_and_lastname(booking_id, last_name):
-    return Booking.objects.get(
-        recordlocator__record_locator=booking_id, lead_traveler__last_name__iexact=last_name
-    )
+    return Booking.objects.get(recordlocator__record_locator=booking_id, lead_traveler__last_name__iexact=last_name)
 
 
 def adapter_cancel(hotel_booking: HotelBooking, traveler: Traveler):
@@ -313,6 +326,8 @@ def adapter_cancel(hotel_booking: HotelBooking, traveler: Traveler):
     )
 
     adapter = adapter_service.get_adapter(hotel_booking.provider.name)
+
+    logger.info(f"Cancelling hotel booking {hotel_booking.hotel_booking_id} in adapter {adapter.get_provider_name()}")
     return adapter.cancel(adapter_cancel_request)
 
 

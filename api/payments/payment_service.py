@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import Union
 
+from api import logger
 from api.hotel.models.booking_model import Payment, PaymentMethod, SubmitErrorType
 from api.hotel.models.hotel_common_models import Money
 from api.models.models import PaymentTransaction
@@ -10,6 +11,8 @@ from common import utils
 
 
 def authorize_payment(amount: Money, payment: Payment, description: str) -> PaymentTransaction:
+    logger.info(f"Authorizing payment for {amount}")
+
     if payment.payment_method == PaymentMethod.PAYMENT_CARD:
         return _authorize_credit_card(amount, payment, description)
     elif payment.payment_method == PaymentMethod.PAYMENT_TOKEN:
@@ -42,6 +45,8 @@ def _authorize_payment_token(amount: Money, payment: Payment, description: str):
 
 
 def refund_payment(charge_id: str, amount: Union[Decimal, float]):
+    logger.info(f"Refunding charge_id {charge_id} for {amount}")
+
     payment_transaction = stripe_service.refund_token(
         charge_id=charge_id, refund_amount=utils.to_cents(amount), reason="requested_by_customer"
     )

@@ -141,6 +141,8 @@ class CancellationDetails(SimplenightModel):
     end_date: Optional[date] = None
     penalty_amount: Optional[decimal.Decimal] = None
     penalty_currency: Optional[str] = None
+    refund_amount: Optional[decimal.Decimal] = None
+    refund_currency: Optional[str] = None
 
 
 class RatePlan(SimplenightModel):
@@ -296,5 +298,7 @@ class CancelResponse(SimplenightModel):
 
 class CancelConfirmResponse(SimplenightModel):
     booking_id: str
+    record_locator: str
     booking_status: BookingStatus
     cancelled: bool
+    amount_refunded: decimal.Decimal
