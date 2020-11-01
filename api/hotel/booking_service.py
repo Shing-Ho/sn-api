@@ -292,9 +292,6 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         traveler = booking.lead_traveler
 
         cancellation_policy = _find_active_cancellation_policy(booking.booking_id)
-        if not _is_cancellable(cancellation_policy):
-            raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not cancellable")
-
         original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
         refund_amount = _get_refund_amount(original_payment, cancellation_policy)
         if refund_amount > 0 and original_payment.currency != cancellation_policy.penalty_currency:
@@ -309,11 +306,7 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
                 BookingErrorCode.CANCELLATION_FAILURE, "Cancellation policy currency and booking do not match"
             )
 
-        refund_transaction = payment_service.refund_payment(charge_id=original_payment.charge_id, amount=refund_amount)
-
-        refund_transaction.booking = booking
-        refund_transaction.save()
-
+        refund(booking, original_payment, refund_amount)
         booking.booking_status = BookingStatus.CANCELLED.value
         booking.save()
 
@@ -340,6 +333,16 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         raise BookingException(
             BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
         )
+
+
+def refund(booking, original_payment, refund_amount):
+    if refund_amount <= 0:
+        logger.info(f"Not processing refund for {refund_amount}")
+        return None
+
+    refund_transaction = payment_service.refund_payment(charge_id=original_payment.charge_id, amount=refund_amount)
+    refund_transaction.booking = booking
+    refund_transaction.save()
 
 
 def _find_booking_with_booking_id_and_lastname(booking_id, last_name):

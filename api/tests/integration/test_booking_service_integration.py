@@ -1,7 +1,7 @@
 import decimal
 from collections import Sequence
 from datetime import datetime, date
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import pytest
 from freezegun import freeze_time
@@ -322,7 +322,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         simplenight_locator = RecordLocator.generate_record_locator(booking)
 
         policy_one = HotelCancellationPolicy(
-            hotel_booking=hotel_booking, cancellation_type=CancellationSummary.NON_REFUNDABLE.value,
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.NON_REFUNDABLE.value,
+            penalty_amount="1.00",
+            penalty_currency="USD",
         )
         policy_one.save()
 
@@ -331,10 +334,21 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
         cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
 
-        with pytest.raises(BookingException) as e:
-            booking_service.cancel_confirm(cancel_request)
+        mock_refund = Mock()
+        with patch("api.payments.payment_service.refund_payment", mock_refund):
+            with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
+                mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
+                cancel_response = booking_service.cancel_confirm(cancel_request)
 
-        self.assertIn("Booking is not cancellable", str(e))
+        # No Refund Processed
+        mock_refund.assert_not_called()
+        refund_transactions = PaymentTransaction.objects.filter(
+            booking_id=booking.booking_id, transaction_type=TransactionType.REFUND
+        )
+        self.assertEqual(0, refund_transactions.count())
+
+        self.assertTrue(cancel_response.cancelled)
+        self.assertEqual(str(booking.booking_id), cancel_response.booking_id)
 
     def test_cancel_twice(self):
         booking, hotel_booking, traveler = self._create_booking(
@@ -411,7 +425,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             hotel_booking=hotel_booking,
             cancellation_type=CancellationSummary.PARTIAL_REFUND.value,
             penalty_amount=150.00,
-            penalty_currency="USD"
+            penalty_currency="USD",
         )
         policy_one.save()
 
