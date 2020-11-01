@@ -323,3 +323,18 @@ class RecordLocator(models.Model):
             return record_locator
 
         raise RuntimeError("Could not find record locator")
+
+
+class PropertyInfo(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "property_info"
+        indexes = [
+            models.Index(fields=["provider", "provider_code", "language_code", "type"]),
+        ]
+
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_code = models.TextField()
+    type = models.TextField()
+    language_code = models.CharField(max_length=2)
+    description = models.TextField()

@@ -1,14 +1,16 @@
-import aiohttp
 import requests
+from django.conf import settings
 from lxml import etree
 from requests.auth import HTTPBasicAuth
 
 from api import logger
-from api.models.models import Provider, ProviderHotel, ProviderMapping
+from api.models.models import Provider, ProviderHotel, ProviderMapping, PropertyInfo
+from common.utils import chunks
 
 
 class GiataParser:
     _MULTI_CODE_URL = "https://multicodes.giatamedia.com/webservice/rest/1.0/properties/multi"
+    _HOTEL_GUIDE_PROPERTIES_URL = "http://ghgml.giatamedia.com/webservice/rest/1.0/texts"
     _USERNAME = "justin|simplenight.com"
     _PASSWORD = "Developers!23"
 
@@ -18,7 +20,7 @@ class GiataParser:
         self.provider_map = self.get_provider_map()
 
     def get_properties(self, pagination_link=None):
-        endpoint = self._get_endpoint(pagination_link)
+        endpoint = self._get_multi_code_endpoint(pagination_link)
         response = requests.get(endpoint, auth=self.auth)
         if response.ok:
             return response.content
@@ -36,11 +38,74 @@ class GiataParser:
             properties_xmlstr = self.get_properties(pagination_link=pagination_link)
             pagination_link = self.parse_properties(properties_xmlstr)
 
+    def execute_hotel_guide(self):
+        existing_property_infos = PropertyInfo.objects.filter(provider=self.provider)
+
+        logger.info(f"Removing {existing_property_infos.count()} property info models")
+        existing_property_infos.delete()
+
+        for language_code in settings.GEONAMES_SUPPORTED_LANGUAGES:
+            self.execute_hotel_guide_for_language(language_code)
+
+    def execute_hotel_guide_for_language(self, language_code):
+        properties, pagination_link = self.get_hotel_guide_properties(language=language_code)
+        if not properties:
+            logger.error(f"Could not find any property mappings for language code {language_code}")
+            return
+
+        for property_id_chunk in chunks(properties, 500):
+            property_id_chunk = list(property_id_chunk)
+            self.get_and_persist_hotel_guides(language_code, property_id_chunk)
+
+        while pagination_link:
+            properties, pagination_link = self.get_hotel_guide_properties(language_code, pagination_link)
+            for property_id_chunk in chunks(properties, 500):
+                property_id_chunk = list(property_id_chunk)
+                self.get_and_persist_hotel_guides(language_code, property_id_chunk)
+
+    def get_hotel_guide_properties(self, language, pagination_link=None):
+        endpoint = self._get_hotel_guide_endpoint(language, pagination_link)
+        response = requests.get(endpoint, auth=self.auth)
+        if response.ok:
+            return self.parse_hotel_guide_properties(response.content)
+
+        return None, None
+
+    def parse_hotel_guide_properties(self, properties_xmlstr):
+        doc, pagination_link = self._parse_doc_and_return_pagination_link(properties_xmlstr)
+        properties = list(map(lambda x: x.get("giataId"), doc.findall(".//item")))
+        return properties, pagination_link
+
+    def get_and_persist_hotel_guides(self, language_code, property_codes):
+        payload = {"giataIds[]": property_codes}
+        endpoint = self._get_hotel_guide_endpoint(language_code)
+        response = requests.post(endpoint, data=payload, auth=self.auth)
+
+        if response.ok:
+            models = list(self.parse_hotel_guides(language_code, response.content))
+            logger.info(f"Persisting {len(models)} property info models")
+            PropertyInfo.objects.bulk_create(models)
+
+    def parse_hotel_guides(self, language_code, properties_xmlstr):
+        doc, _ = self._parse_doc_and_return_pagination_link(properties_xmlstr)
+        for item in doc.findall(".//item"):
+            giata_id = item.get("giataId")
+            for section in item.findall(".//section"):
+                title = self._find_with_default(section, "title")
+                description = self._find_with_default(section, "para")
+                if not title or not description:
+                    continue
+
+                yield PropertyInfo(
+                    provider=self.provider,
+                    provider_code=giata_id,
+                    language_code=language_code,
+                    type=title,
+                    description=description
+                )
+
     def parse_properties(self, properties_xmlstr):
-        parser = etree.XMLParser(recover=True, encoding="utf-8")
-        doc = etree.fromstring(properties_xmlstr, parser)
-        namespaces = {"xlink": "http://www.w3.org/1999/xlink"}
-        pagination_link = doc.xpath("./more/@xlink:href", namespaces=namespaces)
+        doc, pagination_link = self._parse_doc_and_return_pagination_link(properties_xmlstr)
         if len(pagination_link) > 0:
             pagination_link = pagination_link[0]
             logger.info("Next URL: " + pagination_link)
@@ -68,7 +133,7 @@ class GiataParser:
                 address_line_1=address_line_1,
                 address_line_2=address_line_2,
                 latitude=latitude,
-                longitude=longitude
+                longitude=longitude,
             )
 
             provider_hotels.append(model)
@@ -84,9 +149,7 @@ class GiataParser:
                     continue
 
                 mapping = ProviderMapping(
-                    provider=self.provider_map[provider_name],
-                    giata_code=giata_id,
-                    provider_code=property_code
+                    provider=self.provider_map[provider_name], giata_code=giata_id, provider_code=property_code
                 )
 
                 provider_mappings.append(mapping)
@@ -99,9 +162,26 @@ class GiataParser:
 
         return pagination_link
 
-    def _get_endpoint(self, pagination_link):
+    @staticmethod
+    def _parse_doc_and_return_pagination_link(properties_xmlstr):
+        parser = etree.XMLParser(recover=True, encoding="utf-8")
+        doc = etree.fromstring(properties_xmlstr, parser)
+        namespaces = {"xlink": "http://www.w3.org/1999/xlink"}
+        pagination_link = doc.xpath("./more/@xlink:href", namespaces=namespaces)
+
+        return doc, pagination_link
+
+    def _get_multi_code_endpoint(self, pagination_link=None):
+        return self._get_endpoint(self._MULTI_CODE_URL, pagination_link)
+
+    def _get_hotel_guide_endpoint(self, language, pagination_link=None):
+        endpoint = self._get_endpoint(self._HOTEL_GUIDE_PROPERTIES_URL, pagination_link)
+        return f"{endpoint}/{language}"
+
+    @staticmethod
+    def _get_endpoint(url, pagination_link):
         if not pagination_link:
-            return self._MULTI_CODE_URL
+            return url
 
         return pagination_link
 
@@ -112,4 +192,3 @@ class GiataParser:
             return child.text
 
         return default
-
