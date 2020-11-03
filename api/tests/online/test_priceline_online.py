@@ -1,27 +1,30 @@
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
-from api.booking import booking_service
-from api.common.models import RoomOccupancy
-from api.hotel import hotel_service
+from api.hotel.models.hotel_common_models import RoomOccupancy
+from api.hotel import hotel_service, booking_service
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
-from api.hotel.hotel_api_model import HotelLocationSearch
-from api.hotel.hotel_models import AdapterLocationSearch, AdapterOccupancy, AdapterHotelSearch
-from api.models.models import CityMap
-from api.tests import test_objects
-from api.tests.integration import test_models
+from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch
+from api.hotel.models.adapter_models import (
+    AdapterLocationSearch,
+    AdapterOccupancy,
+    AdapterHotelSearch,
+    AdapterCancelRequest,
+)
+from api.models.models import CityMap, HotelBooking
+from api.tests import test_objects, model_helper
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
 class TestPricelineIntegration(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.provider = test_models.create_provider("priceline")
+        self.provider = model_helper.create_provider("priceline")
         self.provider.save()
 
-        test_models.create_geoname(1, "San Francisco", "CA", "US", population=100)
-        test_models.create_provider_city(
+        model_helper.create_geoname(1, "San Francisco", "CA", "US", population=100)
+        model_helper.create_provider_city(
             self.provider.name, code="800046992", name="San Francisco", province="CA", country="US"
         )
 
@@ -151,3 +154,41 @@ class TestPricelineIntegration(SimplenightTestCase):
         self.assertIsNotNone(booking_response.reservation.locator.id)
         self.assertEqual("John", booking_response.reservation.customer.first_name)
         self.assertEqual("Simplenight", booking_response.reservation.customer.last_name)
+
+    def test_priceline_cancel(self):
+        transport = PricelineTransport(test_mode=True)
+        adapter = PricelineAdapter(transport=transport)
+
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=31)
+        search = HotelSpecificSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=RoomOccupancy(adults=1),
+            hotel_id="14479",
+            provider="priceline",
+        )
+
+        with patch("api.hotel.hotel_mappings.find_provider_hotel_id") as mock_find_provider_hotel_id:
+            mock_find_provider_hotel_id.return_value = "700243838"
+            with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
+                mock_find_simplenight_id.return_value = "14779"
+                availability_response = hotel_service.search_by_id(search)
+
+        self.assertIsNotNone(availability_response)
+        room_to_book = availability_response.room_types[0]
+        booking_request = test_objects.booking_request(rate_code=room_to_book.code)
+        booking_response = booking_service.book(booking_request)
+
+        hotel_booking = HotelBooking.objects.get(booking_id=booking_response.booking_id)
+
+        cancel_response = adapter.cancel(
+            AdapterCancelRequest(
+                hotel_id=hotel_booking.provider_hotel_id,
+                record_locator=hotel_booking.record_locator,
+                email_address=booking_request.customer.email,
+            )
+        )
+
+        self.assertTrue(cancel_response.is_cancelled)
+

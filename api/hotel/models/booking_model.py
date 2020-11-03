@@ -4,8 +4,9 @@ from typing import Optional, List
 
 from pydantic import Field
 
-from api.common.models import RoomOccupancy, Address, RoomRate, SimplenightModel
-from api.hotel.hotel_api_model import CancellationDetails
+from api.common.common_models import SimplenightModel
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RoomRate
+from api.hotel.models.hotel_api_model import CancellationDetails
 
 
 class SubmitErrorType(Enum):

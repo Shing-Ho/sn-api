@@ -2,15 +2,13 @@ import random
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
-from api.booking import booking_service
-from api.common.models import RateType
-from api.hotel import hotel_service, hotel_cache_service
-from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
-from api.hotel.hotel_api_model import (
+from api.hotel import hotel_service, hotel_cache_service, booking_service
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBeds
+from api.hotel.models.hotel_api_model import (
     HotelLocationSearch,
-    RoomOccupancy,
 )
-from api.hotel.hotel_models import AdapterLocationSearch, AdapterOccupancy
+from api.hotel.models.hotel_common_models import RoomOccupancy, RateType
+from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy
 from api.models.models import HotelBooking
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase

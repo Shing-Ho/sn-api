@@ -1,14 +1,14 @@
 from decimal import Decimal
 from typing import List
 
-from api.booking.booking_model import (
+from api.hotel.models.booking_model import (
     HotelBookingRequest,
     Traveler,
     Payment,
     PaymentCardParameters,
     HotelBookingResponse,
 )
-from api.common.models import Money, RoomOccupancy, RoomRate, RateType
+from api.hotel.models.hotel_common_models import RoomOccupancy, RateType, Money, RoomRate
 from api.hotel.converter.google_models import (
     GoogleHotelApiResponse,
     GoogleHotelSearchRequest,
@@ -30,7 +30,7 @@ from api.hotel.converter.google_models import (
     GoogleReservation,
     RoomParty,
 )
-from api.hotel.hotel_api_model import SimplenightAmenities, Image, HotelSpecificSearch, Hotel, CancellationPolicy
+from api.hotel.models.hotel_api_model import SimplenightAmenities, Image, HotelSpecificSearch, Hotel, CancellationPolicy
 
 
 def convert_hotel_specific_search(google_search_request: GoogleHotelSearchRequest) -> HotelSpecificSearch:

@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from api.locations import airports
 from api.models.models import Airport
-from api.tests.integration import test_models
+from api.tests import model_helper
 
 
 class TestAirports(TestCase):
@@ -27,9 +27,9 @@ class TestAirports(TestCase):
         self.assertEqual("America/Los_Angeles", sfo_airport.timezone)
 
     def test_map_airport_exact_city_match(self):
-        test_models.create_geoname(1, "San Francisco", "CA", "US")
-        test_models.create_geoname(2, "Seattle", "WA", "US")
-        test_models.create_geoname(3, "New York", "NY", "US")
+        model_helper.create_geoname(1, "San Francisco", "CA", "US")
+        model_helper.create_geoname(2, "Seattle", "WA", "US")
+        model_helper.create_geoname(3, "New York", "NY", "US")
 
         airport_mapping = airports.AirportMapping()
 
@@ -50,15 +50,15 @@ class TestAirports(TestCase):
         self.assertEqual("New York", mapped_city.location_name)
 
         # No mapping when multiple cities have same name in the country
-        test_models.create_geoname(4, "San Francisco", "XX", "US")
+        model_helper.create_geoname(4, "San Francisco", "XX", "US")
         airport_mapping = airports.AirportMapping()
         mapped_city = airport_mapping.map_airport(sfo_airport)
         self.assertIsNone(mapped_city)
 
     def test_map_latitude_and_longitude(self):
-        test_models.create_geoname(1, "Foo", "CA", "US", latitude=50.0, longitude=50.0)
-        test_models.create_geoname(2, "Bar", "WA", "US", latitude=49.0, longitude=49.0)
-        test_models.create_geoname(3, "Baz", "NY", "US", latitude=48.0, longitude=48.0)
+        model_helper.create_geoname(1, "Foo", "CA", "US", latitude=50.0, longitude=50.0)
+        model_helper.create_geoname(2, "Bar", "WA", "US", latitude=49.0, longitude=49.0)
+        model_helper.create_geoname(3, "Baz", "NY", "US", latitude=48.0, longitude=48.0)
 
         airport_mapping = airports.AirportMapping()
 

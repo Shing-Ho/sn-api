@@ -2,8 +2,8 @@ import stripe
 from stripe.error import CardError
 
 from api import logger
-from api.booking.booking_model import Payment, SubmitErrorType
-from api.models.models import PaymentTransaction
+from api.hotel.models.booking_model import Payment, SubmitErrorType
+from api.models.models import PaymentTransaction, TransactionType
 from api.view.exceptions import PaymentException
 from common import utils
 
@@ -29,14 +29,11 @@ STRIPE_ERROR_CODE_MAPPING = {
     "pickup_card": SubmitErrorType.PAYMENT_DECLINED,
     "processing_error": SubmitErrorType.PAYMENT_PROCESSOR_ERROR,
     "stolen_card": SubmitErrorType.PAYMENT_DECLINED,
-    "withdrawal_count_limit_exceeded": SubmitErrorType.PAYMENT_INSUFFICIENT
+    "withdrawal_count_limit_exceeded": SubmitErrorType.PAYMENT_INSUFFICIENT,
 }
 
 
 def charge_token(payment_token: str, payment_amount: int, currency_code: str, description: str):
-    if currency_code is None:
-        currency_code = "USD"
-
     logger.info(f"Charging Stripe: {payment_amount} {currency_code}")
     try:
         response = stripe.Charge.create(
@@ -47,11 +44,26 @@ def charge_token(payment_token: str, payment_amount: int, currency_code: str, de
             description=description,
         )
 
-        return _payment_transaction(payment_token, response)
+        return _payment_transaction(response, TransactionType.CHARGE, token=payment_token)
 
     except CardError as e:
         error_code = _get_error_mapping(e)
         logger.error("Exception while charging Stripe card", exc_info=e)
+
+        raise PaymentException(error_type=error_code, detail=str(e))
+
+
+def refund_token(charge_id: str, refund_amount: int, reason: str):
+    if not charge_id:
+        raise PaymentException(SubmitErrorType.PAYMENT_INVALID, "Charge ID is null")
+
+    logger.info(f"Refunding Stripe: {refund_amount}")
+    try:
+        response = stripe.Refund.create(api_key=STRIPE_API_KEY, charge=charge_id, amount=refund_amount, reason=reason)
+        return _payment_transaction(response, TransactionType.REFUND)
+    except CardError as e:
+        error_code = _get_error_mapping(e)
+        logger.exception("Exception while refunding Stripe card")
 
         raise PaymentException(error_type=error_code, detail=str(e))
 
@@ -79,16 +91,16 @@ def _is_success(stripe_response):
     return stripe_response["captured"] is True
 
 
-def _payment_transaction(token, stripe_response):
-    transaction = PaymentTransaction()
-    transaction.provider_name = "stripe"
-    transaction.currency = str(stripe_response["currency"]).upper()
-    transaction.charge_id = str(stripe_response["id"])
-    transaction.transaction_amount = utils.to_dollars(stripe_response["amount"])
-    transaction.transaction_status = str(stripe_response["object"])
-    transaction.payment_token = token
-
-    return transaction
+def _payment_transaction(stripe_response, transaction_type: TransactionType, token=None) -> PaymentTransaction:
+    return PaymentTransaction(
+        provider_name="stripe",
+        currency=str(stripe_response["currency"]).upper(),
+        charge_id=str(stripe_response["id"]),
+        transaction_amount=utils.to_dollars(stripe_response["amount"]),
+        transaction_status=str(stripe_response["object"]),
+        transaction_type=transaction_type,
+        payment_token=token,
+    )
 
 
 def _get_error_mapping(error: CardError):

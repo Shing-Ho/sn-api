@@ -15,10 +15,14 @@ ENDPOINT_MAPPING = {
         "result_key": "getSharedBOF2.Downloads.Hotel.Photos",
         "result_sub_key": "photos",
     },
+    PricelineTransport.Endpoint.HOTEL_CHAINS: {
+        "result_key": "getSharedBOF2.Downloads.Hotel.Chains",
+        "result_sub_key": "chains",
+    },
 }
 
 
-def load_data(transport: PricelineTransport, endpoint: PricelineTransport.Endpoint, limit=1000):
+def load_data(transport: PricelineTransport, endpoint: PricelineTransport.Endpoint, chunk_size=10000):
     num_loaded = 0
     resume_key = None
     result_key = ENDPOINT_MAPPING[endpoint]["result_key"]
@@ -26,16 +30,16 @@ def load_data(transport: PricelineTransport, endpoint: PricelineTransport.Endpoi
 
     while True:
         logger.info(f"Making hotels download request to Priceline with resume key {resume_key}")
-        response = transport.get(endpoint=endpoint, resume_key=resume_key, limit=limit)
+        response = transport.get(endpoint=endpoint, resume_key=resume_key, limit=chunk_size)
         resume_key = response[result_key]["results"]["resume_key"]
         total_records = response[result_key]["results"]["total_records"]
         result_batch = response[result_key]["results"][result_sub_key]
         num_loaded += len(result_batch)
 
-        logger.info(f"Retrieved {num_loaded} of {total_records} records")
+        logger.info(f"Retrieved {num_loaded}, {total_records-num_loaded} remaining")
 
         yield result_batch
 
-        if not resume_key:
+        if not resume_key or num_loaded == total_records:
             logger.info("Loading complete.")
-            break
+            return

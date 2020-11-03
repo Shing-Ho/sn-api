@@ -1,15 +1,16 @@
 import abc
 from typing import List
 
-from api.booking.booking_model import HotelBookingRequest, Reservation
-from api.common.models import RoomRate
+from api.hotel.models.booking_model import HotelBookingRequest, Reservation
+from api.hotel.models.hotel_common_models import RoomRate
 from api.hotel import hotel_mappings
-from api.hotel.hotel_api_model import (
+from api.hotel.models.hotel_api_model import (
     HotelSpecificSearch,
     AdapterHotel,
     HotelDetails,
 )
-from api.hotel.hotel_models import AdapterHotelSearch, AdapterLocationSearch
+from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterLocationSearch, AdapterCancelRequest, \
+    AdapterCancelResponse
 from api.locations import location_service
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
@@ -38,6 +39,11 @@ class HotelAdapter(abc.ABC):
     @abc.abstractmethod
     def recheck(self, room_rate: RoomRate) -> RoomRate:
         """Given a list of RoomRates, recheck prices, and return verified RoomRates"""
+        pass
+
+    @abc.abstractmethod
+    def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
+        """Given an adapter record locator, cancel a booking."""
         pass
 
     @classmethod

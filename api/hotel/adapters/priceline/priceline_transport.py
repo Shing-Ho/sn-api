@@ -11,11 +11,14 @@ class PricelineTransport(Transport):
         HOTEL_EXPRESS = "/hotel/getExpress.Results"
         HOTEL_DETAILS = "/hotel/getHotelDetails"
         EXPRESS_BOOK = "/hotel/getExpress.Book"
+        EXPRESS_LOOKUP = "/hotel/getExpress.LookUp"
+        EXPRESS_CANCEL = "/hotel/getExpress.Cancel"
         EXPRESS_CONTRACT = "/hotel/getExpress.Contract"
         HOTELS_DOWNLOAD = "/shared/getBOF2.Downloads.Hotel.Hotels"
         PHOTOS_DOWNLOAD = "/shared/getBOF2.Downloads.Hotel.Photos"
         SALES_REPORT = "/shared/getTRK.Sales.Select.Hotel"
         AMENITIES = "/shared/getBOF2.Downloads.Hotel.Amenities"
+        HOTEL_CHAINS = "/shared/getBOF2.Downloads.Hotel.Chains"
 
     def __init__(self, test_mode=True, refid="10046"):
         super().__init__()
@@ -38,9 +41,6 @@ class PricelineTransport(Transport):
             logger.error(f"Error while searching Priceline: {response.text}")
 
         return response.json()
-
-    def get2(self, endpoint: Endpoint, **params):
-        return self.get(endpoint, **params)
 
     def post(self, endpoint: Endpoint, **params):
         url = self.endpoint(endpoint)
@@ -65,6 +65,12 @@ class PricelineTransport(Transport):
 
     def express_contract(self, **params):
         return self.post(self.Endpoint.EXPRESS_CONTRACT, **params)
+
+    def express_lookup(self, **params):
+        return self.post(self.Endpoint.EXPRESS_LOOKUP, **params)
+
+    def express_cancel(self, **params):
+        return self.post(self.Endpoint.EXPRESS_CANCEL, **params)
 
     def hotels_download(self, **params):
         return self.get(self.Endpoint.HOTELS_DOWNLOAD, **params)

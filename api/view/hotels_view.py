@@ -4,13 +4,12 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiThrottle
-from api.booking import booking_service
-from api.booking.booking_model import HotelBookingRequest
-from api.common.models import from_json
+from api.hotel.models.booking_model import HotelBookingRequest
+from api.common.common_models import from_json
 from api.common.request_cache import get_request_cache
-from api.hotel import hotel_service, google_hotel_service
+from api.hotel import hotel_service, google_hotel_service, booking_service
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
-from api.hotel.hotel_api_model import HotelLocationSearch, HotelSpecificSearch
+from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancelRequest
 from api.views import _response
 
 
@@ -45,6 +44,20 @@ class HotelViewSet(viewsets.ViewSet):
         booking_response = booking_service.book(booking_request)
 
         return _response(booking_response)
+
+    @action(detail=False, url_path="cancel", methods=["POST"], name="Cancel Booking")
+    def cancel_lookup(self, request):
+        cancel_request = from_json(request.data, CancelRequest)
+        cancel_response = booking_service.cancel_lookup(cancel_request)
+
+        return _response(cancel_response)
+
+    @action(detail=False, url_path="cancel-confirm", methods=["POST"], name="Confirm Cancel Booking")
+    def cancel_confirm(self, request):
+        cancel_request = from_json(request.data, CancelRequest)
+        cancel_response = booking_service.cancel_confirm(cancel_request)
+
+        return _response(cancel_response)
 
     @action(detail=False, url_path="google/booking", methods=["POST"], name="GoogleHotel Booking")
     def booking_google(self, request):

@@ -7,30 +7,28 @@ from enum import Enum
 from typing import List, Any, Dict, Union
 
 import pytz
+from dateutil.relativedelta import relativedelta
 
 from api import logger
-from api.booking.booking_model import (
-    HotelBookingRequest,
-    Customer,
-    Reservation,
-    Locator,
-)
-from api.common.models import (
-    RoomRate,
-    RoomOccupancy,
-    Money,
-    RateType,
-    Address,
-    PostpaidFees,
-    LineItemType,
-    PostpaidFeeLineItem,
-)
 from api.hotel.adapters import adapter_common
 from api.hotel.adapters.priceline import priceline_amenity_mappings
 from api.hotel.adapters.priceline.priceline_info import PricelineInfo
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_api_model import (
+from api.hotel.models.adapter_models import (
+    AdapterLocationSearch,
+    AdapterBaseSearch,
+    AdapterHotelSearch,
+    AdapterCancelRequest,
+    AdapterCancelResponse,
+)
+from api.hotel.models.booking_model import (
+    HotelBookingRequest,
+    Customer,
+    Reservation,
+    Locator,
+)
+from api.hotel.models.hotel_api_model import (
     HotelDetails,
     AdapterHotel,
     RoomType,
@@ -43,9 +41,18 @@ from api.hotel.hotel_api_model import (
     ImageType,
     CancellationDetails,
 )
-from api.hotel.hotel_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelSearch
+from api.hotel.models.hotel_common_models import (
+    RoomOccupancy,
+    Address,
+    RateType,
+    Money,
+    LineItemType,
+    PostpaidFeeLineItem,
+    PostpaidFees,
+    RoomRate,
+)
 from api.models.models import ProviderImages, ProviderHotel
-from api.view.exceptions import AvailabilityException, BookingException, AvailabilityErrorCode
+from api.view.exceptions import AvailabilityException, BookingException, AvailabilityErrorCode, BookingErrorCode
 
 
 class PricelineAdapter(HotelAdapter):
@@ -61,7 +68,7 @@ class PricelineAdapter(HotelAdapter):
         request = self._create_city_search(search)
         logger.info(f"Initiating Priceline City Express Search: {request}")
 
-        response = self.transport.hotel_express(limit=50, **request)
+        response = self.transport.hotel_express(limit=250, **request)
         hotel_results = self._check_hotel_express_response_and_get_results(response)
 
         hotels = list(map(lambda result: self._create_hotel_from_response(search, result), hotel_results))
@@ -85,6 +92,24 @@ class PricelineAdapter(HotelAdapter):
     def details(self, *args) -> HotelDetails:
         pass
 
+    def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
+        # Priceline first requires a lookup call, to retrieve a "Cancel action"
+        lookup_response = self.transport.express_lookup(
+            booking_id=cancel_request.record_locator, email=cancel_request.email_address,
+        )
+        lookup_response = self._check_express_lookup_response_and_get_results(lookup_response)
+        cancellation_code = lookup_response["result"]["actions"]["cancel"]
+        logger.info(f"Successfully looked up booking {cancel_request.record_locator}")
+
+        cancel_response = self.transport.express_cancel(ppn_bundle=cancellation_code)
+        cancel_response = self._check_express_cancel_response_and_get_results(cancel_response)
+
+        if cancel_response["result"]["status"] != "Cancelled":
+            logger.error(f"Could not cancel booking {cancel_request}: {cancel_response}")
+            raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Could not cancel booking")
+
+        return AdapterCancelResponse(is_cancelled=True)
+
     def room_details(self, ppn_bundle: str) -> Dict:
         params = {"ppn_bundle": ppn_bundle}
         response = self.transport.express_contract(**params)
@@ -101,6 +126,46 @@ class PricelineAdapter(HotelAdapter):
             "rate_data": hotel_data["room_data"][0]["rate_data"][0],
             "room_id": hotel_data["room_data"][0]["id"],
         }
+
+    def booking(self, book_request: HotelBookingRequest) -> Reservation:
+        params = self._create_booking_params(book_request.customer, book_request.room_code)
+        response = self.transport.express_book(**params)
+
+        if "getHotelExpress.Book" not in response:
+            raise BookingException(PricelineErrorCodes.GENERIC_BOOKING_ERROR, response)
+
+        results = response["getHotelExpress.Book"]["results"]
+        if results["status"] != "Success":
+            raise BookingException(PricelineErrorCodes.BOOKING_FAILURE, response)
+
+        booking_data = results["book_data"]
+        contract_data = results["contract_data"]
+        booking_locator = booking_data["itinerary"]["id"]
+        room_data = booking_data["itinerary_details"]["room_data"]
+        hotel_locators = [Locator(id=room["confirmation_code"]) for room in room_data]
+
+        checkin = date.fromisoformat(booking_data["itinerary"]["check_in"])
+        checkout = date.fromisoformat(booking_data["itinerary"]["check_out"])
+
+        contract_room_data = contract_data["hotel_data"][0]["room_data"][0]
+        contract_room_id = contract_room_data["id"]
+        booked_rate_data = contract_room_data["rate_data"][0]
+        booked_rate_plan = self._create_rate_plans(contract_data["hotel_data"][0])[0]
+        booked_room_rate = self._create_room_rate(contract_room_id, booked_rate_data, booked_rate_plan)
+
+        cancellation_details = self._parse_cancellation_details(booked_rate_data)
+
+        return Reservation(
+            locator=Locator(id=booking_locator),
+            hotel_locator=hotel_locators,
+            hotel_id=book_request.hotel_id,
+            checkin=checkin,
+            checkout=checkout,
+            customer=book_request.customer,
+            traveler=book_request.traveler,
+            room_rate=booked_room_rate,
+            cancellation_details=cancellation_details,
+        )
 
     def _get_postpaid_fees_from_contract_response(self, contract_response):
         results = contract_response["getHotelExpress.Contract"]["results"]
@@ -142,46 +207,6 @@ class PricelineAdapter(HotelAdapter):
     def _parse_postpaid_fee_type(fee_type):
         default = LineItemType.UNKNOWN_FEES
         return {}.get(fee_type, default)
-
-    def booking(self, book_request: HotelBookingRequest) -> Reservation:
-        params = self._create_booking_params(book_request.customer, book_request.room_code)
-        response = self.transport.express_book(**params)
-
-        if "getHotelExpress.Book" not in response:
-            raise BookingException(PricelineErrorCodes.GENERIC_BOOKING_ERROR, response)
-
-        results = response["getHotelExpress.Book"]["results"]
-        if results["status"] != "Success":
-            raise BookingException(PricelineErrorCodes.BOOKING_FAILURE, response)
-
-        booking_data = results["book_data"]
-        contract_data = results["contract_data"]
-        booking_locator = booking_data["itinerary"]["id"]
-        room_data = booking_data["itinerary_details"]["room_data"]
-        hotel_locators = [Locator(id=room["confirmation_code"]) for room in room_data]
-
-        checkin = date.fromisoformat(booking_data["itinerary"]["check_in"])
-        checkout = date.fromisoformat(booking_data["itinerary"]["check_out"])
-
-        contract_room_data = contract_data["hotel_data"][0]["room_data"][0]
-        contract_room_id = contract_room_data["id"]
-        booked_rate_data = contract_room_data["rate_data"][0]
-        booked_rate_plan = self._create_rate_plans(contract_data["hotel_data"][0])[0]
-        booked_room_rate = self._create_room_rate(contract_room_id, booked_rate_data, booked_rate_plan)
-
-        cancellation_details = self._parse_cancellation_details(booked_rate_data)
-
-        return Reservation(
-            locator=Locator(id=booking_locator),
-            hotel_locator=hotel_locators,
-            hotel_id=book_request.hotel_id,
-            checkin=checkin,
-            checkout=checkout,
-            customer=book_request.customer,
-            traveler=book_request.traveler,
-            room_rate=booked_room_rate,
-            cancellation_details=cancellation_details,
-        )
 
     def _apply_room_details(self, hotel: AdapterHotel):
         """Disabled, because postpaid fees are in initial hotel results"""
@@ -308,13 +333,21 @@ class PricelineAdapter(HotelAdapter):
             error_message = results["error"]["status"]
             raise AvailabilityException(error_type=AvailabilityErrorCode.PROVIDER_ERROR, detail=error_message)
 
-        return results["results"]["hotel_data"]
+        return results["results"]
 
     def _check_hotel_express_response_and_get_results(self, response):
-        return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Results")
+        results = self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Results")
+        return results["hotel_data"]
 
     def _check_hotel_express_contract_response_and_get_results(self, response):
-        return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Contract")
+        results = self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Contract")
+        return results["hotel_data"]
+
+    def _check_express_lookup_response_and_get_results(self, response):
+        return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.LookUp")
+
+    def _check_express_cancel_response_and_get_results(self, response):
+        return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Cancel")
 
     def _create_hotel_from_response(self, search, hotel_response):
         room_types = self._create_room_types(hotel_response)
@@ -355,6 +388,7 @@ class PricelineAdapter(HotelAdapter):
             amenities=[],
             geolocation=GeoLocation(latitude=hotel_data["geo"]["latitude"], longitude=hotel_data["geo"]["longitude"]),
             chain_code=hotel_data["hotel_chain"]["chain_codes_t"],
+            chain_name=hotel_data["hotel_chain"]["name"],
             star_rating=hotel_data["star_rating"],
             property_description=hotel_data["hotel_description"],
         )
@@ -425,9 +459,31 @@ class PricelineAdapter(HotelAdapter):
         is_cancellable = distutils.util.strtobool(rate["is_cancellable"])
         if not is_cancellable:
             logger.debug(f"Found non-refundable rate for rate plan {rate['rate_plan_code']}")
-            return [CancellationDetails(cancellation_type=CancellationSummary.NON_REFUNDABLE, description="",)]
+            return [
+                CancellationDetails(
+                    cancellation_type=CancellationSummary.NON_REFUNDABLE,
+                    description="Non refundable room rate",
+                    begin_date=datetime.now() - relativedelta(years=1),
+                    end_date=datetime.now() + relativedelta(years=5),
+                    penalty_amount=total_rate,
+                    penalty_currency=rate["price_details"]["display_currency"],
+                )
+            ]
 
         cancellation_detail_lst = []
+        priceline_cancellation_details = rate["cancellation_details"]
+        if not priceline_cancellation_details:
+            unknown_cancellation_policy = CancellationDetails(
+                cancellation_type=CancellationSummary.UNKNOWN_CANCELLATION_POLICY,
+                description="Cancellation policy unspecified",
+                begin_date=datetime.now() - relativedelta(years=1),
+                end_date=datetime.now() + relativedelta(years=5),
+                penalty_amount=total_rate,
+                penalty_currency=rate["price_details"]["display_currency"],
+            )
+
+            return [unknown_cancellation_policy]
+
         for cancellation_detail_response in rate["cancellation_details"]:
             total_penalty = cancellation_detail_response["display_total_charges"]
             penalty_currency = cancellation_detail_response["display_currency"]

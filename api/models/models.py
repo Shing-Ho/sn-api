@@ -1,12 +1,18 @@
 #!/usr/bin/env python
+import random
+import string
 import uuid
-from enum import Enum, EnumMeta
+from enum import EnumMeta
 from typing import Tuple, List
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.utils import timezone
+from django_enumfield import enum
 
-from api.hotel.hotel_api_model import CancellationSummary
+from api import logger
+from api.hotel.models.hotel_api_model import CancellationSummary
+from api.hotel.models.hotel_common_models import Address, BookingStatus
 
 
 def choices(cls: EnumMeta) -> List[Tuple]:
@@ -28,6 +34,7 @@ class Geoname(models.Model):
     longitude = models.DecimalField(decimal_places=6, max_digits=10)
     timezone = models.CharField(max_length=40)
     population = models.IntegerField()
+    location_type = models.TextField(null=True)
 
 
 class GeonameAlternateName(models.Model):
@@ -40,6 +47,8 @@ class GeonameAlternateName(models.Model):
     alternate_name_id = models.IntegerField()
     iso_language_code = models.CharField(max_length=2)
     name = models.TextField()
+    is_preferred = models.BooleanField()
+    is_short_name = models.BooleanField()
     is_colloquial = models.BooleanField()
     iatacode = models.CharField(max_length=3)
 
@@ -114,22 +123,6 @@ class CityMap(models.Model):
     )
 
 
-class PaymentTransaction(models.Model):
-    class Meta:
-        app_label = "api"
-        db_table = "pmt_transaction"
-
-    sn_transaction_id = models.IntegerField(null=True)
-    provider_name = models.CharField(max_length=32)
-    charge_id = models.CharField(max_length=50)
-    transaction_type = models.CharField(max_length=12)
-    transaction_status = models.CharField(max_length=50)
-    transaction_amount = models.FloatField()
-    currency = models.CharField(max_length=3)
-    transaction_time = models.DateTimeField(auto_now_add=True)
-    payment_token = models.CharField(max_length=128)
-
-
 class Traveler(models.Model):
     class Meta:
         app_label = "api"
@@ -147,12 +140,6 @@ class Traveler(models.Model):
     address_line_2 = models.TextField(null=True)
 
 
-class BookingStatus(Enum):
-    BOOKED = "booked"
-    CANCELLED = "cancelled"
-    PENDING = "pending"
-
-
 class Booking(models.Model):
     class Meta:
         app_label = "api"
@@ -165,6 +152,28 @@ class Booking(models.Model):
     lead_traveler = models.ForeignKey(Traveler, on_delete=models.CASCADE)
 
 
+class TransactionType(enum.Enum):
+    CHARGE = 0
+    REFUND = 1
+
+
+class PaymentTransaction(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "payment_transaction"
+
+    sn_transaction_id = models.IntegerField(null=True)
+    booking = models.ForeignKey(Booking, null=True, on_delete=models.SET_NULL)
+    provider_name = models.CharField(max_length=32)
+    charge_id = models.CharField(max_length=50)
+    transaction_type = enum.EnumField(TransactionType)
+    transaction_status = models.CharField(max_length=50)
+    transaction_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3)
+    transaction_time = models.DateTimeField(auto_now_add=True)
+    payment_token = models.CharField(max_length=128, null=True)
+
+
 class HotelBooking(models.Model):
     class Meta:
         app_label = "api"
@@ -174,13 +183,16 @@ class HotelBooking(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
     created_date = models.DateTimeField(auto_now_add=True)
     hotel_name = models.TextField()
-    provider_name = models.TextField()
-    hotel_code = models.TextField()
+    provider = models.ForeignKey(Provider, null=True, on_delete=models.SET_NULL)
+    simplenight_hotel_id = models.TextField(null=True)
+    provider_hotel_id = models.TextField()
     record_locator = models.TextField()
     total_price = models.DecimalField(decimal_places=2, max_digits=8)
     currency = models.CharField(max_length=3)
     provider_total = models.DecimalField(decimal_places=2, max_digits=8)
     provider_currency = models.CharField(max_length=3)
+    checkin = models.DateField()
+    checkout = models.DateField()
 
 
 class HotelCancellationPolicy(models.Model):
@@ -194,8 +206,14 @@ class HotelCancellationPolicy(models.Model):
     description = models.TextField(null=True)
     begin_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
-    penalty_amount = models.DecimalField(decimal_places=2, max_digits=8, null=True)
+    penalty_amount = models.DecimalField(decimal_places=2, max_digits=8, default=0)
     penalty_currency = models.CharField(max_length=3, null=True)
+
+    def get_cancellation_type(self):
+        if not self.cancellation_type:
+            return None
+
+        return CancellationSummary.from_value(self.cancellation_type)
 
 
 class ProviderMapping(models.Model):
@@ -255,3 +273,68 @@ class ProviderHotel(models.Model):
     property_description = models.TextField(blank=True, null=True)
     amenities = ArrayField(models.CharField(max_length=100, blank=True), null=True)
     provider_reference = models.TextField(null=True)
+
+    def get_address(self):
+        return Address(
+            city=self.city_name,
+            province=self.state,
+            country=self.country_code,
+            address1=self.address_line_1,
+            address2=self.address_line_2,
+            postal_code=self.postal_code,
+        )
+
+
+class ProviderChain(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "provider_chains"
+        indexes = [
+            models.Index(fields=["provider", "provider_code"]),
+        ]
+
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_code = models.TextField()
+    chain_name = models.TextField()
+    modified_date = models.DateTimeField(default=timezone.now)
+
+
+class RecordLocator(models.Model):
+    record_locator = models.CharField(max_length=8)
+    booking = models.ForeignKey(to=Booking, on_delete=models.SET_NULL, null=True)
+
+    @classmethod
+    def generate_record_locator(cls, booking):
+        """
+        Generates an 8 digit record locator, ensuring one does not already exist in the DB
+        This is the identifier used by customers to find their Simplenight booking
+        """
+        valid_chars = string.ascii_uppercase + string.digits
+
+        for _ in range(10):
+            record_locator = str.join("", (random.choice(valid_chars) for _ in range(8)))
+            model, created = RecordLocator.objects.get_or_create(record_locator=record_locator)
+            if not created:
+                logger.info("Record locator already exists: " + record_locator)
+                continue
+
+            model.booking = booking
+            model.save()
+            return record_locator
+
+        raise RuntimeError("Could not find record locator")
+
+
+class PropertyInfo(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "property_info"
+        indexes = [
+            models.Index(fields=["provider", "provider_code", "language_code", "type"]),
+        ]
+
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_code = models.TextField()
+    type = models.TextField()
+    language_code = models.CharField(max_length=2)
+    description = models.TextField()

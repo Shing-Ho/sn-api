@@ -1,15 +1,18 @@
-from typing import Optional
+from decimal import Decimal
+from typing import Union
 
 from api import logger
-from api.booking.booking_model import Payment, PaymentMethod, SubmitErrorType
-from api.common.models import Money
+from api.hotel.models.booking_model import Payment, PaymentMethod, SubmitErrorType
+from api.hotel.models.hotel_common_models import Money
 from api.models.models import PaymentTransaction
 from api.payments import stripe_service
 from api.view.exceptions import PaymentException
 from common import utils
 
 
-def authorize_payment(amount: Money, payment: Payment, description: str) -> Optional[PaymentTransaction]:
+def authorize_payment(amount: Money, payment: Payment, description: str) -> PaymentTransaction:
+    logger.info(f"Authorizing payment for {amount}")
+
     if payment.payment_method == PaymentMethod.PAYMENT_CARD:
         return _authorize_credit_card(amount, payment, description)
     elif payment.payment_method == PaymentMethod.PAYMENT_TOKEN:
@@ -26,11 +29,6 @@ def _authorize_credit_card(amount: Money, payment: Payment, description: str):
         description=description,
     )
 
-    masked_card = f"************{payment.payment_card_parameters.card_number[-4:]}"
-    if payment_transaction.charge_id is not None:
-        logger.info(f"Successfully charged payment card {masked_card}")
-        payment_transaction.save()
-
     return payment_transaction
 
 
@@ -43,8 +41,14 @@ def _authorize_payment_token(amount: Money, payment: Payment, description: str):
         description=description,
     )
 
-    if payment_transaction.charge_id is not None:
-        logger.info(f"Successfully charged payment token {payment.payment_token}")
-        payment_transaction.save()
+    return payment_transaction
+
+
+def refund_payment(charge_id: str, amount: Union[Decimal, float]):
+    logger.info(f"Refunding charge_id {charge_id} for {amount}")
+
+    payment_transaction = stripe_service.refund_token(
+        charge_id=charge_id, refund_amount=utils.to_cents(amount), reason="requested_by_customer"
+    )
 
     return payment_transaction

@@ -1,13 +1,14 @@
 import hashlib
 
 from api.common import cache_storage
-from api.common.models import RoomRate
-from api.hotel.hotel_api_model import ProviderRoomDataCachePayload, AdapterHotel
+from api.hotel.models.hotel_common_models import RoomRate
+from api.hotel.models.hotel_api_model import ProviderRoomDataCachePayload, AdapterHotel
 
 
 def save_provider_rate_in_cache(hotel: AdapterHotel, room_rate: RoomRate, simplenight_rate: RoomRate):
     payload = ProviderRoomDataCachePayload(
         hotel_id=hotel.hotel_id,
+        adapter_hotel=hotel,
         provider=hotel.provider,
         checkin=hotel.start_date,
         checkout=hotel.end_date,

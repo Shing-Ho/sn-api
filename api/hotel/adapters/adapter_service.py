@@ -3,12 +3,12 @@ from typing import List
 
 from api.auth.authentication import Feature
 from api.common.request_context import get_request_context
-from api.hotel.adapters.hotelbeds.hotelbeds import HotelBeds
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBeds
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_api_model import BaseHotelSearch
+from api.hotel.models.hotel_api_model import BaseHotelSearch
 
 HOTEL_ADAPTERS = {
     "stub": StubHotelAdapter,

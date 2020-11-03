@@ -2,11 +2,11 @@ from decimal import Decimal, ROUND_UP, getcontext
 from typing import List, Union, Tuple, Callable, Optional
 
 from api import logger
-from api.common.models import RoomRate
+from api.hotel.models.hotel_common_models import RoomRate
 from api.hotel import markups, hotel_cache_service, hotel_mappings
 from api.hotel.adapters import adapter_service
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_api_model import (
+from api.hotel.models.hotel_api_model import (
     HotelDetails,
     HotelSpecificSearch,
     AdapterHotel,
@@ -17,7 +17,7 @@ from api.hotel.hotel_api_model import (
     Image,
     ImageType,
 )
-from api.hotel.hotel_models import AdapterHotelSearch, AdapterOccupancy
+from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterOccupancy
 from api.models.models import ProviderImages, ProviderMapping
 from api.view.exceptions import SimplenightApiException, AvailabilityException, AvailabilityErrorCode
 
@@ -31,13 +31,19 @@ def search_by_id(search_request: HotelSpecificSearch) -> Hotel:
     adapters_to_search = adapter_service.get_adapters_to_search(search_request)
     adapters = adapter_service.get_adapters(adapters_to_search)
 
-    adapter_search_request = _adapter_search_request(search_request, adapters[0].get_provider_name())
+    adapter_name = adapters[0].get_provider_name()
+    adapter_search_request = _adapter_search_request(search_request, adapter_name)
 
     if len(adapters) > 1:
         raise SimplenightApiException("More than one adapter specified in hotel specific search", 500)
 
-    hotel = adapters[0].search_by_id(adapter_search_request)
-    return _process_hotels(hotel)
+    try:
+        hotel = adapters[0].search_by_id(adapter_search_request)
+        return _process_hotels(hotel)
+    except Exception:
+        raise AvailabilityException(
+            f"Error: Exception while processing adapter {adapter_name}", error_type=AvailabilityErrorCode.PROVIDER_ERROR
+        )
 
 
 def details(hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:
@@ -118,7 +124,9 @@ def _enrich_images(adapter_hotel: AdapterHotel, provider_mapping: ProviderMappin
 
     iceportal_images = _get_iceportal_images_from_provider_code(provider_mapping)
     if iceportal_images:
-        adapter_hotel.hotel_details.photos = list(map(_convert_image, iceportal_images))
+        iceportal_images = list(map(_convert_image, iceportal_images))
+        adapter_hotel.hotel_details.thumbnail_url = iceportal_images[0].url
+        adapter_hotel.hotel_details.photos = iceportal_images
 
 
 def _get_iceportal_images_from_provider_code(provider_mapping: ProviderMapping):
@@ -128,6 +136,8 @@ def _get_iceportal_images_from_provider_code(provider_mapping: ProviderMapping):
         return []
 
     images = ProviderImages.objects.filter(provider__name="iceportal", provider_code=iceportal_mapping.provider_code)
+    images.order_by("display_order")
+
     return images
 
 

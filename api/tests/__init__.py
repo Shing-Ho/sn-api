@@ -1,6 +1,6 @@
 import decimal
 
-from api.common.models import Money
+from api.hotel.models.hotel_common_models import Money
 
 
 def to_money(amount: str, currency="USD"):

@@ -3,9 +3,9 @@ import decimal
 from enum import Enum
 
 from api import logger
-from api.common.models import RoomRate
+from api.hotel.models.hotel_common_models import RoomRate
 from api.hotel.adapters import adapter_service
-from api.hotel.hotel_api_model import HotelPriceVerification
+from api.hotel.models.hotel_api_model import HotelPriceVerification
 
 
 class PriceVerificationLogicModule(abc.ABC):

@@ -1,15 +1,9 @@
 import decimal
-import json
 from datetime import date
 from enum import Enum
-from typing import Optional, List, Union, TypeVar, Type
+from typing import Optional, List
 
-from pydantic.main import BaseModel
-
-
-class SimplenightModel(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
+from api.common.common_models import SimplenightModel
 
 
 class RoomOccupancy(SimplenightModel):
@@ -95,24 +89,14 @@ class RoomRate(SimplenightModel):
     partner_data: Optional[List[str]] = None
 
 
-T = TypeVar("T")
+class BookingStatus(Enum):
+    BOOKED = "booked"
+    CANCELLED = "cancelled"
+    PENDING = "pending"
 
+    @classmethod
+    def from_value(cls, value):
+        if not hasattr(cls, "value_map"):
+            cls.value_map = {x.value: x for x in BookingStatus}
 
-def from_json(obj, cls: Type[T], many=False) -> Union[List[T], T]:
-    if many:
-        return list(map(cls.parse_obj, json.loads(obj)))
-
-    if isinstance(obj, str):
-        return cls.parse_raw(obj)
-
-    return cls.parse_obj(obj)
-
-
-def to_json(obj: Union[SimplenightModel, List[SimplenightModel]], many=False, indent=2):
-    class ItemList(SimplenightModel):
-        __root__: List[SimplenightModel]
-
-    if many:
-        return ItemList.parse_obj(obj).json(indent=indent)
-
-    return obj.json(indent=indent)
+        return cls.value_map[value]

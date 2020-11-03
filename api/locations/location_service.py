@@ -11,6 +11,7 @@ def find_by_prefix(prefix: str, language_code="en", limit=10) -> List[LocationRe
     if prefix is None:
         return []
 
+    # Search Geoname Alternate Names for locale-specific matches
     language_code = language_code.lower()
     matching_cities = Geoname.objects.filter(lang__name__istartswith=prefix, lang__iso_language_code=language_code)
     matching_cities = matching_cities.order_by("-population")
@@ -60,7 +61,7 @@ def find_provider_location(provider: str, simplenight_location_id):
 
 
 def _geoname_to_location_response(geoname: Geoname, language_code: str):
-    localization = geoname.lang.filter(iso_language_code=language_code).first()
+    localization = geoname.lang.filter(iso_language_code=language_code).order_by("-is_preferred").first()
     if not localization:
         localization = geoname.lang.filter(iso_language_code="en").first()
 

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 
-from api.view.hotels import HotelViewSet
+from api.view.hotels_view import HotelViewSet
 from api.view.locations import LocationsViewSet
 from api.views import AuthenticationView
 

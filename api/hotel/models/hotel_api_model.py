@@ -6,16 +6,11 @@ from typing import List, Optional, Union
 from marshmallow import EXCLUDE
 from pydantic import Field
 
-from api.common.models import (
-    RoomOccupancy,
-    Address,
-    RoomRate,
-    Money,
-    RateType,
-    DailyRate,
-    PostpaidFees,
+from api.common.common_models import (
     SimplenightModel,
 )
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, DailyRate, PostpaidFees, \
+    RoomRate, BookingStatus
 
 
 class SimplenightAmenities(Enum):
@@ -125,6 +120,13 @@ class CancellationSummary(Enum):
     NON_REFUNDABLE = "NON_REFUNDABLE"
     PARTIAL_REFUND = "PARTIAL_REFUND"
 
+    @classmethod
+    def from_value(cls, value):
+        if not hasattr(cls, "value_map"):
+            cls.value_map = {x.value: x for x in CancellationSummary}
+
+        return cls.value_map[value]
+
 
 class CancellationPolicy(SimplenightModel):
     summary: CancellationSummary
@@ -139,6 +141,8 @@ class CancellationDetails(SimplenightModel):
     end_date: Optional[date] = None
     penalty_amount: Optional[decimal.Decimal] = None
     penalty_currency: Optional[str] = None
+    refund_amount: Optional[decimal.Decimal] = None
+    refund_currency: Optional[str] = None
 
 
 class RatePlan(SimplenightModel):
@@ -168,6 +172,7 @@ class HotelDetails(SimplenightModel):
     email: Optional[str] = None
     homepage_url: Optional[str] = None
     chain_code: Optional[str] = None
+    chain_name: Optional[str] = None
     star_rating: Optional[float] = None
     property_description: Optional[str] = None
 
@@ -258,9 +263,42 @@ class HotelPriceVerification(SimplenightModel):
 
 class ProviderRoomDataCachePayload(SimplenightModel):
     hotel_id: str
+    adapter_hotel: AdapterHotel
     provider: str
     checkin: date
     checkout: date
     room_code: str
     provider_rate: RoomRate
     simplenight_rate: RoomRate
+
+
+class ItineraryItem(SimplenightModel):
+    name: str
+    price: Money
+    confirmation: str
+
+
+class HotelItineraryItem(ItineraryItem):
+    start_date: date
+    end_date: date
+    address: Address
+
+
+class CancelRequest(SimplenightModel):
+    booking_id: str
+    last_name: str
+
+
+class CancelResponse(SimplenightModel):
+    is_cancellable: bool
+    booking_status: BookingStatus
+    itinerary: HotelItineraryItem
+    details: CancellationDetails
+
+
+class CancelConfirmResponse(SimplenightModel):
+    booking_id: str
+    record_locator: str
+    booking_status: BookingStatus
+    cancelled: bool
+    amount_refunded: decimal.Decimal

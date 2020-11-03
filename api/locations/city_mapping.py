@@ -66,7 +66,6 @@ class CityMappingService:
         for provider_city in provider_name_matches:
             country_matches = provider_city.country_code == simplenight_city.iso_country_code
             province_matches = provider_city.province == simplenight_city.province
-
             if country_matches and province_matches:
                 return provider_city
 
@@ -78,8 +77,9 @@ class CityMappingService:
                     x for x in simplenight_city_matches if x.iso_country_code == simplenight_country
                 ]
 
-                if len(provider_name_by_country) == 1 and len(sn_city_match_by_country) == 1:
-                    return provider_city
+                if country_matches:
+                    if len(provider_name_by_country) == 1 and len(sn_city_match_by_country) == 1:
+                        return provider_city
 
         return None
 

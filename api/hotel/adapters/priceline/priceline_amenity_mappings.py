@@ -1,4 +1,4 @@
-from api.hotel.hotel_api_model import SimplenightAmenities
+from api.hotel.models.hotel_api_model import SimplenightAmenities
 
 PRICELINE_AMENITY_MAPPINGS = {
     SimplenightAmenities.POOL: [

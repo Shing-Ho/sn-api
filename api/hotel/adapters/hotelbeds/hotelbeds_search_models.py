@@ -4,8 +4,8 @@ from typing import List, Optional
 
 from pydantic import Field
 
-from api.common.models import SimplenightModel
-from api.hotel.adapters.hotelbeds.common_models import (
+from api.common.common_models import SimplenightModel
+from api.hotel.adapters.hotelbeds.hotelbeds_common_models import (
     HotelBedsAuditDataRS,
     get_language_mapping,
     HotelBedsRateType,
@@ -14,7 +14,7 @@ from api.hotel.adapters.hotelbeds.common_models import (
     HotelBedsCancellationPoliciesRS,
     HotelBedsPaymentType,
 )
-from api.hotel.hotel_models import AdapterLocationSearch
+from api.hotel.models.adapter_models import AdapterLocationSearch
 
 
 class HotelBedsStayRQ(SimplenightModel):

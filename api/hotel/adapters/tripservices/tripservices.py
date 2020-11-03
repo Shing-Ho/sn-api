@@ -1,15 +1,16 @@
 from typing import List
 
-from api.booking.booking_model import HotelBookingRequest
-from api.common.models import RoomRate
+from api.hotel.models.booking_model import HotelBookingRequest
+from api.hotel.models.hotel_common_models import RoomRate
 from api.hotel.adapters.tripservices.transport import TripServicesTransport
 from api.hotel.adapters.tripservices.tripservices_info import TripservicesInfo
 from api.hotel.hotel_adapter import HotelAdapter
-from api.hotel.hotel_api_model import (
+from api.hotel.models.hotel_api_model import (
     HotelDetails,
     AdapterHotel,
 )
-from api.hotel.hotel_models import AdapterHotelSearch, AdapterLocationSearch, AdapterBaseSearch
+from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterLocationSearch, AdapterBaseSearch, \
+    AdapterCancelRequest, AdapterCancelResponse
 
 
 class TripservicesAdapter(HotelAdapter):
@@ -26,6 +27,9 @@ class TripservicesAdapter(HotelAdapter):
         pass
 
     def details(self, *args) -> HotelDetails:
+        pass
+
+    def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
         pass
 
     def booking(self, book_request: HotelBookingRequest):

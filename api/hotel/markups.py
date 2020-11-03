@@ -1,7 +1,7 @@
 import uuid
 from decimal import Decimal
 
-from api.common.models import RoomRate, Money
+from api.hotel.models.hotel_common_models import Money, RoomRate
 
 
 def markup_rate(room_rate: RoomRate) -> RoomRate:
