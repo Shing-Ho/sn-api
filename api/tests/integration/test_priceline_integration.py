@@ -6,7 +6,6 @@ import pytest
 import requests_mock
 from freezegun import freeze_time
 
-from api.hotel.models.hotel_common_models import RoomOccupancy, RateType
 from api.hotel import hotel_service, booking_service
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
@@ -17,6 +16,7 @@ from api.hotel.models.adapter_models import (
     AdapterCancelRequest,
 )
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
+from api.hotel.models.hotel_common_models import RoomOccupancy, RateType
 from api.models.models import CityMap, Booking, HotelCancellationPolicy
 from api.tests import test_objects, model_helper
 from api.tests.unit.simplenight_test_case import SimplenightTestCase

@@ -2,12 +2,14 @@ import stripe
 from stripe.error import CardError
 
 from api import logger
+from api.auth.authentication import Feature
+from api.common.request_context import get_config_bool, get_config
 from api.hotel.models.booking_model import Payment, SubmitErrorType
 from api.models.models import PaymentTransaction, TransactionType
 from api.view.exceptions import PaymentException
 from common import utils
 
-STRIPE_API_KEY = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
+STRIPE_TEST_API_KEY = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
 
 STRIPE_ERROR_CODE_MAPPING = {
     "card_declined": SubmitErrorType.PAYMENT_DECLINED,
@@ -37,7 +39,7 @@ def charge_token(payment_token: str, payment_amount: int, currency_code: str, de
     logger.info(f"Charging Stripe: {payment_amount} {currency_code}")
     try:
         response = stripe.Charge.create(
-            api_key=STRIPE_API_KEY,
+            api_key=_get_stripe_api_credentials(),
             amount=payment_amount,
             currency=currency_code,
             card=payment_token,
@@ -59,7 +61,8 @@ def refund_token(charge_id: str, refund_amount: int, reason: str):
 
     logger.info(f"Refunding Stripe: {refund_amount}")
     try:
-        response = stripe.Refund.create(api_key=STRIPE_API_KEY, charge=charge_id, amount=refund_amount, reason=reason)
+        api_key = _get_stripe_api_credentials()
+        response = stripe.Refund.create(api_key=api_key, charge=charge_id, amount=refund_amount, reason=reason)
         return _payment_transaction(response, TransactionType.REFUND)
     except CardError as e:
         error_code = _get_error_mapping(e)
@@ -83,7 +86,8 @@ def tokenize(payment: Payment) -> str:
         "cvc": payment.payment_card_parameters.cvv,
     }
 
-    response = stripe.Token.create(api_key=STRIPE_API_KEY, card=tokenize_request)
+    api_key = _get_stripe_api_credentials()
+    response = stripe.Token.create(api_key=api_key, card=tokenize_request)
     return response["id"]
 
 
@@ -114,3 +118,14 @@ def _get_error_mapping(error: CardError):
             return STRIPE_ERROR_CODE_MAPPING[decline_code]
 
     return SubmitErrorType.PAYMENT_PROCESSOR_ERROR
+
+
+def _get_test_mode():
+    return get_config_bool(Feature.TEST_MODE)
+
+
+def _get_stripe_api_credentials():
+    if _get_test_mode():
+        return STRIPE_TEST_API_KEY
+
+    return get_config(Feature.STRIPE_API_KEY)
