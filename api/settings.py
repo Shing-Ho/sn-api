@@ -177,6 +177,9 @@ class UTCFormatter(logging.Formatter):
 class MessageIDFilter(logging.Filter):
     @staticmethod
     def hash(s):
+        if s is None:
+            return "foo"
+
         return hashlib.md5(s.encode("utf-8")).hexdigest()
 
     def filter(self, record):

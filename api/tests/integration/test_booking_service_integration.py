@@ -7,6 +7,7 @@ import pytest
 from freezegun import freeze_time
 from stripe.error import CardError
 
+from api.auth.authentication import Feature
 from api.hotel import hotel_cache_service, booking_service
 from api.hotel.models import booking_model
 from api.hotel.models.adapter_models import AdapterCancelResponse
@@ -41,6 +42,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.provider = Provider.objects.get_or_create(name="stub")[0]
+        self.stub_feature(Feature.TEST_MODE, "true")
 
     def test_stub_booking(self):
         booking_request = HotelBookingRequest(

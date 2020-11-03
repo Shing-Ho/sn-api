@@ -2,6 +2,7 @@ from typing import Dict
 
 from cachetools.func import ttl_cache
 
+from api.common.encryption_service import EncryptionService
 from api.hotel.models.booking_model import PaymentCardParameters, CardType, Payment, PaymentMethod
 from api.hotel.models.hotel_common_models import Address
 from api.models.models import ProviderChain
@@ -24,7 +25,24 @@ def get_virtual_credit_card(test_mode=True) -> Payment:
             ),
         )
     else:
-        raise NotImplemented("Virtual credit card does not exist in Production")
+        crypted_card_number = "gA/2oQ2bgDW/JGPpOjpxHrtDskdnpq9atFjqg5YUOwY="
+        crypted_card_cvv = "L1BaCNArVeP3WvSIzU9vUw=="
+        encryption_service = EncryptionService()
+
+        return Payment(
+            payment_method=PaymentMethod.CREDIT_CARD,
+            payment_card_parameters=PaymentCardParameters(
+                card_type=CardType.VI,
+                card_number=encryption_service.decrypt(crypted_card_number),
+                cvv=encryption_service.decrypt(crypted_card_cvv),
+                cardholder_name="Mark Halberstein",
+                expiration_month="03",
+                expiration_year="2023",
+            ),
+            billing_address=Address(
+                city="New York", province="NY", country="US", address1="245 East 58th St", postal_code="33179",
+            ),
+        )
 
 
 @ttl_cache(maxsize=10, ttl=86400)

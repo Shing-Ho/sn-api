@@ -1,6 +1,7 @@
 -r requirements.txt
 pre-commit
 pytest
+pytest-mock
 freezegun
 tox
 black

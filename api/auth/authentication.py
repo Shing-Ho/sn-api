@@ -12,6 +12,7 @@ from rest_framework_api_key.permissions import BaseHasAPIKey, KeyParser
 class Feature(Enum):
     ENABLED_ADAPTERS = "enabled_connectors"
     TEST_MODE = "test_mode"
+    STRIPE_API_KEY = "stripe_api_key"
 
     @classmethod
     def choices(cls):

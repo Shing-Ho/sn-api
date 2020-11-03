@@ -25,9 +25,14 @@ class PricelineTransport(Transport):
         self.test_mode = test_mode
         self.priceline_refid = refid
 
-        self.CREDENTIALS = {
+        self.TEST_MODE_CREDENTIALS = {
             "refid": self.priceline_refid,
             "api_key": "990b98b0a0efaa7acf461ff6a60cf726",
+        }
+
+        self.PRODUCTION_CREDENTIALS = {
+            "refid": self.priceline_refid,
+            "api_key": "0902461455a8fd238cb0b3d4b8276f91",
         }
 
     def get(self, endpoint: Endpoint, **params):
@@ -88,7 +93,13 @@ class PricelineTransport(Transport):
         return headers
 
     def _get_default_params(self):
-        return {**self.CREDENTIALS, "format": "json2"}
+        return {**self._get_credentials(), "format": "json2"}
+
+    def _get_credentials(self):
+        if self.test_mode:
+            return self.TEST_MODE_CREDENTIALS
+
+        return self.PRODUCTION_CREDENTIALS
 
     def _get_host(self):
         if not self.test_mode:
