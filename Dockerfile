@@ -18,8 +18,8 @@ RUN ln -sf /dev/stdout /var/log/supervisor/access.log
 RUN ln -sf /dev/stderr /var/log/supervisor/error.log
 
 # Set certificate permissions
-RUN chmod 0600 ./app/secrets/*.pem
-RUN chmod 0600 ./app/secrets/prod/*.pem
+RUN chmod 0600 /app/api/secrets/*.pem
+RUN chmod 0600 /app/api/secrets/prod/*.pem
 
 # for production
 CMD bash -c "exec /usr/bin/supervisord"
