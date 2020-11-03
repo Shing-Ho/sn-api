@@ -3,7 +3,6 @@ from datetime import date, datetime
 from enum import Enum
 from typing import List, Optional, Union
 
-from marshmallow import EXCLUDE
 from pydantic import Field
 
 from api.common.common_models import (
@@ -100,9 +99,6 @@ class BedTypes(SimplenightModel):
 
 
 class RoomType(SimplenightModel):
-    class Meta:
-        unknown = EXCLUDE
-
     code: str
     name: str
     description: Optional[str]

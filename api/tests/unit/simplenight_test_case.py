@@ -10,5 +10,4 @@ class SimplenightTestCase(TestCase):
     def setUp(self) -> None:
         self.request_cache = RequestCacheMiddleware(Mock())
         self.request_context = RequestContextMiddleware()
-
         self.request_cache.process_request(Mock())

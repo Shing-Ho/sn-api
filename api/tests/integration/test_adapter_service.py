@@ -12,7 +12,6 @@ class TestAdapterService(SimplenightAPITestCase):
     def setUp(self) -> None:
         self.request_cache = RequestCacheMiddleware(Mock())
         self.request_context = RequestContextMiddleware()
-
         self.request_cache.process_request(Mock())
 
     def test_get_adapters_to_search(self):
