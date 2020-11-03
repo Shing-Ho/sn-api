@@ -180,7 +180,7 @@ class TestPricelineIntegration(SimplenightTestCase):
         booking_request = test_objects.booking_request(rate_code=room_to_book.code)
         booking_response = booking_service.book(booking_request)
 
-        hotel_booking = HotelBooking.objects.get(booking_id=booking_response.booking_id)
+        hotel_booking = HotelBooking.objects.get(booking__recordlocator__record_locator=booking_response.booking_id)
 
         cancel_response = adapter.cancel(
             AdapterCancelRequest(
