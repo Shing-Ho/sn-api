@@ -18,7 +18,7 @@ steps:
   entrypoint: 'bash'
   args:
   - '-xc'
-  - if [ $BRANCH_NAME = develop -a $PROJECT_ID = simplenight-api-278418 ]; then gcloud app deploy ; else echo "Not a develop branch commit, skipping deployment." ; fi
+  - if [ $BRANCH_NAME = develop -a $PROJECT_ID = simplenight-api-278418 ]; then app deploy ; else echo "Not a develop branch commit, skipping deployment." ; fi
 - name: 'gcr.io/cloud-builders/kubectl'
   id: 'RegressionTest'
   entrypoint: '/bin/bash'
