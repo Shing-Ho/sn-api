@@ -21,7 +21,7 @@ steps:
   - 'pipefail'
   - '-c'
   - |-
-    if (( $BRANCH_NAME = "develop" && $PROJECT_ID = "simplenight-api" )); then
+    if (( $BRANCH_NAME == "develop" && $PROJECT_ID == "simplenight-api" )); then
       app deploy
     else
       echo "not a develop branch so won't do QA deployment."
