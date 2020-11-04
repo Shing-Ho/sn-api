@@ -17,15 +17,8 @@ steps:
   id: 'QADeploy'
   entrypoint: 'bash'
   args:
-  - '-eEuo'
-  - 'pipefail'
-  - '-c'
-  - |-
-    if (( $BRANCH_NAME == "develop" && $PROJECT_ID == "simplenight-api" )); then
-      app deploy
-    else
-      echo "not a develop branch so won't do QA deployment."
-    fi
+  - '-xc'
+  - if [ $BRANCH_NAME = develop -a $PROJECT_ID = simplenight-api ]; then app deploy ; else echo "Not a develop branch commit, skipping deployment." ; fi
 - name: 'gcr.io/cloud-builders/kubectl'
   id: 'RegressionTest'
   entrypoint: '/bin/bash'
