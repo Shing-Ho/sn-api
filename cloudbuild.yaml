@@ -1,0 +1,27 @@
+timeout: 20m
+
+steps:
+- name: 'gcr.io/cloud-builders/kubectl'
+  id: 'Code'
+  entrypoint: '/bin/bash'
+  args:
+  - '-xc'
+  - echo 'Code analysis'
+- name: 'gcr.io/cloud-builders/kubectl'
+  id: 'UnitTest'
+  entrypoint: '/bin/bash'
+  args:
+  - '-xc'
+  - echo 'Unit test execution'
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'QADeploy'
+  entrypoint: 'bash'
+  args:
+  - '-xc'
+  - if [ $BRANCH_NAME = develop -a $PROJECT_ID = simplenight-api-278418 ]; then app deploy ; else echo "Not a develop branch commit, skipping deployment." ; fi
+- name: 'gcr.io/cloud-builders/kubectl'
+  id: 'RegressionTest'
+  entrypoint: '/bin/bash'
+  args:
+  - '-xc'
+  - echo 'Regression test execution'
