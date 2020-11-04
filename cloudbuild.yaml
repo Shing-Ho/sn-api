@@ -1,0 +1,45 @@
+timeout: 20m
+
+steps:
+- name: 'gcr.io/cloud-builders/kubectl'
+  id: 'Code'
+  entrypoint: '/bin/bash'
+  args:
+  - '-xc'
+  - echo 'Code analysis'
+- name: 'docker'
+  id: 'Build'
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/simplenight-api', '.', '-f', 'Dockerfile']
+- name: 'docker'
+  id: 'TagWithBuildId'
+  args: [ 'tag', 'gcr.io/$PROJECT_ID/simplenight-api', 'gcr.io/$PROJECT_ID/simplenight-api:$BUILD_ID' ]
+- name: 'docker'
+  id: 'TagWithCommitSHA'
+  args: [ 'tag', 'gcr.io/$PROJECT_ID/simplenight-api', 'gcr.io/$PROJECT_ID/simplenight-api:$COMMIT_SHA' ]
+- name: 'docker'
+  id: 'TagWithShortSHA'
+  args: [ 'tag', 'gcr.io/$PROJECT_ID/simplenight-api', 'gcr.io/$PROJECT_ID/simplenight-api:$SHORT_SHA' ]
+- name: 'gcr.io/cloud-builders/kubectl'
+  id: 'UnitTest'
+  entrypoint: '/bin/bash'
+  args:
+  - '-xc'
+  - echo 'Unit test execution'
+- name: 'gcr.io/cloud-builders/kubectl'
+  id: 'Deploy'
+  entrypoint: '/bin/bash'
+  args:
+  - '-xc'
+  - if [ $BRANCH_NAME = develop -a $PROJECT_ID = sn-systems ]; then echo "todo add command to deploy to app engine." ; else echo "Not a master branch commit, skipping deployment." ; fi
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=sn-cluster-qa'
+- name: 'gcr.io/cloud-builders/kubectl'
+  id: 'RegressionTest'
+  entrypoint: '/bin/bash'
+  args:
+  - '-xc'
+  - echo 'Regression test execution'
+
+images:
+- 'gcr.io/$PROJECT_ID/simplenight-api'
