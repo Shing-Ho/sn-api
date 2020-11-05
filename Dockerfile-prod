@@ -21,5 +21,5 @@ RUN ln -sf /dev/stderr /var/log/supervisor/error.log
 RUN chmod 0600 /app/api/secrets/*.pem
 RUN chmod 0600 /app/api/secrets/prod/*.pem
 
-# for production
+# for production deployment
 CMD bash -c "exec /usr/bin/supervisord"
