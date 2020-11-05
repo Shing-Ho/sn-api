@@ -40,6 +40,7 @@ class PricelineTransport(Transport):
         params.update(self._get_default_params())
 
         logger.info(f"Making request to {url}")
+        logger.debug(f"Params: {params}")
 
         response = requests.get(url, params=params, headers=self._get_headers())
         if not response.ok:
@@ -52,6 +53,7 @@ class PricelineTransport(Transport):
         params.update(self._get_default_params())
 
         logger.info(f"Making request to {url}")
+        logger.debug(f"Params: {params}")
 
         response = requests.post(url, data=params, headers=self._get_headers())
         if not response.ok:

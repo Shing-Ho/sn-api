@@ -131,12 +131,7 @@ class PricelineAdapter(HotelAdapter):
         params = self._create_booking_params(book_request.customer, book_request.room_code)
         response = self.transport.express_book(**params)
 
-        if "getHotelExpress.Book" not in response:
-            raise BookingException(PricelineErrorCodes.GENERIC_BOOKING_ERROR, response)
-
-        results = response["getHotelExpress.Book"]["results"]
-        if results["status"] != "Success":
-            raise BookingException(PricelineErrorCodes.BOOKING_FAILURE, response)
+        results = self._check_express_book_response_and_get_results(response)
 
         booking_data = results["book_data"]
         contract_data = results["contract_data"]
@@ -348,6 +343,19 @@ class PricelineAdapter(HotelAdapter):
 
     def _check_express_cancel_response_and_get_results(self, response):
         return self._check_hotel_express_operation_response_and_get_results(response, "getHotelExpress.Cancel")
+
+    @staticmethod
+    def _check_express_book_response_and_get_results(response):
+        error_type = AvailabilityErrorCode.PROVIDER_ERROR
+        if response is None or "getHotelExpress.Book" not in response:
+            raise BookingException(error_type=error_type, detail="Could not retrieve response")
+
+        results = response["getHotelExpress.Book"]
+        if "error" in results:
+            error_message = results["error"]["status"]
+            raise BookingException(error_type=error_type, detail=error_message)
+
+        return results["results"]
 
     def _create_hotel_from_response(self, search, hotel_response):
         room_types = self._create_room_types(hotel_response)

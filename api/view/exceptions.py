@@ -44,6 +44,9 @@ class SimplenightApiException(AppException):
         self.error_type = error_type
         self.detail = detail
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}: {self.error_type.name} - {self.detail}"
+
 
 class AvailabilityException(SimplenightApiException):
     def __init__(self, detail: str, error_type: AvailabilityErrorCode):
