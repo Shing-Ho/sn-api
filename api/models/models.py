@@ -144,6 +144,8 @@ class Booking(models.Model):
     class Meta:
         app_label = "api"
         db_table = "api_bookings"
+        verbose_name = "Booking"
+        verbose_name_plural = "Bookings"
 
     booking_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     transaction_id = models.TextField()
