@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import hashlib
 import logging
 import os
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import time
 
@@ -33,6 +34,8 @@ ALLOWED_HOSTS = ["*", "simplenight-api-278418.ue.r.appspot.com", "127.0.0.1", "l
 # Application definition
 
 INSTALLED_APPS = [
+    "admin_interface",
+    "colorfield",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

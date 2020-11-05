@@ -21,3 +21,4 @@ rauth
 django-redis
 cryptography
 pytz
+django-admin-interface

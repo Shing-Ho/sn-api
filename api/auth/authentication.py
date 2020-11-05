@@ -23,6 +23,8 @@ class Organization(models.Model):
     class Meta:
         app_label = "api"
         db_table = "organization"
+        verbose_name = "Organization"
+        verbose_name_plural = "Organizations"
 
     name = models.CharField(max_length=128)
     active = models.BooleanField(default=True)
@@ -48,17 +50,25 @@ class Organization(models.Model):
         if feature:
             feature.delete()
 
+    def __str__(self):
+        return f"{self.name} ({self.id})"
+
 
 class OrganizationFeatures(models.Model):
     class Meta:
         app_label = "api"
         db_table = "organization_features"
-        unique_together = ('organization', 'name')
+        unique_together = ("organization", "name")
+        verbose_name = "Organization Feature"
+        verbose_name_plural = "Organization Features"
 
     id = models.AutoField(primary_key=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="org")
     name = models.TextField(choices=Feature.choices())
     value = models.TextField()
+
+    def organization_name(self):
+        return self.organization.name
 
 
 class OrganizationAPIKey(AbstractAPIKey):
