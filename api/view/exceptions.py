@@ -7,6 +7,7 @@ from common.exceptions import AppException
 
 class AppErrorCode(Enum):
     INVALID_API_KEY = "INVALID_API_KEY"
+    INVALID_ORGANIZATION = "INVALID_ORGANIZATION"
 
 
 class BookingErrorCode(Enum):
@@ -43,6 +44,9 @@ class SimplenightApiException(AppException):
         super().__init__()
         self.error_type = error_type
         self.detail = detail
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}: {self.error_type.name} - {self.detail}"
 
 
 class AvailabilityException(SimplenightApiException):

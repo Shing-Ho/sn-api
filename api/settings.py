@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import hashlib
 import logging
 import os
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import time
 
@@ -33,6 +34,8 @@ ALLOWED_HOSTS = ["*", "simplenight-api-278418.ue.r.appspot.com", "127.0.0.1", "l
 # Application definition
 
 INSTALLED_APPS = [
+    "admin_interface",
+    "colorfield",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -87,7 +90,7 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
-    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.TokenAuthentication"],
+    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.BasicAuthentication"],
     "EXCEPTION_HANDLER": "api.view.exceptions.handler",
 }
 
@@ -192,7 +195,10 @@ class CustomHandler(logging.StreamHandler):
     """Prefix every line of logging"""
 
     def emit(self, record):
-        message = record.msg % record.args
+        message = record.msg
+        if record.args:
+            message = message % record.args
+
         record.args = None
         for line in message.split("\n"):
             record.msg = line
@@ -203,7 +209,7 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {"console": {"class": "api.settings.CustomHandler", "formatter": "default", "filters": ["message_id"]}},
-    "root": {"handlers": ["console"], "level": "INFO"},
+    "root": {"handlers": ["console"], "level": "DEBUG"},
     "filters": {"message_id": {"()": "api.settings.MessageIDFilter"}},
     "formatters": {
         "default": {

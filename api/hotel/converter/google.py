@@ -1,14 +1,6 @@
 from decimal import Decimal
 from typing import List
 
-from api.hotel.models.booking_model import (
-    HotelBookingRequest,
-    Traveler,
-    Payment,
-    PaymentCardParameters,
-    HotelBookingResponse,
-)
-from api.hotel.models.hotel_common_models import RoomOccupancy, RateType, Money, RoomRate
 from api.hotel.converter.google_models import (
     GoogleHotelApiResponse,
     GoogleHotelSearchRequest,
@@ -22,7 +14,6 @@ from api.hotel.converter.google_models import (
     GoogleCancellationPolicy,
     GoogleRoomRate,
     GoogleHotelDetails,
-    CancellationSummary,
     GoogleBookingSubmitRequest,
     GoogleTraveler,
     GoogleBookingResponse,
@@ -30,7 +21,16 @@ from api.hotel.converter.google_models import (
     GoogleReservation,
     RoomParty,
 )
+from api.hotel.models.booking_model import (
+    HotelBookingRequest,
+    Traveler,
+    Payment,
+    PaymentCardParameters,
+    HotelBookingResponse,
+    Locator,
+)
 from api.hotel.models.hotel_api_model import SimplenightAmenities, Image, HotelSpecificSearch, Hotel, CancellationPolicy
+from api.hotel.models.hotel_common_models import RoomOccupancy, RateType, Money, RoomRate
 
 
 def convert_hotel_specific_search(google_search_request: GoogleHotelSearchRequest) -> HotelSpecificSearch:
@@ -115,8 +115,8 @@ def convert_booking_response(
         transaction_id=booking_response.transaction_id,
         status=status,
         reservation=GoogleReservation(
-            locator=booking_response.reservation.locator,
-            hotel_locators=[],
+            locator=Locator(id=booking_response.booking_id),
+            hotel_locators=[booking_response.reservation.locator],
             hotel_id=booking_response.reservation.hotel_id,
             start_date=booking_response.reservation.checkin,
             end_date=booking_response.reservation.checkout,
@@ -215,9 +215,9 @@ def _get_photos(images: List[Image], language: str) -> List[GoogleImage]:
 # TODO: Actually implement cancellation policies
 def _get_google_cancellation_policy(cancellation_policy: CancellationPolicy, language):
     return GoogleCancellationPolicy(
-        summary=CancellationSummary.NON_REFUNDABLE,
-        cancellation_deadline="10 days before",
-        unstructured_policy=DisplayString(text="The cancellation details", language=language),
+        summary=cancellation_policy.summary,
+        cancellation_deadline=str(cancellation_policy.cancellation_deadline),
+        unstructured_policy=DisplayString(text=cancellation_policy.unstructured_policy or "", language=language),
     )
 
 
@@ -248,5 +248,5 @@ def _get_hotel_details(hotel: Hotel) -> GoogleHotelDetails:
         geolocation=hotel.hotel_details.geolocation,
         phone_number=hotel.hotel_details.phone_number,
         email=hotel.hotel_details.email,
-        photos=list(map(_get_image_mapping, hotel.hotel_details.photos))
+        photos=list(map(_get_image_mapping, hotel.hotel_details.photos)),
     )
