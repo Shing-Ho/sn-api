@@ -1,4 +1,4 @@
-from api.auth.authentication import Feature
+from api.models.models import Feature
 from api.common.request_context import get_config_bool, get_config
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 

@@ -7,7 +7,6 @@ import pytest
 from freezegun import freeze_time
 from stripe.error import CardError
 
-from api.auth.authentication import Feature
 from api.hotel import hotel_cache_service, booking_service
 from api.hotel.models import booking_model
 from api.hotel.models.adapter_models import AdapterCancelResponse
@@ -31,7 +30,7 @@ from api.models.models import (
     HotelCancellationPolicy,
     ProviderHotel,
     TransactionType,
-    RecordLocator,
+    RecordLocator, Feature,
 )
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase

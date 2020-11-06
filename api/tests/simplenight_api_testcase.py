@@ -2,7 +2,7 @@ import uuid
 
 from rest_framework.test import APITestCase, APIClient
 
-from api.auth.authentication import Feature, Organization
+from api.models.models import Organization, Feature
 
 
 class SimplenightAPITestCase(APITestCase):

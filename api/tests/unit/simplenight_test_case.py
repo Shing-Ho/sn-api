@@ -2,7 +2,8 @@ from unittest.mock import Mock
 
 from django.test import TestCase
 
-from api.auth.authentication import Organization, OrganizationAPIKey, Feature
+from api.auth.authentication import OrganizationAPIKey
+from api.models.models import Organization, Feature
 from api.common.context_middleware import RequestContextMiddleware
 from api.common.request_cache import RequestCacheMiddleware
 
