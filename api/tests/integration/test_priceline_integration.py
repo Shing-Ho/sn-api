@@ -37,7 +37,7 @@ class TestPricelineUnit(SimplenightTestCase):
 
         CityMap.objects.create(simplenight_city_id=1, provider=provider, provider_city_id=800046992)
 
-    def test_hotel_express_hotel_searcb(self):
+    def test_hotel_express_hotel_search(self):
         transport = PricelineTransport(test_mode=True)
         priceline = PricelineAdapter(transport)
 
@@ -305,3 +305,19 @@ class TestPricelineUnit(SimplenightTestCase):
                 )
 
         self.assertIn("Could not cancel booking", str(e))
+
+    def test_priceline_booking_error_handled(self):
+        transport = PricelineTransport(test_mode=True)
+        priceline = PricelineAdapter(transport)
+
+        payment_object = test_objects.payment("4111111111111111")
+        booking_request = test_objects.booking_request(payment_object)
+
+        mock_priceline_booking_response = load_test_resource("priceline/priceline-book-error.json")
+        booking_endpoint = transport.endpoint(PricelineTransport.Endpoint.EXPRESS_BOOK)
+        with requests_mock.Mocker() as mocker:
+            mocker.post(booking_endpoint, text=mock_priceline_booking_response)
+            with pytest.raises(BookingException) as e:
+                priceline.booking(booking_request)
+
+        self.assertEqual("Hotel.Express.Book: Invalid name_first", str(e.value))

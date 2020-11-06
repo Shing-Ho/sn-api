@@ -195,7 +195,10 @@ class CustomHandler(logging.StreamHandler):
     """Prefix every line of logging"""
 
     def emit(self, record):
-        message = record.msg % record.args
+        message = record.msg
+        if record.args:
+            message = message % record.args
+
         record.args = None
         for line in message.split("\n"):
             record.msg = line
