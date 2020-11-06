@@ -7,6 +7,7 @@ from common.exceptions import AppException
 
 class AppErrorCode(Enum):
     INVALID_API_KEY = "INVALID_API_KEY"
+    INVALID_ORGANIZATION = "INVALID_ORGANIZATION"
 
 
 class BookingErrorCode(Enum):
