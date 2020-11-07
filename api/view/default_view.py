@@ -5,13 +5,13 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from . import api_access
-from .api_access import ApiAccessRequest
-from .common.common_models import SimplenightModel, to_json
+from api import api_access
+from api.api_access import ApiAccessRequest
+from api.common.common_models import SimplenightModel, to_json
 
 
-def index(request):
-    return HttpResponse(status=404)
+def index(_):
+    return HttpResponse("No route registered for index page.")
 
 
 class AuthenticationView(viewsets.ViewSet):
