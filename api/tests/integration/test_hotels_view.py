@@ -5,7 +5,6 @@ import requests_mock
 from freezegun import freeze_time
 from rest_framework.test import APIClient
 
-from api.auth.authentication import Feature, Organization
 from api.hotel.models.booking_model import Customer, PaymentMethod, CardType
 from api.common.common_models import from_json
 from api.hotel import hotel_cache_service
@@ -29,7 +28,7 @@ from api.hotel.models.hotel_api_model import (
     SimplenightHotel,
 )
 from api.hotel.models.hotel_common_models import RoomOccupancy, Address
-from api.models.models import Booking
+from api.models.models import Booking, Organization, Feature
 from api.tests import test_objects
 from api.tests.simplenight_api_testcase import SimplenightAPITestCase
 from api.tests.utils import load_test_resource

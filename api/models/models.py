@@ -2,7 +2,7 @@
 import random
 import string
 import uuid
-from enum import EnumMeta
+from enum import EnumMeta, Enum
 from typing import Tuple, List
 
 from django.contrib.postgres.fields import ArrayField
@@ -340,3 +340,66 @@ class PropertyInfo(models.Model):
     type = models.TextField()
     language_code = models.CharField(max_length=2)
     description = models.TextField()
+
+
+class Feature(Enum):
+    ENABLED_ADAPTERS = "enabled_connectors"
+    TEST_MODE = "test_mode"
+    STRIPE_API_KEY = "stripe_api_key"
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name) for key in cls]
+
+
+class Organization(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "organization"
+        verbose_name = "Organization"
+        verbose_name_plural = "Organizations"
+
+    name = models.CharField(max_length=128)
+    active = models.BooleanField(default=True)
+    username = models.CharField(max_length=32, null=True)
+    api_daily_limit = models.IntegerField()
+    api_burst_limit = models.IntegerField()
+
+    def get_feature(self, feature: Feature):
+        try:
+            result = OrganizationFeatures.objects.get(organization_id=self.id, name=feature.value)
+            return result.value
+        except OrganizationFeatures.DoesNotExist:
+            return None
+
+    def set_feature(self, feature_type: Feature, value):
+        feature_name = feature_type.value
+        feature, _ = OrganizationFeatures.objects.get_or_create(organization_id=self.id, name=feature_name)
+
+        feature.value = value
+        feature.save()
+
+    def clear_feature(self, feature_type: Feature):
+        feature = OrganizationFeatures.objects.get(organization_id=self.id, name=feature_type.value)
+        if feature:
+            feature.delete()
+
+    def __str__(self):
+        return f"{self.name} ({self.id})"
+
+
+class OrganizationFeatures(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "organization_features"
+        unique_together = ("organization", "name")
+        verbose_name = "Organization Feature"
+        verbose_name_plural = "Organization Features"
+
+    id = models.AutoField(primary_key=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="org")
+    name = models.TextField(choices=Feature.choices())
+    value = models.TextField()
+
+    def organization_name(self):
+        return self.organization.name
