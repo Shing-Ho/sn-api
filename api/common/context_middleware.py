@@ -3,6 +3,7 @@ import uuid
 from django.http import HttpRequest, HttpResponseForbidden
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework.authentication import BasicAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_api_key.permissions import KeyParser
 
 from api import logger
@@ -32,11 +33,15 @@ class RequestContextMiddleware(MiddlewareMixin):
             except OrganizationAPIKey.DoesNotExist:
                 logger.error("Invalid API Key, could not set organization")
 
-        http_user = BasicAuthentication().authenticate(request)
-        if http_user:
-            try:
-                organization = Organization.objects.get(username=http_user[0])
-                logger.info(f"Matched organization {organization.name} from user {http_user[0]}")
-                return organization
-            except Organization.DoesNotExist:
-                logger.error(f"Could not find organization or user {http_user[0]}")
+        try:
+            http_user = BasicAuthentication().authenticate(request)
+            if http_user:
+                try:
+                    http_user = http_user[0]
+                    organization = Organization.objects.get(username=http_user)
+                    logger.info(f"Matched organization {organization.name} from user {http_user}")
+                    return organization
+                except Organization.DoesNotExist:
+                    logger.error(f"Could not find organization or user {http_user}")
+        except AuthenticationFailed:
+            logger.error(f"Could not authenticate user")
