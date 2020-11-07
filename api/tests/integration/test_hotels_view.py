@@ -270,7 +270,7 @@ class TestHotelsView(SimplenightAPITestCase):
         self.assertIsNotNone(booking_resp_obj)
         self.assertEqual("booking-foo", booking_resp_obj.transaction_id)
         self.assertEqual(GoogleStatus.SUCCESS, booking_resp_obj.status)
-        self.assertEqual("28954561478", booking_resp_obj.reservation.hotel_locators[0].id)
+        self.assertEqual("28954561478", booking_resp_obj.reservation.locator.id)
         self.assertEqual("700073765", booking_resp_obj.reservation.hotel_id)
         self.assertEqual("2020-11-11", str(booking_resp_obj.reservation.start_date))
         self.assertEqual("2020-11-16", str(booking_resp_obj.reservation.end_date))

@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 
 from api.locations import location_service
-from api.view.default_view import _response
+from api.views import _response
 
 
 class LocationsViewSet(viewsets.ViewSet):

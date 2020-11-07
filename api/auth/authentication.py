@@ -28,7 +28,6 @@ class Organization(models.Model):
 
     name = models.CharField(max_length=128)
     active = models.BooleanField(default=True)
-    username = models.CharField(max_length=32, null=True)
     api_daily_limit = models.IntegerField()
     api_burst_limit = models.IntegerField()
 
@@ -83,9 +82,6 @@ class OrganizationAPIKey(AbstractAPIKey):
 class HasOrganizationAPIKey(BaseHasAPIKey):
     model = OrganizationAPIKey
 
-    def authenticate(self, request: HttpRequest):
-        return self.has_permission(request, None), None
-
     def has_permission(self, request: HttpRequest, view: typing.Any) -> bool:
         if settings.DEBUG:
             return True
@@ -100,7 +96,6 @@ class OrganizationApiThrottle(SimpleRateThrottle):
     def __init__(self):
         self.rate = "5/min"
         self.api_key = None
-        self.organization = None
         super().__init__()
 
     def allow_request(self, request, view):
@@ -108,15 +103,10 @@ class OrganizationApiThrottle(SimpleRateThrottle):
             return True
 
         key = self.parser.get(request)
-        if key:
-            self.api_key = OrganizationAPIKey.objects.get_from_key(key)
-            self.organization = self.api_key.organization
-            self.rate = self.organization.api_daily_limit
-        elif request.user:
-            self.organization = Organization.objects.get(username=request.user)
-            self.rate = self.organization.api_daily_limit
+        self.api_key = OrganizationAPIKey.objects.get_from_key(key)
+        self.rate = self.api_key.organization.api_daily_limit
 
         return super().allow_request(request, view)
 
     def get_cache_key(self, request, view):
-        return self.organization.name
+        return self.api_key.organization.name

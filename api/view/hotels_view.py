@@ -1,21 +1,20 @@
 from rest_framework import viewsets
-from rest_framework.authentication import BasicAuthentication
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiThrottle
+from api.hotel.models.booking_model import HotelBookingRequest
 from api.common.common_models import from_json
 from api.common.request_cache import get_request_cache
 from api.hotel import hotel_service, google_hotel_service, booking_service
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
-from api.hotel.models.booking_model import HotelBookingRequest
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancelRequest
-from api.view.default_view import _response
+from api.views import _response
 
 
 class HotelViewSet(viewsets.ViewSet):
-    authentication_classes = (BasicAuthentication, HasOrganizationAPIKey)
+    permission_classes = (HasOrganizationAPIKey,)
     throttle_classes = (OrganizationApiThrottle,)
 
     @action(detail=False, url_path="search-by-location", methods=["GET", "POST"], name="Search Hotels")
