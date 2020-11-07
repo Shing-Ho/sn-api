@@ -1,7 +1,7 @@
 import distutils.util
 from collections import Callable
 
-from api.models.models import Organization, Feature
+from api.auth.authentication import Organization, Feature
 from api.common.request_cache import get_request_cache
 
 

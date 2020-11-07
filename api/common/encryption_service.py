@@ -10,7 +10,7 @@ from Crypto.Util import Padding
 from django.core.exceptions import ImproperlyConfigured
 
 try:
-    from api.models.models import Feature
+    from api.auth.authentication import Feature
     from api.common.request_context import get_request_context
 except ImproperlyConfigured:
     pass  # Ignore in tests

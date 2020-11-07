@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 
-from api.models.models import Organization, Feature
+from api.auth.authentication import Organization, Feature
 from api.common.context_middleware import RequestContextMiddleware
 from api.common.request_cache import RequestCacheMiddleware
 from api.hotel.adapters import adapter_service

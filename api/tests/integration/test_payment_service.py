@@ -2,9 +2,10 @@ from decimal import Decimal
 
 import pytest
 
+from api.auth.authentication import Feature
 from api.hotel.models.booking_model import Payment, PaymentMethod, SubmitErrorType
 from api.hotel.models.hotel_common_models import Address, Money
-from api.models.models import TransactionType, Feature
+from api.models.models import TransactionType
 from api.payments import payment_service
 from api.tests import test_objects
 from api.tests.online import test_stripe

@@ -1,4 +1,5 @@
 import typing
+from enum import Enum
 
 from django.conf import settings
 from django.db import models
@@ -7,8 +8,68 @@ from rest_framework.throttling import SimpleRateThrottle
 from rest_framework_api_key.models import AbstractAPIKey
 from rest_framework_api_key.permissions import BaseHasAPIKey, KeyParser
 
-from api.common.request_context import get_request_context
-from api.models.models import Organization
+
+class Feature(Enum):
+    ENABLED_ADAPTERS = "enabled_connectors"
+    TEST_MODE = "test_mode"
+    STRIPE_API_KEY = "stripe_api_key"
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name) for key in cls]
+
+
+class Organization(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "organization"
+        verbose_name = "Organization"
+        verbose_name_plural = "Organizations"
+
+    name = models.CharField(max_length=128)
+    active = models.BooleanField(default=True)
+    username = models.CharField(max_length=32, null=True)
+    api_daily_limit = models.IntegerField()
+    api_burst_limit = models.IntegerField()
+
+    def get_feature(self, feature: Feature):
+        try:
+            result = OrganizationFeatures.objects.get(organization_id=self.id, name=feature.value)
+            return result.value
+        except OrganizationFeatures.DoesNotExist:
+            return None
+
+    def set_feature(self, feature_type: Feature, value):
+        feature_name = feature_type.value
+        feature, _ = OrganizationFeatures.objects.get_or_create(organization_id=self.id, name=feature_name)
+
+        feature.value = value
+        feature.save()
+
+    def clear_feature(self, feature_type: Feature):
+        feature = OrganizationFeatures.objects.get(organization_id=self.id, name=feature_type.value)
+        if feature:
+            feature.delete()
+
+    def __str__(self):
+        return f"{self.name} ({self.id})"
+
+
+class OrganizationFeatures(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "organization_features"
+        unique_together = ("organization", "name")
+        verbose_name = "Organization Feature"
+        verbose_name_plural = "Organization Features"
+
+    id = models.AutoField(primary_key=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="org")
+    name = models.TextField(choices=Feature.choices())
+    value = models.TextField()
+
+    def organization_name(self):
+        return self.organization.name
 
 
 class OrganizationAPIKey(AbstractAPIKey):
@@ -29,14 +90,7 @@ class HasOrganizationAPIKey(BaseHasAPIKey):
         if settings.DEBUG:
             return True
 
-        api_key_exists = super().has_permission(request, view)
-        if api_key_exists:
-            return True
-
-        request_context = get_request_context()
-        organization = request_context.get_organization()
-        if organization:
-            return True
+        return super().has_permission(request, view)
 
 
 class OrganizationApiThrottle(SimpleRateThrottle):
@@ -65,7 +119,4 @@ class OrganizationApiThrottle(SimpleRateThrottle):
         return super().allow_request(request, view)
 
     def get_cache_key(self, request, view):
-        if self.organization:
-            return self.organization.name
-
-        return request.user
+        return self.organization.name

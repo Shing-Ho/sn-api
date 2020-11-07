@@ -1,6 +1,6 @@
 from django.test import Client
 
-from api.models.models import Organization, Feature
+from api.auth.authentication import Organization, Feature
 from api.tests.simplenight_api_testcase import SimplenightAPITestCase
 
 ENDPOINT = "/api/v1/hotels/status"
@@ -10,8 +10,8 @@ class TestOrganizationsAndAuthentication(SimplenightAPITestCase):
     def test_authentication_required(self):
         client_without_credentials = Client()
         response = client_without_credentials.get(ENDPOINT)
-        self.assertEqual(401, response.status_code)
-        self.assertEqual("Authentication credentials were not provided.", response.json()["detail"])
+        self.assertEqual(403, response.status_code)
+        self.assertEqual("Could not find organization", response.content.decode("utf-8"))
 
         key = self.create_api_key(organization_name="test")
 

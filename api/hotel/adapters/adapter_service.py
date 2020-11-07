@@ -1,7 +1,7 @@
 import distutils.util
 from typing import List
 
-from api.models.models import Feature
+from api.auth.authentication import Feature
 from api.common.request_context import get_request_context
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBeds
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter

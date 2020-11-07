@@ -2,7 +2,8 @@ from django import forms
 from django.contrib import admin
 from django.forms import TextInput
 
-from api.models.models import Booking, OrganizationFeatures
+from api.auth.authentication import OrganizationFeatures
+from api.models.models import Booking
 
 
 @admin.register(Booking)

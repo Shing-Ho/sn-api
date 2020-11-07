@@ -15,8 +15,7 @@ from api.view.default_view import _response
 
 
 class HotelViewSet(viewsets.ViewSet):
-    authentication_classes = (BasicAuthentication,)
-    permission_classes = (HasOrganizationAPIKey,)
+    authentication_classes = (BasicAuthentication, HasOrganizationAPIKey)
     throttle_classes = (OrganizationApiThrottle,)
 
     @action(detail=False, url_path="search-by-location", methods=["GET", "POST"], name="Search Hotels")
