@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.forms import TextInput
 
-from api.models.models import Booking, OrganizationFeatures
+from api.models.models import Booking, OrganizationFeatures, PropertyInfo
 
 
 @admin.register(Booking)
@@ -26,3 +26,10 @@ class OrganizationFeatureInline(admin.ModelAdmin):
     widgets = {
         "value": TextInput(attrs={"size": 20}),
     }
+
+
+@admin.register(PropertyInfo)
+class PropertyInfoAdmin(admin.ModelAdmin):
+    list_display = ("provider", "provider_code", "type", "language_code", "description")
+    list_filter = ("provider_code", "language_code")
+

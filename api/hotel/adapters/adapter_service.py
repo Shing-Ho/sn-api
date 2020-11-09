@@ -7,7 +7,7 @@ from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBeds
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
-from api.hotel.hotel_adapter import HotelAdapter
+from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.models.hotel_api_model import BaseHotelSearch
 
 HOTEL_ADAPTERS = {

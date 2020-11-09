@@ -1,4 +1,5 @@
 import decimal
+import uuid
 from collections import Sequence
 from datetime import datetime, date
 from unittest.mock import patch, Mock
@@ -30,7 +31,8 @@ from api.models.models import (
     HotelCancellationPolicy,
     ProviderHotel,
     TransactionType,
-    RecordLocator, Feature,
+    RecordLocator,
+    Feature,
 )
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
@@ -447,6 +449,67 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         )
 
         self.assertEqual(300, refund_transaction.transaction_amount)
+
+    def test_booking_error_payment_refunded(self):
+        transaction_id = str(uuid.uuid4())
+
+        booking_request = HotelBookingRequest(
+            api_version=1,
+            transaction_id=transaction_id,
+            hotel_id="ABC123",
+            language="en_US",
+            customer=Customer(
+                first_name="John", last_name="Doe", phone_number="5558675309", email="john@doe.foo", country="US"
+            ),
+            traveler=test_objects.traveler(),
+            room_code="sn-foo",
+            payment=test_objects.payment("41111111111111111"),
+        )
+
+        room_rate = test_objects.room_rate("foo", "100.0", base_rate="80", tax_rate="20")
+        simplenight_rate = test_objects.room_rate("sn-foo", "120", base_rate="96", tax_rate="24")
+        hotel = test_objects.hotel()
+
+        hotel_cache_service.save_provider_rate_in_cache(
+            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
+        )
+
+        payment_charge_id = str(uuid.uuid4())
+        payment_transaction = PaymentTransaction(
+            provider_name="stripe",
+            currency="USD",
+            transaction_amount=120.0,
+            transaction_type=TransactionType.CHARGE,
+            charge_id=payment_charge_id,
+        )
+
+        def mock_stripe_refund(**kwargs):
+            return {"id": kwargs["charge"], "amount": kwargs["amount"], "currency": "USD", "object": "foo"}
+
+        # Mock Stripe Refund
+        with patch("api.payments.stripe_service.stripe.Refund.create", mock_stripe_refund):
+            # Mock Stub Adapter booking method.  Throw an exception, to trigger a payment refund
+            with patch("api.hotel.adapters.stub.stub.StubHotelAdapter.booking") as mock_stub_booking:
+                mock_stub_booking.side_effect = Exception("Boom")
+                # Mock authorize transaction, return a mock payment transaction
+                with patch("api.payments.payment_service.authorize_payment") as mock_authorize_payment:
+                    mock_authorize_payment.return_value = payment_transaction
+                    with pytest.raises(BookingException):
+                        booking_service.book(booking_request)
+
+        booking = Booking.objects.get(transaction_id=transaction_id)
+        self.assertIsNotNone(booking)
+        self.assertEqual(transaction_id, booking.transaction_id)
+        self.assertEqual(BookingStatus.PENDING.value, booking.booking_status)
+
+        payment = PaymentTransaction.objects.filter(charge_id=payment_charge_id)
+        self.assertEqual(2, len(payment))
+        self.assertEqual(TransactionType.CHARGE, payment[0].transaction_type)
+        self.assertEqual(120.0, payment[0].transaction_amount)
+
+        self.assertEqual(TransactionType.REFUND, payment[1].transaction_type)
+        self.assertEqual(120.0, payment[1].transaction_amount)
+
 
     @staticmethod
     def _create_payment_transaction(booking, transaction_amount):

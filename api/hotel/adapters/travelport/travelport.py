@@ -5,7 +5,7 @@ from api.hotel.models.booking_model import HotelBookingRequest
 from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBuilder
 from api.hotel.adapters.travelport.search import TravelportHotelSearchBuilder
 from api.hotel.adapters.travelport.transport import TravelportTransport
-from api.hotel.hotel_adapter import HotelAdapter
+from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.models.hotel_api_model import (
     HotelDetailsSearchRequest,
     HotelDetails,

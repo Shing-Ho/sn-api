@@ -30,7 +30,7 @@ from api.hotel.adapters.hotelbeds.hotelbeds_search_models import (
     HotelBedsCheckRatesRS,
 )
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
-from api.hotel.hotel_adapter import HotelAdapter
+from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.models.hotel_api_model import (
     HotelDetails,
     AdapterHotel,

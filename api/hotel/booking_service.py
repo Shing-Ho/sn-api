@@ -62,31 +62,37 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
             auth_response.booking = booking
             auth_response.save()
 
-        # Save Simplenight Internal Room Rates
-        # Lookup Provider Rates in Cache
-        provider_rate = provider_rate_cache_payload.provider_rate
-        book_request.room_code = provider_rate.code
+        try:
+            # Save Simplenight Internal Room Rates
+            # Lookup Provider Rates in Cache
+            provider_rate = provider_rate_cache_payload.provider_rate
+            book_request.room_code = provider_rate.code
 
-        # Reset room rates with verified rates.  If prices mismatch, error will raise
-        verified_rates = _price_verification(provider=provider, rate=provider_rate)
-        book_request.room_code = verified_rates.code
-        reservation = adapter.booking(book_request)
-        reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
+            # Reset room rates with verified rates.  If prices mismatch, error will raise
+            verified_rates = _price_verification(provider=provider, rate=provider_rate)
+            book_request.room_code = verified_rates.code
+            reservation = adapter.booking(book_request)
+            reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
 
-        if not reservation or not reservation.locator:
-            logger.error(f"Could not book request: {book_request}")
-            raise AppException("Error during booking")
+            if not reservation or not reservation.locator:
+                logger.error(f"Could not book request: {book_request}")
+                raise AppException("Error during booking")
 
-        _set_booked_status(booking)
-        _persist_hotel(book_request, provider_rate_cache_payload, booking, reservation)
+            _set_booked_status(booking)
+            _persist_hotel(book_request, provider_rate_cache_payload, booking, reservation)
 
-        return HotelBookingResponse(
-            api_version=1,
-            transaction_id=book_request.transaction_id,
-            booking_id=simplenight_record_locator,
-            status=Status(success=True, message="success"),
-            reservation=reservation,
-        )
+            return HotelBookingResponse(
+                api_version=1,
+                transaction_id=book_request.transaction_id,
+                booking_id=simplenight_record_locator,
+                status=Status(success=True, message="success"),
+                reservation=reservation,
+            )
+
+        except Exception as e:
+            logger.exception(f"Booking Error.  Refunding {auth_response.charge_id} {auth_response.transaction_amount}")
+            refund(booking, auth_response, total_payment_amount.amount)
+            raise BookingException(BookingErrorCode.PROVIDER_BOOKING_FAILURE, str(e))
 
     except BookingException as e:
         raise e
