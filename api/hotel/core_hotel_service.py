@@ -5,7 +5,7 @@ from api import logger
 from api.hotel.models.hotel_common_models import RoomRate
 from api.hotel import markups, hotel_cache_service, hotel_mappings
 from api.hotel.adapters import adapter_service
-from api.hotel.hotel_adapter import HotelAdapter
+from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.models.hotel_api_model import (
     HotelDetails,
     HotelSpecificSearch,

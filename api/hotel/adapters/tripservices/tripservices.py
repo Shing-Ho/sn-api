@@ -4,7 +4,7 @@ from api.hotel.models.booking_model import HotelBookingRequest
 from api.hotel.models.hotel_common_models import RoomRate
 from api.hotel.adapters.tripservices.transport import TripServicesTransport
 from api.hotel.adapters.tripservices.tripservices_info import TripservicesInfo
-from api.hotel.hotel_adapter import HotelAdapter
+from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.models.hotel_api_model import (
     HotelDetails,
     AdapterHotel,
