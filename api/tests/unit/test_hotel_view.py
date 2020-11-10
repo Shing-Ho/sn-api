@@ -4,17 +4,17 @@ from unittest.mock import patch
 import requests_mock
 
 from api.common.common_models import from_json
-from api.hotel.models.hotel_common_models import RoomOccupancy
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.models.hotel_api_model import HotelLocationSearch, SimplenightHotel
-from api.tests.simplenight_api_testcase import SimplenightAPITestCase
+from api.hotel.models.hotel_common_models import RoomOccupancy
+from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
 
 BOOKING_ENDPOINT = "/api/v1/hotels/booking"
 SEARCH_BY_LOCATION = "/api/v1/hotels/search-by-location"
 
 
-class TestBookingView(SimplenightAPITestCase):
+class TestBookingView(SimplenightTestCase):
     def test_hotelbeds_availability(self):
         hotelbeds_location_response = load_test_resource("hotelbeds/search-by-location-response.json")
         hotelbeds_content_response = load_test_resource("hotelbeds/hotel-details-response.json")

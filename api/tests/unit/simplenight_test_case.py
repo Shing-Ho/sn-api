@@ -1,37 +1,67 @@
+import uuid
 from unittest.mock import Mock
 
 from django.test import TestCase
+from rest_framework.test import APIClient
 
 from api.auth.authentication import OrganizationAPIKey
+from api.common import request_context
 from api.models.models import Organization, Feature
 from api.common.context_middleware import RequestContextMiddleware
 from api.common.request_cache import RequestCacheMiddleware
 
 
 class SimplenightTestCase(TestCase):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.organization_name = str(uuid.uuid4())
+
     def setUp(self) -> None:
         self.request_cache = RequestCacheMiddleware(Mock())
         self.request_context = RequestContextMiddleware()
-        self.request_cache.process_request(Mock())
-        self.organization = self.create_organization()
+        self.organization = self.create_organization(self.organization_name)
         self.stub_feature(Feature.TEST_MODE, "true")
 
-    def create_organization(self, organization_name="TestOrganization"):
+        self.api_key = self.create_api_key(self.organization)
+        self.client = APIClient(HTTP_X_API_KEY=self.api_key)
+        self.mock_request()
+
+    def create_organization_and_client(self, organization_name, api_burst_limit=5, api_daily_limit=100):
+        organization = self.create_organization(organization_name, api_burst_limit, api_daily_limit)
+        api_key = self.create_api_key(organization)
+        return APIClient(HTTP_X_API_KEY=api_key)
+
+    def mock_request(self):
+        # Since we're not executing a real request, set the organization on the context
+        mock_request = Mock()
+        mock_request.META = {"HTTP_X_API_KEY": self.api_key}
+        self.request_cache.process_request(mock_request)
+        self.request_context.process_request(mock_request)
+
+    @staticmethod
+    def create_organization(organization_name, api_burst_limit=5, api_daily_limit=100):
         try:
             existing_organization = Organization.objects.get(name=organization_name)
             existing_organization.delete()
         except Organization.DoesNotExist:
             pass
 
-        organization = Organization.objects.create(name=organization_name, api_daily_limit=1000, api_burst_limit=50)
-        api_key = OrganizationAPIKey.objects.create_key(name="test-key", organization=organization)[1]
+        return Organization.objects.create(
+            name=organization_name, api_daily_limit=api_daily_limit, api_burst_limit=api_burst_limit
+        )
 
-        # Since we're not executing a real request, set the organization on the context
-        mock_request = Mock()
-        mock_request.META = {"HTTP_X_API_KEY": api_key}
-        self.request_context.process_request(mock_request)
-
-        return organization
+    @staticmethod
+    def create_api_key(organization):
+        _, key = OrganizationAPIKey.objects.create_key(name="test-key", organization=organization)
+        return key
 
     def stub_feature(self, feature: Feature, value):
+        request_context.clear_cache()
         self.organization.set_feature(feature, value)
+
+    def post(self, endpoint, obj, content_type="application/json"):
+        data = obj.json()
+        return self.client.post(endpoint, data=data, content_type=content_type)
+
+    def get(self, endpoint, **kwargs):
+        return self.client.get(endpoint, data=kwargs)

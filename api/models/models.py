@@ -346,6 +346,7 @@ class Feature(Enum):
     ENABLED_ADAPTERS = "enabled_connectors"
     TEST_MODE = "test_mode"
     STRIPE_API_KEY = "stripe_api_key"
+    PRICELINE_API_URL = "priceline_api_url"
 
     @classmethod
     def choices(cls):

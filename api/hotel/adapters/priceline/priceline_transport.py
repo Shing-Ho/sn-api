@@ -3,7 +3,10 @@ from enum import Enum
 import requests
 
 from api import logger
+from api.common.common_exceptions import FeatureNotFoundException
+from api.common.request_context import get_config
 from api.hotel.adapters.transport import Transport
+from api.models.models import Feature
 
 
 class PricelineTransport(Transport):
@@ -107,7 +110,10 @@ class PricelineTransport(Transport):
         if not self.test_mode:
             return "https://api.rezserver.com/api"
 
-        return "https://api-sandbox.rezserver.com/api"
+        try:
+            return get_config(Feature.PRICELINE_API_URL)
+        except FeatureNotFoundException:
+            return "https://api-sandbox.rezserver.com/api"
 
     def sales_report(self, **params):
         return self.get(self.Endpoint.SALES_REPORT, **params)
