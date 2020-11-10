@@ -1,3 +1,4 @@
+from django.http import HttpRequest, HttpResponse
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.decorators import action
@@ -7,7 +8,7 @@ from rest_framework.response import Response
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiDailyThrottle, OrganizationApiBurstThrottle
 from api.common.common_models import from_json
 from api.common.request_cache import get_request_cache
-from api.hotel import hotel_service, google_hotel_service, booking_service
+from api.hotel import hotel_service, google_hotel_service, booking_service, google_pricing_api
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
 from api.hotel.models.booking_model import HotelBookingRequest
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancelRequest
@@ -65,6 +66,15 @@ class HotelViewSet(viewsets.ViewSet):
     def booking_google(self, request):
         google_booking_request = from_json(request.data, GoogleBookingSubmitRequest)
         return _response(google_hotel_service.booking(google_booking_request))
+
+    @action(detail=False, url_path="google/properties", methods=["GET"], name="GoogleHotel Property API")
+    def properties(self, request):
+        provider = request.GET.get("provider", None)
+        if not provider:
+            provider = "giata"
+
+        results = google_pricing_api.generate_property_list(request.GET.get("country_codes"), provider_name=provider)
+        return HttpResponse(results, content_type="text/xml")
 
     @action(detail=False, url_path="status", methods=["GET"], name="Health Check")
     def status(self, _):
