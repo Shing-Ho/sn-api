@@ -36,10 +36,10 @@ steps:
   entrypoint: '/bin/bash'
   args:
   - '-xc'
-  - if [ $BRANCH_NAME = master -a $PROJECT_ID = sn-prod ]; then /builder/kubectl.bash set image deployment/simplenight-api simplenight-api=gcr.io/sn-prod/bog.simplenight-api:$COMMIT_SHA ; else echo "Not a master branch commit, skipping production deployment." ; fi
+  - if [ $BRANCH_NAME = master -a $PROJECT_ID = sn-prod ]; then /builder/kubectl.bash set image deployment/simplenight-api simplenight-api=gcr.io/$PROJECT_ID/bog.simplenight-api:$COMMIT_SHA ; else echo "Not a master branch commit, skipping production deployment." ; fi
   env:
-  - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
-  - 'CLOUDSDK_CONTAINER_CLUSTER=cluster01'
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bog-cluster01'
 - name: 'gcr.io/cloud-builders/kubectl'
   id: 'RegressionTest'
   entrypoint: '/bin/bash'
