@@ -1,8 +1,16 @@
 import distutils.util
+import time
 from collections import Callable
+from threading import RLock
 
-from api.models.models import Organization, Feature
+from cachetools import cached, LRUCache
+
+from api.common.common_exceptions import FeatureNotFoundException
 from api.common.request_cache import get_request_cache
+from api.models.models import Organization, Feature
+
+cache = LRUCache(maxsize=65536)
+lock = RLock()
 
 
 class RequestContext:
@@ -26,14 +34,29 @@ def get_config(feature: Feature, transform_fn: Callable = None):
     request_context = get_request_context()
     organization = request_context.get_organization()
 
-    feature_value = organization.get_feature(feature)
-    if not feature_value:
-        raise RuntimeError(f"Feature {feature.name} not found")
-    elif transform_fn:
-        return transform_fn(feature_value)
-    else:
-        return feature_value
+    def get_ttl_hash(seconds=30):
+        """Return the same value withing `seconds` time period"""
+        return round(time.time() / seconds)
+
+    def get_cache_key():
+        return f"{organization.name}.{feature.name}.{get_ttl_hash()}"
+
+    @cached(cache=cache, lock=lock, key=get_cache_key)
+    def _get_config():
+        feature_value = organization.get_feature(feature)
+        if not feature_value:
+            raise FeatureNotFoundException(feature)
+        elif transform_fn:
+            return transform_fn(feature_value)
+        else:
+            return feature_value
+
+    return _get_config()
 
 
-def get_config_bool(feature: Feature):
+def get_config_bool(feature: Feature) -> bool:
     return get_config(feature, transform_fn=distutils.util.strtobool)
+
+
+def clear_cache():
+    cache.clear()

@@ -3,9 +3,7 @@ from unittest.mock import patch
 
 import requests_mock
 from freezegun import freeze_time
-from rest_framework.test import APIClient
 
-from api.hotel.models.booking_model import Customer, PaymentMethod, CardType
 from api.common.common_models import from_json
 from api.hotel import hotel_cache_service
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
@@ -22,15 +20,16 @@ from api.hotel.converter.google_models import (
     GoogleBookingResponse,
     GoogleStatus,
 )
+from api.hotel.models.booking_model import Customer, PaymentMethod, CardType
 from api.hotel.models.hotel_api_model import (
     HotelSpecificSearch,
     HotelLocationSearch,
     SimplenightHotel,
 )
 from api.hotel.models.hotel_common_models import RoomOccupancy, Address
-from api.models.models import Booking, Organization, Feature
+from api.models.models import Booking, Feature
 from api.tests import test_objects
-from api.tests.simplenight_api_testcase import SimplenightAPITestCase
+from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
 
 SEARCH_BY_ID = "/api/v1/hotels/search-by-id"
@@ -40,7 +39,7 @@ BOG_BOOKING = "/api/v1/hotels/google/booking"
 BOG_SEARCH_BY_ID = "/api/v1/hotels/google/search-by-id"
 
 
-class TestHotelsView(SimplenightAPITestCase):
+class TestHotelsView(SimplenightTestCase):
     def test_search_by_id(self):
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
@@ -171,12 +170,8 @@ class TestHotelsView(SimplenightAPITestCase):
             party=RoomParty(children=[10], adults=1),
         )
 
-        # Setup organization configurations
-        api_key = self.create_api_key(organization_name="Test_BOG_HotelAvail")
-        organization = Organization.objects.get(name="Test_BOG_HotelAvail")
-        organization.set_feature(Feature.TEST_MODE, True)
-        organization.set_feature(Feature.ENABLED_ADAPTERS, "priceline")
-        client = APIClient(HTTP_X_API_KEY=api_key)
+        self.stub_feature(Feature.TEST_MODE, True)
+        self.stub_feature(Feature.ENABLED_ADAPTERS, "priceline")
 
         priceline_hotel_id_response = load_test_resource("priceline/bog1-availability-response.json")
         transport = PricelineTransport(test_mode=True)
@@ -188,7 +183,7 @@ class TestHotelsView(SimplenightAPITestCase):
                 mock_find_provider.return_value = "700363264"
                 with requests_mock.Mocker() as mocker:
                     mocker.get(avail_endpoint, text=priceline_hotel_id_response)
-                    response = self._post(endpoint=BOG_SEARCH_BY_ID, data=search, client=client)
+                    response = self._post(endpoint=BOG_SEARCH_BY_ID, data=search)
 
         self.assertEqual(200, response.status_code)
 
@@ -245,6 +240,11 @@ class TestHotelsView(SimplenightAPITestCase):
             ),
         )
 
+        # Reset test request context.  This is necessary since using self.client in the same
+        # test resets the request context, clearing its state at the end of the request
+        # Could potentially use some more thought
+        self.mock_request()
+
         priceline_contract_response = load_test_resource("priceline/bog1-contract-response.json")
         priceline_booking_response = load_test_resource("priceline/bog1-booking-response.json")
         booking_endpoint = transport.endpoint(PricelineTransport.Endpoint.EXPRESS_BOOK)
@@ -263,7 +263,7 @@ class TestHotelsView(SimplenightAPITestCase):
                 with requests_mock.Mocker() as mocker:
                     mocker.post(booking_endpoint, text=priceline_booking_response)
                     mocker.post(contract_endpoint, text=priceline_contract_response)
-                    response = self._post(endpoint=BOG_BOOKING, data=booking_request, client=client)
+                    response = self._post(endpoint=BOG_BOOKING, data=booking_request)
 
         booking_resp_obj = GoogleBookingResponse.parse_raw(response.content)
         self.assertIsNotNone(booking_resp_obj)
@@ -280,8 +280,5 @@ class TestHotelsView(SimplenightAPITestCase):
         self.assertIsNotNone(saved_booking)
         self.assertEqual("2020-01-01", str(saved_booking.booking_date.date()))
 
-    def _post(self, endpoint, data, client=None):
-        if client is None:
-            client = self.client
-
-        return client.post(path=endpoint, data=data.json(), format="json")
+    def _post(self, endpoint, data):
+        return self.client.post(path=endpoint, data=data.json(), format="json")

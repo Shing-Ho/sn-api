@@ -41,6 +41,7 @@ def search_by_id(search_request: HotelSpecificSearch) -> Hotel:
         hotel = adapters[0].search_by_id(adapter_search_request)
         return _process_hotels(hotel)
     except Exception:
+        logger.exception(f"Error processing {adapter_name}")
         raise AvailabilityException(
             f"Error: Exception while processing adapter {adapter_name}", error_type=AvailabilityErrorCode.PROVIDER_ERROR
         )

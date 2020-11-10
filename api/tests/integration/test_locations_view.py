@@ -1,11 +1,12 @@
 from api.tests import model_helper
-from api.tests.simplenight_api_testcase import SimplenightAPITestCase
+
+from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 LOCATION_BY_PREFIX_ENDPOINT = "/api/v1/locations/prefix"
 LOCATION_BY_ID_ENDPOINT = "/api/v1/locations/id"
 
 
-class TestLocationsView(SimplenightAPITestCase):
+class TestLocationsView(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
         geoname_one = model_helper.create_geoname(1, "Test One", "FOO", "US")
