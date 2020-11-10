@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiThrottle
+from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiDailyThrottle, OrganizationApiBurstThrottle
 from api.common.common_models import from_json
 from api.common.request_cache import get_request_cache
 from api.hotel import hotel_service, google_hotel_service, booking_service
@@ -17,7 +17,7 @@ from api.view.default_view import _response
 class HotelViewSet(viewsets.ViewSet):
     authentication_classes = (BasicAuthentication,)
     permission_classes = (HasOrganizationAPIKey,)
-    throttle_classes = (OrganizationApiThrottle,)
+    throttle_classes = (OrganizationApiDailyThrottle, OrganizationApiBurstThrottle)
 
     @action(detail=False, url_path="search-by-location", methods=["GET", "POST"], name="Search Hotels")
     def search_by_location(self, request: Request):

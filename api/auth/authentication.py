@@ -39,33 +39,59 @@ class HasOrganizationAPIKey(BaseHasAPIKey):
             return True
 
 
-class OrganizationApiThrottle(SimpleRateThrottle):
+class OrganizationApiDailyThrottle(SimpleRateThrottle):
     parser = KeyParser()
     scope = "user"
 
     def __init__(self):
         self.rate = "5/min"
-        self.api_key = None
-        self.organization = None
         super().__init__()
 
     def allow_request(self, request, view):
         if settings.DEBUG:
             return True
 
-        key = self.parser.get(request)
-        if key:
-            self.api_key = OrganizationAPIKey.objects.get_from_key(key)
-            self.organization = self.api_key.organization
-            self.rate = self.organization.api_daily_limit
-        elif request.user:
-            self.organization = Organization.objects.get(username=request.user)
-            self.rate = self.organization.api_daily_limit
+        organization = get_request_context().get_organization()
+        if organization:
+            self.num_requests = organization.api_daily_limit
+            self.duration = 86400
 
-        return super().allow_request(request, view)
+        allow_request = super().allow_request(request, view)
+
+        return allow_request
 
     def get_cache_key(self, request, view):
-        if self.organization:
-            return self.organization.name
+        organization = get_request_context().get_organization()
+        if organization:
+            return f"daily.{organization.name}"
 
-        return request.user
+        return f"daily.{request.user}"
+
+
+class OrganizationApiBurstThrottle(SimpleRateThrottle):
+    parser = KeyParser()
+    scope = "user"
+
+    def __init__(self):
+        self.rate = "1/minute"
+        super().__init__()
+
+    def allow_request(self, request, view):
+        if settings.DEBUG:
+            return True
+
+        organization = get_request_context().get_organization()
+        if organization:
+            self.num_requests = organization.api_burst_limit
+            self.duration = 60
+
+        allow_request = super().allow_request(request, view)
+
+        return allow_request
+
+    def get_cache_key(self, request, view):
+        organization = get_request_context().get_organization()
+        if organization:
+            return f"burst.{organization.name}"
+
+        return f"burst.{request.user}"
