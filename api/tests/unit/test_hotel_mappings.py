@@ -32,7 +32,7 @@ class TestHotelMappings(TestCase):
         self.assertEqual("Hotel 345", hotel_mappings.find_provider_hotel("SN_345", "foo").hotel_name)
         self.assertIsNone(hotel_mappings.find_provider_hotel_id("SN_234", "foo"))
 
-    def test_simplenight_to_provider_code_map(self):
+    def test_provider_to_simplenight_map(self):
         provider = model_helper.create_provider(provider_name="foo")
         model_helper.create_provider_hotel(provider, "123", "Hotel 123")
         model_helper.create_provider_hotel(provider, "234", "Hotel 234")
@@ -41,8 +41,25 @@ class TestHotelMappings(TestCase):
         ProviderMapping(provider=provider, giata_code="SN_123", provider_code="123").save()
         ProviderMapping(provider=provider, giata_code="SN_345", provider_code="345").save()
 
-        simplenight_to_provider_map = hotel_mappings.find_simplenight_to_provider_code_map(
+        simplenight_to_provider_map = hotel_mappings.find_provider_to_simplenight_map(
             provider_name="foo", provider_codes=["123", "345"]
+        )
+
+        self.assertEqual(2, len(simplenight_to_provider_map))
+        self.assertEqual("SN_123", simplenight_to_provider_map["123"])
+        self.assertEqual("SN_345", simplenight_to_provider_map["345"])
+
+    def test_simplenight_to_provider_map(self):
+        provider = model_helper.create_provider(provider_name="foo")
+        model_helper.create_provider_hotel(provider, "123", "Hotel 123")
+        model_helper.create_provider_hotel(provider, "234", "Hotel 234")
+        model_helper.create_provider_hotel(provider, "345", "Hotel 345")
+
+        ProviderMapping(provider=provider, giata_code="SN_123", provider_code="123").save()
+        ProviderMapping(provider=provider, giata_code="SN_345", provider_code="345").save()
+
+        simplenight_to_provider_map = hotel_mappings.find_simplenight_to_provider_map(
+            provider_name="foo", giata_codes=["SN_123", "SN_345"]
         )
 
         self.assertEqual(2, len(simplenight_to_provider_map))

@@ -16,8 +16,9 @@ from api.hotel.models.hotel_api_model import (
     BaseHotelSearch,
     Image,
     ImageType,
+    HotelBatchSearch,
 )
-from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterOccupancy
+from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterOccupancy, AdapterHotelBatchSearch
 from api.models.models import ProviderImages, ProviderMapping
 from api.view.exceptions import SimplenightApiException, AvailabilityException, AvailabilityErrorCode
 
@@ -39,6 +40,23 @@ def search_by_id(search_request: HotelSpecificSearch) -> Hotel:
 
     try:
         hotel = adapters[0].search_by_id(adapter_search_request)
+        return _process_hotels(hotel)
+    except Exception:
+        logger.exception(f"Error processing {adapter_name}")
+        raise AvailabilityException(
+            f"Error: Exception while processing adapter {adapter_name}", error_type=AvailabilityErrorCode.PROVIDER_ERROR
+        )
+
+
+def search_by_id_batch(search_request: HotelBatchSearch) -> Hotel:
+    adapters_to_search = adapter_service.get_adapters_to_search(search_request)
+    adapters = adapter_service.get_adapters(adapters_to_search)
+
+    adapter_name = adapters[0].get_provider_name()
+    adapter_search_request = _adapter_batch_hotel_id_search_request(search_request, adapter_name)
+
+    try:
+        hotel = adapters[0].search_by_id_batch(adapter_search_request)
         return _process_hotels(hotel)
     except Exception:
         logger.exception(f"Error processing {adapter_name}")
@@ -207,4 +225,30 @@ def _adapter_search_request(search: HotelSpecificSearch, provider_name: str) -> 
         currency=search.currency,
         provider_hotel_id=provider_hotel_id,
         simplenight_hotel_id=search.hotel_id,
+    )
+
+
+def _adapter_batch_hotel_id_search_request(search: HotelBatchSearch, provider_name: str) -> AdapterHotelBatchSearch:
+    hotel_ids = search.hotel_ids
+    simplenight_to_provider_map = hotel_mappings.find_simplenight_to_provider_map(provider_name, hotel_ids)
+    if len(simplenight_to_provider_map) == 0:
+        raise AvailabilityException(
+            "Could not find any mapped hotels to search in batch", AvailabilityErrorCode.HOTEL_NOT_FOUND
+        )
+
+    unmatched_hotel_ids = set(hotel_ids) - set(simplenight_to_provider_map.keys())
+    logger.info(f"Created adapter batch search for {provider_name}. Unmatched IDs = {unmatched_hotel_ids}")
+
+    occupancy = AdapterOccupancy(
+        adults=search.occupancy.adults, children=search.occupancy.children, num_rooms=search.occupancy.num_rooms
+    )
+
+    return AdapterHotelBatchSearch(
+        start_date=search.start_date,
+        end_date=search.end_date,
+        occupancy=occupancy,
+        language=search.language,
+        currency=search.currency,
+        simplenight_hotel_ids=list(simplenight_to_provider_map.keys()),
+        provider_hotel_ids=list(simplenight_to_provider_map.values()),
     )

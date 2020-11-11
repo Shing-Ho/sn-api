@@ -10,7 +10,7 @@ from api.hotel.models.hotel_api_model import (
     AdapterHotel,
 )
 from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterLocationSearch, AdapterBaseSearch, \
-    AdapterCancelRequest, AdapterCancelResponse
+    AdapterCancelRequest, AdapterCancelResponse, AdapterHotelBatchSearch
 
 
 class TripservicesAdapter(HotelAdapter):
@@ -25,6 +25,9 @@ class TripservicesAdapter(HotelAdapter):
 
     def search_by_id(self, search: AdapterHotelSearch) -> AdapterHotel:
         pass
+
+    def search_by_id_batch(self, search_request: AdapterHotelBatchSearch) -> List[AdapterHotel]:
+        raise NotImplemented("Search by ID Batch Not Implemented")
 
     def details(self, *args) -> HotelDetails:
         pass

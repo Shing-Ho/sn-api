@@ -14,6 +14,7 @@ from api.hotel.models.adapter_models import (
     AdapterOccupancy,
     AdapterLocationSearch,
     AdapterCancelRequest,
+    AdapterHotelBatchSearch,
 )
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancellationSummary
 from api.hotel.models.hotel_common_models import RoomOccupancy, RateType
@@ -321,3 +322,37 @@ class TestPricelineUnit(SimplenightTestCase):
                 priceline.booking(booking_request)
 
         self.assertEqual("Hotel.Express.Book: Invalid name_first", str(e.value))
+
+    def test_priceline_search_by_hotel_id_batch(self):
+        transport = PricelineTransport(test_mode=True)
+        priceline = PricelineAdapter(transport)
+
+        hotel_ids = ["700363264", "702812247", "700243838"]
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=35)
+        search = AdapterHotelBatchSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=AdapterOccupancy(),
+            provider_hotel_ids=hotel_ids,
+            simplenight_hotel_ids=["SN123", "SN456", "SN789"],
+        )
+
+        resource = load_test_resource("priceline/hotel-express-batch.json")
+        endpoint = transport.endpoint(PricelineTransport.Endpoint.HOTEL_EXPRESS)
+        with requests_mock.Mocker() as mocker:
+            mocker.get(endpoint, text=resource)
+            results = priceline.search_by_id_batch(search)
+
+        self.assertIsNotNone(results)
+        self.assertEqual(3, len(results))
+
+        results.sort(key=lambda x: hotel_ids.index(x.hotel_id))
+        self.assertEqual("700363264", results[0].hotel_id)
+        self.assertEqual("Best Western Plus Bayside Hotel", results[0].hotel_details.name)
+
+        self.assertEqual("702812247", results[1].hotel_id)
+        self.assertEqual("Hyatt Place San Francisco/Downtown", results[1].hotel_details.name)
+
+        self.assertEqual("700243838", results[2].hotel_id)
+        self.assertEqual("Hyatt Centric Fisherman's Wharf San Francisco", results[2].hotel_details.name)

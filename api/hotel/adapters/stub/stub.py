@@ -4,9 +4,17 @@ import uuid
 from datetime import timedelta
 from typing import List
 
-from api.hotel.models.booking_model import Reservation, HotelBookingRequest, Locator
 from api.hotel import hotel_cache_service
 from api.hotel.adapters.hotel_adapter import HotelAdapter
+from api.hotel.models.adapter_models import (
+    AdapterLocationSearch,
+    AdapterBaseSearch,
+    AdapterHotelList,
+    AdapterCancelRequest,
+    AdapterCancelResponse,
+    AdapterHotelBatchSearch,
+)
+from api.hotel.models.booking_model import Reservation, HotelBookingRequest, Locator
 from api.hotel.models.hotel_api_model import (
     AdapterHotel,
     RoomType,
@@ -23,8 +31,6 @@ from api.hotel.models.hotel_api_model import (
     CancellationSummary,
 )
 from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, RoomRate
-from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelList, \
-    AdapterCancelRequest, AdapterCancelResponse
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
 
@@ -62,6 +68,9 @@ class StubHotelAdapter(HotelAdapter):
         )
 
         return response
+
+    def search_by_id_batch(self, search_request: AdapterHotelBatchSearch) -> List[AdapterHotel]:
+        raise NotImplemented("Search by ID Batch Not Implemented")
 
     def recheck(self, room_rate: RoomRate) -> RoomRate:
         return room_rate
