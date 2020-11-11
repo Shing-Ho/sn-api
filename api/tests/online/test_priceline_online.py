@@ -10,7 +10,7 @@ from api.hotel.models.adapter_models import (
     AdapterLocationSearch,
     AdapterOccupancy,
     AdapterHotelSearch,
-    AdapterCancelRequest,
+    AdapterCancelRequest, AdapterHotelBatchSearch,
 )
 from api.models.models import CityMap, HotelBooking
 from api.tests import test_objects, model_helper
@@ -74,6 +74,35 @@ class TestPricelineIntegration(SimplenightTestCase):
         self.assertIsNotNone(results)
         self.assertEqual("700363264", results.hotel_id)
         self.assertEqual("Best Western Plus Bayside Hotel", results.hotel_details.name)
+
+    def test_search_by_hotel_id_batch(self):
+        transport = PricelineTransport(test_mode=True)
+        priceline = PricelineAdapter(transport)
+
+        hotel_ids = ["700363264", "702812247", "700243838"]
+        checkin = datetime.now().date() + timedelta(days=30)
+        checkout = datetime.now().date() + timedelta(days=35)
+        search = AdapterHotelBatchSearch(
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=AdapterOccupancy(),
+            provider_hotel_ids=hotel_ids,
+            simplenight_hotel_ids=["SN123", "SN456", "SN789"],
+        )
+
+        results = priceline.search_by_id_batch(search)
+        self.assertIsNotNone(results)
+        self.assertEqual(3, len(results))
+
+        results.sort(key=lambda x: hotel_ids.index(x.hotel_id))
+        self.assertEqual("700363264", results[0].hotel_id)
+        self.assertEqual("Best Western Plus Bayside Hotel", results[0].hotel_details.name)
+
+        self.assertEqual("702812247", results[1].hotel_id)
+        self.assertEqual("Hyatt Place San Francisco/Downtown", results[1].hotel_details.name)
+
+        self.assertEqual("700243838", results[2].hotel_id)
+        self.assertEqual("Hyatt Centric Fisherman's Wharf San Francisco", results[2].hotel_details.name)
 
     def test_recheck_room_rate(self):
         transport = PricelineTransport(test_mode=True)

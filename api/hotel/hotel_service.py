@@ -13,7 +13,7 @@ from api.hotel.models.hotel_api_model import (
     SimplenightRoomType,
     RoomType,
     RatePlan,
-    SimplenightHotel,
+    SimplenightHotel, HotelBatchSearch,
 )
 
 
@@ -30,6 +30,11 @@ def search_by_location(search_request: HotelLocationSearch) -> List[SimplenightH
 def search_by_id(search_request: HotelSpecificSearch) -> SimplenightHotel:
     hotel = core_hotel_service.search_by_id(search_request)
     return _convert_hotel_to_front_end_format(hotel)
+
+
+def search_by_id_batch(search_request: HotelBatchSearch) -> List[SimplenightHotel]:
+    hotels = core_hotel_service.search_by_id_batch(search_request)
+    return list(map(_convert_hotel_to_front_end_format, hotels))
 
 
 def details(hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:

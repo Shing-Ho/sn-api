@@ -14,7 +14,8 @@ from api.hotel.models.hotel_api_model import (
     GeoLocation,
 )
 from api.hotel.models.hotel_common_models import Address, RateType, Money, DailyRate, RoomRate
-from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterCancelRequest, AdapterCancelResponse
+from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterCancelRequest, AdapterCancelResponse, \
+    AdapterHotelBatchSearch
 
 secrets = {
     "url": "https://americas.universal-api.travelport.com/B2BGateway/connect/uAPI/HotelService",
@@ -50,6 +51,9 @@ class TravelportHotelAdapter(HotelAdapter):
 
     def search_by_id(self, search_request: HotelSpecificSearch) -> AdapterHotel:
         raise NotImplemented("Search by ID Not Implemented")
+
+    def search_by_id_batch(self, search_request: AdapterHotelBatchSearch) -> List[AdapterHotel]:
+        raise NotImplemented("Search by ID Batch Not Implemented")
 
     def recheck(self, room_rate: RoomRate) -> RoomRate:
         raise NotImplemented("Recheck price API not implemented")

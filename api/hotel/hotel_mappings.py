@@ -8,7 +8,7 @@ from api.models.models import ProviderMapping, ProviderHotel
 
 @ttl_cache(maxsize=65536, ttl=86400)
 def find_provider_hotel_id(simplenight_hotel_id: str, provider_name: str) -> Optional[str]:
-    logger.info(f"Searching for {provider_name} provider code using SN ID {simplenight_hotel_id}")
+    logger.info(f"Finding hotel mappings for {provider_name} using SN ID {simplenight_hotel_id}")
 
     try:
         mapping = ProviderMapping.objects.get(provider__name=provider_name, giata_code=simplenight_hotel_id)
@@ -47,9 +47,17 @@ def find_simplenight_hotel_id(provider_hotel_id: str, provider_name: str) -> Opt
         logger.warn(f"Could not find Simplenight ID for {provider_name }ID {provider_hotel_id}")
 
 
-def find_simplenight_to_provider_code_map(provider_name: str, provider_codes: List[str]) -> Dict[str, str]:
-    simplenight_hotel_mappings = ProviderMapping.objects.filter(
+def find_provider_to_simplenight_map(provider_name: str, provider_codes: List[str]) -> Dict[str, str]:
+    provider_simplenight_map = ProviderMapping.objects.filter(
         provider__name=provider_name, provider_code__in=provider_codes
     )
 
-    return {x.giata_code: x.provider_code for x in simplenight_hotel_mappings}
+    return {x.provider_code: x.giata_code for x in provider_simplenight_map}
+
+
+def find_simplenight_to_provider_map(provider_name, giata_codes: List[str]) -> Dict[str, str]:
+    simplenight_provider_map = ProviderMapping.objects.filter(
+        provider__name=provider_name, giata_code__in=giata_codes
+    )
+
+    return {x.giata_code: x.provider_code for x in simplenight_provider_map}

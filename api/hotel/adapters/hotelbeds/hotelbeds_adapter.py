@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import List, Union, Optional
 
 from api import logger
-from api.hotel.models.booking_model import HotelBookingRequest, Reservation, Locator
+from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_booking_models import (
     HotelBedsBookingRQ,
     HotelBedsBookingLeadTraveler,
@@ -18,7 +18,11 @@ from api.hotel.adapters.hotelbeds.hotelbeds_common_models import (
     HotelBedsException,
     HOTELBEDS_AMENITY_MAPPING,
 )
-from api.hotel.adapters.hotelbeds.hotelbeds_hotel_details_models import HotelBedsHotelDetailsRS, HotelBedsHotelDetail, HotelBedsAmenity
+from api.hotel.adapters.hotelbeds.hotelbeds_hotel_details_models import (
+    HotelBedsHotelDetailsRS,
+    HotelBedsHotelDetail,
+    HotelBedsAmenity,
+)
 from api.hotel.adapters.hotelbeds.hotelbeds_search_models import (
     HotelBedsSearchBuilder,
     HotelBedsAvailabilityRS,
@@ -30,7 +34,15 @@ from api.hotel.adapters.hotelbeds.hotelbeds_search_models import (
     HotelBedsCheckRatesRS,
 )
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
-from api.hotel.adapters.hotel_adapter import HotelAdapter
+from api.hotel.models.adapter_models import (
+    AdapterLocationSearch,
+    AdapterBaseSearch,
+    AdapterHotelSearch,
+    AdapterCancelRequest,
+    AdapterCancelResponse,
+    AdapterHotelBatchSearch,
+)
+from api.hotel.models.booking_model import HotelBookingRequest, Reservation, Locator
 from api.hotel.models.hotel_api_model import (
     HotelDetails,
     AdapterHotel,
@@ -40,8 +52,6 @@ from api.hotel.models.hotel_api_model import (
     CancellationSummary,
 )
 from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, RoomRate
-from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterBaseSearch, AdapterHotelSearch, \
-    AdapterCancelRequest, AdapterCancelResponse
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
@@ -88,8 +98,11 @@ class HotelBeds(HotelAdapter):
 
         return HotelBedsAvailabilityRS.parse_raw(response.text)
 
+    def search_by_id_batch(self, search_request: AdapterHotelBatchSearch) -> List[AdapterHotel]:
+        raise NotImplemented("Search by ID Batch Not Implemented")
+
     def search_by_id(self, search_request: AdapterHotelSearch) -> AdapterHotel:
-        pass
+        raise NotImplemented("Search by ID Not Implemented")
 
     def details(self, hotel_codes: Union[List[str], str], language: str) -> List[HotelDetails]:
         hotel_details_response = self._details(hotel_codes, language)

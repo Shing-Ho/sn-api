@@ -25,6 +25,11 @@ class AdapterHotelSearch(AdapterBaseSearch):
     simplenight_hotel_id: str
 
 
+class AdapterHotelBatchSearch(AdapterBaseSearch):
+    provider_hotel_ids: List[str]
+    simplenight_hotel_ids: List[str]
+
+
 class AdapterLocationSearch(AdapterBaseSearch):
     location_id: str
 

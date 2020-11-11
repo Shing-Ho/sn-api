@@ -21,6 +21,7 @@ from api.hotel.models.adapter_models import (
     AdapterHotelSearch,
     AdapterCancelRequest,
     AdapterCancelResponse,
+    AdapterHotelBatchSearch,
 )
 from api.hotel.models.booking_model import (
     HotelBookingRequest,
@@ -88,6 +89,19 @@ class PricelineAdapter(HotelAdapter):
         self._apply_room_details(hotel)
 
         return hotel
+
+    # TODO (JLM): Combine with search_by_id
+    def search_by_id_batch(self, search: AdapterHotelBatchSearch) -> List[AdapterHotel]:
+        request = self._create_hotel_id_batch_search(search)
+        logger.info(f"Initiating Priceline Hotel Express batch Search: {request}")
+
+        response = self.transport.hotel_express(**request)
+        hotel_results = self._check_hotel_express_response_and_get_results(response)
+        hotels = list(self._create_hotel_from_response(search, x) for x in hotel_results)
+
+        self._enrich_hotels(hotels)
+
+        return hotels
 
     def details(self, *args) -> HotelDetails:
         pass
@@ -248,6 +262,12 @@ class PricelineAdapter(HotelAdapter):
             **self._create_base_search(search),
             "hotel_ids": search.provider_hotel_id,
         }
+
+    def _create_hotel_id_batch_search(self, search: AdapterHotelBatchSearch):
+        hotel_search = self._create_base_search(search)
+        hotel_search["hotel_ids"] = str.join(",", search.provider_hotel_ids)
+
+        return hotel_search
 
     def _create_city_search(self, search: AdapterLocationSearch):
         priceline_location = self.get_provider_location(search)

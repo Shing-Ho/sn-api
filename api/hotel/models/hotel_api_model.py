@@ -63,6 +63,10 @@ class HotelSpecificSearch(BaseHotelSearch):
     hotel_id: str = None
 
 
+class HotelBatchSearch(BaseHotelSearch):
+    hotel_ids: List[str] = Field(default_factory=list)
+
+
 class HotelDetailsSearchRequest(SimplenightModel):
     hotel_code: str
     start_date: date

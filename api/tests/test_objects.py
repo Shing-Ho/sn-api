@@ -2,6 +2,7 @@ import decimal
 import uuid
 from datetime import date, timedelta, datetime
 
+from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy, AdapterHotelSearch
 from api.hotel.models.booking_model import (
     Customer,
     Traveler,
@@ -11,9 +12,17 @@ from api.hotel.models.booking_model import (
     PaymentMethod,
     HotelBookingRequest,
 )
-from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, RoomRate
-from api.hotel.models.hotel_api_model import AdapterHotel, RoomType, HotelSpecificSearch, HotelDetails
-from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy, AdapterHotelSearch
+from api.hotel.models.hotel_api_model import (
+    AdapterHotel,
+    RoomType,
+    HotelSpecificSearch,
+    HotelDetails,
+    SimplenightHotel,
+    SimplenightRoomType,
+    CancellationSummary,
+    CancellationPolicy,
+)
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, RoomRate, Money
 from api.tests import to_money
 
 
@@ -31,6 +40,30 @@ def hotel(room_rates=None):
         room_types=[],
         rate_plans=[],
         hotel_details=HotelDetails(name="Hotel Foo", address=address(), hotel_code="SN123"),
+    )
+
+
+def simplenight_hotel(hotel_id="1"):
+    return SimplenightHotel(
+        hotel_id=hotel_id,
+        start_date=date(2020, 1, 1),
+        end_date=date(2020, 1, 2),
+        occupancy=RoomOccupancy(adults=1),
+        room_types=[
+            SimplenightRoomType(
+                code="foo_1",
+                name="Foo_1",
+                amenities=[],
+                photos=[],
+                capacity=RoomOccupancy(adults=1),
+                total_base_rate=Money(amount=decimal.Decimal("80"), currency="USD"),
+                total_tax_rate=Money(amount=decimal.Decimal("20"), currency="USD"),
+                total=Money(amount=decimal.Decimal("100"), currency="USD"),
+                avg_nightly_rate=Money(amount=decimal.Decimal("100"), currency="USD"),
+                cancellation_policy=CancellationPolicy(summary=CancellationSummary.NON_REFUNDABLE),
+                rate_type=RateType.BOOKABLE,
+            )
+        ],
     )
 
 

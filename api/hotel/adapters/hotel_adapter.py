@@ -10,7 +10,7 @@ from api.hotel.models.hotel_api_model import (
     HotelDetails,
 )
 from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterLocationSearch, AdapterCancelRequest, \
-    AdapterCancelResponse
+    AdapterCancelResponse, AdapterHotelBatchSearch
 from api.locations import location_service
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
@@ -24,6 +24,11 @@ class HotelAdapter(abc.ABC):
     @abc.abstractmethod
     def search_by_id(self, search_request: AdapterHotelSearch) -> AdapterHotel:
         """Search a hotel provider for a specific hotel"""
+        pass
+
+    @abc.abstractmethod
+    def search_by_id_batch(self, search_request: AdapterHotelBatchSearch) -> List[AdapterHotel]:
+        """Search for several hotels by hotel ID."""
         pass
 
     @abc.abstractmethod
