@@ -101,6 +101,7 @@ def serialize_property_list(provider_hotels):
 def _get_element(tag, content, cdata=True, **attribs):
     element = etree.Element(tag)
     if content:
+        content = content.strip()
         if cdata:
             element.text = etree.CDATA(content)
         else:
