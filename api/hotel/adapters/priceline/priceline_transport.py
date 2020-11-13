@@ -22,6 +22,7 @@ class PricelineTransport(Transport):
         SALES_REPORT = "/shared/getTRK.Sales.Select.Hotel"
         AMENITIES = "/shared/getBOF2.Downloads.Hotel.Amenities"
         HOTEL_CHAINS = "/shared/getBOF2.Downloads.Hotel.Chains"
+        POLICIES = "/shared/getPolicy.Hotel"
 
     def __init__(self, test_mode=True, refid="10046"):
         super().__init__()
@@ -87,6 +88,9 @@ class PricelineTransport(Transport):
 
     def photos_download(self, **params):
         return self.get(self.Endpoint.PHOTOS_DOWNLOAD, **params)
+
+    def policies_download(self, **params):
+        return self.get(self.Endpoint.POLICIES, **params)
 
     def endpoint(self, priceline_endpoint: Endpoint):
         return f"{self._get_host()}{priceline_endpoint.value}"

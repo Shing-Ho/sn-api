@@ -108,7 +108,7 @@ class TestPricelineIntegration(SimplenightTestCase):
         transport = PricelineTransport(test_mode=True)
         priceline = PricelineAdapter(transport)
 
-        hotel_id = "700033110"
+        hotel_id = "700363264"
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         search = AdapterHotelSearch(
@@ -221,3 +221,7 @@ class TestPricelineIntegration(SimplenightTestCase):
 
         self.assertTrue(cancel_response.is_cancelled)
 
+    def test_download_policies(self):
+        transport = PricelineTransport(test_mode=False)
+        results = transport.policies_download(site_refid=2050)
+        print(results)
