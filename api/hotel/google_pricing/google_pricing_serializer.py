@@ -77,28 +77,28 @@ def serialize_property_list(provider_hotels):
     for provider_hotel in provider_hotels:
         listing = etree.Element("listing")
         listing.append(_get_element("id", provider_hotel.provider_code))
-        listing.append(_get_element("name", provider_hotel.hotel_name))
+        listing.append(_get_element("name", provider_hotel.hotel_name, cdata=True))
 
         address = etree.Element("address")
         address.attrib["format"] = "simple"
-        address.append(_get_element("component", provider_hotel.address_line_1, name="addr1"))
+        address.append(_get_element("component", provider_hotel.address_line_1, name="addr1", cdata=True))
+        address.append(_get_element("component", provider_hotel.address_line_2, name="addr2", cdata=True))
         address.append(_get_element("component", provider_hotel.city_name, name="city"))
-        address.append(_get_element("component", provider_hotel.country_code, name="country"))
         address.append(_get_element("component", provider_hotel.postal_code, name="postal_code"))
-        address.append(_get_element("component", provider_hotel.state, name="state"))
+        address.append(_get_element("component", provider_hotel.state, name="province"))
         listing.append(address)
 
         listing.append(_get_element("country", provider_hotel.country_code))
-        listing.append(_get_element("latitude", str(provider_hotel.latitude), cdata=False))
-        listing.append(_get_element("longitude", str(provider_hotel.longitude), cdata=False))
+        listing.append(_get_element("latitude", str(provider_hotel.latitude)))
+        listing.append(_get_element("longitude", str(provider_hotel.longitude)))
         listing.append(_get_element("phone", "", type="main"))
 
         root.append(listing)
 
-    return etree.tostring(root)
+    return etree.tostring(root, encoding="utf-8", xml_declaration=True)
 
 
-def _get_element(tag, content, cdata=True, **attribs):
+def _get_element(tag, content, cdata=False, **attribs):
     element = etree.Element(tag)
     if content:
         content = content.strip()
