@@ -6,6 +6,7 @@ from lxml import etree
 
 from api.hotel.google_pricing.google_pricing_models import GooglePricingItineraryQuery
 from api.hotel.models.hotel_api_model import SimplenightHotel
+from api.models.models import PhoneType
 
 
 def deserialize(xmlstr: Union[str, bytes]) -> GooglePricingItineraryQuery:
@@ -82,7 +83,9 @@ def serialize_property_list(provider_hotels):
         address = etree.Element("address")
         address.attrib["format"] = "simple"
         address.append(_get_element("component", provider_hotel.address_line_1, name="addr1", cdata=True))
-        address.append(_get_element("component", provider_hotel.address_line_2, name="addr2", cdata=True))
+        if provider_hotel.address_line_2:
+            address.append(_get_element("component", provider_hotel.address_line_2, name="addr2", cdata=True))
+
         address.append(_get_element("component", provider_hotel.city_name, name="city"))
         address.append(_get_element("component", provider_hotel.postal_code, name="postal_code"))
         address.append(_get_element("component", provider_hotel.state, name="province"))
@@ -91,7 +94,20 @@ def serialize_property_list(provider_hotels):
         listing.append(_get_element("country", provider_hotel.country_code))
         listing.append(_get_element("latitude", str(provider_hotel.latitude)))
         listing.append(_get_element("longitude", str(provider_hotel.longitude)))
-        listing.append(_get_element("phone", "", type="main"))
+        phones = provider_hotel.phone.all()
+
+        if not provider_hotel.latitude or not provider_hotel.longitude or not phones:
+            continue
+
+        phone_type_map = {
+            PhoneType.VOICE: "main",
+            PhoneType.FAX: "fax",
+        }
+
+        for phone in phones:
+            phone_type = phone_type_map.get(phone.type)
+            phone_number = phone.phone_number
+            listing.append(_get_element("phone", phone_number, type=phone_type))
 
         root.append(listing)
 

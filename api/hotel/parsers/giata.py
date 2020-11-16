@@ -4,7 +4,7 @@ from lxml import etree
 from requests.auth import HTTPBasicAuth
 
 from api import logger
-from api.models.models import Provider, ProviderHotel, ProviderMapping, PropertyInfo
+from api.models.models import Provider, ProviderHotel, ProviderMapping, PropertyInfo, ProviderHotelPhones, PhoneType
 from common.utils import chunks
 
 
@@ -111,6 +111,7 @@ class GiataParser:
             logger.info("Next URL: " + pagination_link)
 
         provider_hotels = []
+        provider_hotel_phones = []
         provider_mappings = []
         for element in doc.findall(".//property"):
             giata_id = element.get("giataId")
@@ -119,9 +120,10 @@ class GiataParser:
             country = self._find_with_default(element, "addresses/address[1]/country")
             postal_code = self._find_with_default(element, "addresses/address[1]/postalCode")
             address_line_1 = self._find_with_default(element, "addresses/address[1]/addressLine[@addressLineNumber]")
-            address_line_2 = self._find_with_default(element, "addresses/address[1]/addressLine[@addressLineNumber]")
+            address_line_2 = self._find_with_default(element, "addresses/address[2]/addressLine[@addressLineNumber]")
             latitude = self._find_with_default(element, "geoCodes/geoCode/latitude")
             longitude = self._find_with_default(element, "geoCodes/geoCode/longitude")
+            phones = element.findall(".//phone")
 
             model = ProviderHotel(
                 provider=self.provider,
@@ -135,6 +137,20 @@ class GiataParser:
                 latitude=latitude,
                 longitude=longitude,
             )
+
+            if phones is not None:
+                for phone in phones:
+                    phone_number = phone.text
+                    phone_type = PhoneType.from_name(phone.get("tech"))
+                    if phone_type and phone_number:
+                        phone_model = ProviderHotelPhones(
+                            provider_hotel=model,
+                            provider=self.provider,
+                            provider_code=giata_id,
+                            type=phone_type,
+                            phone_number=phone_number
+                        )
+                        provider_hotel_phones.append(phone_model)
 
             provider_hotels.append(model)
 
@@ -156,6 +172,7 @@ class GiataParser:
 
         try:
             ProviderHotel.objects.bulk_create(provider_hotels)
+            ProviderHotelPhones.objects.bulk_create(provider_hotel_phones)
             ProviderMapping.objects.bulk_create(provider_mappings)
         except Exception:
             logger.exception("Error persisting models to DB")

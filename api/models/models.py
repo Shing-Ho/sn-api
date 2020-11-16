@@ -287,6 +287,37 @@ class ProviderHotel(models.Model):
         )
 
 
+class PhoneType(enum.Enum):
+    VOICE = 1
+    FAX = 2
+
+    @classmethod
+    def from_name(cls, value):
+        if not value:
+            return
+
+        if not hasattr(cls, "name_map"):
+            cls.name_map = {x.name.lower(): x for x in PhoneType}
+
+        return cls.name_map.get(value.lower())
+
+
+class ProviderHotelPhones(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "provider_hotel_phones"
+        indexes = [
+            models.Index(fields=["provider", "provider_code"]),
+        ]
+
+    provider_hotel_phone_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    provider_hotel = models.ForeignKey(ProviderHotel, on_delete=models.CASCADE, null=True, related_name="phone")
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_code = models.TextField()
+    type = enum.EnumField(PhoneType)
+    phone_number = models.TextField()
+
+
 class ProviderChain(models.Model):
     class Meta:
         app_label = "api"

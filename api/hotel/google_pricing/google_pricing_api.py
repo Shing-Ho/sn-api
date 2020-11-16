@@ -33,6 +33,7 @@ def generate_property_list(country_codes: str, provider_name="giata"):
     logger.info(f"Searching for hotels in {country_codes}")
 
     provider_hotels = ProviderHotel.objects.filter(provider__name=provider_name, country_code__in=country_codes)
+    provider_hotels.select_related("phone")
     logger.info(f"Found {len(provider_hotels)} hotels")
 
     return google_pricing_serializer.serialize_property_list(provider_hotels)
