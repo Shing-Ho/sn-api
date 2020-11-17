@@ -2,7 +2,7 @@ from typing import List
 
 from api.common.request_context import get_request_context, get_config_bool
 from api.hotel.adapters.hotel_adapter import HotelAdapter
-from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBeds
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
@@ -12,7 +12,7 @@ from api.models.models import Feature
 HOTEL_ADAPTERS = {
     "stub": StubHotelAdapter,
     "travelport": TravelportHotelAdapter,
-    "hotelbeds": HotelBeds,
+    "hotelbeds": HotelbedsAdapter,
     "priceline": PricelineAdapter,
 }
 
