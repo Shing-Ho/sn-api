@@ -82,6 +82,7 @@ class PricelineAdapter(HotelAdapter):
         logger.info(f"Initiating Priceline Hotel Express Search: {request}")
 
         response = self.transport.hotel_express(**request)
+
         hotel_results = self._check_hotel_express_response_and_get_results(response)
         hotel = self._create_hotel_from_response(search, hotel_results[0])
 

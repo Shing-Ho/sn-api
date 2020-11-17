@@ -6,6 +6,7 @@ from lxml import etree
 
 from api.hotel.google_pricing.google_pricing_models import GooglePricingItineraryQuery
 from api.hotel.models.hotel_api_model import SimplenightHotel
+from api.models.models import PhoneType
 
 
 def deserialize(xmlstr: Union[str, bytes]) -> GooglePricingItineraryQuery:
@@ -77,30 +78,45 @@ def serialize_property_list(provider_hotels):
     for provider_hotel in provider_hotels:
         listing = etree.Element("listing")
         listing.append(_get_element("id", provider_hotel.provider_code))
-        listing.append(_get_element("name", provider_hotel.hotel_name))
+        listing.append(_get_element("name", provider_hotel.hotel_name, cdata=True))
 
         address = etree.Element("address")
         address.attrib["format"] = "simple"
-        address.append(_get_element("component", provider_hotel.address_line_1, name="addr1"))
+        address.append(_get_element("component", provider_hotel.address_line_1, name="addr1", cdata=True))
+        if provider_hotel.address_line_2:
+            address.append(_get_element("component", provider_hotel.address_line_2, name="addr2", cdata=True))
+
         address.append(_get_element("component", provider_hotel.city_name, name="city"))
-        address.append(_get_element("component", provider_hotel.country_code, name="country"))
         address.append(_get_element("component", provider_hotel.postal_code, name="postal_code"))
-        address.append(_get_element("component", provider_hotel.state, name="state"))
+        address.append(_get_element("component", provider_hotel.state, name="province"))
         listing.append(address)
 
         listing.append(_get_element("country", provider_hotel.country_code))
-        listing.append(_get_element("latitude", str(provider_hotel.latitude), cdata=False))
-        listing.append(_get_element("longitude", str(provider_hotel.longitude), cdata=False))
-        listing.append(_get_element("phone", "", type="main"))
+        listing.append(_get_element("latitude", str(provider_hotel.latitude)))
+        listing.append(_get_element("longitude", str(provider_hotel.longitude)))
+        phones = provider_hotel.phone.all()
+
+        if not provider_hotel.latitude or not provider_hotel.longitude or not phones:
+            continue
+
+        phone_type_map = {
+            PhoneType.VOICE: "main",
+            PhoneType.FAX: "fax",
+        }
+
+        for phone in phones:
+            phone_type = phone_type_map.get(phone.type)
+            phone_number = phone.phone_number
+            listing.append(_get_element("phone", phone_number, type=phone_type))
 
         root.append(listing)
 
-    return etree.tostring(root)
+    return etree.tostring(root, encoding="utf-8", xml_declaration=True)
 
 
-def _get_element(tag, content, cdata=True, **attribs):
+def _get_element(tag, content, cdata=False, **attribs):
     element = etree.Element(tag)
-    if content:
+    if content and content != "None":  # TODO: Fix "None" string in source data
         content = content.strip()
         if cdata:
             element.text = etree.CDATA(content)

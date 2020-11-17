@@ -58,5 +58,16 @@ def get_config_bool(feature: Feature) -> bool:
     return get_config(feature, transform_fn=distutils.util.strtobool)
 
 
+def get_config_bool_default(feature: Feature, default: bool):
+    try:
+        return get_config_bool(feature)
+    except FeatureNotFoundException:
+        return default
+
+
 def clear_cache():
     cache.clear()
+
+
+def get_test_mode():
+    return get_config_bool(Feature.TEST_MODE)

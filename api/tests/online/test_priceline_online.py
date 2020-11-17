@@ -12,6 +12,7 @@ from api.hotel.models.adapter_models import (
     AdapterHotelSearch,
     AdapterCancelRequest, AdapterHotelBatchSearch,
 )
+from api.hotel.parsers.priceline_details_parser import PricelineDetailsParser
 from api.models.models import CityMap, HotelBooking
 from api.tests import test_objects, model_helper
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
@@ -108,7 +109,7 @@ class TestPricelineIntegration(SimplenightTestCase):
         transport = PricelineTransport(test_mode=True)
         priceline = PricelineAdapter(transport)
 
-        hotel_id = "700033110"
+        hotel_id = "700363264"
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         search = AdapterHotelSearch(
@@ -221,3 +222,12 @@ class TestPricelineIntegration(SimplenightTestCase):
 
         self.assertTrue(cancel_response.is_cancelled)
 
+    def test_download_policies(self):
+        transport = PricelineTransport(test_mode=False)
+        results = transport.policies_download(site_refid=2050)
+        print(results)
+
+    def test_priceline_details_parser(self):
+        transport = PricelineTransport(test_mode=True)
+        parser = PricelineDetailsParser(transport)
+        parser.load(chunk_size=10, limit=10)

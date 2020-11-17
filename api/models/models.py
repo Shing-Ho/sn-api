@@ -123,6 +123,72 @@ class CityMap(models.Model):
     )
 
 
+class Feature(Enum):
+    ENABLED_ADAPTERS = "enabled_connectors"
+    TEST_MODE = "test_mode"
+    STRIPE_API_KEY = "stripe_api_key"
+    PRICELINE_API_URL = "priceline_api_url"
+    MAILGUN_API_KEY = "mailgun_api_key"
+    EMAIL_ENABLED = "email_enabled"
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name) for key in cls]
+
+
+class Organization(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "organization"
+        verbose_name = "Organization"
+        verbose_name_plural = "Organizations"
+
+    name = models.CharField(max_length=128)
+    active = models.BooleanField(default=True)
+    username = models.CharField(max_length=32, null=True)
+    api_daily_limit = models.IntegerField()
+    api_burst_limit = models.IntegerField()
+
+    def get_feature(self, feature: Feature):
+        try:
+            result = OrganizationFeatures.objects.get(organization_id=self.id, name=feature.value)
+            return result.value
+        except OrganizationFeatures.DoesNotExist:
+            return None
+
+    def set_feature(self, feature_type: Feature, value):
+        feature_name = feature_type.value
+        feature, _ = OrganizationFeatures.objects.get_or_create(organization_id=self.id, name=feature_name)
+
+        feature.value = value
+        feature.save()
+
+    def clear_feature(self, feature_type: Feature):
+        feature = OrganizationFeatures.objects.get(organization_id=self.id, name=feature_type.value)
+        if feature:
+            feature.delete()
+
+    def __str__(self):
+        return f"{self.name} ({self.id})"
+
+
+class OrganizationFeatures(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "organization_features"
+        unique_together = ("organization", "name")
+        verbose_name = "Organization Feature"
+        verbose_name_plural = "Organization Features"
+
+    id = models.AutoField(primary_key=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="org")
+    name = models.TextField(choices=Feature.choices())
+    value = models.TextField()
+
+    def organization_name(self):
+        return self.organization.name
+
+
 class Traveler(models.Model):
     class Meta:
         app_label = "api"
@@ -148,6 +214,7 @@ class Booking(models.Model):
         verbose_name_plural = "Bookings"
 
     booking_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     transaction_id = models.TextField()
     booking_date = models.DateTimeField(auto_now_add=True)
     booking_status = models.CharField(max_length=32, choices=[(x.value, x.value) for x in BookingStatus])
@@ -287,6 +354,37 @@ class ProviderHotel(models.Model):
         )
 
 
+class PhoneType(enum.Enum):
+    VOICE = 1
+    FAX = 2
+
+    @classmethod
+    def from_name(cls, value):
+        if not value:
+            return
+
+        if not hasattr(cls, "name_map"):
+            cls.name_map = {x.name.lower(): x for x in PhoneType}
+
+        return cls.name_map.get(value.lower())
+
+
+class ProviderHotelPhones(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "provider_hotel_phones"
+        indexes = [
+            models.Index(fields=["provider", "provider_code"]),
+        ]
+
+    provider_hotel_phone_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    provider_hotel = models.ForeignKey(ProviderHotel, on_delete=models.CASCADE, null=True, related_name="phone")
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_code = models.TextField()
+    type = enum.EnumField(PhoneType)
+    phone_number = models.TextField()
+
+
 class ProviderChain(models.Model):
     class Meta:
         app_label = "api"
@@ -340,67 +438,3 @@ class PropertyInfo(models.Model):
     type = models.TextField()
     language_code = models.CharField(max_length=2)
     description = models.TextField()
-
-
-class Feature(Enum):
-    ENABLED_ADAPTERS = "enabled_connectors"
-    TEST_MODE = "test_mode"
-    STRIPE_API_KEY = "stripe_api_key"
-    PRICELINE_API_URL = "priceline_api_url"
-
-    @classmethod
-    def choices(cls):
-        return [(key.value, key.name) for key in cls]
-
-
-class Organization(models.Model):
-    class Meta:
-        app_label = "api"
-        db_table = "organization"
-        verbose_name = "Organization"
-        verbose_name_plural = "Organizations"
-
-    name = models.CharField(max_length=128)
-    active = models.BooleanField(default=True)
-    username = models.CharField(max_length=32, null=True)
-    api_daily_limit = models.IntegerField()
-    api_burst_limit = models.IntegerField()
-
-    def get_feature(self, feature: Feature):
-        try:
-            result = OrganizationFeatures.objects.get(organization_id=self.id, name=feature.value)
-            return result.value
-        except OrganizationFeatures.DoesNotExist:
-            return None
-
-    def set_feature(self, feature_type: Feature, value):
-        feature_name = feature_type.value
-        feature, _ = OrganizationFeatures.objects.get_or_create(organization_id=self.id, name=feature_name)
-
-        feature.value = value
-        feature.save()
-
-    def clear_feature(self, feature_type: Feature):
-        feature = OrganizationFeatures.objects.get(organization_id=self.id, name=feature_type.value)
-        if feature:
-            feature.delete()
-
-    def __str__(self):
-        return f"{self.name} ({self.id})"
-
-
-class OrganizationFeatures(models.Model):
-    class Meta:
-        app_label = "api"
-        db_table = "organization_features"
-        unique_together = ("organization", "name")
-        verbose_name = "Organization Feature"
-        verbose_name_plural = "Organization Features"
-
-    id = models.AutoField(primary_key=True)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="org")
-    name = models.TextField(choices=Feature.choices())
-    value = models.TextField()
-
-    def organization_name(self):
-        return self.organization.name

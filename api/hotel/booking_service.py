@@ -3,11 +3,12 @@ from decimal import Decimal
 from typing import Union
 
 from api import logger
-from api.hotel.models.hotel_common_models import Money, RoomRate
+from api.common import mail, currencies, request_context
+from api.common.request_context import get_request_context
 from api.hotel import price_verification_service, hotel_cache_service
 from api.hotel.adapters import adapter_service
-from api.hotel.models.adapter_models import AdapterCancelRequest
-from api.hotel.models.booking_model import HotelBookingRequest, HotelBookingResponse, Customer, Status
+from api.hotel.models.adapter_models import AdapterCancelRequest, AdapterHotel
+from api.hotel.models.booking_model import HotelBookingRequest, HotelBookingResponse, Customer, Status, Reservation
 from api.hotel.models.hotel_api_model import (
     SimplenightRoomType,
     CancelRequest,
@@ -17,6 +18,7 @@ from api.hotel.models.hotel_api_model import (
     HotelItineraryItem,
     CancelConfirmResponse,
 )
+from api.hotel.models.hotel_common_models import Money, RoomRate
 from api.models import models
 from api.models.models import (
     BookingStatus,
@@ -28,6 +30,7 @@ from api.models.models import (
     ProviderHotel,
     PaymentTransaction,
     RecordLocator,
+    Feature,
 )
 from api.payments import payment_service
 from api.view.exceptions import BookingException, BookingErrorCode
@@ -80,6 +83,14 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
 
             _set_booked_status(booking)
             _persist_hotel(book_request, provider_rate_cache_payload, booking, reservation)
+
+            _send_confirmation_email(
+                booking=booking,
+                hotel=provider_rate_cache_payload.adapter_hotel,
+                reservation=reservation,
+                payment=auth_response,
+                record_locator=simplenight_record_locator,
+            )
 
             return HotelBookingResponse(
                 api_version=1,
@@ -369,6 +380,67 @@ def adapter_cancel(hotel_booking: HotelBooking, traveler: Traveler):
     return adapter.cancel(adapter_cancel_request)
 
 
+def _send_confirmation_email(
+    booking: Booking, hotel: AdapterHotel, reservation: Reservation, payment: PaymentTransaction, record_locator: str
+):
+    try:
+        template_name = "order_confirmation"
+        subject = f"Simplenight Hotel Reservation {booking.booking_id}"
+        recipient = f"{reservation.customer.first_name} {reservation.customer.last_name}"
+        to_email = reservation.customer.email
+
+        friendly_cancellation_map = {
+            CancellationSummary.UNKNOWN_CANCELLATION_POLICY: "Call for cancellation details",
+            CancellationSummary.FREE_CANCELLATION: "Free Cancellation",
+            CancellationSummary.NON_REFUNDABLE: "Non-refundable",
+            CancellationSummary.PARTIAL_REFUND: "Partially-refundable",
+        }
+
+        provider_hotel = ProviderHotel.objects.get(
+            provider__name=hotel.provider, provider_code=hotel.hotel_id, language_code="en"
+        )
+
+        order_currency_symbol = currencies.get_symbol(payment.currency)
+
+        def format_money(amount):
+            return f"{order_currency_symbol}{amount:.2f}"
+
+        resort_fees = 0
+        if reservation.room_rate.postpaid_fees:
+            resort_fees = reservation.room_rate.postpaid_fees.total
+
+        params = {
+            "booking_id": str(record_locator),
+            "order_total": format_money(reservation.room_rate.total.amount),
+            "hotel_name": hotel.hotel_details.name,
+            "hotel_sub_total": format_money(reservation.room_rate.total.amount),
+            "record_locator": reservation.locator.id,
+            "cancellation_policy": friendly_cancellation_map.get(reservation.cancellation_details[0].cancellation_type),
+            "hotel_address": provider_hotel.address_line_1,
+            "checkin": "04:00pm",
+            "checkout": "12:00pm",
+            "resort_fee": format_money(resort_fees),
+            "hotel_taxes": format_money(reservation.room_rate.total_tax_rate.amount),
+            "hotel_room_type": "Standard Room",
+            "last_four": "0000",
+            "order_base_rate": format_money(reservation.room_rate.total_base_rate.amount),
+            "order_taxes": format_money(reservation.room_rate.total_tax_rate.amount),
+        }
+
+        if not _is_confirmation_email_enabled():
+            logger.info(f"Not sending email without email enabled. Parameters: {params}")
+            return None
+
+        mail.send_mail(template_name, subject, recipient, to_email, variables=params)
+
+    except Exception as e:
+        logger.warn(f"Could not send confirmation email: {str(e)}")
+
+
+def _is_confirmation_email_enabled():
+    return request_context.get_config_bool_default(Feature.EMAIL_ENABLED, False)
+
+
 def _set_booked_status(booking: Booking):
     logger.info(f"Updating booking {booking.booking_id} to BOOKED status")
     booking.booking_status = BookingStatus.BOOKED.value
@@ -379,6 +451,7 @@ def _persist_booking_record(booking_request, traveler):
     booking = models.Booking(
         booking_status=BookingStatus.PENDING.value,
         transaction_id=booking_request.transaction_id,
+        organization=get_request_context().get_organization(),
         booking_date=datetime.now(),
         lead_traveler=traveler,
     )
