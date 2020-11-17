@@ -85,7 +85,6 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
             _persist_hotel(book_request, provider_rate_cache_payload, booking, reservation)
 
             _send_confirmation_email(
-                booking=booking,
                 hotel=provider_rate_cache_payload.adapter_hotel,
                 reservation=reservation,
                 payment=auth_response,
@@ -381,11 +380,11 @@ def adapter_cancel(hotel_booking: HotelBooking, traveler: Traveler):
 
 
 def _send_confirmation_email(
-    booking: Booking, hotel: AdapterHotel, reservation: Reservation, payment: PaymentTransaction, record_locator: str
+    hotel: AdapterHotel, reservation: Reservation, payment: PaymentTransaction, record_locator: str
 ):
     try:
         template_name = "order_confirmation"
-        subject = f"Simplenight Hotel Reservation {booking.booking_id}"
+        subject = f"Simplenight Hotel Reservation {record_locator}"
         recipient = f"{reservation.customer.first_name} {reservation.customer.last_name}"
         to_email = reservation.customer.email
 
