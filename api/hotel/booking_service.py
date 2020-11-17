@@ -407,7 +407,7 @@ def _send_confirmation_email(
 
         resort_fees = 0
         if reservation.room_rate.postpaid_fees:
-            resort_fees = reservation.room_rate.postpaid_fees.total
+            resort_fees = reservation.room_rate.postpaid_fees.total.amount
 
         params = {
             "booking_id": str(record_locator),
