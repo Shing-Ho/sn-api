@@ -81,7 +81,7 @@ class PaymentCardParameters(SimplenightModel):
 
 
 class Payment(SimplenightModel):
-    billing_address: Address
+    billing_address: Optional[Address]
     payment_card_parameters: Optional[PaymentCardParameters] = None
     payment_token: Optional[str] = None
     payment_method: Optional[PaymentMethod] = None
