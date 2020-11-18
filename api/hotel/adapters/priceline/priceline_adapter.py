@@ -245,7 +245,7 @@ class PricelineAdapter(HotelAdapter):
             "name_first": customer.first_name,
             "name_last": customer.last_name,
             "phone_number": customer.phone_number,
-            "email": customer.email,
+            "email": "info@simplenight.com",  # Per Justin Steele, use Simplenight Email Address in All Cases
             "card_holder": payment_card_params.cardholder_name,
             "address_line_one": payment.billing_address.address1,
             "address_city": payment.billing_address.city,
