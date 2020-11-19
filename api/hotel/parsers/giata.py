@@ -42,8 +42,10 @@ class GiataParser:
         logger.info(f"Removing {len(existing_giata_mappings)} existing Giata mappings")
         existing_giata_mappings.delete()
 
-        pagination_link = ""
-        while pagination_link is not None:
+        properties_xmlstr = self.get_properties()
+        pagination_link = self.parse_properties(properties_xmlstr)
+
+        while pagination_link:
             properties_xmlstr = self.get_properties(pagination_link=pagination_link)
             pagination_link = self.parse_properties(properties_xmlstr)
 
