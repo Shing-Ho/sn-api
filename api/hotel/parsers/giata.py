@@ -30,11 +30,22 @@ class GiataParser:
         return {
             "priceline_partner_network": Provider.objects.get_or_create(name="priceline")[0],
             "iceportal": Provider.objects.get_or_create(name="iceportal")[0],
+            "hotelbeds": Provider.objects.get_or_create(name="hotelbeds")[0],
         }
 
     def execute(self):
-        pagination_link = ""
-        while pagination_link is not None:
+        existing_giata_hotels = ProviderHotel.objects.filter(provider=self.provider)
+        logger.info(f"Removing {len(existing_giata_hotels)} existing Giata hotels")
+        existing_giata_hotels.delete()
+
+        existing_giata_mappings = ProviderMapping.objects.all()
+        logger.info(f"Removing {len(existing_giata_mappings)} existing Giata mappings")
+        existing_giata_mappings.delete()
+
+        properties_xmlstr = self.get_properties()
+        pagination_link = self.parse_properties(properties_xmlstr)
+
+        while pagination_link:
             properties_xmlstr = self.get_properties(pagination_link=pagination_link)
             pagination_link = self.parse_properties(properties_xmlstr)
 
@@ -46,6 +57,8 @@ class GiataParser:
 
         for language_code in settings.GEONAMES_SUPPORTED_LANGUAGES:
             self.execute_hotel_guide_for_language(language_code)
+            hotels_for_lang = ProviderHotel.objects.filter(language_code=language_code)
+            logger.info(f"Loaded {len(hotels_for_lang)} hotels for language {language_code}")
 
     def execute_hotel_guide_for_language(self, language_code):
         properties, pagination_link = self.get_hotel_guide_properties(language=language_code)
