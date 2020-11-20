@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from api import logger
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiDailyThrottle, OrganizationApiBurstThrottle
 from api.common.common_models import from_json
 from api.common.request_cache import get_request_cache
@@ -77,6 +78,7 @@ class HotelViewSet(viewsets.ViewSet):
 
     @action(detail=False, url_path="google/pricing", methods=["POST"], name="GoogleHotel Pricing API")
     def google_live_pricing(self, request):
+        logger.info(f"Google Live Pricing API Request: {bytes.decode(request.body, 'utf-8')}")
         results = google_pricing_api.live_pricing_api(request.body)
         return HttpResponse(results, content_type="text/xml")
 
