@@ -30,12 +30,12 @@ def serialize(query: GooglePricingItineraryQuery, hotels: List[SimplenightHotel]
 
     for hotel in hotels:
         result = etree.Element("Result")
-        result.append(_get_element("Property", hotel.hotel_id))
+        result.append(_get_element("Property", hotel.hotel_id, cdata=True))
         result.append(_get_element("Checkin", str(hotel.start_date), cdata=False))
         result.append(_get_element("Nights", str(query.nights), cdata=False))
 
         lowest_rate_room = min(hotel.room_types, key=lambda x: x.total.amount)
-        result.append(_get_element("RoomID", "lowest_rate"))
+        result.append(_get_element("RoomID", "lowest_rate", cdata=True))
 
         base_rate = etree.Element("Baserate")
         base_rate.attrib["currency"] = lowest_rate_room.total.currency
