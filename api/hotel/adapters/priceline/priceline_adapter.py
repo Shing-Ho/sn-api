@@ -109,8 +109,9 @@ class PricelineAdapter(HotelAdapter):
 
     def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
         # Priceline first requires a lookup call, to retrieve a "Cancel action"
+        # Per Justin Steele, we have hard-coded "info@simplenight.com" as the email associated with bookings
         lookup_response = self.transport.express_lookup(
-            booking_id=cancel_request.record_locator, email=cancel_request.email_address,
+            booking_id=cancel_request.record_locator, email="info@simplenight.com",
         )
         lookup_response = self._check_express_lookup_response_and_get_results(lookup_response)
         cancellation_code = lookup_response["result"]["actions"]["cancel"]
