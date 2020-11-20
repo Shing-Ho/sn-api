@@ -71,6 +71,7 @@ def serialize(query: GooglePricingItineraryQuery, hotels: List[SimplenightHotel]
 #     <Tax currency="USD">6.07</Tax>
 #     <OtherFees currency="USD">0</OtherFees>
 
+
 def serialize_property_list(provider_hotels):
     root = etree.Element("listings")
     root.append(_get_element("language", "en"))

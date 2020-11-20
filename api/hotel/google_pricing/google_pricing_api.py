@@ -4,12 +4,20 @@ from typing import Union, Dict
 
 from api import logger
 from api.hotel import hotel_service
+from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.google_pricing import google_pricing_serializer
 from api.hotel.google_pricing.google_pricing_models import GooglePricingItineraryQuery
-from api.hotel.models.hotel_api_model import HotelBatchSearch, SimplenightHotel, HotelDetails, GeoLocation, RoomType, \
-    SimplenightRoomType, CancellationPolicy, CancellationSummary
+from api.hotel.models.hotel_api_model import (
+    HotelBatchSearch,
+    SimplenightHotel,
+    HotelDetails,
+    GeoLocation,
+    SimplenightRoomType,
+    CancellationPolicy,
+    CancellationSummary,
+)
 from api.hotel.models.hotel_common_models import RoomOccupancy, Address, Money, RateType
-from api.models.models import ProviderHotel
+from api.models.models import ProviderHotel, ProviderMapping
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
@@ -48,20 +56,22 @@ def live_pricing_api(query: Union[str, bytes, GooglePricingItineraryQuery]) -> s
             giata_hotel.occupancy = availability_hotel.occupancy
         else:
             logger.info(f"Found no availability for Giata hotel: {giata_hotel_id}")
-            giata_hotel.room_types = [SimplenightRoomType(
-                code="foo",
-                name="low4est_rate",
-                description="lowest_rate",
-                amenities=[],
-                photos=[],
-                capacity=RoomOccupancy(),
-                total=Money(amount=Decimal(-1), currency="USD"),
-                total_tax_rate=Money(amount=Decimal(-1), currency="USD"),
-                total_base_rate=Money(amount=Decimal(-1), currency="USD"),
-                cancellation_policy=CancellationPolicy(summary=CancellationSummary.NON_REFUNDABLE),
-                avg_nightly_rate=Money(amount=Decimal(-1), currency="USD"),
-                rate_type=RateType.RECHECK
-            )]
+            giata_hotel.room_types = [
+                SimplenightRoomType(
+                    code="foo",
+                    name="lowest_rate",
+                    description="lowest_rate",
+                    amenities=[],
+                    photos=[],
+                    capacity=RoomOccupancy(),
+                    total=Money(amount=Decimal(-1), currency="USD"),
+                    total_tax_rate=Money(amount=Decimal(-1), currency="USD"),
+                    total_base_rate=Money(amount=Decimal(-1), currency="USD"),
+                    cancellation_policy=CancellationPolicy(summary=CancellationSummary.NON_REFUNDABLE),
+                    avg_nightly_rate=Money(amount=Decimal(-1), currency="USD"),
+                    rate_type=RateType.RECHECK,
+                )
+            ]
 
     hotel_pricing_list = list(giata_hotels_by_hotel_code.values())
     if not hotel_pricing_list:
@@ -74,10 +84,22 @@ def generate_property_list(country_codes: str, provider_name="giata"):
     country_codes = country_codes.split(",")
     logger.info(f"Searching for hotels in {country_codes}")
 
-    provider_hotels = ProviderHotel.objects.filter(provider__name=provider_name, country_code__in=country_codes)
-    provider_hotels.select_related("phone")
-    logger.info(f"Found {len(provider_hotels)} hotels")
+    logger.info("Looking up Priceline hotels, to restrict list of properties to hotels with a Priceline mapping")
+    priceline_hotel_codes = ProviderHotel.objects.filter(provider__name=PricelineAdapter.get_provider_name()).values(
+        "provider_code"
+    )
 
+    logger.info("Looking up provider mappings for Priceline hotels")
+    giata_hotel_codes = ProviderMapping.objects.filter(
+        provider__name=PricelineAdapter.get_provider_name(), provider_code__in=priceline_hotel_codes
+    ).values("giata_code")
+
+    logger.info("Looking up Giata hotels which have a Priceline mapping")
+    provider_hotels = ProviderHotel.objects.prefetch_related("phone").filter(
+        provider__name=provider_name, country_code__in=country_codes, provider_code__in=giata_hotel_codes
+    )
+
+    logger.info(f"Found {len(provider_hotels)} hotels")
     return google_pricing_serializer.serialize_property_list(provider_hotels)
 
 

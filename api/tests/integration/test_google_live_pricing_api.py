@@ -9,7 +9,6 @@ from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.google_pricing import google_pricing_api
 from api.hotel.google_pricing.google_pricing_models import GooglePricingItineraryQuery
 from api.models.models import Feature, ProviderHotel, Provider
-from api.tests.integration import test_models
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
 
