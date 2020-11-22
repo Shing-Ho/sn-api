@@ -129,7 +129,7 @@ class GiataParser:
         for element in doc.findall(".//property"):
             giata_id = element.get("giataId")
             hotel_name = self._find_with_default(element, "name")
-            city_name = self._find_with_default(element, "addresses/address[1]/cityName")
+            city_name = self._find_with_default(element, "city")
             country = self._find_with_default(element, "addresses/address[1]/country")
             postal_code = self._find_with_default(element, "addresses/address[1]/postalCode")
             address_line_1 = self._find_with_default(element, "addresses/address[1]/addressLine[@addressLineNumber]")

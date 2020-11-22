@@ -13,10 +13,10 @@ class RoomOccupancy(SimplenightModel):
 
 
 class Address(SimplenightModel):
-    city: str
+    city: Optional[str]
     province: Optional[str] = None
-    country: str
-    address1: str
+    country: Optional[str]
+    address1: Optional[str]
     address2: Optional[str] = None
     address3: Optional[str] = None
     postal_code: Optional[str] = None
