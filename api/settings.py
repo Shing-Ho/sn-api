@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     "rest_framework_api_key",
     "corsheaders",
     "sequences.apps.SequencesConfig",
-    "background_task",
 ]
 
 MIDDLEWARE = [
