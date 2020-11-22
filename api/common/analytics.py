@@ -37,6 +37,7 @@ t1.start()
 
 
 def add_search_event(
+    search_id: str,
     search_type: SearchType,
     start_date: date,
     end_date: date,
@@ -46,7 +47,7 @@ def add_search_event(
 ):
     request_context = get_request_context()
     search_event = SearchEvent(
-        search_event_data_id=str(uuid.uuid4()),
+        search_event_data_id=search_id,
         organization=request_context.get_organization(),
         search_type=search_type,
         start_date=start_date,

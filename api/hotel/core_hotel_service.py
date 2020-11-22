@@ -37,12 +37,12 @@ def record_search_event(f):
             result = f(search, search_id=search_event_data_id)
             end_time = datetime.now()
             elapsed_time = int((end_time - begin_time).microseconds / 1000)
-            _record_search_event(search, SearchResult.SUCCESS, elapsed_time)
+            _record_search_event(search, search_event_data_id, SearchResult.SUCCESS, elapsed_time)
             return result
         except Exception as e:
             end_time = datetime.now()
             elapsed_time = int((end_time - begin_time).microseconds / 1000)
-            _record_search_event(search, SearchResult.FAILURE, elapsed_time)
+            _record_search_event(search, search_event_data_id, SearchResult.FAILURE, elapsed_time)
             raise e
 
     return wrapper
@@ -302,7 +302,7 @@ def _adapter_batch_hotel_id_search_request(search: HotelBatchSearch, provider_na
 
 
 # noinspection PyTypeChecker
-def _record_search_event(search: BaseHotelSearch, result: SearchResult, elapsed_time: int):
+def _record_search_event(search: BaseHotelSearch, search_id: str, result: SearchResult, elapsed_time: int):
     search_types = {
         HotelLocationSearch: SearchType.HOTEL_BY_LOCATION,
         HotelSpecificSearch: SearchType.HOTEL_BY_ID,
@@ -311,6 +311,7 @@ def _record_search_event(search: BaseHotelSearch, result: SearchResult, elapsed_
 
     search_type = search_types.get(search.__class__)
     analytics.add_search_event(
+        search_id=search_id,
         search_type=search_type,
         start_date=search.start_date,
         end_date=search.end_date,

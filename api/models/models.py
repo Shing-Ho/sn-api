@@ -473,7 +473,7 @@ class HotelEvent(models.Model):
         db_table = "hotel_events"
 
     hotel_event_data_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    search_event_data_id = models.TextField()
+    search_event_data_id = models.UUIDField()
     provider = models.ForeignKey(Provider, on_delete=models.SET_NULL, null=True)
     provider_code = models.TextField()
     giata_code = models.TextField()
