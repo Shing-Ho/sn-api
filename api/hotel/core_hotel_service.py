@@ -75,7 +75,7 @@ def search_by_id(search_request: HotelSpecificSearch, search_id: str = None) -> 
 
 
 @record_search_event
-def search_by_id_batch(search_request: HotelBatchSearch, search_id: str = None) -> Hotel:
+def search_by_id_batch(search_request: HotelBatchSearch, search_id: str = None) -> List[Hotel]:
     adapters_to_search = adapter_service.get_adapters_to_search(search_request)
     adapters = adapter_service.get_adapters(adapters_to_search)
 
@@ -85,6 +85,9 @@ def search_by_id_batch(search_request: HotelBatchSearch, search_id: str = None) 
     try:
         hotel = adapters[0].search_by_id_batch(adapter_search_request)
         return _process_hotels(hotel, search_id=search_id)
+    except AvailabilityException as e:
+        logger.error(f"Could not find availability: {str(e)}")
+        return []
     except Exception:
         logger.exception(f"Error processing {adapter_name}")
         raise AvailabilityException(
