@@ -438,3 +438,48 @@ class PropertyInfo(models.Model):
     type = models.TextField()
     language_code = models.CharField(max_length=2)
     description = models.TextField()
+
+
+class SearchType(enum.Enum):
+    HOTEL_BY_ID = 1
+    HOTEL_BY_LOCATION = 2
+    HOTEL_BY_BATCH = 3
+
+
+class SearchResult(enum.Enum):
+    SUCCESS = 1
+    FAILURE = 2
+
+
+class SearchEvent(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "search_events"
+
+    search_event_data_id = models.UUIDField(primary_key=True)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    search_type = enum.EnumField(SearchType)
+    created_at = models.DateTimeField(auto_now_add=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    search_input = models.TextField()
+    result = enum.EnumField(SearchResult)
+    elapsed_time = models.IntegerField()
+
+
+class HotelEvent(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "hotel_events"
+
+    hotel_event_data_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    search_event_data_id = models.TextField()
+    provider = models.ForeignKey(Provider, on_delete=models.SET_NULL, null=True)
+    provider_code = models.TextField()
+    giata_code = models.TextField()
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    base = models.DecimalField(max_digits=10, decimal_places=2)
+    taxes = models.DecimalField(max_digits=10, decimal_places=2)
+    provider_total = models.DecimalField(max_digits=10, decimal_places=2)
+    provider_base = models.DecimalField(max_digits=10, decimal_places=2)
+    provider_taxes = models.DecimalField(max_digits=10, decimal_places=2)
