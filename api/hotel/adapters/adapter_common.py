@@ -5,7 +5,7 @@ from cachetools.func import ttl_cache
 from api.common.encryption_service import EncryptionService
 from api.hotel.models.booking_model import PaymentCardParameters, CardType, Payment, PaymentMethod
 from api.hotel.models.hotel_common_models import Address
-from api.models.models import ProviderChain
+from api.models.models import ProviderChain, Provider
 
 
 def get_virtual_credit_card(test_mode=True) -> Payment:
@@ -49,3 +49,8 @@ def get_virtual_credit_card(test_mode=True) -> Payment:
 def get_chain_mapping(provider_name) -> Dict[str, str]:
     chain_mappings = ProviderChain.objects.filter(provider__name=provider_name)
     return {chain_mappings.provider_code: chain_mappings.chain_name}
+
+
+@ttl_cache(maxsize=10, ttl=86400)
+def get_provider(provider_name) -> Provider:
+    return Provider.objects.get_or_create(name=provider_name)[0]

@@ -1,11 +1,16 @@
+import uuid
+from copy import copy
+from datetime import datetime
 from decimal import Decimal, ROUND_UP, getcontext
+from functools import wraps
 from typing import List, Union, Tuple, Callable, Optional
 
 from api import logger
-from api.hotel.models.hotel_common_models import RoomRate
+from api.common import analytics
 from api.hotel import markups, hotel_cache_service, hotel_mappings
-from api.hotel.adapters import adapter_service
+from api.hotel.adapters import adapter_service, adapter_common
 from api.hotel.adapters.hotel_adapter import HotelAdapter
+from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterOccupancy, AdapterHotelBatchSearch
 from api.hotel.models.hotel_api_model import (
     HotelDetails,
     HotelSpecificSearch,
@@ -18,17 +23,39 @@ from api.hotel.models.hotel_api_model import (
     ImageType,
     HotelBatchSearch,
 )
-from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterOccupancy, AdapterHotelBatchSearch
-from api.models.models import ProviderImages, ProviderMapping
+from api.hotel.models.hotel_common_models import RoomRate
+from api.models.models import ProviderImages, ProviderMapping, SearchType, SearchResult
 from api.view.exceptions import SimplenightApiException, AvailabilityException, AvailabilityErrorCode
 
 
-def search_by_location(search_request: HotelLocationSearch) -> List[Hotel]:
+def record_search_event(f):
+    @wraps(f)
+    def wrapper(search: BaseHotelSearch):
+        begin_time = datetime.now()
+        search_event_data_id = str(uuid.uuid4())
+        try:
+            result = f(search, search_id=search_event_data_id)
+            end_time = datetime.now()
+            elapsed_time = int((end_time - begin_time).microseconds / 1000)
+            _record_search_event(search, SearchResult.SUCCESS, elapsed_time)
+            return result
+        except Exception as e:
+            end_time = datetime.now()
+            elapsed_time = int((end_time - begin_time).microseconds / 1000)
+            _record_search_event(search, SearchResult.FAILURE, elapsed_time)
+            raise e
+
+    return wrapper
+
+
+@record_search_event
+def search_by_location(search_request: HotelLocationSearch, search_id: str = None) -> List[Hotel]:
     all_hotels = _search_all_adapters(search_request, HotelAdapter.search_by_location)
-    return _process_hotels(all_hotels)
+    return _process_hotels(all_hotels, search_id=search_id)
 
 
-def search_by_id(search_request: HotelSpecificSearch) -> Hotel:
+@record_search_event
+def search_by_id(search_request: HotelSpecificSearch, search_id: str = None) -> Hotel:
     adapters_to_search = adapter_service.get_adapters_to_search(search_request)
     adapters = adapter_service.get_adapters(adapters_to_search)
 
@@ -40,15 +67,15 @@ def search_by_id(search_request: HotelSpecificSearch) -> Hotel:
 
     try:
         hotel = adapters[0].search_by_id(adapter_search_request)
-        return _process_hotels(hotel)
+        return _process_hotels(hotel, search_id=search_id)
     except Exception:
         logger.exception(f"Error processing {adapter_name}")
-        raise AvailabilityException(
-            f"Error: Exception while processing adapter {adapter_name}", error_type=AvailabilityErrorCode.PROVIDER_ERROR
-        )
+        message = f"Error: Exception while processing adapter {adapter_name}"
+        raise AvailabilityException(message, error_type=AvailabilityErrorCode.PROVIDER_ERROR)
 
 
-def search_by_id_batch(search_request: HotelBatchSearch) -> Hotel:
+@record_search_event
+def search_by_id_batch(search_request: HotelBatchSearch, search_id: str = None) -> Hotel:
     adapters_to_search = adapter_service.get_adapters_to_search(search_request)
     adapters = adapter_service.get_adapters(adapters_to_search)
 
@@ -57,7 +84,7 @@ def search_by_id_batch(search_request: HotelBatchSearch) -> Hotel:
 
     try:
         hotel = adapters[0].search_by_id_batch(adapter_search_request)
-        return _process_hotels(hotel)
+        return _process_hotels(hotel, search_id=search_id)
     except Exception:
         logger.exception(f"Error processing {adapter_name}")
         raise AvailabilityException(
@@ -87,19 +114,19 @@ def _search_all_adapters(search_request: BaseHotelSearch, adapter_fn: Callable):
     return hotels
 
 
-def _process_hotels(adapter_hotels: Union[List[AdapterHotel], AdapterHotel]) -> Union[Hotel, List[Hotel]]:
+def _process_hotels(adapter_hotels: Union[List[AdapterHotel], AdapterHotel], search_id) -> Union[Hotel, List[Hotel]]:
     """
     Given an AdapterHotel, calculate markups, minimum nightly rates
     and return a Hotel object suitable for the API view layer
     """
 
     if isinstance(adapter_hotels, AdapterHotel):
-        return _process_hotel(adapter_hotels)
+        return _process_hotel(adapter_hotels, search_id=search_id)
 
-    return list(filter(lambda x: x is not None, map(_process_hotel, adapter_hotels)))
+    return list(filter(lambda x: x is not None, map(lambda x: _process_hotel(x, search_id=search_id), adapter_hotels)))
 
 
-def _process_hotel(adapter_hotel: AdapterHotel) -> Optional[Hotel]:
+def _process_hotel(adapter_hotel: AdapterHotel, search_id: str = None) -> Optional[Hotel]:
     simplenight_hotel_id = hotel_mappings.find_simplenight_hotel_id(
         provider_hotel_id=adapter_hotel.hotel_id, provider_name=adapter_hotel.provider
     )
@@ -108,9 +135,25 @@ def _process_hotel(adapter_hotel: AdapterHotel) -> Optional[Hotel]:
         logger.warn(f"Skipping {adapter_hotel.provider} hotel {adapter_hotel.hotel_id} because no SN mapping found")
         return None
 
+    lowest_provider_rate = copy(_calculate_hotel_min_rates(adapter_hotel))
+
     _markup_room_rates(adapter_hotel)
     _enrich_hotels(adapter_hotel)
     average_nightly_base, average_nightly_tax, average_nightly_rate = _calculate_hotel_min_nightly_rates(adapter_hotel)
+
+    lowest_simplenight_rate = _calculate_hotel_min_rates(adapter_hotel)
+    analytics.add_hotel_event(
+        search_event_data_id=search_id,
+        provider=adapter_common.get_provider(adapter_hotel.provider),
+        provider_code=adapter_hotel.hotel_id,
+        giata_code=simplenight_hotel_id,
+        total=lowest_simplenight_rate.total.amount,
+        base=lowest_simplenight_rate.total_base_rate.amount,
+        taxes=lowest_simplenight_rate.total_tax_rate.amount,
+        provider_total=lowest_provider_rate.total.amount,
+        provider_base=lowest_provider_rate.total_base_rate.amount,
+        provider_taxes=lowest_provider_rate.total_tax_rate.amount
+    )
 
     return Hotel(
         hotel_id=simplenight_hotel_id,
@@ -197,13 +240,17 @@ def _get_nightly_rate(hotel: Union[Hotel, AdapterHotel], amount: Decimal):
 
 
 def _calculate_hotel_min_nightly_rates(hotel: Union[Hotel, AdapterHotel]) -> Tuple[Decimal, Decimal, Decimal]:
-    least_cost_rate = min(hotel.room_rates, key=lambda x: x.total.amount)
+    least_cost_rate = _calculate_hotel_min_rates(hotel)
 
     min_nightly_total = _get_nightly_rate(hotel, least_cost_rate.total.amount)
     min_nightly_tax = _get_nightly_rate(hotel, least_cost_rate.total_tax_rate.amount)
     min_nightly_base = _get_nightly_rate(hotel, least_cost_rate.total_base_rate.amount)
 
     return min_nightly_base, min_nightly_tax, min_nightly_total
+
+
+def _calculate_hotel_min_rates(hotel: Union[Hotel, AdapterHotel]) -> RoomRate:
+    return min(hotel.room_rates, key=lambda x: x.total.amount)
 
 
 def _adapter_search_request(search: HotelSpecificSearch, provider_name: str) -> AdapterHotelSearch:
@@ -252,3 +299,31 @@ def _adapter_batch_hotel_id_search_request(search: HotelBatchSearch, provider_na
         simplenight_hotel_ids=list(simplenight_to_provider_map.keys()),
         provider_hotel_ids=list(simplenight_to_provider_map.values()),
     )
+
+
+# noinspection PyTypeChecker
+def _record_search_event(search: BaseHotelSearch, result: SearchResult, elapsed_time: int):
+    search_types = {
+        HotelLocationSearch: SearchType.HOTEL_BY_LOCATION,
+        HotelSpecificSearch: SearchType.HOTEL_BY_ID,
+        HotelBatchSearch: SearchType.HOTEL_BY_BATCH,
+    }
+
+    search_type = search_types.get(search.__class__)
+    analytics.add_search_event(
+        search_type=search_type,
+        start_date=search.start_date,
+        end_date=search.end_date,
+        search_input=_get_search_input(search),
+        search_result=result,
+        elapsed_time=elapsed_time,
+    )
+
+
+def _get_search_input(search: BaseHotelSearch):
+    if isinstance(search, HotelLocationSearch):
+        return search.location_id
+    elif isinstance(search, HotelSpecificSearch):
+        return search.hotel_id
+    elif isinstance(search, HotelBatchSearch):
+        return str.join(",", search.hotel_ids or [])
