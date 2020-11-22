@@ -34,7 +34,10 @@ def live_pricing_api(query: Union[str, bytes, GooglePricingItineraryQuery]) -> s
     try:
         hotel_availability = hotel_service.search_by_id_batch(search)
         hotel_availability_by_hotel_code = {hotel.hotel_id: hotel for hotel in hotel_availability}
-    except AvailabilityException:
+    except AvailabilityException as e:
+        logger.info(f"Error while searching Google Live Pricing: {str(e)}")
+        hotel_availability_by_hotel_code = {}
+    except Exception:
         logger.exception(f"Error while searching Google Live Pricing")
         hotel_availability_by_hotel_code = {}
 
