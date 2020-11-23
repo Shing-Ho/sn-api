@@ -197,7 +197,7 @@ class TestHotelsView(SimplenightTestCase):
         self.assertEqual([10], availability_resp_obj.party.children)
         self.assertEqual(1, availability_resp_obj.party.adults)
         self.assertEqual("8qJgpBN4M9htbX00RAAmhlGt4vL5QM2kEibAktNLe3M", availability_resp_obj.room_types[0].code)
-        self.assertEqual("1005.01", str(availability_resp_obj.room_rates[0].total_price_at_booking.amount))
+        self.assertAlmostEqual(962.42, float(availability_resp_obj.room_rates[0].total_price_at_booking.amount), 0)
 
         booking_request = GoogleBookingSubmitRequest(
             api_version=1,
