@@ -9,10 +9,8 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-import hashlib
 import logging
 import os
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import time
 
@@ -177,44 +175,18 @@ class UTCFormatter(logging.Formatter):
     converter = time.gmtime
 
 
-class MessageIDFilter(logging.Filter):
-    @staticmethod
-    def hash(s):
-        if s is None:
-            return "foo"
-
-        return hashlib.md5(s.encode("utf-8")).hexdigest()
-
-    def filter(self, record):
-        record.msg_id = self.hash(record.msg)[:6]
-        record.filename_lineno = f"{record.filename}:{record.lineno}".ljust(30, ".")
-        return True
-
-
-class CustomHandler(logging.StreamHandler):
-    """Prefix every line of logging"""
-
-    def emit(self, record):
-        message = record.msg
-        if record.args:
-            message = message % record.args
-
-        record.args = None
-        for line in message.split("\n"):
-            record.msg = line
-            super().emit(record)
-
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "api.settings.CustomHandler", "formatter": "default", "filters": ["message_id"]}},
+    "handlers": {
+        "console": {"class": "api.common.logging.CustomHandler", "formatter": "default", "filters": ["message_id"]}
+    },
     "root": {"handlers": ["console"], "level": "DEBUG"},
-    "filters": {"message_id": {"()": "api.settings.MessageIDFilter"}},
+    "filters": {"message_id": {"()": "api.common.logging.MessageIDFilter"}},
     "formatters": {
         "default": {
             "()": UTCFormatter,
-            "format": "%(asctime)s.%(msecs)03dZ %(msg_id)s %(created)f "
+            "format": "%(asctime)s.%(msecs)03dZ %(request_id)s %(msg_id)s %(created)f "
             "[%(filename_lineno)s] [%(levelname)s] - %(message)s",
             "datefmt": "%Y-%m-%dT%H:%M:%S",
         },
