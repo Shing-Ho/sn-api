@@ -255,8 +255,8 @@ class TestPricelineUnit(SimplenightTestCase):
                     availability_response = hotel_service.search_by_id(search)
 
         self.assertEqual(1, availability_response.occupancy.num_rooms)
-        self.assertEqual(Decimal("243.25"), availability_response.room_types[0].total.amount)
-        self.assertEqual(Decimal("199.42"), availability_response.room_types[0].total_base_rate.amount)
+        self.assertEqual(Decimal("232.94"), availability_response.room_types[0].total.amount)
+        self.assertEqual(Decimal("190.97"), availability_response.room_types[0].total_base_rate.amount)
 
         search.occupancy.num_rooms = 2
 
@@ -269,8 +269,8 @@ class TestPricelineUnit(SimplenightTestCase):
                     availability_response = hotel_service.search_by_id(search)
 
         self.assertEqual(2, availability_response.occupancy.num_rooms)
-        self.assertEqual(Decimal("479.42"), availability_response.room_types[0].total.amount)
-        self.assertEqual(Decimal("398.84"), availability_response.room_types[0].total_base_rate.amount)
+        self.assertEqual(Decimal("459.10"), availability_response.room_types[0].total.amount)
+        self.assertEqual(Decimal("381.94"), availability_response.room_types[0].total_base_rate.amount)
 
     def test_priceline_cancel(self):
         transport = PricelineTransport(test_mode=True)
