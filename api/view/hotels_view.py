@@ -14,6 +14,7 @@ from api.hotel.google_pricing import google_pricing_api
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
 from api.hotel.models.booking_model import HotelBookingRequest
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancelRequest, HotelBatchSearch
+from api.management import google_reconciliation
 from api.view.default_view import _response
 
 
@@ -90,6 +91,15 @@ class HotelViewSet(viewsets.ViewSet):
 
         results = google_pricing_api.generate_property_list(request.GET.get("country_codes"), provider_name=provider)
         return HttpResponse(results, content_type="text/xml")
+
+    @action(detail=False, url_path="google/reconciliation", methods=["GET"], name="GoogleAds Commission Report")
+    def reconciliation(self, request):
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        organization = request.GET.get("organization")
+
+        results = google_reconciliation.get_report(organization, start_date, end_date)
+        return HttpResponse(google_reconciliation.format_report_csv(results), content_type="text/plain")
 
     @action(detail=False, url_path="status", methods=["GET"], name="Health Check")
     def status(self, _):

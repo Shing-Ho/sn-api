@@ -2,6 +2,7 @@
 import random
 import string
 import uuid
+from datetime import datetime
 from enum import EnumMeta, Enum
 from typing import Tuple, List
 
@@ -216,7 +217,7 @@ class Booking(models.Model):
     booking_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     transaction_id = models.TextField()
-    booking_date = models.DateTimeField(auto_now_add=True)
+    booking_date = models.DateTimeField(default=datetime.now)
     booking_status = models.CharField(max_length=32, choices=[(x.value, x.value) for x in BookingStatus])
     lead_traveler = models.ForeignKey(Traveler, on_delete=models.CASCADE)
 
