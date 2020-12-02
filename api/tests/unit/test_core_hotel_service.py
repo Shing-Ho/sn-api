@@ -154,6 +154,6 @@ class TestCoreHotelService(SimplenightTestCase):
 
         # Two Room Nights, So average nightly rate is 0.5 Total
         # Average is applied after default markup of 13%
-        self.assertEqual(Decimal("56.50"), hotels[0].average_nightly_rate)
-        self.assertEqual(Decimal("45.20"), hotels[0].average_nightly_base)
-        self.assertEqual(Decimal("11.30"), hotels[0].average_nightly_tax)
+        self.assertEqual(Decimal("56.00"), hotels[0].average_nightly_rate)
+        self.assertEqual(Decimal("44.80"), hotels[0].average_nightly_base)
+        self.assertEqual(Decimal("11.20"), hotels[0].average_nightly_tax)
