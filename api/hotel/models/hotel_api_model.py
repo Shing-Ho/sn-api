@@ -174,6 +174,7 @@ class HotelDetails(SimplenightModel):
     chain_code: Optional[str] = None
     chain_name: Optional[str] = None
     star_rating: Optional[float] = None
+    review_rating: Optional[float] = None
     property_description: Optional[str] = None
 
 

@@ -58,6 +58,7 @@ class TestHotelsView(SimplenightTestCase):
 
         hotel = SimplenightHotel.parse_raw(response.content)
         self.assertIsNotNone(hotel.hotel_id)
+        self.assertEqual(10.0, hotel.hotel_details.review_rating)
 
     def test_search_by_location(self):
         checkin = datetime.now().date() + timedelta(days=30)

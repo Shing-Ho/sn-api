@@ -1,5 +1,5 @@
 import uuid
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 from decimal import Decimal
 from unittest.mock import patch
 
@@ -81,6 +81,8 @@ class TestPricelineUnit(SimplenightTestCase):
         self.assertEqual("US", results.hotel_details.address.country)
         self.assertEqual("CA 94606", results.hotel_details.address.postal_code)
         self.assertIn("This bay front Oakland hotel", results.hotel_details.property_description)
+        self.assertEqual(10.0, results.hotel_details.review_rating)
+        self.assertEqual(3.0, results.hotel_details.star_rating)
 
         self.assertAlmostEqual(701.70, float(results.room_rates[0].total_base_rate.amount))
         self.assertEqual("USD", results.room_rates[0].total_base_rate.currency)
@@ -424,3 +426,21 @@ class TestPricelineUnit(SimplenightTestCase):
                             booking_response = booking_service.book(booking_request)
 
             print(booking_response)
+
+    def test_priceline_reviews(self):
+        transport = PricelineTransport(test_mode=True)
+        priceline = PricelineAdapter(transport=transport)
+
+        priceline_reviews_resource = load_test_resource("priceline/priceline-user-reviews.json")
+        with requests_mock.Mocker() as mocker:
+            mocker.get(transport.endpoint(PricelineTransport.Endpoint.REVIEWS), text=priceline_reviews_resource)
+            reviews = priceline.reviews(hotel_id="700363264")
+
+        self.assertEqual(9.4, reviews.average_rating)
+        self.assertEqual(5, reviews.review_count)
+        self.assertEqual(5, len(reviews.reviews))
+        self.assertEqual("Gregory", reviews.reviews[0].reviewer_name)
+        self.assertEqual(date(2020, 9, 2), reviews.reviews[0].review_date)
+        self.assertEqual(10.0, reviews.reviews[0].review_rating)
+        self.assertIn("Big clean room", reviews.reviews[0].good_text)
+        self.assertIn("They charge 15 bucks for parking", reviews.reviews[0].bad_text)

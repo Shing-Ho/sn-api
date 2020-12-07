@@ -400,6 +400,32 @@ class ProviderChain(models.Model):
     modified_date = models.DateTimeField(default=timezone.now)
 
 
+class ProviderReview(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "provider_review"
+        indexes = [models.Index(fields=["provider", "provider_code"])]
+
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_code = models.TextField()
+    rating = models.DecimalField(max_digits=3, decimal_places=1)
+    review_count = models.IntegerField()
+
+
+class ProviderReviewContent(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "provider_review_content"
+
+    provider_review = models.ForeignKey(ProviderReview, on_delete=models.CASCADE)
+    review_date = models.DateField()
+    rating = models.DecimalField(max_digits=3, decimal_places=1)
+    review_text = models.TextField(null=True)
+    good_text = models.TextField(null=True)
+    bad_text = models.TextField(null=True)
+    overall_description = models.TextField(null=True)
+
+
 class RecordLocator(models.Model):
     record_locator = models.CharField(max_length=8)
     booking = models.ForeignKey(to=Booking, on_delete=models.SET_NULL, null=True)

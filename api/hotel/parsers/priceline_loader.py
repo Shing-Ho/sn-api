@@ -19,6 +19,10 @@ ENDPOINT_MAPPING = {
         "result_key": "getSharedBOF2.Downloads.Hotel.Chains",
         "result_sub_key": "chains",
     },
+    PricelineTransport.Endpoint.REVIEWS: {
+        "result_key": "getSharedBOF2.Downloads.Hotel.Reviews",
+        "result_sub_key": "reviews",
+    },
 }
 
 
