@@ -23,7 +23,7 @@ from api.hotel.models.hotel_api_model import (
     ImageType,
     HotelBatchSearch,
 )
-from api.hotel.models.hotel_common_models import RoomRate
+from api.hotel.models.hotel_common_models import RoomRate, HotelReviews
 from api.models.models import ProviderImages, ProviderMapping, SearchType, SearchResult
 from api.view.exceptions import SimplenightApiException, AvailabilityException, AvailabilityErrorCode
 
@@ -103,6 +103,13 @@ def details(hotel_details_req: HotelDetailsSearchRequest) -> HotelDetails:
 def recheck(provider: str, room_rate: RoomRate) -> RoomRate:
     adapter = adapter_service.get_adapter(provider)
     return adapter.recheck(room_rate)
+
+
+def reviews(simplenight_hotel_id: str) -> HotelReviews:
+    adapter = adapter_service.get_adapter("priceline")  # TODO: Make this work for any provider
+    provider_hotel_code = hotel_mappings.find_provider_hotel_id(simplenight_hotel_id, "priceline")
+
+    return adapter.reviews(hotel_id=provider_hotel_code)
 
 
 def _search_all_adapters(search_request: BaseHotelSearch, adapter_fn: Callable):
@@ -215,7 +222,7 @@ def _get_provider_mapping(provider_name, provider_code=None, giata_code=None):
         else:
             raise ValueError("Must provide provider_code or giata_code")
 
-        logger.info(f"Found provider mapping: {provider_mapping}")
+        logger.debug(f"Found provider mapping: {provider_mapping}")
         return provider_mapping
     except ProviderMapping.DoesNotExist:
         logger.info(f"Could not find mapping info for provider hotel: {provider_name}/{provider_code}")

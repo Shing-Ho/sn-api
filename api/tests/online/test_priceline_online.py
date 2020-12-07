@@ -231,3 +231,8 @@ class TestPricelineIntegration(SimplenightTestCase):
         transport = PricelineTransport(test_mode=True)
         parser = PricelineDetailsParser(transport)
         parser.load(chunk_size=10, limit=10)
+
+    def test_priceline_reviews(self):
+        transport = PricelineTransport(test_mode=True)
+        priceline = PricelineAdapter(transport=transport)
+        print(priceline.reviews(hotel_id="700363264"))

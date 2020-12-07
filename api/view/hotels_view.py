@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -50,6 +51,15 @@ class HotelViewSet(viewsets.ViewSet):
         google_search_response = google_hotel_service.search_by_id(google_search_request)
 
         return _response(google_search_response)
+
+    @action(detail=False, url_path="reviews", methods=["GET"], name="Hotel User Reviews")
+    def reviews(self, request):
+        simplenight_hotel_id = request.GET.get("hotel_id")
+        reviews = hotel_service.reviews(simplenight_hotel_id)
+        if reviews:
+            return _response(reviews)
+        else:
+            raise NotFound(detail="Could not find user reviews for hotel ID: " + simplenight_hotel_id)
 
     @action(detail=False, url_path="booking", methods=["POST"], name="Hotel Booking")
     def booking(self, request):
@@ -110,3 +120,4 @@ class HotelViewSet(viewsets.ViewSet):
         request_cache.set("__status", f"OK {organization_name}")
 
         return Response(data=request_cache.get("__status"))
+

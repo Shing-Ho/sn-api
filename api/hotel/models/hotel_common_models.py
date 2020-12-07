@@ -100,3 +100,19 @@ class BookingStatus(Enum):
             cls.value_map = {x.value: x for x in BookingStatus}
 
         return cls.value_map[value]
+
+
+class HotelReview(SimplenightModel):
+    reviewer_name: str
+    review_date: date
+    review_rating: float
+    review_text: Optional[str] = None
+    good_text: Optional[str] = None
+    bad_text: Optional[str] = None
+    overall_text: Optional[str] = None
+
+
+class HotelReviews(SimplenightModel):
+    average_rating: float
+    review_count: int
+    reviews: List[HotelReview]

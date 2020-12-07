@@ -13,7 +13,7 @@ from api.hotel.models.hotel_api_model import (
     AdapterHotel,
     GeoLocation,
 )
-from api.hotel.models.hotel_common_models import Address, RateType, Money, DailyRate, RoomRate
+from api.hotel.models.hotel_common_models import Address, RateType, Money, DailyRate, RoomRate, HotelReviews
 from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterCancelRequest, AdapterCancelResponse, \
     AdapterHotelBatchSearch
 
@@ -48,6 +48,9 @@ class TravelportHotelAdapter(HotelAdapter):
         response = hotel_details_service.service(**request)
 
         return self._parse_details(response)
+
+    def reviews(self, *args) -> HotelReviews:
+        raise NotImplemented()
 
     def search_by_id(self, search_request: HotelSpecificSearch) -> AdapterHotel:
         raise NotImplemented("Search by ID Not Implemented")

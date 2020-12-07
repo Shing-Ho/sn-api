@@ -30,7 +30,7 @@ from api.hotel.models.hotel_api_model import (
     SimplenightAmenities,
     CancellationSummary,
 )
-from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, RoomRate
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, RoomRate, HotelReviews
 from api.tests.utils import random_alphanumeric
 from common.utils import random_string
 
@@ -77,6 +77,9 @@ class StubHotelAdapter(HotelAdapter):
 
     def details(self, *args):
         return self._generate_hotel_details(city="Foo")
+
+    def reviews(self, *args) -> HotelReviews:
+        raise NotImplemented()
 
     def booking_availability(self, search_request: AdapterBaseSearch):
         return self.search_by_id(search_request)
@@ -208,6 +211,7 @@ class StubHotelAdapter(HotelAdapter):
         geolocation = GeoLocation(latitude=latitude, longitude=longitude)
 
         star_rating = random.choice([2, 2.5, 3, 3.5, 4, 4.5, 5])
+        review_rating = random.choice([10.0])
 
         amenities = random.sample(list(SimplenightAmenities), random.randint(3, 10))
 
@@ -222,6 +226,7 @@ class StubHotelAdapter(HotelAdapter):
             photos=[],
             amenities=amenities,
             star_rating=star_rating,
+            review_rating=review_rating,
             property_description=self._get_property_description(),
         )
 

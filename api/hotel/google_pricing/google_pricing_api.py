@@ -58,7 +58,7 @@ def live_pricing_api(query: Union[str, bytes, GooglePricingItineraryQuery]) -> s
             giata_hotel.room_types = availability_hotel.room_types
             giata_hotel.occupancy = availability_hotel.occupancy
         else:
-            logger.info(f"Found no availability for Giata hotel: {giata_hotel_id}")
+            logger.debug(f"Found no availability for Giata hotel: {giata_hotel_id}")
             giata_hotel.room_types = [
                 SimplenightRoomType(
                     code="foo",
@@ -80,6 +80,7 @@ def live_pricing_api(query: Union[str, bytes, GooglePricingItineraryQuery]) -> s
     if not hotel_pricing_list:
         raise AvailabilityException("Could not find hotels", AvailabilityErrorCode.HOTEL_NOT_FOUND)
 
+    logger.info(f"Found Availability for {len(giata_hotels_by_hotel_code)}: {giata_hotels_by_hotel_code.keys()}")
     return google_pricing_serializer.serialize(query, hotel_pricing_list)
 
 
