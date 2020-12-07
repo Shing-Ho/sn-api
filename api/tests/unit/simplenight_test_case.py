@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 from unittest.mock import Mock
 
 from django.test import TestCase
@@ -6,6 +7,7 @@ from rest_framework.test import APIClient
 
 from api.auth.authentication import OrganizationAPIKey
 from api.common import request_context
+from api.hotel import markups
 from api.models.models import Organization, Feature
 from api.common.context_middleware import RequestContextMiddleware
 from api.common.request_cache import RequestCacheMiddleware
@@ -17,6 +19,7 @@ class SimplenightTestCase(TestCase):
         self.organization_name = str(uuid.uuid4())
 
     def setUp(self) -> None:
+        markups.DEFAULT_MARKUP = Decimal("0.12")
         self.request_cache = RequestCacheMiddleware(Mock())
         self.request_context = RequestContextMiddleware()
         self.organization = self.create_organization(self.organization_name)

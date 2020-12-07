@@ -51,7 +51,7 @@ from api.hotel.models.hotel_api_model import (
     CancellationPolicy,
     CancellationSummary,
 )
-from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, RoomRate
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, RoomRate, HotelReviews
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
@@ -107,6 +107,9 @@ class HotelBeds(HotelAdapter):
     def details(self, hotel_codes: Union[List[str], str], language: str) -> List[HotelDetails]:
         hotel_details_response = self._details(hotel_codes, language)
         return list(map(self._create_hotel_details, hotel_details_response.hotels))
+
+    def reviews(self, *args) -> HotelReviews:
+        raise NotImplemented()
 
     def _details(self, hotel_codes: Union[List[str], str], language: str) -> Optional[HotelBedsHotelDetailsRS]:
         if isinstance(hotel_codes, list):

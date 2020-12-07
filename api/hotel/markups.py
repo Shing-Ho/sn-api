@@ -3,6 +3,8 @@ from decimal import Decimal
 
 from api.hotel.models.hotel_common_models import Money, RoomRate
 
+DEFAULT_MARKUP = Decimal("0.12")
+
 
 def markup_rate(room_rate: RoomRate) -> RoomRate:
     new_room_rate_code = str(uuid.uuid4())[:8]
@@ -23,7 +25,11 @@ def markup_rate(room_rate: RoomRate) -> RoomRate:
 
 
 def markup(total: Money):
-    markup_pct = Decimal("1.12")
+    markup_pct = get_default_markup()
     markup_price = round(total.amount * markup_pct, 2)
 
     return Money(amount=markup_price, currency=total.currency)
+
+
+def get_default_markup():
+    return DEFAULT_MARKUP + 1
