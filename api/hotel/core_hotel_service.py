@@ -68,6 +68,8 @@ def search_by_id(search_request: HotelSpecificSearch, search_id: str = None) -> 
     try:
         hotel = adapters[0].search_by_id(adapter_search_request)
         return _process_hotels(hotel, search_id=search_id)
+    except AvailabilityException as e:
+        raise e
     except Exception:
         logger.exception(f"Error processing {adapter_name}")
         message = f"Error: Exception while processing adapter {adapter_name}"
@@ -162,7 +164,7 @@ def _process_hotel(adapter_hotel: AdapterHotel, search_id: str = None) -> Option
         taxes=lowest_simplenight_rate.total_tax_rate.amount,
         provider_total=lowest_provider_rate.total.amount,
         provider_base=lowest_provider_rate.total_base_rate.amount,
-        provider_taxes=lowest_provider_rate.total_tax_rate.amount
+        provider_taxes=lowest_provider_rate.total_tax_rate.amount,
     )
 
     return Hotel(
