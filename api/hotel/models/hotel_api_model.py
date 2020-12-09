@@ -5,11 +5,17 @@ from typing import List, Optional, Union
 
 from pydantic import Field
 
-from api.common.common_models import (
-    SimplenightModel,
+from api.common.common_models import SimplenightModel
+from api.hotel.models.hotel_common_models import (
+    RoomOccupancy,
+    Address,
+    RateType,
+    Money,
+    DailyRate,
+    PostpaidFees,
+    RoomRate,
+    BookingStatus,
 )
-from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, DailyRate, PostpaidFees, \
-    RoomRate, BookingStatus
 
 
 class SimplenightAmenities(Enum):
@@ -43,7 +49,7 @@ class SimplenightAmenities(Enum):
         return cls.value_map[value]
 
 
-class BaseHotelSearch(SimplenightModel):
+class HotelSearch(SimplenightModel):
     start_date: date
     end_date: date
     occupancy: Optional[RoomOccupancy]
@@ -55,15 +61,15 @@ class BaseHotelSearch(SimplenightModel):
     provider: Optional[str] = None
 
 
-class HotelLocationSearch(BaseHotelSearch):
+class HotelLocationSearch(HotelSearch):
     location_id: str = None
 
 
-class HotelSpecificSearch(BaseHotelSearch):
+class HotelSpecificSearch(HotelSearch):
     hotel_id: str = None
 
 
-class HotelBatchSearch(BaseHotelSearch):
+class HotelBatchSearch(HotelSearch):
     hotel_ids: List[str] = Field(default_factory=list)
 
 

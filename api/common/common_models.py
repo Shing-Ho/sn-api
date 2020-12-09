@@ -1,4 +1,5 @@
 import json
+from enum import Enum
 from typing import List, Union, TypeVar, Type
 
 from pydantic.main import BaseModel

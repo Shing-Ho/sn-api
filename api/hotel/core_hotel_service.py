@@ -18,7 +18,7 @@ from api.hotel.models.hotel_api_model import (
     HotelLocationSearch,
     HotelDetailsSearchRequest,
     Hotel,
-    BaseHotelSearch,
+    HotelSearch,
     Image,
     ImageType,
     HotelBatchSearch,
@@ -30,7 +30,7 @@ from api.view.exceptions import SimplenightApiException, AvailabilityException, 
 
 def record_search_event(f):
     @wraps(f)
-    def wrapper(search: BaseHotelSearch):
+    def wrapper(search: HotelSearch):
         begin_time = datetime.now()
         search_event_data_id = str(uuid.uuid4())
         try:
@@ -114,7 +114,7 @@ def reviews(simplenight_hotel_id: str) -> HotelReviews:
     return adapter.reviews(hotel_id=provider_hotel_code)
 
 
-def _search_all_adapters(search_request: BaseHotelSearch, adapter_fn: Callable):
+def _search_all_adapters(search_request: HotelSearch, adapter_fn: Callable):
     adapters_to_search = adapter_service.get_adapters_to_search(search_request)
     adapters = adapter_service.get_adapters(adapters_to_search)
 
@@ -314,7 +314,7 @@ def _adapter_batch_hotel_id_search_request(search: HotelBatchSearch, provider_na
 
 
 # noinspection PyTypeChecker
-def _record_search_event(search: BaseHotelSearch, search_id: str, result: SearchResult, elapsed_time: int):
+def _record_search_event(search: HotelSearch, search_id: str, result: SearchResult, elapsed_time: int):
     search_types = {
         HotelLocationSearch: SearchType.HOTEL_BY_LOCATION,
         HotelSpecificSearch: SearchType.HOTEL_BY_ID,
@@ -333,7 +333,7 @@ def _record_search_event(search: BaseHotelSearch, search_id: str, result: Search
     )
 
 
-def _get_search_input(search: BaseHotelSearch):
+def _get_search_input(search: HotelSearch):
     if isinstance(search, HotelLocationSearch):
         return search.location_id
     elif isinstance(search, HotelSpecificSearch):

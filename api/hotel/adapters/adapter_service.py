@@ -6,7 +6,7 @@ from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBeds
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
-from api.hotel.models.hotel_api_model import BaseHotelSearch
+from api.hotel.models.hotel_api_model import HotelSearch
 from api.models.models import Feature
 
 HOTEL_ADAPTERS = {
@@ -25,7 +25,7 @@ def get_adapters(name) -> List[HotelAdapter]:
     return [get_adapter(x) for x in name.split(",")]
 
 
-def get_adapters_to_search(search_request: BaseHotelSearch) -> str:
+def get_adapters_to_search(search_request: HotelSearch) -> str:
     """
     Returns a list of adapters to search, identified by their string name.
     If an adapter is explicitly specified in the request, return that.

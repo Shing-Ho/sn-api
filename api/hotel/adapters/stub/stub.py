@@ -25,7 +25,7 @@ from api.hotel.models.hotel_api_model import (
     HotelDetails,
     GeoLocation,
     RatePlan,
-    BaseHotelSearch,
+    HotelSearch,
     HotelSpecificSearch,
     SimplenightAmenities,
     CancellationSummary,
@@ -144,7 +144,7 @@ class StubHotelAdapter(HotelAdapter):
         return room_types
 
     @staticmethod
-    def _generate_rate_plans(hotel_search: BaseHotelSearch):
+    def _generate_rate_plans(hotel_search: HotelSearch):
         refundable_rate_plan = RatePlan(
             name="Free Cancellation",
             code=random_alphanumeric(8),
@@ -167,9 +167,7 @@ class StubHotelAdapter(HotelAdapter):
         return [refundable_rate_plan, non_refundable_rate_plan]
 
     @staticmethod
-    def _generate_room_rates(
-        search_request: BaseHotelSearch, room_types: List[RoomType], rate_plan_types: List[RatePlan]
-    ):
+    def _generate_room_rates(search_request: HotelSearch, room_types: List[RoomType], rate_plan_types: List[RatePlan]):
         room_rates = []
         for room_types in room_types:
             for rate_plan in rate_plan_types:
