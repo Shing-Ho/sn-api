@@ -26,7 +26,7 @@ def live_pricing_api(query: Union[str, bytes, GooglePricingItineraryQuery]) -> s
         query = google_pricing_serializer.deserialize(query)
 
     checkout = query.checkin + timedelta(days=query.nights)
-    occupancy = RoomOccupancy(adults=1)
+    occupancy = RoomOccupancy(adults=2)
     search = HotelBatchSearch(
         start_date=query.checkin, end_date=checkout, occupancy=occupancy, hotel_ids=query.hotel_codes, currency="USD"
     )
