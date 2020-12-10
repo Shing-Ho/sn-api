@@ -15,6 +15,11 @@ class Command(BaseCommand):
         self.provider = Provider.objects.get_or_create(name="iceportal")[0]
 
     def handle(self, *args, **options):
+        existing_images = ProviderImages.objects.filter(provider__name="iceportal")
+
+        logger.info(f"Removing existing iceportal images: {existing_images.count()}")
+        existing_images.delete()
+
         properties = self.transport.get_service().GetProperties(_soapheaders=self.transport.get_auth_header())
 
         for iceportal_property in properties["info"]["PropertyIDInfo"]:
@@ -43,10 +48,8 @@ class Command(BaseCommand):
                     provider_code=iceportal_id,
                     display_order=display_order,
                     type=ImageType.UNKNOWN.value,
-                    image_url=fullsize_url,
+                    image_url=str.replace(fullsize_url, "http://", "//"),
                 )
             )
 
         ProviderImages.objects.bulk_create(provider_image_models)
-
-
