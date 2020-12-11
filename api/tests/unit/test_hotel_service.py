@@ -14,7 +14,7 @@ class TestHotelService(SimplenightTestCase):
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(adults=2, children=1),
-            provider="stub",
+            provider="stub_hotel",
         )
 
         with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
@@ -32,7 +32,7 @@ class TestHotelService(SimplenightTestCase):
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(adults=2, children=1),
-            provider="stub",
+            provider="stub_hotel",
         )
 
         with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:

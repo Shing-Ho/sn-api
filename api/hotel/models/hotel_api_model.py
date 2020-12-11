@@ -80,7 +80,7 @@ class HotelDetailsSearchRequest(SimplenightModel):
     num_rooms: int = 1
     currency: str = "USD"
     language: str = "en_US"
-    provider: str = "stub"
+    provider: str = "stub_hotel"
     chain_code: Optional[str] = None
 
 

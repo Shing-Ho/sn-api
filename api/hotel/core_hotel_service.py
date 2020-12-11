@@ -56,9 +56,7 @@ def search_by_location(search_request: HotelLocationSearch, search_id: str = Non
 
 @record_search_event
 def search_by_id(search_request: HotelSpecificSearch, search_id: str = None) -> Hotel:
-    adapters_to_search = adapter_service.get_adapters_to_search(search_request)
-    adapters = adapter_service.get_adapters(adapters_to_search)
-
+    adapters = adapter_service.get_hotel_adapters_to_search(search_request)
     adapter_name = adapters[0].get_provider_name()
     adapter_search_request = _adapter_search_request(search_request, adapter_name)
 
@@ -78,9 +76,7 @@ def search_by_id(search_request: HotelSpecificSearch, search_id: str = None) -> 
 
 @record_search_event
 def search_by_id_batch(search_request: HotelBatchSearch, search_id: str = None) -> List[Hotel]:
-    adapters_to_search = adapter_service.get_adapters_to_search(search_request)
-    adapters = adapter_service.get_adapters(adapters_to_search)
-
+    adapters = adapter_service.get_hotel_adapters_to_search(search_request)
     adapter_name = adapters[0].get_provider_name()
     adapter_search_request = _adapter_batch_hotel_id_search_request(search_request, adapter_name)
 
@@ -115,8 +111,7 @@ def reviews(simplenight_hotel_id: str) -> HotelReviews:
 
 
 def _search_all_adapters(search_request: HotelSearch, adapter_fn: Callable):
-    adapters_to_search = adapter_service.get_adapters_to_search(search_request)
-    adapters = adapter_service.get_adapters(adapters_to_search)
+    adapters = adapter_service.get_hotel_adapters_to_search(search_request)
 
     hotels = []
     for adapter in adapters:

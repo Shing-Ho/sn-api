@@ -42,7 +42,7 @@ from api.view.exceptions import PaymentException, BookingException
 class TestBookingServiceIntegration(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.provider = Provider.objects.get_or_create(name="stub")[0]
+        self.provider = Provider.objects.get_or_create(name="stub_hotel")[0]
         self.stub_feature(Feature.TEST_MODE, "true")
 
     def test_stub_booking(self):
@@ -509,7 +509,6 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         self.assertEqual(TransactionType.REFUND, payment[1].transaction_type)
         self.assertEqual(120.0, payment[1].transaction_amount)
-
 
     @staticmethod
     def _create_payment_transaction(booking, transaction_amount):
