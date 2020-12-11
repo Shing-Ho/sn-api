@@ -1,3 +1,4 @@
+from api.hotel.adapters import adapter_common
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.models.models import CityMap
 from api.tests import test_objects, model_helper

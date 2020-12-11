@@ -9,7 +9,6 @@ from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.models.adapter_models import (
     AdapterLocationSearch,
     AdapterBaseSearch,
-    AdapterHotelList,
     AdapterCancelRequest,
     AdapterCancelResponse,
     AdapterHotelBatchSearch,
@@ -25,7 +24,7 @@ from api.hotel.models.hotel_api_model import (
     HotelDetails,
     GeoLocation,
     RatePlan,
-    BaseHotelSearch,
+    HotelSearch,
     HotelSpecificSearch,
     SimplenightAmenities,
     CancellationSummary,
@@ -38,9 +37,9 @@ from common.utils import random_string
 class StubHotelAdapter(HotelAdapter):
     """Stub Hotel Adapter, generates fakes data, for testing purposes"""
 
-    PROVIDER_NAME = "stub"
+    PROVIDER_NAME = "stub_hotel"
 
-    def search_by_location(self, search: AdapterLocationSearch) -> AdapterHotelList:
+    def search_by_location(self, search: AdapterLocationSearch) -> List[AdapterHotel]:
         num_hotels_to_return = random.randint(10, 50)
         hotels = [self.search_by_id(search) for _ in range(num_hotels_to_return)]
 
@@ -53,7 +52,7 @@ class StubHotelAdapter(HotelAdapter):
 
         room_types = self._generate_room_types()
         rate_plans = self._generate_rate_plans(search_request)
-        room_rates = self._generate_room_rates(search_request, room_types, rate_plans)
+        room_rates = self._generate_room_rates(room_types, rate_plans)
 
         response = AdapterHotel(
             provider=self.PROVIDER_NAME,
@@ -144,7 +143,7 @@ class StubHotelAdapter(HotelAdapter):
         return room_types
 
     @staticmethod
-    def _generate_rate_plans(hotel_search: BaseHotelSearch):
+    def _generate_rate_plans(hotel_search: HotelSearch):
         refundable_rate_plan = RatePlan(
             name="Free Cancellation",
             code=random_alphanumeric(8),
@@ -167,13 +166,10 @@ class StubHotelAdapter(HotelAdapter):
         return [refundable_rate_plan, non_refundable_rate_plan]
 
     @staticmethod
-    def _generate_room_rates(
-        search_request: BaseHotelSearch, room_types: List[RoomType], rate_plan_types: List[RatePlan]
-    ):
+    def _generate_room_rates(room_types: List[RoomType], rate_plan_types: List[RatePlan]):
         room_rates = []
         for room_types in room_types:
             for rate_plan in rate_plan_types:
-                room_nights = (search_request.end_date - search_request.start_date).days
                 total_rate = round(decimal.Decimal(random.random() * 1200), 2)
                 total_tax_rate = round(decimal.Decimal(total_rate / 10), 2)
                 total_base_rate = decimal.Decimal(total_rate - total_tax_rate)

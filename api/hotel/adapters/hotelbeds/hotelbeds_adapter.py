@@ -55,7 +55,7 @@ from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateTyp
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
-class HotelBeds(HotelAdapter):
+class HotelBedsAdapter(HotelAdapter):
     PROVIDER_NAME = "hotelbeds"
 
     def __init__(self, transport=None):
@@ -350,7 +350,7 @@ class HotelBeds(HotelAdapter):
             checkin_time=None,
             checkout_time=None,
             amenities=list(amenities),
-            star_rating=HotelBeds._get_star_rating(detail.category_code),
+            star_rating=HotelBedsAdapter._get_star_rating(detail.category_code),
             property_description=hotel_description,
         )
 
@@ -376,7 +376,7 @@ class HotelBeds(HotelAdapter):
 
     @classmethod
     def factory(cls, test_mode=True):
-        return HotelBeds(HotelBedsTransport())
+        return HotelBedsAdapter(HotelBedsTransport())
 
     @classmethod
     def get_provider_name(cls):

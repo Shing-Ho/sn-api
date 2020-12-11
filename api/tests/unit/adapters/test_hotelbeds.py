@@ -9,7 +9,7 @@ from api.hotel.models.booking_model import HotelBookingRequest, Customer, Travel
 from api.common.common_models import to_json
 from api.hotel.models.hotel_common_models import RoomOccupancy
 from api.hotel.adapters.hotelbeds.hotelbeds_common_models import HotelBedsRateType, HotelBedsPaymentType
-from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBeds
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBedsAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_search_models import HotelBedsSearchBuilder
 from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
 from api.hotel.models.hotel_api_model import SimplenightAmenities
@@ -61,7 +61,7 @@ class TestHotelBeds(TestCase):
 
     def test_hotelbeds_search_by_location_parsing(self):
         resource = load_test_resource("hotelbeds/search-by-location-response.json")
-        hotelbeds = HotelBeds()
+        hotelbeds = HotelBedsAdapter()
 
         search = AdapterLocationSearch(
             location_id="FOO",
@@ -129,7 +129,7 @@ class TestHotelBeds(TestCase):
 
     def test_hotelbeds_hotel_details(self):
         hotel_details_resource = load_test_resource("hotelbeds/hotel-details-response.json")
-        hotelbeds = HotelBeds()
+        hotelbeds = HotelBedsAdapter()
         with requests_mock.Mocker() as mocker:
             mocker.get(HotelBedsTransport.get_hotel_content_url(), text=hotel_details_resource)
             response = hotelbeds.details(["foo", "bar"], "en_US")
@@ -152,7 +152,7 @@ class TestHotelBeds(TestCase):
             payment=None,
         )
 
-        hotelbeds = HotelBeds()
+        hotelbeds = HotelBedsAdapter()
         booking_resource = load_test_resource("hotelbeds/booking-confirmation-response.json")
         with requests_mock.Mocker() as mocker:
             mocker.post(HotelBedsTransport.get_booking_url(), text=booking_resource)
@@ -175,7 +175,7 @@ class TestHotelBeds(TestCase):
             "hotels": {"total": 0},
         }
 
-        hotelbeds_service = HotelBeds(HotelBedsTransport())
+        hotelbeds_service = HotelBedsAdapter(HotelBedsTransport())
         request = self.create_location_search("foo")
         with requests_mock.Mocker() as mocker:
             mocker.post(HotelBedsTransport.get_hotels_url(), json=response)
@@ -188,7 +188,7 @@ class TestHotelBeds(TestCase):
         resource = load_test_json_resource("hotelbeds/hotel-details-single-hotel.json")
         with requests_mock.Mocker() as mocker:
             mocker.get(HotelBedsTransport.get_hotel_content_url(), json=resource)
-            hotelbeds = HotelBeds(HotelBedsTransport())
+            hotelbeds = HotelBedsAdapter(HotelBedsTransport())
             details = hotelbeds.details([], "ENG")
 
         self.assertEqual(1, len(details))
@@ -215,7 +215,7 @@ class TestHotelBeds(TestCase):
 
         hotel_details_url = "https://api.test.hotelbeds.com/hotel-content-api/1.0/hotels?language=ENG"
 
-        hotelbeds = HotelBeds(HotelBedsTransport())
+        hotelbeds = HotelBedsAdapter(HotelBedsTransport())
         with requests_mock.Mocker() as mocker:
             mocker.post(HotelBedsTransport.get_hotels_url(), text=avail_response)
             mocker.get(hotel_details_url, text=details_response)
