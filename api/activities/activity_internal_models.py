@@ -4,7 +4,7 @@ from api.common.common_models import SimplenightModel
 from api.hotel.models.hotel_common_models import Money
 
 
-class SimplenightActivity(SimplenightModel):
+class AdapterActivity(SimplenightModel):
     name: str
     description: str
     activity_date: date

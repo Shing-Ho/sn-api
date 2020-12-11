@@ -4,16 +4,16 @@ from decimal import Decimal
 from typing import List
 
 from api.activities.activity_adapter import ActivityAdapter
-from api.activities.activity_models import ActivityProduct
+from api.activities.activity_models import SimplenightActivity
 from api.hotel.models.hotel_common_models import Money
 from api.search.search_models import ActivitySearch
 
 
 class StubActivityAdapter(ActivityAdapter):
-    def search_by_location(self, search: ActivitySearch) -> List[ActivityProduct]:
+    async def search_by_location(self, search: ActivitySearch) -> List[SimplenightActivity]:
         return list(self._create_activity_product(search) for _ in range(random.randint(2, 25)))
 
-    def search_by_id(self, search: ActivitySearch) -> ActivityProduct:
+    async def search_by_id(self, search: ActivitySearch) -> SimplenightActivity:
         return self._create_activity_product(search)
 
     def _create_activity_product(self, search: ActivitySearch):
@@ -23,7 +23,7 @@ class StubActivityAdapter(ActivityAdapter):
         total_taxes = Money(amount=Decimal(random.random() * 25), currency="USD")
         total_price = Money(amount=total_base.amount + total_taxes.amount, currency="USD")
 
-        return ActivityProduct(
+        return SimplenightActivity(
             name=activity_name,
             description=description,
             activity_date=datetime.now(),
@@ -46,3 +46,7 @@ class StubActivityAdapter(ActivityAdapter):
             f"Escape the city and go on an exciting "
             f"{activity.lower()} {tour_type.lower()} with {name} {activity} {tour_type}"
         )
+
+    @classmethod
+    def factory(cls, test_mode=True):
+        return StubActivityAdapter()

@@ -12,6 +12,7 @@ from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from api.hotel.models.hotel_api_model import HotelSearch
 from api.models.models import Feature
+from api.search.search_models import ActivitySearch
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
@@ -38,12 +39,19 @@ def get_adapter(name):
     return ALL_ADAPTERS.get(name).factory(get_test_mode())
 
 
-def get_adapters(name) -> List[HotelAdapter]:
-    return [get_adapter(x) for x in name.split(",") if x in ALL_ADAPTERS]
+def get_adapters(name, adapter_type=None) -> List[HotelAdapter]:
+    if adapter_type is None:
+        adapter_type = AdapterType.HOTEL
+
+    return [get_adapter(x) for x in name.split(",") if x in ADAPTERS[adapter_type]]
 
 
 def get_hotel_adapters_to_search(search_request: HotelSearch) -> List[HotelAdapter]:
     return get_adapters_for_type(search_request, adapter_type=AdapterType.HOTEL)
+
+
+def get_activity_adapters_to_search(search_request: ActivitySearch) -> List[ActivityAdapter]:
+    return get_adapters_for_type(search_request, adapter_type=AdapterType.ACTIVITY)
 
 
 def get_adapters_for_type(search_request, adapter_type=None) -> List[Union[HotelAdapter, ActivityAdapter]]:
@@ -63,13 +71,16 @@ def get_adapters_for_type(search_request, adapter_type=None) -> List[Union[Hotel
         if search_request.provider not in ADAPTERS[adapter_type]:
             raise AvailabilityException("Provider not found", AvailabilityErrorCode.PROVIDER_ERROR)
 
-        return get_adapters(search_request.provider)
+        return get_adapters(search_request.provider, adapter_type)
 
     enabled_adapters = get_enabled_connectors()
     if enabled_adapters:
-        return get_adapters(enabled_adapters)
+        return get_adapters(enabled_adapters, adapter_type)
 
-    return get_adapters("stub_hotel")
+    if adapter_type == AdapterType.HOTEL:
+        return get_adapters("stub_hotel", adapter_type)
+    elif adapter_type == AdapterType.ACTIVITY:
+        return get_adapters("stub_activity", adapter_type)
 
 
 def get_enabled_connectors():

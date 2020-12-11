@@ -14,14 +14,21 @@ class Products(Enum):
 
 
 class ActivitySearch(SimplenightModel):
+    activity_date: date
     adults: int
     children: int
+    provider: Optional[str] = None
+
+
+class ActivityLocationSearch(ActivitySearch):
+    location_id: str
+
+
+class ActivitySpecificSearch(ActivitySearch):
+    activity_id: str
 
 
 class SearchRequest(SimplenightModel):
-    begin_date: date
-    end_date: Optional[date]
-    location_id: str
     product_types: List[Products]
     hotel_search: Optional[HotelSearch]
     activity_search: Optional[ActivitySearch]

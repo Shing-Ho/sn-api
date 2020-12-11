@@ -1,15 +1,8 @@
 import abc
 from typing import List
 
-from api.hotel.adapters import adapter_common
-from api.hotel.models.booking_model import HotelBookingRequest, Reservation
-from api.hotel.models.hotel_common_models import RoomRate, HotelReviews
 from api.hotel import hotel_mappings
-from api.hotel.models.hotel_api_model import (
-    HotelSpecificSearch,
-    AdapterHotel,
-    HotelDetails,
-)
+from api.hotel.adapters import adapter_common
 from api.hotel.models.adapter_models import (
     AdapterHotelSearch,
     AdapterLocationSearch,
@@ -17,8 +10,13 @@ from api.hotel.models.adapter_models import (
     AdapterCancelResponse,
     AdapterHotelBatchSearch,
 )
-from api.locations import location_service
-from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
+from api.hotel.models.booking_model import HotelBookingRequest, Reservation
+from api.hotel.models.hotel_api_model import (
+    HotelSpecificSearch,
+    AdapterHotel,
+    HotelDetails,
+)
+from api.hotel.models.hotel_common_models import RoomRate, HotelReviews
 
 
 class HotelAdapter(abc.ABC):
