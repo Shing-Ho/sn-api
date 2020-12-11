@@ -308,6 +308,10 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         traveler = booking.lead_traveler
 
         cancellation_policy = _find_active_cancellation_policy(booking.booking_id)
+        cancellation_type = _get_cancellation_type(cancellation_policy)
+        if cancellation_type == CancellationSummary.NON_REFUNDABLE:
+            raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not cancellable")
+
         original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
         refund_amount = _get_refund_amount(original_payment, cancellation_policy)
         if refund_amount > 0 and original_payment.currency != cancellation_policy.penalty_currency:
