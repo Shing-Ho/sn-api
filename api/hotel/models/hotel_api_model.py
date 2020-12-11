@@ -5,11 +5,17 @@ from typing import List, Optional, Union
 
 from pydantic import Field
 
-from api.common.common_models import (
-    SimplenightModel,
+from api.common.common_models import SimplenightModel
+from api.hotel.models.hotel_common_models import (
+    RoomOccupancy,
+    Address,
+    RateType,
+    Money,
+    DailyRate,
+    PostpaidFees,
+    RoomRate,
+    BookingStatus,
 )
-from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RateType, Money, DailyRate, PostpaidFees, \
-    RoomRate, BookingStatus
 
 
 class SimplenightAmenities(Enum):

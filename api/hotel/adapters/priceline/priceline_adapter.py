@@ -161,6 +161,7 @@ class PricelineAdapter(HotelAdapter):
         return AdapterCancelResponse(is_cancelled=True)
 
     def room_details(self, ppn_bundle: str) -> Dict:
+        logger.info("Retrieving room details for PPN bundle: " + ppn_bundle)
         params = {"ppn_bundle": ppn_bundle}
         response = self.transport.express_contract(**params)
 
@@ -382,6 +383,7 @@ class PricelineAdapter(HotelAdapter):
         results = response[operation]
         if "error" in results:
             error_message = results["error"]["status"]
+            logger.error("Error in Priceline Message: " + error_message)
             raise AvailabilityException(error_type=AvailabilityErrorCode.PROVIDER_ERROR, detail=error_message)
 
         return results["results"]

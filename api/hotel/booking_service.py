@@ -38,19 +38,32 @@ from common.exceptions import AppException
 
 
 def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
+    logger.info(f"Received Booking Request: {book_request}")
     try:
+        logger.info("Retrieving saved room rate")
         provider_rate_cache_payload = hotel_cache_service.get_cached_room_data(book_request.room_code)
         provider = provider_rate_cache_payload.provider
         simplenight_rate = provider_rate_cache_payload.simplenight_rate
         adapter = adapter_service.get_adapter(provider)
 
+        logger.info("Persisting traveler and booking")
         traveler = _persist_traveler(book_request.customer)
         booking = _persist_booking_record(book_request, traveler)
         simplenight_record_locator = RecordLocator.generate_record_locator(booking)
 
-        logger.info(f"Saved booking {booking.booking_id}")
+        # Lookup Provider Rates in Cache
+        provider_rate = provider_rate_cache_payload.provider_rate
+        book_request.room_code = provider_rate.code
 
+        logger.info("Starting price verification")
+        verified_rates = _price_verification(provider=provider, rate=provider_rate)
+
+        # Reset room rates with verified rates.  If prices mismatched above, error will raise
+        book_request.room_code = verified_rates.code
+
+        logger.info(f"Saved booking {booking.booking_id} {simplenight_record_locator}")
         total_payment_amount = simplenight_rate.total
+        logger.info(f"Authorizing payment for {total_payment_amount}")
         auth_response = payment_service.authorize_payment(
             amount=total_payment_amount,
             payment=book_request.payment,
@@ -66,14 +79,6 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
             auth_response.save()
 
         try:
-            # Save Simplenight Internal Room Rates
-            # Lookup Provider Rates in Cache
-            provider_rate = provider_rate_cache_payload.provider_rate
-            book_request.room_code = provider_rate.code
-
-            # Reset room rates with verified rates.  If prices mismatch, error will raise
-            verified_rates = _price_verification(provider=provider, rate=provider_rate)
-            book_request.room_code = verified_rates.code
             reservation = adapter.booking(book_request)
             reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
 
@@ -105,8 +110,10 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
             raise BookingException(BookingErrorCode.PROVIDER_BOOKING_FAILURE, str(e))
 
     except BookingException as e:
+        logger.exception("Error during booking")
         raise e
     except Exception as e:
+        logger.exception("Unhandled error during booking")
         raise BookingException(BookingErrorCode.UNHANDLED_ERROR, str(e))
 
 
@@ -302,6 +309,7 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         booking = _find_booking_with_booking_id_and_lastname(simplenight_locator, last_name)
         booking_status = BookingStatus.from_value(booking.booking_status)
         if booking_status != BookingStatus.BOOKED:
+            logger.error("Cannot cancel booking, booking is not in booked state")
             raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not currently active")
 
         hotel_bookings = list(HotelBooking.objects.filter(booking_id=booking.booking_id))
@@ -310,11 +318,13 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         cancellation_policy = _find_active_cancellation_policy(booking.booking_id)
         cancellation_type = _get_cancellation_type(cancellation_policy)
         if cancellation_type == CancellationSummary.NON_REFUNDABLE:
+            logger.error("Cannot cancel booking, booking is non-refundable")
             raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not cancellable")
 
         original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
         refund_amount = _get_refund_amount(original_payment, cancellation_policy)
         if refund_amount > 0 and original_payment.currency != cancellation_policy.penalty_currency:
+            logger.error("Cancellation policy and booking do not match")
             raise BookingException(
                 BookingErrorCode.CANCELLATION_FAILURE, "Cancellation policy currency and booking do not match"
             )
