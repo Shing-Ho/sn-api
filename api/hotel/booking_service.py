@@ -308,6 +308,10 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         traveler = booking.lead_traveler
 
         cancellation_policy = _find_active_cancellation_policy(booking.booking_id)
+        cancellation_type = _get_cancellation_type(cancellation_policy)
+        if cancellation_type == CancellationSummary.NON_REFUNDABLE:
+            raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not cancellable")
+
         original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
         refund_amount = _get_refund_amount(original_payment, cancellation_policy)
         if refund_amount > 0 and original_payment.currency != cancellation_policy.penalty_currency:
@@ -388,43 +392,7 @@ def _send_confirmation_email(
         recipient = f"{reservation.customer.first_name} {reservation.customer.last_name}"
         to_email = reservation.customer.email
 
-        friendly_cancellation_map = {
-            CancellationSummary.UNKNOWN_CANCELLATION_POLICY: "Call for cancellation details",
-            CancellationSummary.FREE_CANCELLATION: "Free Cancellation",
-            CancellationSummary.NON_REFUNDABLE: "Non-refundable",
-            CancellationSummary.PARTIAL_REFUND: "Partially-refundable",
-        }
-
-        provider_hotel = ProviderHotel.objects.get(
-            provider__name=hotel.provider, provider_code=hotel.hotel_id, language_code="en"
-        )
-
-        order_currency_symbol = currencies.get_symbol(payment.currency)
-
-        def format_money(amount):
-            return f"{order_currency_symbol}{amount:.2f}"
-
-        resort_fees = 0
-        if reservation.room_rate.postpaid_fees:
-            resort_fees = reservation.room_rate.postpaid_fees.total.amount
-
-        params = {
-            "booking_id": str(record_locator),
-            "order_total": format_money(reservation.room_rate.total.amount),
-            "hotel_name": hotel.hotel_details.name,
-            "hotel_sub_total": format_money(reservation.room_rate.total.amount),
-            "record_locator": reservation.locator.id,
-            "cancellation_policy": friendly_cancellation_map.get(reservation.cancellation_details[0].cancellation_type),
-            "hotel_address": provider_hotel.address_line_1,
-            "checkin": "04:00pm",
-            "checkout": "12:00pm",
-            "resort_fee": format_money(resort_fees),
-            "hotel_taxes": format_money(reservation.room_rate.total_tax_rate.amount),
-            "hotel_room_type": "Standard Room",
-            "last_four": "0000",
-            "order_base_rate": format_money(reservation.room_rate.total_base_rate.amount),
-            "order_taxes": format_money(reservation.room_rate.total_tax_rate.amount),
-        }
+        params = _generate_confirmation_email_params(hotel, reservation, payment, record_locator)
 
         if not _is_confirmation_email_enabled():
             logger.info(f"Not sending email without email enabled. Parameters: {params}")
@@ -434,6 +402,51 @@ def _send_confirmation_email(
 
     except Exception as e:
         logger.warn(f"Could not send confirmation email: {str(e)}")
+
+
+def _generate_confirmation_email_params(
+    hotel: AdapterHotel, reservation: Reservation, payment: PaymentTransaction, record_locator: str
+):
+    friendly_cancellation_map = {
+        CancellationSummary.UNKNOWN_CANCELLATION_POLICY: "Call for cancellation details",
+        CancellationSummary.FREE_CANCELLATION: "Free Cancellation",
+        CancellationSummary.NON_REFUNDABLE: "Non-refundable",
+        CancellationSummary.PARTIAL_REFUND: "Partially-refundable",
+    }
+
+    provider_hotel = ProviderHotel.objects.get(
+        provider__name=hotel.provider, provider_code=hotel.hotel_id, language_code="en"
+    )
+
+    order_currency_symbol = currencies.get_symbol(payment.currency)
+
+    def format_money(amount):
+        return f"{order_currency_symbol}{amount:.2f}"
+
+    resort_fees = 0
+    if reservation.room_rate.postpaid_fees:
+        resort_fees = reservation.room_rate.postpaid_fees.total.amount
+
+    room_type_code = reservation.room_rate.room_type_code
+    room_type = next(room_type for room_type in hotel.room_types if room_type.code == room_type_code)
+
+    return {
+        "booking_id": str(record_locator),
+        "order_total": format_money(reservation.room_rate.total.amount),
+        "hotel_name": hotel.hotel_details.name,
+        "hotel_sub_total": format_money(reservation.room_rate.total.amount),
+        "record_locator": reservation.locator.id,
+        "cancellation_policy": friendly_cancellation_map.get(reservation.cancellation_details[0].cancellation_type),
+        "hotel_address": provider_hotel.address_line_1,
+        "checkin": "04:00pm",
+        "checkout": "12:00pm",
+        "resort_fee": format_money(resort_fees),
+        "hotel_taxes": format_money(reservation.room_rate.total_tax_rate.amount),
+        "hotel_room_type": room_type.name,
+        "last_four": "0000",
+        "order_base_rate": format_money(reservation.room_rate.total_base_rate.amount),
+        "order_taxes": format_money(reservation.room_rate.total_tax_rate.amount),
+    }
 
 
 def _is_confirmation_email_enabled():

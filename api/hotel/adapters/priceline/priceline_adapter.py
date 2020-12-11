@@ -144,6 +144,10 @@ class PricelineAdapter(HotelAdapter):
             booking_id=cancel_request.record_locator, email="info@simplenight.com",
         )
         lookup_response = self._check_express_lookup_response_and_get_results(lookup_response)
+
+        if "cancel" not in lookup_response["result"]["actions"]:
+            raise BookingException(BookingErrorCode.PROVIDER_CANCELLATION_FAILURE, "Could not cancel booking")
+
         cancellation_code = lookup_response["result"]["actions"]["cancel"]
         logger.info(f"Successfully looked up booking {cancel_request.record_locator}")
 

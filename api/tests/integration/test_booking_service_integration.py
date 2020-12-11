@@ -341,7 +341,8 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         with patch("api.payments.payment_service.refund_payment", mock_refund):
             with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
                 mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
-                cancel_response = booking_service.cancel_confirm(cancel_request)
+                with pytest.raises(BookingException):
+                    cancel_response = booking_service.cancel_confirm(cancel_request)
 
         # No Refund Processed
         mock_refund.assert_not_called()
@@ -349,9 +350,6 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             booking_id=booking.booking_id, transaction_type=TransactionType.REFUND
         )
         self.assertEqual(0, refund_transactions.count())
-
-        self.assertTrue(cancel_response.cancelled)
-        self.assertEqual(str(booking.booking_id), cancel_response.booking_id)
 
     def test_cancel_twice(self):
         booking, hotel_booking, traveler = self._create_booking(
