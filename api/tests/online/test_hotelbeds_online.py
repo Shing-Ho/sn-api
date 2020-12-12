@@ -3,10 +3,8 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from api.hotel import hotel_service, hotel_cache_service, booking_service
-from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBeds
-from api.hotel.models.hotel_api_model import (
-    HotelLocationSearch,
-)
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBedsAdapter
+from api.hotel.models.hotel_api_model import HotelLocationSearch
 from api.hotel.models.hotel_common_models import RoomOccupancy, RateType
 from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy
 from api.models.models import HotelBooking
@@ -17,7 +15,7 @@ from api.tests.unit.simplenight_test_case import SimplenightTestCase
 class TestHotelBedsOnline(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.hotelbeds = HotelBeds()
+        self.hotelbeds = HotelBedsAdapter()
 
     def test_location_search(self):
         search_request = self.create_location_search()
@@ -94,10 +92,7 @@ class TestHotelBedsOnline(SimplenightTestCase):
             checkout = datetime.now().date() + timedelta(days=35)
 
         search_request = AdapterLocationSearch(
-            location_id=location_name,
-            start_date=checkin,
-            end_date=checkout,
-            occupancy=AdapterOccupancy(),
+            location_id=location_name, start_date=checkin, end_date=checkout, occupancy=AdapterOccupancy(),
         )
 
         return search_request

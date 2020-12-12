@@ -1,7 +1,6 @@
 import uuid
-from threading import currentThread
 
-from django.http import HttpRequest, HttpResponseForbidden
+from django.http import HttpRequest
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.exceptions import AuthenticationFailed
@@ -9,9 +8,8 @@ from rest_framework_api_key.permissions import KeyParser
 
 from api import logger
 from api.auth.authentication import OrganizationAPIKey
-from api.common.request_context import get_request_context
-from api.models.models import Organization
 from api.common.request_cache import get_request_cache
+from api.models.models import Organization
 
 
 class RequestContextMiddleware(MiddlewareMixin):

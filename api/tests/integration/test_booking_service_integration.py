@@ -42,7 +42,7 @@ from api.view.exceptions import PaymentException, BookingException
 class TestBookingServiceIntegration(SimplenightTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.provider = Provider.objects.get_or_create(name="stub")[0]
+        self.provider = Provider.objects.get_or_create(name="stub_hotel")[0]
         self.stub_feature(Feature.TEST_MODE, "true")
 
     def test_stub_booking(self):
@@ -507,6 +507,25 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         self.assertEqual(TransactionType.REFUND, payment[1].transaction_type)
         self.assertEqual(120.0, payment[1].transaction_amount)
+
+    def test_price_verification_failed(self):
+        booking_request = test_objects.booking_request(rate_code="sn-foo")
+
+        room_rate = test_objects.room_rate("foo", "100.0", base_rate="80", tax_rate="20")
+        recheck_room_rate = test_objects.room_rate("foo", "150.0", base_rate="130", tax_rate="20")
+        simplenight_rate = test_objects.room_rate("sn-foo", "120", base_rate="96", tax_rate="24")
+        hotel = test_objects.hotel()
+
+        hotel_cache_service.save_provider_rate_in_cache(
+            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
+        )
+
+        with patch("api.hotel.adapters.stub.stub.StubHotelAdapter.recheck") as price_verification_mock:
+            price_verification_mock.return_value = recheck_room_rate
+            with pytest.raises(BookingException) as e:
+                booking_service.book(booking_request)
+
+        self.assertEquals("Price Verification Failed: Old=100.0, New=150.0", str(e.value))
 
     @staticmethod
     def _create_payment_transaction(booking, transaction_amount):

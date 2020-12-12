@@ -1,18 +1,22 @@
 import abc
 from typing import List
 
-from api.hotel.models.booking_model import HotelBookingRequest, Reservation
-from api.hotel.models.hotel_common_models import RoomRate, HotelReviews
 from api.hotel import hotel_mappings
+from api.hotel.adapters import adapter_common
+from api.hotel.models.adapter_models import (
+    AdapterHotelSearch,
+    AdapterLocationSearch,
+    AdapterCancelRequest,
+    AdapterCancelResponse,
+    AdapterHotelBatchSearch,
+)
+from api.hotel.models.booking_model import HotelBookingRequest, Reservation
 from api.hotel.models.hotel_api_model import (
     HotelSpecificSearch,
     AdapterHotel,
     HotelDetails,
 )
-from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterLocationSearch, AdapterCancelRequest, \
-    AdapterCancelResponse, AdapterHotelBatchSearch
-from api.locations import location_service
-from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
+from api.hotel.models.hotel_common_models import RoomRate, HotelReviews
 
 
 class HotelAdapter(abc.ABC):
@@ -59,16 +63,7 @@ class HotelAdapter(abc.ABC):
         pass
 
     def get_provider_location(self, search_request: AdapterLocationSearch):
-        provider_location = location_service.find_provider_location(
-            self.get_provider_name(), search_request.location_id
-        )
-
-        if provider_location is None:
-            raise AvailabilityException(
-                detail="Could not find provider location mapping", error_type=AvailabilityErrorCode.LOCATION_NOT_FOUND
-            )
-
-        return provider_location
+        return adapter_common.get_provider_location(self.get_provider_name(), search_request.location_id)
 
     def get_provider_hotel_mapping(self, search_request: HotelSpecificSearch):
         return hotel_mappings.find_provider_hotel_id(search_request.hotel_id, self.get_provider_name())

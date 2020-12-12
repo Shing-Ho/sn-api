@@ -45,7 +45,11 @@ class TestHotelsView(SimplenightTestCase):
         checkout = datetime.now().date() + timedelta(days=35)
 
         search = HotelSpecificSearch(
-            hotel_id="SN123", start_date=checkin, end_date=checkout, occupancy=RoomOccupancy(adults=1), provider="stub"
+            hotel_id="SN123",
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=RoomOccupancy(adults=1),
+            provider="stub_hotel",
         )
 
         with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:

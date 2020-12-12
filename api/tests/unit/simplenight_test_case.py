@@ -62,6 +62,10 @@ class SimplenightTestCase(TestCase):
         request_context.clear_cache()
         self.organization.set_feature(feature, value)
 
+    def clear_feature(self, feature: Feature):
+        self.organization.clear_feature(feature)
+        request_context.clear_cache()
+
     def post(self, endpoint, obj, content_type="application/json"):
         data = obj.json()
         return self.client.post(endpoint, data=data, content_type=content_type)
