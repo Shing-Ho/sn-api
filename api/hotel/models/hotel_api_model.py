@@ -62,11 +62,11 @@ class HotelSearch(SimplenightModel):
 
 
 class HotelLocationSearch(HotelSearch):
-    location_id: str = None
+    location_id: str
 
 
 class HotelSpecificSearch(HotelSearch):
-    hotel_id: str = None
+    hotel_id: str
 
 
 class HotelBatchSearch(HotelSearch):

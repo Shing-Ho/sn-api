@@ -1,5 +1,4 @@
 import json
-from enum import Enum
 from typing import List, Union, TypeVar, Type
 
 from pydantic.main import BaseModel
@@ -17,7 +16,7 @@ def from_json(obj, cls: Type[T], many=False) -> Union[List[T], T]:
     if many:
         return list(map(cls.parse_obj, json.loads(obj)))
 
-    if isinstance(obj, str):
+    if isinstance(obj, (str, bytes)):
         return cls.parse_raw(obj)
 
     return cls.parse_obj(obj)

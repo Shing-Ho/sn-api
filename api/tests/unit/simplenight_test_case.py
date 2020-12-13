@@ -23,11 +23,11 @@ class SimplenightTestCase(TestCase):
         self.request_cache = RequestCacheMiddleware(Mock())
         self.request_context = RequestContextMiddleware()
         self.organization = self.create_organization(self.organization_name)
-        self.stub_feature(Feature.TEST_MODE, "true")
 
         self.api_key = self.create_api_key(self.organization)
         self.client = APIClient(HTTP_X_API_KEY=self.api_key)
         self.mock_request()
+        self.stub_feature(Feature.TEST_MODE, "true")
 
     def create_organization_and_client(self, organization_name, api_burst_limit=5, api_daily_limit=100):
         organization = self.create_organization(organization_name, api_burst_limit, api_daily_limit)
