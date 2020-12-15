@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 import logging
 import os
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import time
 
@@ -61,6 +62,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "api.common.request_cache.RequestCacheMiddleware",
     "api.common.context_middleware.RequestContextMiddleware",
+    "bugsnag.django.middleware.BugsnagMiddleware",
 ]
 
 ROOT_URLCONF = "api.urls"
@@ -179,9 +181,14 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {
-        "console": {"class": "api.common.logging.CustomHandler", "formatter": "default", "filters": ["message_id"]}
+        "bugsnag": {
+            "level": "INFO",
+            "class": "bugsnag.handlers.BugsnagHandler",
+            "formatter": "default",
+        },
+        "console": {"class": "api.common.logging.CustomHandler", "formatter": "default", "filters": ["message_id"]},
     },
-    "root": {"handlers": ["console"], "level": "DEBUG"},
+    "root": {"handlers": ["console", "bugsnag"], "level": "ERROR"},
     "filters": {"message_id": {"()": "api.common.logging.MessageIDFilter"}},
     "formatters": {
         "default": {

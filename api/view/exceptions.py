@@ -1,3 +1,4 @@
+import bugsnag
 from enum import Enum
 
 from rest_framework.views import exception_handler
@@ -37,7 +38,7 @@ def handler(exc, context):
             response.data["error"] = {}
             response.data["error"]["type"] = exc.error_type.value
             response.data["error"]["message"] = exc.detail
-
+    bugsnag.notify(exc)
     return response
 
 
