@@ -1,6 +1,7 @@
 import abc
 from typing import List
 
+from api.common.base_adapter import BaseAdapter
 from api.hotel import hotel_mappings
 from api.hotel.adapters import adapter_common
 from api.hotel.models.adapter_models import (
@@ -19,7 +20,7 @@ from api.hotel.models.hotel_api_model import (
 from api.hotel.models.hotel_common_models import RoomRate, HotelReviews
 
 
-class HotelAdapter(abc.ABC):
+class HotelAdapter(BaseAdapter, abc.ABC):
     @abc.abstractmethod
     def search_by_location(self, search: AdapterLocationSearch) -> List[AdapterHotel]:
         """Search a provider for a particular location"""
@@ -51,16 +52,6 @@ class HotelAdapter(abc.ABC):
     @abc.abstractmethod
     def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
         """Given an adapter record locator, cancel a booking."""
-
-    @classmethod
-    @abc.abstractmethod
-    def factory(cls, test_mode=True):
-        pass
-
-    @classmethod
-    @abc.abstractmethod
-    def get_provider_name(cls):
-        pass
 
     def get_provider_location(self, search_request: AdapterLocationSearch):
         return adapter_common.get_provider_location(self.get_provider_name(), search_request.location_id)

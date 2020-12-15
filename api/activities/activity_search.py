@@ -1,10 +1,12 @@
 import asyncio
+from decimal import getcontext, ROUND_UP
 from typing import List
 
 from api.activities.activity_adapter import ActivityAdapter
 from api.activities.activity_internal_models import AdapterActivity
 from api.activities.activity_models import SimplenightActivity
 from api.hotel.adapters import adapter_service
+from api.hotel.models.hotel_common_models import Money
 from api.search.search_models import ActivitySearch, ActivityLocationSearch, ActivitySpecificSearch
 
 
@@ -33,9 +35,9 @@ def _adapter_to_simplenight_activity(activity: AdapterActivity) -> SimplenightAc
         name=activity.name,
         description=activity.description,
         activity_date=activity.activity_date,
-        total_price=activity.total_price,
-        total_base=activity.total_base,
-        total_taxes=activity.total_taxes,
+        total_price=_format_money(activity.total_price),
+        total_base=_format_money(activity.total_base),
+        total_taxes=_format_money(activity.total_taxes),
     )
 
 
@@ -57,3 +59,9 @@ def _search_all_adapters(search: ActivitySearch, fn_name: str, many=True):
             yield from asyncio.run(search_fn(search))
         else:
             yield asyncio.run(search_fn(search))
+
+
+def _format_money(money: Money):
+    getcontext().rounding = ROUND_UP
+    money.amount = round(money.amount, 2)
+    return money

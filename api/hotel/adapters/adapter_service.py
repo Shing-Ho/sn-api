@@ -12,7 +12,9 @@ from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from api.hotel.models.hotel_api_model import HotelSearch
 from api.models.models import Feature
-from api.search.search_models import ActivitySearch
+from api.restaurants.adapters.stub_restaurant_adapter import StubRestaurantAdapter
+from api.restaurants.restaurant_adapter import RestaurantAdapter
+from api.search.search_models import ActivitySearch, RestaurantSearch
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
@@ -29,7 +31,8 @@ ADAPTERS = {
         "hotelbeds": HotelBedsAdapter,
         "priceline": PricelineAdapter,
     },
-    AdapterType.ACTIVITY: {"stub_activity": StubActivityAdapter,},
+    AdapterType.ACTIVITY: {"stub_activity": StubActivityAdapter},
+    AdapterType.RESTAURANT: {"stub_restaurant": StubRestaurantAdapter},
 }
 
 ALL_ADAPTERS = {name: adapter for adapter_type in ADAPTERS for name, adapter in ADAPTERS[adapter_type].items()}
@@ -54,7 +57,13 @@ def get_activity_adapters_to_search(search_request: ActivitySearch) -> List[Acti
     return get_adapters_for_type(search_request, adapter_type=AdapterType.ACTIVITY)
 
 
-def get_adapters_for_type(search_request, adapter_type=None) -> List[Union[HotelAdapter, ActivityAdapter]]:
+def get_restaurant_adapters_to_search(search_request: RestaurantSearch) -> List[RestaurantAdapter]:
+    return get_adapters_for_type(search_request, adapter_type=AdapterType.RESTAURANT)
+
+
+def get_adapters_for_type(
+    search_request, adapter_type=None
+) -> List[Union[HotelAdapter, ActivityAdapter, RestaurantAdapter]]:
     """
     Returns a list of adapters to search, identified by their string name.
     If an adapter is explicitly specified in the request, return that.
@@ -81,6 +90,8 @@ def get_adapters_for_type(search_request, adapter_type=None) -> List[Union[Hotel
         return get_adapters("stub_hotel", adapter_type)
     elif adapter_type == AdapterType.ACTIVITY:
         return get_adapters("stub_activity", adapter_type)
+    elif adapter_type == AdapterType.RESTAURANT:
+        return get_adapters("stub_restaurant", adapter_type)
 
 
 def get_enabled_connectors():

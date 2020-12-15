@@ -1,6 +1,6 @@
 from api import logger
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
-
+from api.management.commands.simplenight_base_command import SimplenightBaseCommand
 
 ENDPOINT_MAPPING = {
     PricelineTransport.Endpoint.AMENITIES: {
@@ -33,6 +33,7 @@ def load_data(transport: PricelineTransport, endpoint: PricelineTransport.Endpoi
     result_sub_key = ENDPOINT_MAPPING[endpoint]["result_sub_key"]
 
     while True:
+        SimplenightBaseCommand.mock_organization()
         logger.info(f"Making hotels download request to Priceline with resume key {resume_key}")
         response = transport.get(endpoint=endpoint, resume_key=resume_key, limit=chunk_size)
         resume_key = response[result_key]["results"]["resume_key"]

@@ -19,7 +19,14 @@ class CacheStorageTypeHint:
 
 def get_request_cache() -> CacheStorageTypeHint:
     assert _installed_middleware, "RequestCacheMiddleware not loaded"
+    if currentThread() not in _request_cache:
+        _request_cache[currentThread()] = RequestCache()
+
     return _request_cache[currentThread()]
+
+
+def copy_request_cache(thread_name):
+    _request_cache[currentThread()] = _request_cache[thread_name]
 
 
 class RequestCache(LocMemCache):

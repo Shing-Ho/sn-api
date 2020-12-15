@@ -1,4 +1,5 @@
-from api.settings import *
+from api.settings import *  # noqa F403
+import os
 
 CACHES = {
     "default": {

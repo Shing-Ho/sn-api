@@ -50,3 +50,7 @@ class StubActivityAdapter(ActivityAdapter):
     @classmethod
     def factory(cls, test_mode=True):
         return StubActivityAdapter()
+
+    @classmethod
+    def get_provider_name(cls):
+        return "stub_activity"
