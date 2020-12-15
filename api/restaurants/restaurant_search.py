@@ -8,7 +8,7 @@ from api.search.search_models import RestaurantSearch
 
 
 def search(restaurant_search: RestaurantSearch) -> List[SimplenightRestaurant]:
-    restaurants = _search_all_adapters(restaurant_search)
+    restaurants = list(_search_all_adapters(restaurant_search))
     return _process_restaurants(restaurants)
 
 

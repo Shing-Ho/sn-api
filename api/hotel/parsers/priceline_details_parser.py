@@ -30,7 +30,10 @@ class PricelineDetailsParser:
 
     @classmethod
     def remove_old_data(cls):
-        ProviderHotel.objects.filter(provider__name=PricelineAdapter.get_provider_name()).delete()
+        existing_records = ProviderHotel.objects.filter(provider__name=PricelineAdapter.get_provider_name())
+
+        logger.info(f"Removing {existing_records.count()} existing records")
+        existing_records.delete()
 
     def parse_hotel(self, hotel_data):
 
