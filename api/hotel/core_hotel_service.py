@@ -33,17 +33,18 @@ def record_search_event(f):
     def wrapper(search: HotelSearch):
         begin_time = datetime.now()
         search_event_data_id = str(uuid.uuid4())
+        search_result = SearchResult.FAILURE
         try:
             result = f(search, search_id=search_event_data_id)
-            end_time = datetime.now()
-            elapsed_time = int((end_time - begin_time).microseconds / 1000)
-            _record_search_event(search, search_event_data_id, SearchResult.SUCCESS, elapsed_time)
+            search_result = SearchResult.SUCCESS
             return result
-        except Exception as e:
+        finally:
             end_time = datetime.now()
-            elapsed_time = int((end_time - begin_time).microseconds / 1000)
-            _record_search_event(search, search_event_data_id, SearchResult.FAILURE, elapsed_time)
-            raise e
+            elapsed_time = int((end_time - begin_time).total_seconds() * 1000)
+            logger.info(f"Search Result = {search_result.name}, elapsed time = {elapsed_time}")
+            _record_search_event(
+                search=search, search_id=search_event_data_id, result=search_result, elapsed_time=elapsed_time
+            )
 
     return wrapper
 
