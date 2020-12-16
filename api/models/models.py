@@ -492,6 +492,7 @@ class SearchEvent(models.Model):
     search_input = models.TextField()
     result = enum.EnumField(SearchResult)
     elapsed_time = models.IntegerField()
+    request_id = models.CharField(max_length=8, null=True)
 
 
 class HotelEvent(models.Model):
