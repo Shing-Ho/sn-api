@@ -48,6 +48,8 @@ class PricelineTransport(Transport):
         logger.debug(f"Params: {params}")
 
         response = requests.get(url, params=params, headers=self._get_headers())
+        logger.info(f"Request complete to {url}")
+
         if not response.ok:
             logger.error(f"Error while searching Priceline: {response.text}")
 
@@ -61,6 +63,8 @@ class PricelineTransport(Transport):
         logger.debug(f"Params: {params}")
 
         response = requests.post(url, data=params, headers=self._get_headers())
+        logger.info(f"Request complete to {url}")
+
         if not response.ok:
             logger.error(f"Error while searching Priceline: {response.text}")
 
