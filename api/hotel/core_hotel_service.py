@@ -6,7 +6,7 @@ from functools import wraps
 from typing import List, Union, Tuple, Callable, Optional
 
 from api import logger
-from api.common import analytics
+from api.common import analytics, request_context
 from api.hotel import markups, hotel_cache_service, hotel_mappings
 from api.hotel.adapters import adapter_service, adapter_common
 from api.hotel.adapters.hotel_adapter import HotelAdapter
@@ -311,6 +311,11 @@ def _adapter_batch_hotel_id_search_request(search: HotelBatchSearch, provider_na
 
 # noinspection PyTypeChecker
 def _record_search_event(search: HotelSearch, search_id: str, result: SearchResult, elapsed_time: int):
+    def get_request_id():
+        request_id = request_context.get_request_context().get_request_id()
+        if request_id:
+            return request_id[:8]
+
     search_types = {
         HotelLocationSearch: SearchType.HOTEL_BY_LOCATION,
         HotelSpecificSearch: SearchType.HOTEL_BY_ID,
@@ -326,6 +331,7 @@ def _record_search_event(search: HotelSearch, search_id: str, result: SearchResu
         search_input=_get_search_input(search),
         search_result=result,
         elapsed_time=elapsed_time,
+        request_id=get_request_id(),
     )
 
 

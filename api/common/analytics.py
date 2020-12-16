@@ -1,6 +1,5 @@
 import queue
 import threading
-import uuid
 from datetime import date
 from decimal import Decimal
 from time import sleep
@@ -44,6 +43,7 @@ def add_search_event(
     search_input: str,
     search_result: SearchResult,
     elapsed_time: int,
+    request_id: str,
 ):
     request_context = get_request_context()
     search_event = SearchEvent(
@@ -55,6 +55,7 @@ def add_search_event(
         search_input=search_input,
         result=search_result,
         elapsed_time=elapsed_time,
+        request_id=request_id,
     )
 
     _SEARCH_EVENT_QUEUE.put(search_event, False)
@@ -73,7 +74,7 @@ def add_hotel_event(
     base: Decimal,
     provider_total: Decimal,
     provider_base: Decimal,
-    provider_taxes: Decimal
+    provider_taxes: Decimal,
 ):
     hotel_event_data = HotelEvent(
         search_event_data_id=search_event_data_id,
@@ -85,7 +86,7 @@ def add_hotel_event(
         base=base,
         provider_total=provider_total,
         provider_base=provider_base,
-        provider_taxes=provider_taxes
+        provider_taxes=provider_taxes,
     )
 
     _HOTEL_EVENT_QUEUE.put(hotel_event_data)

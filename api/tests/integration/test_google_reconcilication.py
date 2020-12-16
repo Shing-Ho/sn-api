@@ -1,4 +1,6 @@
 import csv
+import glob
+from collections import defaultdict
 from datetime import date
 
 from api.management import google_reconciliation
@@ -59,3 +61,37 @@ class TestGoogleReconciliation(SimplenightTestCase):
         self.assertEqual("Hotel One", rows[1][1])
         self.assertEqual("SN3", rows[2][0])
         self.assertEqual("Hotel Three", rows[2][1])
+
+    def x_test_merge_old_bookings_report(self):
+        """This is just a temporary test for merging old Travelport bookings for econcilliation purposes"""
+
+        from lxml import etree
+
+        hotels = defaultdict(dict)
+        for file in glob.glob("/Users/jmorton/Downloads/props/Oct052020.xml"):
+            doc = etree.parse(file)
+            for listing in doc.findall("//listing"):
+                hotel_name = listing.find("name").text.upper().strip()
+                hotel_id = listing.find("id").text.strip()
+                address_line_1 = listing.find("./address/component[@name='addr1']").text.strip()
+                country = listing.find("./address/component[@name='country']").text.strip()
+
+                hotels[hotel_name] = {
+                    "id": hotel_id,
+                    "hotel_name": hotel_name,
+                    "address_line_1": address_line_1,
+                    "country": country,
+                }
+
+                postal_code = listing.findall("./address/component[@name='postal_code']")
+                if postal_code and postal_code[0].text:
+                    hotels[hotel_name]["postal_code"] = postal_code[0].text.strip()
+
+                phone = listing.findall("phone[@type='main']")
+                if phone:
+                    hotels[hotel_name]["phone"] = phone[0].text.strip()
+
+        fields = ("id", "hotel_name", "address_line_1", "country", "postal_code", "phone")
+        with open("/Users/jmorton/hotels.csv", "w") as f:
+            writer = csv.DictWriter(f, fieldnames=fields)
+            writer.writerows(hotels.values())
