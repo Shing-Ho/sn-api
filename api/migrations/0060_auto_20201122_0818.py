@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0059_hotelevent_searchevent"),
+        ('api', '0059_hotelevent_searchevent'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name="hotelevent",
-            name="search_event_data_id",
+            model_name='hotelevent',
+            name='search_event_data_id',
             field=models.UUIDField(),
         ),
     ]

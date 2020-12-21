@@ -10,8 +10,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name="searchevent",
-            name="request_id",
-            field=models.CharField(max_length=8, null=True),
+            model_name="searchevent", name="request_id", field=models.CharField(max_length=8, null=True),
         ),
     ]

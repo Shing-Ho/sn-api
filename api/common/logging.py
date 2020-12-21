@@ -13,7 +13,6 @@ class MessageIDFilter(logging.Filter):
     def filter(self, record):
         try:
             from api.common.request_context import get_request_context
-
             request_context = get_request_context()
             record.request_id = request_context.get_request_id()[:8]
         except Exception:

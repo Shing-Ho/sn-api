@@ -92,10 +92,7 @@ class TestHotelBedsOnline(SimplenightTestCase):
             checkout = datetime.now().date() + timedelta(days=35)
 
         search_request = AdapterLocationSearch(
-            location_id=location_name,
-            start_date=checkin,
-            end_date=checkout,
-            occupancy=AdapterOccupancy(),
+            location_id=location_name, start_date=checkin, end_date=checkout, occupancy=AdapterOccupancy(),
         )
 
         return search_request

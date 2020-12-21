@@ -120,3 +120,4 @@ class HotelViewSet(viewsets.ViewSet):
         request_cache.set("__status", f"OK {organization_name}")
 
         return Response(data=request_cache.get("__status"))
+

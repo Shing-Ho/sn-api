@@ -120,10 +120,7 @@ def create_provider_hotel(provider, provider_code, hotel_name):
 
 def create_traveler(first_name="John", last_name="Simplenight"):
     traveler = Traveler(
-        first_name=first_name,
-        last_name=last_name,
-        email_address="john.simplenight@foo.bar",
-        phone_number="5558675309",
+        first_name=first_name, last_name=last_name, email_address="john.simplenight@foo.bar", phone_number="5558675309",
     )
 
     traveler.save()

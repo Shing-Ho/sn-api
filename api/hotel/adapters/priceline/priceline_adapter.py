@@ -79,12 +79,7 @@ class PricelineAdapter(HotelAdapter):
         response = self.transport.hotel_express(limit=250, **request)
         hotel_results = self._check_hotel_express_response_and_get_results(response)
 
-        hotels = list(
-            map(
-                lambda result: self._create_hotel_from_response(search, result),
-                hotel_results,
-            )
-        )
+        hotels = list(map(lambda result: self._create_hotel_from_response(search, result), hotel_results,))
         self._enrich_hotels(hotels)
 
         return hotels
@@ -146,8 +141,7 @@ class PricelineAdapter(HotelAdapter):
         # Priceline first requires a lookup call, to retrieve a "Cancel action"
         # Per Justin Steele, we have hard-coded "info@simplenight.com" as the email associated with bookings
         lookup_response = self.transport.express_lookup(
-            booking_id=cancel_request.record_locator,
-            email="info@simplenight.com",
+            booking_id=cancel_request.record_locator, email="info@simplenight.com",
         )
         lookup_response = self._check_express_lookup_response_and_get_results(lookup_response)
 
@@ -223,8 +217,7 @@ class PricelineAdapter(HotelAdapter):
         results = contract_response["getHotelExpress.Contract"]["results"]
         if results["status"] != "Success":
             raise AvailabilityException(
-                detail="Could not parse postpaid fees",
-                error_type=AvailabilityErrorCode.PROVIDER_ERROR,
+                detail="Could not parse postpaid fees", error_type=AvailabilityErrorCode.PROVIDER_ERROR,
             )
 
         room_data = results["hotel_data"][0]["room_data"][0]
@@ -359,11 +352,7 @@ class PricelineAdapter(HotelAdapter):
 
     @staticmethod
     def _get_image(provider_image: ProviderImages):
-        return Image(
-            url=provider_image.image_url,
-            type=ImageType.UNKNOWN,
-            display_order=provider_image.display_order,
-        )
+        return Image(url=provider_image.image_url, type=ImageType.UNKNOWN, display_order=provider_image.display_order,)
 
     @staticmethod
     def _get_amenity_mappings(amenities: List[str]):
@@ -388,8 +377,7 @@ class PricelineAdapter(HotelAdapter):
     def _check_hotel_express_operation_response_and_get_results(response, operation):
         if response is None or operation not in response:
             raise AvailabilityException(
-                error_type=AvailabilityErrorCode.PROVIDER_ERROR,
-                detail="Could not retrieve response",
+                error_type=AvailabilityErrorCode.PROVIDER_ERROR, detail="Could not retrieve response",
             )
 
         results = response[operation]
@@ -467,10 +455,7 @@ class PricelineAdapter(HotelAdapter):
             checkout_time=None,
             photos=[],
             amenities=[],
-            geolocation=GeoLocation(
-                latitude=hotel_data["geo"]["latitude"],
-                longitude=hotel_data["geo"]["longitude"],
-            ),
+            geolocation=GeoLocation(latitude=hotel_data["geo"]["latitude"], longitude=hotel_data["geo"]["longitude"],),
             chain_code=hotel_data["hotel_chain"]["chain_codes_t"],
             chain_name=hotel_data["hotel_chain"]["name"],
             star_rating=hotel_data["star_rating"],
@@ -488,18 +473,9 @@ class PricelineAdapter(HotelAdapter):
             room_type_code=room_id,
             rate_plan_code=rate_plan.code,
             maximum_allowed_occupancy=RoomOccupancy(adults=rate_data["occupancy_limit"]),
-            total_base_rate=Money(
-                amount=Decimal(price_details["display_sub_total"]),
-                currency=display_currency,
-            ),
-            total_tax_rate=Money(
-                amount=Decimal(price_details["display_taxes"]),
-                currency=display_currency,
-            ),
-            total=Money(
-                amount=Decimal(price_details["display_total"]),
-                currency=display_currency,
-            ),
+            total_base_rate=Money(amount=Decimal(price_details["display_sub_total"]), currency=display_currency,),
+            total_tax_rate=Money(amount=Decimal(price_details["display_taxes"]), currency=display_currency,),
+            total=Money(amount=Decimal(price_details["display_total"]), currency=display_currency,),
             rate_type=RateType.BOOKABLE,
             postpaid_fees=self._parse_postpaid_fees_from_priceline_rate(rate_data),
         )
@@ -607,9 +583,7 @@ class PricelineAdapter(HotelAdapter):
         return cancellation_detail_lst
 
     @staticmethod
-    def _cancellation_summary_from_details(
-        cancellation_details: List[CancellationDetails],
-    ) -> CancellationPolicy:
+    def _cancellation_summary_from_details(cancellation_details: List[CancellationDetails],) -> CancellationPolicy:
         sort_order = {
             CancellationSummary.FREE_CANCELLATION: 0,
             CancellationSummary.PARTIAL_REFUND: 1,

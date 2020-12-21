@@ -14,12 +14,8 @@ from api.hotel.models.hotel_api_model import (
     GeoLocation,
 )
 from api.hotel.models.hotel_common_models import Address, RateType, Money, DailyRate, RoomRate, HotelReviews
-from api.hotel.models.adapter_models import (
-    AdapterLocationSearch,
-    AdapterCancelRequest,
-    AdapterCancelResponse,
-    AdapterHotelBatchSearch,
-)
+from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterCancelRequest, AdapterCancelResponse, \
+    AdapterHotelBatchSearch
 
 secrets = {
     "url": "https://americas.universal-api.travelport.com/B2BGateway/connect/uAPI/HotelService",

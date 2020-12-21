@@ -10,8 +10,7 @@ from api.hotel.models.adapter_models import (
     AdapterLocationSearch,
     AdapterOccupancy,
     AdapterHotelSearch,
-    AdapterCancelRequest,
-    AdapterHotelBatchSearch,
+    AdapterCancelRequest, AdapterHotelBatchSearch,
 )
 from api.hotel.parsers.priceline_details_parser import PricelineDetailsParser
 from api.models.models import CityMap, HotelBooking
