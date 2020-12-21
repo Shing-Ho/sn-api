@@ -22,18 +22,8 @@ class HotelbedsTransport(Transport):
 
     def __init__(self, test_mode=True):
         super().__init__()
+
         self.test_mode = test_mode
-
-        self.TEST_MODE_CREDENTIALS = {
-            "Api-Key": "ba99fa9f7b504eae563b35b294ef2dcc",
-            "Secret": "2e4a7d611f",
-        }
-
-        # TODO: Need to set production credentials
-        self.PRODUCTION_CREDENTIALS = {
-            "Api-Key": "",
-            "Secret": "",
-        }
 
     def get(self, endpoint: Endpoint, **params):
         url = self.endpoint(endpoint)
@@ -101,7 +91,7 @@ class HotelbedsTransport(Transport):
     def _get_headers(self, **kwargs):
         headers = self._get_default_headers()
         headers["Content-Type"] = "application/json"
-        headers["Api-Key"] = self._get_credentials()["Api-Key"]
+        headers["Api-Key"] = self._get_apikey()
         headers["X-Signature"] = self._get_xsignature()
         headers["Accept"] = "application/json"
         headers["Accept-Encoding"] = "gzip"
@@ -111,9 +101,15 @@ class HotelbedsTransport(Transport):
 
     def _get_credentials(self):
         if self.test_mode:
-            return self.TEST_MODE_CREDENTIALS
+            return {
+                "Api-Key": "ba99fa9f7b504eae563b35b294ef2dcc",
+                "Secret": "2e4a7d611f",
+            }
 
-        return self.PRODUCTION_CREDENTIALS
+        return {
+            "Api-Key": get_config(Feature.HOTELBEDS_API_KEY),
+            "Secret": get_config(Feature.HOTELBEDS_API_SECRET),
+        }
 
     def _get_apikey(self):
         return self._get_credentials()["Api-Key"]
@@ -127,9 +123,8 @@ class HotelbedsTransport(Transport):
         return hashlib.sha256(signature_str.encode()).hexdigest()
 
     def _get_host(self):
-        if not self.test_mode:
-            # TODO: Need to set correct production url
-            return "https://api.hotelbeds.com"
+        if self.test_mode:
+            return "https://api.test.hotelbeds.com"
 
         try:
             return get_config(Feature.HOTELBEDS_API_URL)

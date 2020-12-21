@@ -8,6 +8,7 @@ import pytz
 from api import logger
 from api.hotel.adapters.hotelbeds.hotelbeds_common_models import (
     get_language_mapping,
+    HotelbedsRateType,
 )
 from api.hotel.adapters.hotelbeds.hotelbeds_amenity_mappings import get_simplenight_amenity_mappings
 from api.hotel.adapters.hotelbeds.hotelbeds_info import HotelbedsInfo
@@ -505,10 +506,10 @@ class HotelbedsAdapter(HotelAdapter):
 
     @staticmethod
     def _get_rate_type(rate_type: str):
-        if rate_type == "RECHECK":
-            return "RECHECK"
+        if rate_type == HotelbedsRateType.RECHECK:
+            return HotelbedsRateType.RECHECK
 
-        return "BOOKABLE"
+        return HotelbedsRateType.BOOKABLE
 
     @staticmethod
     def _get_image(provider_image: ProviderImages):
