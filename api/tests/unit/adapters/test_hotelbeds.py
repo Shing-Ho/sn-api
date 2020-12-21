@@ -1,23 +1,21 @@
-import json
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from unittest.mock import patch
 
 import requests_mock
-from django.test import TestCase
 
-from api.hotel.models.booking_model import HotelBookingRequest, Customer, Traveler
-from api.common.common_models import to_json
-from api.hotel.models.hotel_common_models import RoomOccupancy
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
-from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.adapters.hotelbeds.hotelbeds_common_models import HotelbedsRateType, HotelbedsPaymentType
-from api.hotel.models.hotel_api_model import SimplenightAmenities
+from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy
-from api.tests import test_objects
-from api.tests.utils import load_test_resource, load_test_json_resource
+from api.hotel.models.booking_model import HotelBookingRequest, Customer, Traveler
+from api.hotel.models.hotel_common_models import RoomOccupancy
+from api.tests import test_objects, model_helper
+from api.tests.unit.simplenight_test_case import SimplenightTestCase
+from api.tests.utils import load_test_resource
 
 
-class TestHotelBeds(TestCase):
+class TestHotelBeds(SimplenightTestCase):
     def test_default_headers_in_transport(self):
         transport = HotelbedsTransport()
         default_headers = transport._get_headers()
@@ -122,33 +120,6 @@ class TestHotelBeds(TestCase):
 
         self.assertIsNotNone(booking_response)
 
-    def test_search_location_with_bad_location(self):
-        response = {
-            "auditData": {
-                "processTime": "2",
-                "timestamp": "2020-07-20 09:47:39.281",
-                "requestHost": "66.201.49.52, 70.132.18.144, 10.185.80.230, 10.185.88.177",
-                "serverId": "ip-10-185-88-234.eu-west-1.compute.internal.node.int-hbg-aws-eu-west-1.discovery",
-                "environment": "[awseuwest1, awseuwest1a, ip_10_185_88_234]",
-                "release": "cf7383046266bc1f203fb637fed444271a3717e7",
-                "token": "5E0FD19A79034FD19D89A8948A5AA697",
-                "internal": "0||UK|01|0|0||||||||||||0||1~1~1~0|0|0||0|ba99fa9f7b504eae563b35b294ef2dcc||||",
-            },
-            "hotels": {"total": 0},
-        }
-
-        hotelbeds_service = HotelbedsAdapter()
-        request = self.create_location_search("foo")
-        transport = HotelbedsTransport()
-        hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
-        hotel_content_url = transport.endpoint(transport.Endpoint.HOTEL_CONTENT)
-        with requests_mock.Mocker() as mocker:
-            mocker.post(hotels_url, json=response)
-            mocker.get(hotel_content_url)
-            results = hotelbeds_service.search_by_location(request)
-
-        assert len(results) == 0
-
     def test_hotelbeds_recheck(self):
         search_request = self.create_location_search(location_id="SFO")
 
@@ -162,29 +133,36 @@ class TestHotelBeds(TestCase):
         hotelbeds = HotelbedsAdapter(transport)
         hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
         checkrates_url = transport.endpoint(transport.Endpoint.CHECKRATES)
-        with requests_mock.Mocker() as mocker:
-            mocker.post(hotels_url, text=avail_response)
-            mocker.get(hotel_details_url, text=details_response)
-            mocker.post(checkrates_url, text=recheck_response)
 
-            hotels = hotelbeds.search_by_location(search_request)
-            assert len(hotels) > 0
+        with patch("api.locations.location_service.find_provider_location") as mock_location_service:
+            mock_location_service.return_value = model_helper.create_provider_city(
+                provider_name=HotelbedsAdapter.get_provider_name(),
+                code="SFO",
+                name="San Francisco",
+                province="CA",
+                country="CA",
+            )
 
-            availability_room_rates = hotels[0].room_rates[0]
-            recheck_response = hotelbeds.recheck(availability_room_rates)
+            with requests_mock.Mocker() as mocker:
+                mocker.post(hotels_url, text=avail_response)
+                mocker.get(hotel_details_url, text=details_response)
+                mocker.post(checkrates_url, text=recheck_response)
 
-            self.assertEqual(Decimal("99.89"), availability_room_rates.total.amount)
-            self.assertEqual(Decimal("149.84"), recheck_response.total.amount)
+                hotels = hotelbeds.search_by_location(search_request)
+                assert len(hotels) > 0
+
+                availability_room_rates = hotels[0].room_rates[0]
+                recheck_response = hotelbeds.recheck(availability_room_rates)
+
+                self.assertEqual(Decimal("99.89"), availability_room_rates.total.amount)
+                self.assertEqual(Decimal("149.84"), recheck_response.total.amount)
 
     @staticmethod
     def create_location_search(location_id="TVL"):
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         search_request = AdapterLocationSearch(
-            location_id=location_id,
-            start_date=checkin,
-            end_date=checkout,
-            occupancy=AdapterOccupancy(),
+            location_id=location_id, start_date=checkin, end_date=checkout, occupancy=AdapterOccupancy(),
         )
 
         return search_request
