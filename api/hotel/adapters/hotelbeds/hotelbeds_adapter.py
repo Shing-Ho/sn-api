@@ -38,6 +38,7 @@ from api.hotel.models.hotel_api_model import (
     ImageType,
 )
 from api.hotel.models.hotel_common_models import (
+    Address,
     RoomOccupancy,
     RateType,
     Money,
@@ -129,6 +130,11 @@ class HotelbedsAdapter(HotelAdapter):
         room_types = self._create_room_types(hotel_response)
         rate_plans = self._create_rate_plans(hotel_response)
         room_rates = self._create_room_rates(hotel_response)
+        hotel_details = HotelDetails(
+            name="",
+            address=Address(),
+            hotel_code=hotel_response["code"],
+        )
 
         return AdapterHotel(
             provider=HotelbedsInfo.name,
@@ -139,6 +145,7 @@ class HotelbedsAdapter(HotelAdapter):
             room_types=room_types,
             rate_plans=rate_plans,
             room_rates=room_rates,
+            hotel_details=hotel_details,
         )
 
     def _enrich_hotels(self, hotels: Union[List[AdapterHotel], AdapterHotel]):
@@ -324,14 +331,14 @@ class HotelbedsAdapter(HotelAdapter):
 
                 rate_plan = RatePlan(
                     code=rate["rateKey"],
-                    name=None,
-                    description=None,
+                    name="",
+                    description="",
                     amenities=[],
                     cancellation_policy=most_lenient_cancellation_policy,
                 )
                 rate_plans.append(rate_plan)
 
-        return [rate_plan]
+        return rate_plans
 
     @staticmethod
     def _parse_cancellation_details(rate, currency) -> List[CancellationDetails]:
@@ -365,7 +372,7 @@ class HotelbedsAdapter(HotelAdapter):
 
             cancellation_detail = CancellationDetails(
                 cancellation_type=cancellation_type,
-                description=None,
+                description="",
                 begin_date=from_date,
                 end_date=None,
                 penalty_amount=total_penalty,
@@ -410,7 +417,7 @@ class HotelbedsAdapter(HotelAdapter):
         total_base_rate = Money(amount=net_amount, currency=currency)
         total_taxes = 0
         if "taxes" in rate:
-            total_taxes = sum(x["amount"] for x in rate["taxes"]["taxes"] if x["amount"] is not None)
+            total_taxes = sum(Decimal(x["amount"]) for x in rate["taxes"]["taxes"] if x["amount"] is not None)
 
         total_tax_rate = Money(amount=total_taxes, currency=currency)
         total_amount = total_base_rate.amount + total_tax_rate.amount
