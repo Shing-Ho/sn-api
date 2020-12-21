@@ -4,7 +4,7 @@ from unittest.mock import patch
 import requests_mock
 
 from api.common.common_models import from_json
-from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
+from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.models.hotel_api_model import HotelLocationSearch, SimplenightHotel
 from api.hotel.models.hotel_common_models import RoomOccupancy
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
@@ -29,9 +29,12 @@ class TestBookingView(SimplenightTestCase):
 
         with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
             mock_find_simplenight_id.return_value = "123"
+            transport = HotelbedsTransport()
+            hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
+            content_url = transport.endpoint(transport.Endpoint.HOTEL_CONTENT)
             with requests_mock.Mocker() as mocker:
-                mocker.post(HotelBedsTransport.get_hotels_url(), text=hotelbeds_location_response)
-                mocker.get(HotelBedsTransport.get_hotel_content_url(), text=hotelbeds_content_response)
+                mocker.post(hotels_url, text=hotelbeds_location_response)
+                mocker.get(content_url, text=hotelbeds_content_response)
                 response = self.post(SEARCH_BY_LOCATION, search_request)
 
         hotels = from_json(response.content, SimplenightHotel, many=True)

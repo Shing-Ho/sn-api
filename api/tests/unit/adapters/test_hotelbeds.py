@@ -8,10 +8,9 @@ from django.test import TestCase
 from api.hotel.models.booking_model import HotelBookingRequest, Customer, Traveler
 from api.common.common_models import to_json
 from api.hotel.models.hotel_common_models import RoomOccupancy
-from api.hotel.adapters.hotelbeds.hotelbeds_common_models import HotelBedsRateType, HotelBedsPaymentType
-from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBedsAdapter
-from api.hotel.adapters.hotelbeds.hotelbeds_search_models import HotelBedsSearchBuilder
-from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
+from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
+from api.hotel.adapters.hotelbeds.hotelbeds_common_models import HotelbedsRateType, HotelbedsPaymentType
 from api.hotel.models.hotel_api_model import SimplenightAmenities
 from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy
 from api.tests import test_objects
@@ -20,7 +19,7 @@ from api.tests.utils import load_test_resource, load_test_json_resource
 
 class TestHotelBeds(TestCase):
     def test_default_headers_in_transport(self):
-        transport = HotelBedsTransport()
+        transport = HotelbedsTransport()
         default_headers = transport._get_headers()
         self.assertIn("Api-Key", default_headers)
         self.assertIn("X-Signature", default_headers)
@@ -32,36 +31,13 @@ class TestHotelBeds(TestCase):
         self.assertEqual("bar", headers["foo"])
 
     def test_headers_return_copy(self):
-        transport = HotelBedsTransport()
+        transport = HotelbedsTransport()
         transport._get_headers()["foo"] = "bar"
         self.assertNotIn("foo", transport._get_headers())
 
-    def test_build_search_request(self):
-        search_builder = HotelBedsSearchBuilder()
-        location_search = AdapterLocationSearch(
-            location_id="SFO",
-            start_date=date(2020, 1, 1),
-            end_date=date(2020, 1, 7),
-            occupancy=AdapterOccupancy(adults=2, children=1),
-        )
-
-        hotelbeds_request = search_builder.build(location_search)
-        self.assertEqual("SFO", hotelbeds_request.destination.code)
-        self.assertEqual("2020-01-01", str(hotelbeds_request.stay.checkIn))
-        self.assertEqual("2020-01-07", str(hotelbeds_request.stay.checkOut))
-        self.assertEqual(2, hotelbeds_request.occupancies[0].adults)
-        self.assertEqual(1, hotelbeds_request.occupancies[0].children)
-
-        hotelbeds_request_json = json.loads(to_json(hotelbeds_request))
-        self.assertEqual("SFO", hotelbeds_request_json["destination"]["code"])
-        self.assertEqual("2020-01-01", hotelbeds_request_json["stay"]["checkIn"])
-        self.assertEqual("2020-01-07", hotelbeds_request_json["stay"]["checkOut"])
-        self.assertEqual(2, hotelbeds_request_json["occupancies"][0]["adults"])
-        self.assertEqual(1, hotelbeds_request_json["occupancies"][0]["children"])
-
     def test_hotelbeds_search_by_location_parsing(self):
         resource = load_test_resource("hotelbeds/search-by-location-response.json")
-        hotelbeds = HotelBedsAdapter()
+        hotelbeds = HotelbedsAdapter()
 
         search = AdapterLocationSearch(
             location_id="FOO",
@@ -70,21 +46,14 @@ class TestHotelBeds(TestCase):
             occupancy=AdapterOccupancy(adults=1),
         )
 
+        transport = HotelbedsTransport()
+        hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
+
         with requests_mock.Mocker() as mocker:
-            mocker.post(HotelBedsTransport.get_hotels_url(), text=resource)
-            results = hotelbeds._search_by_location(search)
+            mocker.post(hotels_url, text=resource)
+            results = hotelbeds.search_by_location(search)
 
-        self.assertEqual("296", results.audit_data.process_time)
-        self.assertEqual("2020-06-28 21:01:35.496000", str(results.audit_data.timestamp))
-        expected_host = "ip-10-185-89-125.eu-west-1.compute.internal.node.int-hbg-aws-eu-west-1.discovery"
-        self.assertEqual(expected_host, results.audit_data.server_id)
-
-        self.assertEqual(24, results.results.total)
-        self.assertEqual(24, len(results.results.hotels))
-        self.assertEqual("2020-07-28", str(results.results.checkin))
-        self.assertEqual("2020-08-02", str(results.results.checkout))
-
-        hotel = results.results.hotels[0]
+        hotel = results[0]
         self.assertEqual(349168, hotel.code)
         self.assertEqual("Grand Residences - Lake Tahoe", hotel.name)
         self.assertEqual("3EST", hotel.category_code)
@@ -115,8 +84,8 @@ class TestHotelBeds(TestCase):
         self.assertEqual(9, rate.allotment)
         self.assertEqual("NOR", rate.rate_class)
         self.assertEqual("100.17", str(rate.net))
-        self.assertEqual(HotelBedsRateType.RECHECK, rate.rate_type)
-        self.assertEqual(HotelBedsPaymentType.AT_WEB, rate.payment_type)
+        self.assertEqual(HotelbedsRateType.RECHECK, rate.rate_type)
+        self.assertEqual(HotelbedsPaymentType.AT_WEB, rate.payment_type)
         self.assertFalse(rate.packaging)
         self.assertEqual(1, rate.rooms)
         self.assertEqual(0, rate.children)
@@ -126,15 +95,6 @@ class TestHotelBeds(TestCase):
 
         self.assertEqual("2020-07-20 23:59:00-07:00", str(rate.cancellation_policies[0].deadline))
         self.assertEqual("50.08", rate.cancellation_policies[0].amount)
-
-    def test_hotelbeds_hotel_details(self):
-        hotel_details_resource = load_test_resource("hotelbeds/hotel-details-response.json")
-        hotelbeds = HotelBedsAdapter()
-        with requests_mock.Mocker() as mocker:
-            mocker.get(HotelBedsTransport.get_hotel_content_url(), text=hotel_details_resource)
-            response = hotelbeds.details(["foo", "bar"], "en_US")
-
-        self.assertIsNotNone(response)
 
     def test_hotelbeds_booking(self):
         room_rate = test_objects.room_rate(rate_key="rate-key", total="0")
@@ -152,10 +112,12 @@ class TestHotelBeds(TestCase):
             payment=None,
         )
 
-        hotelbeds = HotelBedsAdapter()
+        transport = HotelbedsTransport()
+        hotelbeds = HotelbedsAdapter(transport)
         booking_resource = load_test_resource("hotelbeds/booking-confirmation-response.json")
+        booking_url = transport.endpoint(transport.Endpoint.BOOKING)
         with requests_mock.Mocker() as mocker:
-            mocker.post(HotelBedsTransport.get_booking_url(), text=booking_resource)
+            mocker.post(booking_url, text=booking_resource)
             booking_response = hotelbeds.booking(booking_request)
 
         self.assertIsNotNone(booking_response)
@@ -175,36 +137,17 @@ class TestHotelBeds(TestCase):
             "hotels": {"total": 0},
         }
 
-        hotelbeds_service = HotelBedsAdapter(HotelBedsTransport())
+        hotelbeds_service = HotelbedsAdapter()
         request = self.create_location_search("foo")
+        transport = HotelbedsTransport()
+        hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
+        hotel_content_url = transport.endpoint(transport.Endpoint.HOTEL_CONTENT)
         with requests_mock.Mocker() as mocker:
-            mocker.post(HotelBedsTransport.get_hotels_url(), json=response)
-            mocker.get(HotelBedsTransport.get_hotel_content_url())
+            mocker.post(hotels_url, json=response)
+            mocker.get(hotel_content_url)
             results = hotelbeds_service.search_by_location(request)
 
         assert len(results) == 0
-
-    def test_hotelbeds_amenity_mappings(self):
-        resource = load_test_json_resource("hotelbeds/hotel-details-single-hotel.json")
-        with requests_mock.Mocker() as mocker:
-            mocker.get(HotelBedsTransport.get_hotel_content_url(), json=resource)
-            hotelbeds = HotelBedsAdapter(HotelBedsTransport())
-            details = hotelbeds.details([], "ENG")
-
-        self.assertEqual(1, len(details))
-
-        hotel_detail = details[0]
-        self.assertEquals(10, len(hotel_detail.amenities))
-        self.assertIn(SimplenightAmenities.RESTAURANT, hotel_detail.amenities)
-        self.assertIn(SimplenightAmenities.POOL, hotel_detail.amenities)
-        self.assertIn(SimplenightAmenities.PARKING, hotel_detail.amenities)
-        self.assertIn(SimplenightAmenities.BAR, hotel_detail.amenities)
-        self.assertIn(SimplenightAmenities.GYM, hotel_detail.amenities)
-        self.assertIn(SimplenightAmenities.BREAKFAST, hotel_detail.amenities)
-        self.assertIn(SimplenightAmenities.AIR_CONDITIONING, hotel_detail.amenities)
-        self.assertIn(SimplenightAmenities.PET_FRIENDLY, hotel_detail.amenities)
-        self.assertIn(SimplenightAmenities.RESTAURANT, hotel_detail.amenities)
-        self.assertIn(SimplenightAmenities.WASHER_DRYER, hotel_detail.amenities)
 
     def test_hotelbeds_recheck(self):
         search_request = self.create_location_search(location_id="SFO")
@@ -215,11 +158,14 @@ class TestHotelBeds(TestCase):
 
         hotel_details_url = "https://api.test.hotelbeds.com/hotel-content-api/1.0/hotels?language=ENG"
 
-        hotelbeds = HotelBedsAdapter(HotelBedsTransport())
+        transport = HotelbedsTransport()
+        hotelbeds = HotelbedsAdapter(transport)
+        hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
+        checkrates_url = transport.endpoint(transport.Endpoint.CHECKRATES)
         with requests_mock.Mocker() as mocker:
-            mocker.post(HotelBedsTransport.get_hotels_url(), text=avail_response)
+            mocker.post(hotels_url, text=avail_response)
             mocker.get(hotel_details_url, text=details_response)
-            mocker.post(HotelBedsTransport.get_checkrates_url(), text=recheck_response)
+            mocker.post(checkrates_url, text=recheck_response)
 
             hotels = hotelbeds.search_by_location(search_request)
             assert len(hotels) > 0

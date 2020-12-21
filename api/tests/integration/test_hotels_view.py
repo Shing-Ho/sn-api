@@ -6,7 +6,7 @@ from freezegun import freeze_time
 
 from api.common.common_models import from_json
 from api.hotel import hotel_cache_service
-from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
+from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.converter.google_models import (
     GoogleHotelSearchRequest,
@@ -146,8 +146,10 @@ class TestHotelsView(SimplenightTestCase):
 
     def test_availability_error_included_in_api_rest(self):
         error_response = load_test_resource("hotelbeds/error-response.json")
+        transport = HotelbedsTransport()
+        hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
         with requests_mock.Mocker() as mocker:
-            mocker.post(HotelBedsTransport.get_hotels_url(), text=error_response)
+            mocker.post(hotels_url, text=error_response)
             search_request = HotelLocationSearch(
                 location_id="SFO",
                 start_date=date(2020, 1, 20),
