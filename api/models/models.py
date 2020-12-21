@@ -2,6 +2,7 @@
 import random
 import string
 import uuid
+from datetime import datetime
 from enum import EnumMeta, Enum
 from typing import Tuple, List
 
@@ -217,7 +218,7 @@ class Booking(models.Model):
     booking_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     transaction_id = models.TextField()
-    booking_date = models.DateTimeField(auto_now_add=True)
+    booking_date = models.DateTimeField(default=datetime.now)
     booking_status = models.CharField(max_length=32, choices=[(x.value, x.value) for x in BookingStatus])
     lead_traveler = models.ForeignKey(Traveler, on_delete=models.CASCADE)
 
@@ -400,6 +401,32 @@ class ProviderChain(models.Model):
     modified_date = models.DateTimeField(default=timezone.now)
 
 
+class ProviderReview(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "provider_review"
+        indexes = [models.Index(fields=["provider", "provider_code"])]
+
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider_code = models.TextField()
+    rating = models.DecimalField(max_digits=3, decimal_places=1)
+    review_count = models.IntegerField()
+
+
+class ProviderReviewContent(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "provider_review_content"
+
+    provider_review = models.ForeignKey(ProviderReview, on_delete=models.CASCADE)
+    review_date = models.DateField()
+    rating = models.DecimalField(max_digits=3, decimal_places=1)
+    review_text = models.TextField(null=True)
+    good_text = models.TextField(null=True)
+    bad_text = models.TextField(null=True)
+    overall_description = models.TextField(null=True)
+
+
 class RecordLocator(models.Model):
     record_locator = models.CharField(max_length=8)
     booking = models.ForeignKey(to=Booking, on_delete=models.SET_NULL, null=True)
@@ -439,3 +466,49 @@ class PropertyInfo(models.Model):
     type = models.TextField()
     language_code = models.CharField(max_length=2)
     description = models.TextField()
+
+
+class SearchType(enum.Enum):
+    HOTEL_BY_ID = 1
+    HOTEL_BY_LOCATION = 2
+    HOTEL_BY_BATCH = 3
+
+
+class SearchResult(enum.Enum):
+    SUCCESS = 1
+    FAILURE = 2
+
+
+class SearchEvent(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "search_events"
+
+    search_event_data_id = models.UUIDField(primary_key=True)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    search_type = enum.EnumField(SearchType)
+    created_at = models.DateTimeField(auto_now_add=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    search_input = models.TextField()
+    result = enum.EnumField(SearchResult)
+    elapsed_time = models.IntegerField()
+    request_id = models.CharField(max_length=8, null=True)
+
+
+class HotelEvent(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "hotel_events"
+
+    hotel_event_data_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    search_event_data_id = models.UUIDField()
+    provider = models.ForeignKey(Provider, on_delete=models.SET_NULL, null=True)
+    provider_code = models.TextField()
+    giata_code = models.TextField()
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    base = models.DecimalField(max_digits=10, decimal_places=2)
+    taxes = models.DecimalField(max_digits=10, decimal_places=2)
+    provider_total = models.DecimalField(max_digits=10, decimal_places=2)
+    provider_base = models.DecimalField(max_digits=10, decimal_places=2)
+    provider_taxes = models.DecimalField(max_digits=10, decimal_places=2)

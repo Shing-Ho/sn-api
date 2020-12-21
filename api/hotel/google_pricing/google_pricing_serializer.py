@@ -30,21 +30,21 @@ def serialize(query: GooglePricingItineraryQuery, hotels: List[SimplenightHotel]
 
     for hotel in hotels:
         result = etree.Element("Result")
-        result.append(_get_element("Property", hotel.hotel_id))
+        result.append(_get_element("Property", hotel.hotel_id, cdata=True))
         result.append(_get_element("Checkin", str(hotel.start_date), cdata=False))
         result.append(_get_element("Nights", str(query.nights), cdata=False))
 
         lowest_rate_room = min(hotel.room_types, key=lambda x: x.total.amount)
-        result.append(_get_element("RoomID", "lowest_rate"))
+        result.append(_get_element("RoomID", "lowest_rate", cdata=True))
 
         base_rate = etree.Element("Baserate")
-        base_rate.attrib["currency"] = lowest_rate_room.total.currency
+        base_rate.attrib["currency"] = lowest_rate_room.total_base_rate.currency
         base_rate.attrib["all_inclusive"] = "false"
-        base_rate.text = str(lowest_rate_room.total.amount)
+        base_rate.text = str(lowest_rate_room.total_base_rate.amount)
         result.append(base_rate)
 
         tax = etree.Element("Tax")
-        tax.attrib["currency"] = lowest_rate_room.total.currency
+        tax.attrib["currency"] = lowest_rate_room.total_tax_rate.currency
         tax.text = str(lowest_rate_room.total_tax_rate.amount)
         result.append(tax)
 
@@ -59,17 +59,6 @@ def serialize(query: GooglePricingItineraryQuery, hotels: List[SimplenightHotel]
 
     return etree.tostring(transaction)
 
-
-# <?xml version="1.0" encoding="UTF-8"?>
-# <Transaction timestamp="2020-11-10T01:03:40+00:00" id="1ff18df8-7153-4388-a99b-77005db8039d">
-#   <Result>
-#     <Property><![CDATA[MX-58244]]></Property>
-#     <Checkin>2020-12-29</Checkin>
-#     <Nights>1</Nights>
-#     <RoomID><![CDATA[lowest_rate]]></RoomID>
-#     <Baserate currency="USD" all_inclusive="false">73.99</Baserate>
-#     <Tax currency="USD">6.07</Tax>
-#     <OtherFees currency="USD">0</OtherFees>
 
 def serialize_property_list(provider_hotels):
     root = etree.Element("listings")

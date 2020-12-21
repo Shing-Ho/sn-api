@@ -1,31 +1,69 @@
-from typing import List
+from enum import Enum
+from typing import List, Union
 
-from api.common.request_context import get_request_context, get_config_bool
+from api.activities.activity_adapter import ActivityAdapter
+from api.activities.adapters.stub_activity_adapter import StubActivityAdapter
+from api.common.common_exceptions import FeatureNotFoundException
+from api.common.request_context import get_config_bool, get_config
 from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
-from api.hotel.models.hotel_api_model import BaseHotelSearch
+from api.hotel.models.hotel_api_model import HotelSearch
 from api.models.models import Feature
+from api.restaurants.adapters.stub_restaurant_adapter import StubRestaurantAdapter
+from api.restaurants.restaurant_adapter import RestaurantAdapter
+from api.search.search_models import ActivitySearch, RestaurantSearch
+from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
-HOTEL_ADAPTERS = {
-    "stub": StubHotelAdapter,
-    "travelport": TravelportHotelAdapter,
-    "hotelbeds": HotelbedsAdapter,
-    "priceline": PricelineAdapter,
+
+class AdapterType(Enum):
+    HOTEL = "hotel"
+    ACTIVITY = "activity"
+    RESTAURANT = "restaurant"
+
+
+ADAPTERS = {
+    AdapterType.HOTEL: {
+        "stub_hotel": StubHotelAdapter,
+        "travelport": TravelportHotelAdapter,
+        "hotelbeds": HotelbedsAdapter,
+        "priceline": PricelineAdapter,
+    },
+    AdapterType.ACTIVITY: {"stub_activity": StubActivityAdapter},
+    AdapterType.RESTAURANT: {"stub_restaurant": StubRestaurantAdapter},
 }
+
+ALL_ADAPTERS = {name: adapter for adapter_type in ADAPTERS for name, adapter in ADAPTERS[adapter_type].items()}
 
 
 def get_adapter(name):
-    return HOTEL_ADAPTERS.get(name).factory(get_test_mode())
+    return ALL_ADAPTERS.get(name).factory(get_test_mode())
 
 
-def get_adapters(name) -> List[HotelAdapter]:
-    return [get_adapter(x) for x in name.split(",")]
+def get_adapters(name, adapter_type=None) -> List[HotelAdapter]:
+    if adapter_type is None:
+        adapter_type = AdapterType.HOTEL
+
+    return [get_adapter(x) for x in name.split(",") if x in ADAPTERS[adapter_type]]
 
 
-def get_adapters_to_search(search_request: BaseHotelSearch) -> str:
+def get_hotel_adapters_to_search(search_request: HotelSearch) -> List[HotelAdapter]:
+    return get_adapters_for_type(search_request, adapter_type=AdapterType.HOTEL)
+
+
+def get_activity_adapters_to_search(search_request: ActivitySearch) -> List[ActivityAdapter]:
+    return get_adapters_for_type(search_request, adapter_type=AdapterType.ACTIVITY)
+
+
+def get_restaurant_adapters_to_search(search_request: RestaurantSearch) -> List[RestaurantAdapter]:
+    return get_adapters_for_type(search_request, adapter_type=AdapterType.RESTAURANT)
+
+
+def get_adapters_for_type(
+    search_request, adapter_type=None
+) -> List[Union[HotelAdapter, ActivityAdapter, RestaurantAdapter]]:
     """
     Returns a list of adapters to search, identified by their string name.
     If an adapter is explicitly specified in the request, return that.
@@ -35,16 +73,32 @@ def get_adapters_to_search(search_request: BaseHotelSearch) -> str:
     If no organization is associated, return the stub adapter.
     """
 
+    if adapter_type is None:
+        adapter_type = AdapterType.HOTEL
+
     if search_request.provider:
-        return search_request.provider
+        if search_request.provider not in ADAPTERS[adapter_type]:
+            raise AvailabilityException("Provider not found", AvailabilityErrorCode.PROVIDER_ERROR)
 
-    organization = get_request_context().get_organization()
-    if organization:
-        organization_enabled_adapters = organization.get_feature(Feature.ENABLED_ADAPTERS)
-        if organization_enabled_adapters:
-            return organization_enabled_adapters
+        return get_adapters(search_request.provider, adapter_type)
 
-    return "stub"
+    enabled_adapters = get_enabled_connectors()
+    if enabled_adapters:
+        return get_adapters(enabled_adapters, adapter_type)
+
+    if adapter_type == AdapterType.HOTEL:
+        return get_adapters("stub_hotel", adapter_type)
+    elif adapter_type == AdapterType.ACTIVITY:
+        return get_adapters("stub_activity", adapter_type)
+    elif adapter_type == AdapterType.RESTAURANT:
+        return get_adapters("stub_restaurant", adapter_type)
+
+
+def get_enabled_connectors():
+    try:
+        return get_config(Feature.ENABLED_ADAPTERS)
+    except FeatureNotFoundException:
+        pass
 
 
 def get_test_mode():

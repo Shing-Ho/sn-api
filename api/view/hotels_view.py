@@ -2,9 +2,11 @@ from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from api import logger
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiDailyThrottle, OrganizationApiBurstThrottle
 from api.common.common_models import from_json
 from api.common.request_cache import get_request_cache
@@ -13,6 +15,7 @@ from api.hotel.google_pricing import google_pricing_api
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
 from api.hotel.models.booking_model import HotelBookingRequest
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancelRequest, HotelBatchSearch
+from api.management import google_reconciliation
 from api.view.default_view import _response
 
 
@@ -49,6 +52,15 @@ class HotelViewSet(viewsets.ViewSet):
 
         return _response(google_search_response)
 
+    @action(detail=False, url_path="reviews", methods=["GET"], name="Hotel User Reviews")
+    def reviews(self, request):
+        simplenight_hotel_id = request.GET.get("hotel_id")
+        reviews = hotel_service.reviews(simplenight_hotel_id)
+        if reviews:
+            return _response(reviews)
+        else:
+            raise NotFound(detail="Could not find user reviews for hotel ID: " + simplenight_hotel_id)
+
     @action(detail=False, url_path="booking", methods=["POST"], name="Hotel Booking")
     def booking(self, request):
         booking_request = from_json(request.data, HotelBookingRequest)
@@ -77,6 +89,7 @@ class HotelViewSet(viewsets.ViewSet):
 
     @action(detail=False, url_path="google/pricing", methods=["POST"], name="GoogleHotel Pricing API")
     def google_live_pricing(self, request):
+        logger.info(f"Google Live Pricing API Request: {bytes.decode(request.body, 'utf-8')}")
         results = google_pricing_api.live_pricing_api(request.body)
         return HttpResponse(results, content_type="text/xml")
 
@@ -88,6 +101,15 @@ class HotelViewSet(viewsets.ViewSet):
 
         results = google_pricing_api.generate_property_list(request.GET.get("country_codes"), provider_name=provider)
         return HttpResponse(results, content_type="text/xml")
+
+    @action(detail=False, url_path="google/reconciliation", methods=["GET"], name="GoogleAds Commission Report")
+    def reconciliation(self, request):
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        organization = request.GET.get("organization")
+
+        results = google_reconciliation.get_report(organization, start_date, end_date)
+        return HttpResponse(google_reconciliation.format_report_csv(results), content_type="text/plain")
 
     @action(detail=False, url_path="status", methods=["GET"], name="Health Check")
     def status(self, _):

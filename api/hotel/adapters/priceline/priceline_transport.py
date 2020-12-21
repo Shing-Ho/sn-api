@@ -23,6 +23,7 @@ class PricelineTransport(Transport):
         AMENITIES = "/shared/getBOF2.Downloads.Hotel.Amenities"
         HOTEL_CHAINS = "/shared/getBOF2.Downloads.Hotel.Chains"
         POLICIES = "/shared/getPolicy.Hotel"
+        REVIEWS = "/hotel/getReviews"
 
     def __init__(self, test_mode=True, refid="10046"):
         super().__init__()
@@ -47,6 +48,8 @@ class PricelineTransport(Transport):
         logger.debug(f"Params: {params}")
 
         response = requests.get(url, params=params, headers=self._get_headers())
+        logger.info(f"Request complete to {url}")
+
         if not response.ok:
             logger.error(f"Error while searching Priceline: {response.text}")
 
@@ -60,6 +63,8 @@ class PricelineTransport(Transport):
         logger.debug(f"Params: {params}")
 
         response = requests.post(url, data=params, headers=self._get_headers())
+        logger.info(f"Request complete to {url}")
+
         if not response.ok:
             logger.error(f"Error while searching Priceline: {response.text}")
 
@@ -70,6 +75,9 @@ class PricelineTransport(Transport):
 
     def hotel_details(self, **params):
         return self.get(self.Endpoint.HOTEL_DETAILS, **params)
+
+    def hotel_reviews(self, **params):
+        return self.get(self.Endpoint.REVIEWS, **params)
 
     def express_book(self, **params):
         return self.post(self.Endpoint.EXPRESS_BOOK, **params)

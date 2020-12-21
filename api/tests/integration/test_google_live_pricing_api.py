@@ -8,7 +8,7 @@ from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.google_pricing import google_pricing_api
 from api.hotel.google_pricing.google_pricing_models import GooglePricingItineraryQuery
-from api.models.models import Feature
+from api.models.models import Feature, ProviderHotel, Provider
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
 
@@ -31,6 +31,33 @@ class TestGoogleLivePricingHotelApi(SimplenightTestCase):
             }
 
             return mock_map.get(provider_hotel_id)
+
+        provider = Provider.objects.get_or_create(name="giata")[0]
+        ProviderHotel.objects.create(
+            provider=provider,
+            provider_code="14479",
+            language_code="en",
+            hotel_name="Hotel Foo",
+            address_line_1="123 Foo Street",
+            city_name="Fooville",
+            state="FO",
+            country_code="FO",
+            latitude=100.0,
+            longitude=50.0,
+        )
+
+        ProviderHotel.objects.create(
+            provider=provider,
+            provider_code="970041",
+            language_code="en",
+            hotel_name="Hotel Bar",
+            address_line_1="123 Bar Street",
+            city_name="Barville",
+            state="BA",
+            country_code="BA",
+            latitude=100.0,
+            longitude=50.0,
+        )
 
         transport = PricelineTransport(test_mode=True)
         resource = load_test_resource("priceline/hotel-express-batch.json")

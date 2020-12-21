@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-import hashlib
 import logging
 import os
 
@@ -63,6 +62,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "api.common.request_cache.RequestCacheMiddleware",
     "api.common.context_middleware.RequestContextMiddleware",
+    "bugsnag.django.middleware.BugsnagMiddleware",
 ]
 
 ROOT_URLCONF = "api.urls"
@@ -159,7 +159,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -177,44 +177,19 @@ class UTCFormatter(logging.Formatter):
     converter = time.gmtime
 
 
-class MessageIDFilter(logging.Filter):
-    @staticmethod
-    def hash(s):
-        if s is None:
-            return "foo"
-
-        return hashlib.md5(s.encode("utf-8")).hexdigest()
-
-    def filter(self, record):
-        record.msg_id = self.hash(record.msg)[:6]
-        record.filename_lineno = f"{record.filename}:{record.lineno}".ljust(30, ".")
-        return True
-
-
-class CustomHandler(logging.StreamHandler):
-    """Prefix every line of logging"""
-
-    def emit(self, record):
-        message = record.msg
-        if record.args:
-            message = message % record.args
-
-        record.args = None
-        for line in message.split("\n"):
-            record.msg = line
-            super().emit(record)
-
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "api.settings.CustomHandler", "formatter": "default", "filters": ["message_id"]}},
-    "root": {"handlers": ["console"], "level": "DEBUG"},
-    "filters": {"message_id": {"()": "api.settings.MessageIDFilter"}},
+    "handlers": {
+        "bugsnag": {"level": "ERROR", "class": "bugsnag.handlers.BugsnagHandler", "formatter": "default"},
+        "console": {"class": "api.common.logging.CustomHandler", "formatter": "default", "filters": ["message_id"]},
+    },
+    "root": {"handlers": ["console", "bugsnag"], "level": "ERROR"},
+    "filters": {"message_id": {"()": "api.common.logging.MessageIDFilter"}},
     "formatters": {
         "default": {
             "()": UTCFormatter,
-            "format": "%(asctime)s.%(msecs)03dZ %(msg_id)s %(created)f "
+            "format": "%(asctime)s.%(msecs)03dZ %(request_id)s %(msg_id)s %(created)f "
             "[%(filename_lineno)s] [%(levelname)s] - %(message)s",
             "datefmt": "%Y-%m-%dT%H:%M:%S",
         },

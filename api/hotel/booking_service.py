@@ -38,19 +38,32 @@ from common.exceptions import AppException
 
 
 def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
+    logger.info(f"Received Booking Request: {book_request}")
     try:
+        logger.info("Retrieving saved room rate")
         provider_rate_cache_payload = hotel_cache_service.get_cached_room_data(book_request.room_code)
         provider = provider_rate_cache_payload.provider
         simplenight_rate = provider_rate_cache_payload.simplenight_rate
         adapter = adapter_service.get_adapter(provider)
 
+        logger.info("Persisting traveler and booking")
         traveler = _persist_traveler(book_request.customer)
         booking = _persist_booking_record(book_request, traveler)
         simplenight_record_locator = RecordLocator.generate_record_locator(booking)
 
-        logger.info(f"Saved booking {booking.booking_id}")
+        # Lookup Provider Rates in Cache
+        provider_rate = provider_rate_cache_payload.provider_rate
+        book_request.room_code = provider_rate.code
 
+        logger.info("Starting price verification")
+        verified_rates = _price_verification(provider=provider, rate=provider_rate)
+
+        # Reset room rates with verified rates.  If prices mismatched above, error will raise
+        book_request.room_code = verified_rates.code
+
+        logger.info(f"Saved booking {booking.booking_id} {simplenight_record_locator}")
         total_payment_amount = simplenight_rate.total
+        logger.info(f"Authorizing payment for {total_payment_amount}")
         auth_response = payment_service.authorize_payment(
             amount=total_payment_amount,
             payment=book_request.payment,
@@ -66,14 +79,6 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
             auth_response.save()
 
         try:
-            # Save Simplenight Internal Room Rates
-            # Lookup Provider Rates in Cache
-            provider_rate = provider_rate_cache_payload.provider_rate
-            book_request.room_code = provider_rate.code
-
-            # Reset room rates with verified rates.  If prices mismatch, error will raise
-            verified_rates = _price_verification(provider=provider, rate=provider_rate)
-            book_request.room_code = verified_rates.code
             reservation = adapter.booking(book_request)
             reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
 
@@ -105,8 +110,10 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
             raise BookingException(BookingErrorCode.PROVIDER_BOOKING_FAILURE, str(e))
 
     except BookingException as e:
+        logger.exception("Error during booking")
         raise e
     except Exception as e:
+        logger.exception("Unhandled error during booking")
         raise BookingException(BookingErrorCode.UNHANDLED_ERROR, str(e))
 
 
@@ -211,11 +218,13 @@ def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
         )
     except HotelCancellationPolicy.DoesNotExist:
         raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
+            BookingErrorCode.CANCELLATION_FAILURE,
+            "Could not find cancellation policies",
         )
     except HotelBooking.DoesNotExist:
         raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE, "Could not load hotel booking",
+            BookingErrorCode.CANCELLATION_FAILURE,
+            "Could not load hotel booking",
         )
 
 
@@ -302,15 +311,22 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         booking = _find_booking_with_booking_id_and_lastname(simplenight_locator, last_name)
         booking_status = BookingStatus.from_value(booking.booking_status)
         if booking_status != BookingStatus.BOOKED:
+            logger.error("Cannot cancel booking, booking is not in booked state")
             raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not currently active")
 
         hotel_bookings = list(HotelBooking.objects.filter(booking_id=booking.booking_id))
         traveler = booking.lead_traveler
 
         cancellation_policy = _find_active_cancellation_policy(booking.booking_id)
+        cancellation_type = _get_cancellation_type(cancellation_policy)
+        if cancellation_type == CancellationSummary.NON_REFUNDABLE:
+            logger.error("Cannot cancel booking, booking is non-refundable")
+            raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Booking is not cancellable")
+
         original_payment = PaymentTransaction.objects.get(booking_id=booking.booking_id)
         refund_amount = _get_refund_amount(original_payment, cancellation_policy)
         if refund_amount > 0 and original_payment.currency != cancellation_policy.penalty_currency:
+            logger.error("Cancellation policy and booking do not match")
             raise BookingException(
                 BookingErrorCode.CANCELLATION_FAILURE, "Cancellation policy currency and booking do not match"
             )
@@ -347,7 +363,8 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         )
     except HotelCancellationPolicy.DoesNotExist:
         raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
+            BookingErrorCode.CANCELLATION_FAILURE,
+            "Could not find cancellation policies",
         )
 
 
@@ -388,43 +405,7 @@ def _send_confirmation_email(
         recipient = f"{reservation.customer.first_name} {reservation.customer.last_name}"
         to_email = reservation.customer.email
 
-        friendly_cancellation_map = {
-            CancellationSummary.UNKNOWN_CANCELLATION_POLICY: "Call for cancellation details",
-            CancellationSummary.FREE_CANCELLATION: "Free Cancellation",
-            CancellationSummary.NON_REFUNDABLE: "Non-refundable",
-            CancellationSummary.PARTIAL_REFUND: "Partially-refundable",
-        }
-
-        provider_hotel = ProviderHotel.objects.get(
-            provider__name=hotel.provider, provider_code=hotel.hotel_id, language_code="en"
-        )
-
-        order_currency_symbol = currencies.get_symbol(payment.currency)
-
-        def format_money(amount):
-            return f"{order_currency_symbol}{amount:.2f}"
-
-        resort_fees = 0
-        if reservation.room_rate.postpaid_fees:
-            resort_fees = reservation.room_rate.postpaid_fees.total.amount
-
-        params = {
-            "booking_id": str(record_locator),
-            "order_total": format_money(reservation.room_rate.total.amount),
-            "hotel_name": hotel.hotel_details.name,
-            "hotel_sub_total": format_money(reservation.room_rate.total.amount),
-            "record_locator": reservation.locator.id,
-            "cancellation_policy": friendly_cancellation_map.get(reservation.cancellation_details[0].cancellation_type),
-            "hotel_address": provider_hotel.address_line_1,
-            "checkin": "04:00pm",
-            "checkout": "12:00pm",
-            "resort_fee": format_money(resort_fees),
-            "hotel_taxes": format_money(reservation.room_rate.total_tax_rate.amount),
-            "hotel_room_type": "Standard Room",
-            "last_four": "0000",
-            "order_base_rate": format_money(reservation.room_rate.total_base_rate.amount),
-            "order_taxes": format_money(reservation.room_rate.total_tax_rate.amount),
-        }
+        params = _generate_confirmation_email_params(hotel, reservation, payment, record_locator)
 
         if not _is_confirmation_email_enabled():
             logger.info(f"Not sending email without email enabled. Parameters: {params}")
@@ -434,6 +415,51 @@ def _send_confirmation_email(
 
     except Exception as e:
         logger.warn(f"Could not send confirmation email: {str(e)}")
+
+
+def _generate_confirmation_email_params(
+    hotel: AdapterHotel, reservation: Reservation, payment: PaymentTransaction, record_locator: str
+):
+    friendly_cancellation_map = {
+        CancellationSummary.UNKNOWN_CANCELLATION_POLICY: "Call for cancellation details",
+        CancellationSummary.FREE_CANCELLATION: "Free Cancellation",
+        CancellationSummary.NON_REFUNDABLE: "Non-refundable",
+        CancellationSummary.PARTIAL_REFUND: "Partially-refundable",
+    }
+
+    provider_hotel = ProviderHotel.objects.get(
+        provider__name=hotel.provider, provider_code=hotel.hotel_id, language_code="en"
+    )
+
+    order_currency_symbol = currencies.get_symbol(payment.currency)
+
+    def format_money(amount):
+        return f"{order_currency_symbol}{amount:.2f}"
+
+    resort_fees = 0
+    if reservation.room_rate.postpaid_fees:
+        resort_fees = reservation.room_rate.postpaid_fees.total.amount
+
+    room_type_code = reservation.room_rate.room_type_code
+    room_type = next(room_type for room_type in hotel.room_types if room_type.code == room_type_code)
+
+    return {
+        "booking_id": str(record_locator),
+        "order_total": format_money(reservation.room_rate.total.amount),
+        "hotel_name": hotel.hotel_details.name,
+        "hotel_sub_total": format_money(reservation.room_rate.total.amount),
+        "record_locator": reservation.locator.id,
+        "cancellation_policy": friendly_cancellation_map.get(reservation.cancellation_details[0].cancellation_type),
+        "hotel_address": provider_hotel.address_line_1,
+        "checkin": "04:00pm",
+        "checkout": "12:00pm",
+        "resort_fee": format_money(resort_fees),
+        "hotel_taxes": format_money(reservation.room_rate.total_tax_rate.amount),
+        "hotel_room_type": room_type.name,
+        "last_four": "0000",
+        "order_base_rate": format_money(reservation.room_rate.total_base_rate.amount),
+        "order_taxes": format_money(reservation.room_rate.total_tax_rate.amount),
+    }
 
 
 def _is_confirmation_email_enabled():

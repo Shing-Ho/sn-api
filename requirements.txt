@@ -22,3 +22,4 @@ django-redis
 cryptography
 pytz
 django-admin-interface
+bugsnag==4.0.2

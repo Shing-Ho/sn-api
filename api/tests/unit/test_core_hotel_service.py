@@ -25,7 +25,7 @@ class TestCoreHotelService(SimplenightTestCase):
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(adults=2, children=1),
-            provider="stub",
+            provider="stub_hotel",
         )
 
         with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
@@ -105,7 +105,7 @@ class TestCoreHotelService(SimplenightTestCase):
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 27),
             occupancy=RoomOccupancy(adults=2, children=1),
-            provider="stub",
+            provider="stub_hotel",
         )
 
         google_search_request = GoogleHotelSearchRequest(
@@ -132,7 +132,7 @@ class TestCoreHotelService(SimplenightTestCase):
             start_date=date(2020, 1, 20),
             end_date=date(2020, 1, 22),
             occupancy=RoomOccupancy(adults=2, children=1),
-            provider="stub",
+            provider="stub_hotel",
         )
 
         room_rate = test_objects.room_rate(rate_key="foo", total="100", base_rate="80", tax_rate="20")
@@ -153,7 +153,7 @@ class TestCoreHotelService(SimplenightTestCase):
                 hotels = core_hotel_service.search_by_location(search_request)
 
         # Two Room Nights, So average nightly rate is 0.5 Total
-        # Average is applied after default markup of 18%
-        self.assertEqual(Decimal("59.00"), hotels[0].average_nightly_rate)
-        self.assertEqual(Decimal("47.20"), hotels[0].average_nightly_base)
-        self.assertEqual(Decimal("11.80"), hotels[0].average_nightly_tax)
+        # Average is applied after default markup of 13%
+        self.assertEqual(Decimal("56.00"), hotels[0].average_nightly_rate)
+        self.assertEqual(Decimal("44.80"), hotels[0].average_nightly_base)
+        self.assertEqual(Decimal("11.20"), hotels[0].average_nightly_tax)

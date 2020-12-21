@@ -30,11 +30,22 @@ class GiataParser:
         return {
             "priceline_partner_network": Provider.objects.get_or_create(name="priceline")[0],
             "iceportal": Provider.objects.get_or_create(name="iceportal")[0],
+            "hotelbeds": Provider.objects.get_or_create(name="hotelbeds")[0],
         }
 
     def execute(self):
-        pagination_link = ""
-        while pagination_link is not None:
+        existing_giata_hotels = ProviderHotel.objects.filter(provider=self.provider)
+        logger.info(f"Removing {len(existing_giata_hotels)} existing Giata hotels")
+        existing_giata_hotels.delete()
+
+        existing_giata_mappings = ProviderMapping.objects.all()
+        logger.info(f"Removing {len(existing_giata_mappings)} existing Giata mappings")
+        existing_giata_mappings.delete()
+
+        properties_xmlstr = self.get_properties()
+        pagination_link = self.parse_properties(properties_xmlstr)
+
+        while pagination_link:
             properties_xmlstr = self.get_properties(pagination_link=pagination_link)
             pagination_link = self.parse_properties(properties_xmlstr)
 
@@ -46,6 +57,8 @@ class GiataParser:
 
         for language_code in settings.GEONAMES_SUPPORTED_LANGUAGES:
             self.execute_hotel_guide_for_language(language_code)
+            hotels_for_lang = ProviderHotel.objects.filter(language_code=language_code)
+            logger.info(f"Loaded {len(hotels_for_lang)} hotels for language {language_code}")
 
     def execute_hotel_guide_for_language(self, language_code):
         properties, pagination_link = self.get_hotel_guide_properties(language=language_code)
@@ -101,7 +114,7 @@ class GiataParser:
                     provider_code=giata_id,
                     language_code=language_code,
                     type=title,
-                    description=description
+                    description=description,
                 )
 
     def parse_properties(self, properties_xmlstr):
@@ -116,7 +129,7 @@ class GiataParser:
         for element in doc.findall(".//property"):
             giata_id = element.get("giataId")
             hotel_name = self._find_with_default(element, "name")
-            city_name = self._find_with_default(element, "addresses/address[1]/cityName")
+            city_name = self._find_with_default(element, "city")
             country = self._find_with_default(element, "addresses/address[1]/country")
             postal_code = self._find_with_default(element, "addresses/address[1]/postalCode")
             address_line_1 = self._find_with_default(element, "addresses/address[1]/addressLine[@addressLineNumber]")
@@ -148,7 +161,7 @@ class GiataParser:
                             provider=self.provider,
                             provider_code=giata_id,
                             type=phone_type,
-                            phone_number=phone_number
+                            phone_number=phone_number,
                         )
                         provider_hotel_phones.append(phone_model)
 

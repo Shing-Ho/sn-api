@@ -10,7 +10,8 @@ from api.hotel.models.adapter_models import (
     AdapterLocationSearch,
     AdapterOccupancy,
     AdapterHotelSearch,
-    AdapterCancelRequest, AdapterHotelBatchSearch,
+    AdapterCancelRequest,
+    AdapterHotelBatchSearch,
 )
 from api.hotel.parsers.priceline_details_parser import PricelineDetailsParser
 from api.models.models import CityMap, HotelBooking
@@ -231,3 +232,8 @@ class TestPricelineIntegration(SimplenightTestCase):
         transport = PricelineTransport(test_mode=True)
         parser = PricelineDetailsParser(transport)
         parser.load(chunk_size=10, limit=10)
+
+    def test_priceline_reviews(self):
+        transport = PricelineTransport(test_mode=True)
+        priceline = PricelineAdapter(transport=transport)
+        print(priceline.reviews(hotel_id="700363264"))

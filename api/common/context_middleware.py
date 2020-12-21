@@ -1,6 +1,6 @@
 import uuid
 
-from django.http import HttpRequest, HttpResponseForbidden
+from django.http import HttpRequest
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.exceptions import AuthenticationFailed
@@ -8,8 +8,8 @@ from rest_framework_api_key.permissions import KeyParser
 
 from api import logger
 from api.auth.authentication import OrganizationAPIKey
-from api.models.models import Organization
 from api.common.request_cache import get_request_cache
+from api.models.models import Organization
 
 
 class RequestContextMiddleware(MiddlewareMixin):
@@ -18,6 +18,13 @@ class RequestContextMiddleware(MiddlewareMixin):
         request_cache = get_request_cache()
         organization = cls.get_organization_from_api_key_in_request(request)
 
+        request_cache.set("organization", organization)
+        request_cache.set("request_id", str(uuid.uuid4()))
+
+    @classmethod
+    def mock_organization(cls, organization: Organization):
+        # Hack for a request context in a Django Command
+        request_cache = get_request_cache()
         request_cache.set("organization", organization)
         request_cache.set("request_id", str(uuid.uuid4()))
 

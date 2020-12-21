@@ -31,7 +31,7 @@ def hotel(room_rates=None):
         room_rates = []
 
     return AdapterHotel(
-        provider="stub",
+        provider="stub_hotel",
         hotel_id="100",
         start_date=date(2020, 1, 1),
         end_date=date(2020, 2, 1),
@@ -157,7 +157,7 @@ def booking_request(payment_obj=None, rate_code=None):
     )
 
 
-def hotel_specific_search(start_date=None, end_date=None, hotel_id="123", provider="stub"):
+def hotel_specific_search(start_date=None, end_date=None, hotel_id="123", provider="stub_hotel"):
     if start_date is None:
         start_date = date(2020, 1, 1)
 
@@ -169,7 +169,7 @@ def hotel_specific_search(start_date=None, end_date=None, hotel_id="123", provid
     )
 
 
-def adapter_hotel_search(start_date=None, end_date=None, hotel_id="123", adapter="stub"):
+def adapter_hotel_search(start_date=None, end_date=None, hotel_id="123", adapter="stub_hotel"):
     if start_date is None:
         start_date = date(2020, 1, 1)
 
@@ -193,5 +193,8 @@ def adapter_location_search(start_date=None, end_date=None, location_id="123"):
         end_date = date(2020, 1, 7)
 
     return AdapterLocationSearch(
-        start_date=start_date, end_date=end_date, occupancy=AdapterOccupancy(), location_id=location_id,
+        start_date=start_date,
+        end_date=end_date,
+        occupancy=AdapterOccupancy(),
+        location_id=location_id,
     )

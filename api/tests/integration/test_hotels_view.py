@@ -45,7 +45,11 @@ class TestHotelsView(SimplenightTestCase):
         checkout = datetime.now().date() + timedelta(days=35)
 
         search = HotelSpecificSearch(
-            hotel_id="SN123", start_date=checkin, end_date=checkout, occupancy=RoomOccupancy(adults=1), provider="stub"
+            hotel_id="SN123",
+            start_date=checkin,
+            end_date=checkout,
+            occupancy=RoomOccupancy(adults=1),
+            provider="stub_hotel",
         )
 
         with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
@@ -58,6 +62,7 @@ class TestHotelsView(SimplenightTestCase):
 
         hotel = SimplenightHotel.parse_raw(response.content)
         self.assertIsNotNone(hotel.hotel_id)
+        self.assertEqual(10.0, hotel.hotel_details.review_rating)
 
     def test_search_by_location(self):
         checkin = datetime.now().date() + timedelta(days=30)
@@ -197,7 +202,7 @@ class TestHotelsView(SimplenightTestCase):
         self.assertEqual([10], availability_resp_obj.party.children)
         self.assertEqual(1, availability_resp_obj.party.adults)
         self.assertEqual("8qJgpBN4M9htbX00RAAmhlGt4vL5QM2kEibAktNLe3M", availability_resp_obj.room_types[0].code)
-        self.assertEqual("1005.01", str(availability_resp_obj.room_rates[0].total_price_at_booking.amount))
+        self.assertAlmostEqual(953.91, float(availability_resp_obj.room_rates[0].total_price_at_booking.amount), 0)
 
         booking_request = GoogleBookingSubmitRequest(
             api_version=1,
