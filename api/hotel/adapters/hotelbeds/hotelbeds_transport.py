@@ -89,6 +89,9 @@ class HotelbedsTransport(Transport):
     def categories_types(self, **params):
         return self.get(self.Endpoint.CATEGORIES_TYPES, **params)
 
+    def booking_detail(self, id, **params):
+        return self.get(self.Endpoint.BOOKING + f"/${id}", **params)
+
     def booking_cancel(self, id, **params):
         return self.delete(self.Endpoint.BOOKING, id, **params)
 
