@@ -42,6 +42,7 @@ from api.hotel.models.hotel_common_models import (
     RateType,
     Money,
     RoomRate,
+    HotelReviews,
 )
 from api.models.models import ProviderImages, ProviderHotel
 from api.view.exceptions import AvailabilityException, BookingException, AvailabilityErrorCode, BookingErrorCode
@@ -200,6 +201,9 @@ class HotelbedsAdapter(HotelAdapter):
 
     def details(self, *args) -> HotelDetails:
         pass
+
+    def reviews(self, *args) -> HotelReviews:
+        raise NotImplementedError()
 
     def recheck(self, room_rate: RoomRate) -> RoomRate:
         request = self._create_recheck_params(room_rate)
