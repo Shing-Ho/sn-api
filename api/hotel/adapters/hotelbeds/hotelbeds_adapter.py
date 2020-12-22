@@ -8,7 +8,6 @@ import pytz
 from api import logger
 from api.hotel.adapters.hotelbeds.hotelbeds_common_models import (
     get_language_mapping,
-    HotelbedsRateType,
 )
 from api.hotel.adapters.hotelbeds.hotelbeds_amenity_mappings import get_simplenight_amenity_mappings
 from api.hotel.adapters.hotelbeds.hotelbeds_info import HotelbedsInfo
@@ -226,7 +225,7 @@ class HotelbedsAdapter(HotelAdapter):
 
     def booking(self, book_request: HotelBookingRequest) -> Reservation:
         request = self._create_booking_params(book_request)
-        response = self.transport.booking(request)
+        response = self.transport.booking(**request)
 
         results = self._check_booking_response_and_get_results(response)
         booking_locator = results["reference"]
@@ -345,7 +344,7 @@ class HotelbedsAdapter(HotelAdapter):
     def _parse_cancellation_details(rate, currency) -> List[CancellationDetails]:
         total_rate = rate["net"]
         cancellation_detail_lst = []
-        if not rate["cancellationPolicies"] or len(rate["cancellationPolicies"]) == 0:
+        if not "cancellationPolicies" in rate or len(rate["cancellationPolicies"]) == 0:
             return [
                 CancellationDetails(
                     cancellation_type=CancellationSummary.UNKNOWN_CANCELLATION_POLICY,
@@ -426,13 +425,17 @@ class HotelbedsAdapter(HotelAdapter):
 
         occupancy = RoomOccupancy(adults=rate["adults"], children=rate["children"], num_rooms=rate["rooms"])
 
-        rate_type = RateType.BOOKABLE
+        rate_type = "BOOKABLE"
         if "rateType" in rate:
             rate_type = self._get_rate_type(rate["rateType"])
 
+        code = room_type_code
+        if "rateKey" in rate:
+            code = rate["rateKey"]
+
         return RoomRate(
-            code=rate["rateKey"] or room_type_code,
-            rate_plan_code=rate["rateKey"],
+            code=code,
+            rate_plan_code=code,
             room_type_code=room_type_code,
             rate_type=rate_type,
             total_base_rate=total_base_rate,
@@ -506,10 +509,10 @@ class HotelbedsAdapter(HotelAdapter):
 
     @staticmethod
     def _get_rate_type(rate_type: str):
-        if rate_type == HotelbedsRateType.RECHECK:
-            return HotelbedsRateType.RECHECK
+        if rate_type == "RECHECK":
+            return "RECHECK"
 
-        return HotelbedsRateType.BOOKABLE
+        return "BOOKABLE"
 
     @staticmethod
     def _get_image(provider_image: ProviderImages):
