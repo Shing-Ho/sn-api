@@ -6,6 +6,7 @@ from freezegun import freeze_time
 
 from api.common.common_models import from_json
 from api.hotel import hotel_cache_service
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.converter.google_models import (
@@ -28,7 +29,7 @@ from api.hotel.models.hotel_api_model import (
 )
 from api.hotel.models.hotel_common_models import RoomOccupancy, Address
 from api.models.models import Booking, Feature
-from api.tests import test_objects
+from api.tests import test_objects, model_helper
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
 
@@ -82,6 +83,8 @@ class TestHotelsView(SimplenightTestCase):
         self.assertIsNotNone(hotels[0].hotel_id)
 
     def test_search_location_by_provider(self):
+        model_helper.create_provider(HotelbedsAdapter.get_provider_name())
+
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         search = HotelLocationSearch(
@@ -94,7 +97,17 @@ class TestHotelsView(SimplenightTestCase):
 
         with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
             mock_find_simplenight_id.return_value = "123"
-            response = self._post(SEARCH_BY_LOCATION, search)
+
+            with patch("api.locations.location_service.find_provider_location") as mock_location_service:
+                mock_location_service.return_value = model_helper.create_provider_city(
+                    provider_name=HotelbedsAdapter.get_provider_name(),
+                    code="SFO",
+                    name="San Francisco",
+                    province="CA",
+                    country="US",
+                )
+
+                response = self._post(SEARCH_BY_LOCATION, search)
 
         self.assertEqual(200, response.status_code)
 
@@ -145,24 +158,35 @@ class TestHotelsView(SimplenightTestCase):
         self.assertEqual("UNHANDLED_ERROR", response.json()["error"]["type"])
 
     def test_availability_error_included_in_api_rest(self):
+        model_helper.create_provider(HotelbedsAdapter.get_provider_name())
+
         error_response = load_test_resource("hotelbeds/error-response.json")
         transport = HotelbedsTransport()
         hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
-        with requests_mock.Mocker() as mocker:
-            mocker.post(hotels_url, text=error_response)
-            search_request = HotelLocationSearch(
-                location_id="SFO",
-                start_date=date(2020, 1, 20),
-                end_date=date(2020, 1, 27),
-                occupancy=RoomOccupancy(adults=2, children=1),
-                provider="hotelbeds",
+        with patch("api.locations.location_service.find_provider_location") as mock_location_service:
+            mock_location_service.return_value = model_helper.create_provider_city(
+                provider_name=HotelbedsAdapter.get_provider_name(),
+                code="SFO",
+                name="San Francisco",
+                province="CA",
+                country="US",
             )
 
-            response = self.post(endpoint=SEARCH_BY_LOCATION, obj=search_request)
-            body = response.json()
-            assert body is not None
-            assert body["detail"] == "Invalid data. The check-in must be in the future."
-            assert body["status_code"] == 500
+            with requests_mock.Mocker() as mocker:
+                mocker.post(hotels_url, text=error_response)
+                search_request = HotelLocationSearch(
+                    location_id="SFO",
+                    start_date=date(2020, 1, 20),
+                    end_date=date(2020, 1, 27),
+                    occupancy=RoomOccupancy(adults=2, children=1),
+                    provider="hotelbeds",
+                )
+
+                response = self.post(endpoint=SEARCH_BY_LOCATION, obj=search_request)
+                body = response.json()
+                assert body is not None
+                assert body["detail"] == "Invalid data. The check-in must be in the future."
+                assert body["status_code"] == 500
 
     @freeze_time("2020-01-01")
     def test_book_on_google_hotel_availability_and_booking(self):
