@@ -6,7 +6,7 @@ from api.activities.adapters.stub_activity_adapter import StubActivityAdapter
 from api.common.common_exceptions import FeatureNotFoundException
 from api.common.request_context import get_config_bool, get_config
 from api.hotel.adapters.hotel_adapter import HotelAdapter
-from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBedsAdapter
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
@@ -28,7 +28,7 @@ ADAPTERS = {
     AdapterType.HOTEL: {
         "stub_hotel": StubHotelAdapter,
         "travelport": TravelportHotelAdapter,
-        "hotelbeds": HotelBedsAdapter,
+        "hotelbeds": HotelbedsAdapter,
         "priceline": PricelineAdapter,
     },
     AdapterType.ACTIVITY: {"stub_activity": StubActivityAdapter},

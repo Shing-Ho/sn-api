@@ -33,7 +33,7 @@ esac
 done
 set -- "${POSITIONAL[@]}"
 
-source $REPO_ROOT/.venv/bin/activate
+# source $REPO_ROOT/.venv/bin/activate
 
 if [[ -f "$REPO_ROOT/api/environments/${LABEL}.py" ]]; then
   DJANGO_SETTINGS_MODULE="api.environments.$LABEL" ./manage.py $*

@@ -131,6 +131,9 @@ class Feature(Enum):
     PRICELINE_API_URL = "priceline_api_url"
     MAILGUN_API_KEY = "mailgun_api_key"
     EMAIL_ENABLED = "email_enabled"
+    HOTELBEDS_API_URL = "hotelbeds_api_url"
+    HOTELBEDS_API_KEY = "hotelbeds_api_key"
+    HOTELBEDS_API_SECRET = "hotelbeds_api_secret"
 
     @classmethod
     def choices(cls):

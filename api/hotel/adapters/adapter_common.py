@@ -24,7 +24,11 @@ def get_virtual_credit_card(test_mode=True) -> Payment:
                 cvv="123",
             ),
             billing_address=Address(
-                city="Miami", province="FL", country="US", address1="123 Simplenight Way", postal_code="94111",
+                city="Miami",
+                province="FL",
+                country="US",
+                address1="123 Simplenight Way",
+                postal_code="94111",
             ),
         )
     else:
@@ -43,7 +47,11 @@ def get_virtual_credit_card(test_mode=True) -> Payment:
                 expiration_year="2023",
             ),
             billing_address=Address(
-                city="New York", province="NY", country="US", address1="245 East 58th St", postal_code="33179",
+                city="New York",
+                province="NY",
+                country="US",
+                address1="245 East 58th St",
+                postal_code="33179",
             ),
         )
 
