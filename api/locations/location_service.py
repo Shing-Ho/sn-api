@@ -89,6 +89,7 @@ def _airport_to_location_response(airport: Airport):
         location_id=airport.airport_code,
         language_code="en",
         location_name=airport.airport_name,
+        location_airport_city=airport.city_name,
         province=None,
         iso_country_code=airport.iso_country_code,
         latitude=Decimal(airport.latitude),
