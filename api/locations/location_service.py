@@ -76,6 +76,7 @@ def _geoname_to_location_response(geoname: Geoname, language_code: str):
         location_id=str(geoname.geoname_id),
         language_code=displayed_language_code,
         location_name=displayed_location_name,
+        location_airport_city=None,
         province=geoname.province,
         iso_country_code=geoname.iso_country_code,
         latitude=geoname.latitude,
