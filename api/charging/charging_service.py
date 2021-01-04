@@ -17,25 +17,9 @@ class ChargingService:
     def get_poi(self, request):
         header = self.generate_header()
 
-        country_code = request.GET.get("country_code")
-        max_results = request.GET.get("max_results")
-        client = request.GET.get("client")
-        country_id = request.GET.get("country_id")
-        latitude = request.GET.get("latitude")
-        longitude = request.GET.get("longitude")
-        print(request.GET)
-
-        url = self.config['end_point'] + "poi/?countrycode=" + country_code
-        if max_results:
-            url += "&maxresults=" + max_results
-        if client:
-            url += "&client=" + client
-        if country_id:
-            url += "&countryid=" + country_id
-        if latitude:
-            url += "&latitude=" + latitude
-        if longitude:
-            url += "&longitude=" + longitude
+        url = self.config['end_point'] + "poi/?"
+        for param in request.GET:
+            url += param + "=" + request.GET.get(param) + "&" 
 
         response = requests.get(url, headers=header)
         return response
