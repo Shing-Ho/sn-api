@@ -2,7 +2,6 @@ import requests
 
 from api.charging.constants import CONFIG
 
-
 class ChargingService:
     def __init__(self, env="development"):
         self.env = env
@@ -15,11 +14,23 @@ class ChargingService:
         }
 
     def get_poi(self, request):
-        header = self.generate_header()
-
         url = self.config['end_point'] + "poi/?"
         for param in request.GET:
             url += param + "=" + request.GET.get(param) + "&" 
 
-        response = requests.get(url, headers=header)
+        response = requests.get(url, headers=self.generate_header())
+        return response
+
+    def get_reference(self, request):
+        url = self.config['end_point'] + "referencedata/?"
+        for param in request.GET:
+            url += param + "=" + request.GET.get(param) + "&" 
+
+        response = requests.get(url, headers=self.generate_header())
+        return response
+
+    def post_comment(self, request):
+        url = self.config['end_point'] + "?action=comment_submission&format=json"
+
+        response = requests.post(url, data=request.data, headers=self.generate_header())
         return response
