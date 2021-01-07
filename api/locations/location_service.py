@@ -72,15 +72,30 @@ def _geoname_to_location_response(geoname: Geoname, language_code: str):
         displayed_language_code = "en"
         displayed_location_name = geoname.location_name
 
+    provider_location = find_provider_location("priceline", geoname.geoname_id)
+
+    if provider_location:
+        displayed_aircode = provider_location.provider_code
+        displayed_province = provider_location.province
+        displayed_iso_country_code = provider_location.country_code
+        displayed_latitude = provider_location.latitude
+        displayed_longitude = provider_location.longitude
+    else:
+        displayed_aircode = None
+        displayed_province = geoname.province
+        displayed_iso_country_code = geoname.iso_country_code
+        displayed_latitude = geoname.latitude
+        displayed_longitude = geoname.longitude
+
     return LocationResponse(
         location_id=str(geoname.geoname_id),
         language_code=displayed_language_code,
         location_name=displayed_location_name,
-        location_airport_city=None,
-        province=geoname.province,
-        iso_country_code=geoname.iso_country_code,
-        latitude=geoname.latitude,
-        longitude=geoname.longitude,
+        location_aircode=displayed_aircode,
+        province=displayed_province,
+        iso_country_code=displayed_iso_country_code,
+        latitude=displayed_latitude,
+        longitude=displayed_longitude,
         location_type=LocationType.CITY,
     )
 
@@ -90,7 +105,7 @@ def _airport_to_location_response(airport: Airport):
         location_id=airport.airport_code,
         language_code="en",
         location_name=airport.airport_name,
-        location_airport_city=airport.city_name,
+        location_aircode=airport.city_name,
         province=None,
         iso_country_code=airport.iso_country_code,
         latitude=Decimal(airport.latitude),
