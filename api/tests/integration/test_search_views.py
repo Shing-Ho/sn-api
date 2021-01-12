@@ -12,7 +12,10 @@ SEARCH_BY_ID = "/api/v1/search/search"
 
 class TestSearchViews(SimplenightTestCase):
     def test_activity_search(self):
-        activity_search = ActivityLocationSearch(activity_date=datetime.now(), adults=1, children=0, location_id="123")
+        activity_search = ActivityLocationSearch(
+            begin_date=datetime.now(), end_date=datetime.now(), adults=1, children=0, location_id="123"
+        )
+
         search_request = SearchRequest(product_types=[Products.ACTIVITIES], activity_search=activity_search)
         print(search_request.json())
 

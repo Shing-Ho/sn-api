@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from api.search import search
 from api.search.search_models import SearchRequest, Products, ActivitySpecificSearch, RestaurantSearch
@@ -12,7 +12,7 @@ class TestSearch(SimplenightTestCase):
             product_types=[Products.DINING, Products.ACTIVITIES],
             restaurant_search=RestaurantSearch(location_id="123", reservation_date=search_date, party_size=4),
             activity_search=ActivitySpecificSearch(
-                activity_date=search_date.date(), adults=1, children=0, activity_id="123"
+                begin_date=search_date.date(), end_date=date(2020, 1, 5), adults=1, children=0, activity_id="123"
             ),
         )
 

@@ -16,7 +16,8 @@ class Products(Enum):
 
 
 class ActivitySearch(SimplenightModel):
-    activity_date: date
+    begin_date: date
+    end_date: date
     adults: int
     children: int
     provider: Optional[str] = None
@@ -32,7 +33,7 @@ class RestaurantSearch(SimplenightModel):
 
 
 class ActivityLocationSearch(ActivitySearch):
-    location_id: str
+    location_id: Union[str, int]
 
 
 class ActivitySpecificSearch(ActivitySearch):

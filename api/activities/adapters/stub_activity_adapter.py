@@ -4,19 +4,23 @@ from decimal import Decimal
 from typing import List
 
 from api.activities.activity_adapter import ActivityAdapter
+from api.activities.activity_internal_models import (
+    AdapterActivitySpecificSearch,
+    AdapterActivityLocationSearch,
+    AdapterActivitySearch,
+)
 from api.activities.activity_models import SimplenightActivity
 from api.hotel.models.hotel_common_models import Money
-from api.search.search_models import ActivitySearch
 
 
 class StubActivityAdapter(ActivityAdapter):
-    async def search_by_location(self, search: ActivitySearch) -> List[SimplenightActivity]:
+    async def search_by_location(self, search: AdapterActivityLocationSearch) -> List[SimplenightActivity]:
         return list(self._create_activity_product(search) for _ in range(random.randint(2, 25)))
 
-    async def search_by_id(self, search: ActivitySearch) -> SimplenightActivity:
+    async def search_by_id(self, search: AdapterActivitySpecificSearch) -> SimplenightActivity:
         return self._create_activity_product(search)
 
-    def _create_activity_product(self, search: ActivitySearch):
+    def _create_activity_product(self, search: AdapterActivitySearch):
         tour_name, activity, tour_type, activity_name = self._create_activity_name()
         description = self._create_activity_description(tour_name, activity, tour_type)
         total_base = Money(amount=Decimal(random.random() * 400), currency="USD")

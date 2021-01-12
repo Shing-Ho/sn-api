@@ -3,10 +3,15 @@ from decimal import getcontext, ROUND_UP
 from typing import List
 
 from api.activities.activity_adapter import ActivityAdapter
-from api.activities.activity_internal_models import AdapterActivity
+from api.activities.activity_internal_models import (
+    AdapterActivity,
+    AdapterActivityLocationSearch,
+    AdapterActivitySpecificSearch,
+)
 from api.activities.activity_models import SimplenightActivity
 from api.hotel.adapters import adapter_service
 from api.hotel.models.hotel_common_models import Money
+from api.locations import location_service
 from api.search.search_models import ActivitySearch, ActivityLocationSearch, ActivitySpecificSearch
 
 
@@ -20,6 +25,19 @@ def search_by_id(search: ActivitySpecificSearch) -> SimplenightActivity:
     activities = _process_activities(activities)
     if activities:
         return activities[0]  # TODO: Unify
+
+
+def _adapter_location_search(search: ActivityLocationSearch) -> AdapterActivityLocationSearch:
+    """Converts an API Activity Location Search to an object suitable for an activity adapter"""
+
+    location = location_service.find_city_by_simplenight_id(search.location_id)
+    return AdapterActivityLocationSearch(location=location, **search.dict())
+
+
+def _adapter_specific_search(search: ActivitySpecificSearch) -> AdapterActivitySpecificSearch:
+    """Converts an API Activity Specific Search to an object suitable for an activity adapter"""
+
+    return AdapterActivitySpecificSearch(**search.dict())
 
 
 def _process_activities(activities: List[AdapterActivity]) -> List[SimplenightActivity]:
@@ -41,7 +59,7 @@ def _adapter_to_simplenight_activity(activity: AdapterActivity) -> SimplenightAc
     )
 
 
-def _search_all_adapters_location(search: ActivitySearch) -> List[AdapterActivity]:
+def _search_all_adapters_location(search: ActivityLocationSearch) -> List[AdapterActivity]:
     return list(_search_all_adapters(search, ActivityAdapter.search_by_location.__name__))
 
 
