@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "rest_framework_api_key",
     "corsheaders",
     "sequences.apps.SequencesConfig",
+    "knox",
 ]
 
 MIDDLEWARE = [
@@ -90,7 +91,9 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
-    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        'knox.auth.TokenAuthentication',
+    ],
     "EXCEPTION_HANDLER": "api.view.exceptions.handler",
 }
 
