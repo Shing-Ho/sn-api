@@ -3,23 +3,44 @@ from decimal import getcontext, ROUND_UP
 from typing import List
 
 from api.activities.activity_adapter import ActivityAdapter
-from api.activities.activity_internal_models import AdapterActivity
+from api.activities.activity_internal_models import (
+    AdapterActivity,
+    AdapterActivityLocationSearch,
+    AdapterActivitySpecificSearch,
+    AdapterActivitySearch,
+)
 from api.activities.activity_models import SimplenightActivity
 from api.hotel.adapters import adapter_service
 from api.hotel.models.hotel_common_models import Money
-from api.search.search_models import ActivitySearch, ActivityLocationSearch, ActivitySpecificSearch
+from api.locations import location_service
+from api.search.search_models import ActivityLocationSearch, ActivitySpecificSearch
 
 
 def search_by_location(search: ActivityLocationSearch) -> List[SimplenightActivity]:
-    activities = _search_all_adapters_location(search)
+    adapter_search = _adapter_location_search(search)
+    activities = _search_all_adapters_location(adapter_search)
     return _process_activities(activities)
 
 
 def search_by_id(search: ActivitySpecificSearch) -> SimplenightActivity:
-    activities = _search_all_adapters_id(search)
+    adapter_search = _adapter_specific_search(search)
+    activities = _search_all_adapters_id(adapter_search)
     activities = _process_activities(activities)
     if activities:
         return activities[0]  # TODO: Unify
+
+
+def _adapter_location_search(search: ActivityLocationSearch) -> AdapterActivityLocationSearch:
+    """Converts an API Activity Location Search to an object suitable for an activity adapter"""
+
+    location = location_service.find_city_by_simplenight_id(search.location_id)
+    return AdapterActivityLocationSearch(**search.dict(), location=location)
+
+
+def _adapter_specific_search(search: ActivitySpecificSearch) -> AdapterActivitySpecificSearch:
+    """Converts an API Activity Specific Search to an object suitable for an activity adapter"""
+
+    return AdapterActivitySpecificSearch(**search.dict())
 
 
 def _process_activities(activities: List[AdapterActivity]) -> List[SimplenightActivity]:
@@ -38,18 +59,19 @@ def _adapter_to_simplenight_activity(activity: AdapterActivity) -> SimplenightAc
         total_price=_format_money(activity.total_price),
         total_base=_format_money(activity.total_base),
         total_taxes=_format_money(activity.total_taxes),
+        images=activity.images,
     )
 
 
-def _search_all_adapters_location(search: ActivitySearch) -> List[AdapterActivity]:
+def _search_all_adapters_location(search: AdapterActivityLocationSearch) -> List[AdapterActivity]:
     return list(_search_all_adapters(search, ActivityAdapter.search_by_location.__name__))
 
 
-def _search_all_adapters_id(search: ActivitySearch) -> List[AdapterActivity]:
+def _search_all_adapters_id(search: AdapterActivitySearch) -> List[AdapterActivity]:
     return list(_search_all_adapters(search, ActivityAdapter.search_by_id.__name__, many=False))
 
 
-def _search_all_adapters(search: ActivitySearch, fn_name: str, many=True):
+def _search_all_adapters(search: AdapterActivitySearch, fn_name: str, many=True):
     """Generic function to search all enabled adapters."""
 
     adapters = adapter_service.get_activity_adapters_to_search(search)
