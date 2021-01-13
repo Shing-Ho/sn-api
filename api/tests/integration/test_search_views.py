@@ -1,9 +1,11 @@
 from datetime import datetime, date
+from decimal import Decimal
 from unittest.mock import patch
 
 from api.common.common_models import from_json
 from api.hotel.models.hotel_api_model import HotelSpecificSearch
 from api.hotel.models.hotel_common_models import RoomOccupancy
+from api.locations.models import Location, LocationType
 from api.search.search_models import ActivityLocationSearch, SearchRequest, SearchResponse, Products, RestaurantSearch
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
@@ -19,7 +21,10 @@ class TestSearchViews(SimplenightTestCase):
         search_request = SearchRequest(product_types=[Products.ACTIVITIES], activity_search=activity_search)
         print(search_request.json())
 
-        response = self._post(SEARCH_BY_ID, search_request)
+        with patch("api.locations.location_service.find_city_by_simplenight_id") as mock_find_city:
+            mock_find_city.return_value = self._get_test_city()
+            response = self._post(SEARCH_BY_ID, search_request)
+
         results = from_json(response.content, SearchResponse)
         self.assertGreater(len(results.activity_results), 1)
         self.assertIsNotNone(results.activity_results[0].name)
@@ -52,3 +57,15 @@ class TestSearchViews(SimplenightTestCase):
 
     def _post(self, endpoint, data):
         return self.client.post(path=endpoint, data=data.json(), format="json")
+
+    @staticmethod
+    def _get_test_city():
+        return Location(
+            location_id="123",
+            language_code="en",
+            location_name="Testville",
+            iso_country_code="XX",
+            latitude=Decimal("10.0"),
+            longitude=Decimal("20.0"),
+            location_type=LocationType.CITY,
+        )

@@ -10,6 +10,7 @@ from api.activities.activity_internal_models import (
     AdapterActivityLocationSearch,
 )
 from api.activities.adapters.tiqets.tiqets_transport import TiqetsTransport
+from api.hotel.models.hotel_api_model import Image, ImageType
 from api.hotel.models.hotel_common_models import Money
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
@@ -33,6 +34,9 @@ class TiqetsActivityAdapter(ActivityAdapter):
 
     @staticmethod
     def _create_activity(activity, activity_date: date):
+        def _parse_image(image: Dict) -> Image:
+            return Image(url=image["url"], type=ImageType.UNKNOWN)
+
         return AdapterActivity(
             name=activity["name"],
             code=activity["code"],
@@ -41,6 +45,7 @@ class TiqetsActivityAdapter(ActivityAdapter):
             total_price=Money(amount=activity["price"], currency=activity["currency"]),
             total_base=Money(amount=Decimal(0), currency=activity["currency"]),
             total_taxes=Money(amount=Decimal(0), currency=activity["currency"]),
+            images=list(map(_parse_image, activity["images"])),
         )
 
     @staticmethod

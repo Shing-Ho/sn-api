@@ -34,6 +34,7 @@ class StubActivityAdapter(ActivityAdapter):
             total_price=total_price,
             total_base=total_base,
             total_taxes=total_taxes,
+            images=[],
         )
 
     @staticmethod
