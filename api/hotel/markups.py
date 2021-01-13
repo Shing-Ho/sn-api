@@ -20,7 +20,7 @@ def markup_rate(room_rate: RoomRate) -> RoomRate:
         maximum_allowed_occupancy=room_rate.maximum_allowed_occupancy,
         daily_rates=room_rate.daily_rates,
         partner_data=room_rate.partner_data,
-        postpaid_fees=room_rate.postpaid_fees
+        postpaid_fees=room_rate.postpaid_fees,
     )
 
 

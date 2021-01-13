@@ -18,6 +18,7 @@ class Location(SimplenightModel):
     location_id: str
     language_code: str
     location_name: str
+    location_aircode: Optional[str]
     province: Optional[str]
     iso_country_code: str
     latitude: Decimal

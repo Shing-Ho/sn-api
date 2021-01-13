@@ -6,6 +6,7 @@ import api.view.hotels_view
 import api.view.search_views
 import api.view.locations
 import api.view.default_view
+import api.view.charging_view
 
 router = routers.SimpleRouter(trailing_slash=False)
 
@@ -13,6 +14,7 @@ router = routers.SimpleRouter(trailing_slash=False)
 router.register(r"locations", api.view.locations.LocationsViewSet, basename="locations")
 router.register(r"hotels", api.view.hotels_view.HotelViewSet, basename="hotels")
 router.register(r"search", api.view.search_views.AllProductsViewSet, basename="search")
+router.register(r"charging", api.view.charging_view.ChargingViewSet, basename="charging")
 router.register(r"authentication", api.view.default_view.AuthenticationView, basename="authentication")
 
 urlpatterns = [

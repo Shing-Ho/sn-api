@@ -74,7 +74,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         )
 
         payment_transaction = PaymentTransaction(
-            provider_name="stripe", currency="USD", transaction_amount=100.0, transaction_type=TransactionType.CHARGE,
+            provider_name="stripe",
+            currency="USD",
+            transaction_amount=100.0,
+            transaction_type=TransactionType.CHARGE,
         )
 
         with patch("api.payments.payment_service.authorize_payment") as mock_authorize_payment:
@@ -178,7 +181,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self._create_payment_transaction(booking, 100.50)
         self._create_provider_hotel("Hotel Foo", "SN123")
 
-        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
+        cancel_request = CancelRequest(
+            booking_id=simplenight_locator,
+            last_name="Simplenight",
+        )
         cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertTrue(cancel_response.is_cancellable)
@@ -218,7 +224,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self._create_payment_transaction(booking, 100.50)
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
 
-        cancel_request = CancelRequest(booking_id=str(simplenight_locator), last_name="Simplenight",)
+        cancel_request = CancelRequest(
+            booking_id=str(simplenight_locator),
+            last_name="Simplenight",
+        )
         cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertFalse(cancel_response.is_cancellable)
@@ -261,14 +270,18 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         simplenight_locator = RecordLocator.generate_record_locator(booking)
 
         policy_one = HotelCancellationPolicy(
-            hotel_booking=hotel_booking, cancellation_type=CancellationSummary.NON_REFUNDABLE.value,
+            hotel_booking=hotel_booking,
+            cancellation_type=CancellationSummary.NON_REFUNDABLE.value,
         )
 
         policy_one.save()
 
         self._create_payment_transaction(booking, 100.50)
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(booking_id=str(simplenight_locator), last_name="Simplenight",)
+        cancel_request = CancelRequest(
+            booking_id=str(simplenight_locator),
+            last_name="Simplenight",
+        )
         cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertFalse(cancel_response.is_cancellable)
@@ -292,7 +305,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         policy_one.save()
 
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
+        cancel_request = CancelRequest(
+            booking_id=simplenight_locator,
+            last_name="Simplenight",
+        )
 
         mock_refund_transaction = PaymentTransaction(
             charge_id="123",
@@ -335,7 +351,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self._create_payment_transaction(booking, 1.00)
 
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
+        cancel_request = CancelRequest(
+            booking_id=simplenight_locator,
+            last_name="Simplenight",
+        )
 
         mock_refund = Mock()
         with patch("api.payments.payment_service.refund_payment", mock_refund):
@@ -375,7 +394,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         )
 
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
+        cancel_request = CancelRequest(
+            booking_id=simplenight_locator,
+            last_name="Simplenight",
+        )
 
         # First time cancelling, should succeed
         with patch("api.payments.payment_service.refund_payment") as mock_refund:
@@ -411,7 +433,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         self._create_payment_transaction(booking, 500.00)
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
+        cancel_request = CancelRequest(
+            booking_id=simplenight_locator,
+            last_name="Simplenight",
+        )
 
         cancel_response = booking_service.cancel_lookup(cancel_request)
         self.assertEqual(375.00, cancel_response.details.refund_amount)
@@ -432,7 +457,10 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         self._create_payment_transaction(booking, 450.00)
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
+        cancel_request = CancelRequest(
+            booking_id=simplenight_locator,
+            last_name="Simplenight",
+        )
 
         def mock_stripe_refund(**kwargs):
             return {"id": kwargs["charge"], "amount": kwargs["amount"], "currency": "USD", "object": "foo"}

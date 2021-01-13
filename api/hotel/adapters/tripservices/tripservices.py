@@ -9,8 +9,14 @@ from api.hotel.models.hotel_api_model import (
     HotelDetails,
     AdapterHotel,
 )
-from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterLocationSearch, AdapterBaseSearch, \
-    AdapterCancelRequest, AdapterCancelResponse, AdapterHotelBatchSearch
+from api.hotel.models.adapter_models import (
+    AdapterHotelSearch,
+    AdapterLocationSearch,
+    AdapterBaseSearch,
+    AdapterCancelRequest,
+    AdapterCancelResponse,
+    AdapterHotelBatchSearch,
+)
 
 
 class TripservicesAdapter(HotelAdapter):

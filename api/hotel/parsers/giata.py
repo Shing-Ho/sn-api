@@ -114,7 +114,7 @@ class GiataParser:
                     provider_code=giata_id,
                     language_code=language_code,
                     type=title,
-                    description=description
+                    description=description,
                 )
 
     def parse_properties(self, properties_xmlstr):
@@ -161,7 +161,7 @@ class GiataParser:
                             provider=self.provider,
                             provider_code=giata_id,
                             type=phone_type,
-                            phone_number=phone_number
+                            phone_number=phone_number,
                         )
                         provider_hotel_phones.append(phone_model)
 
