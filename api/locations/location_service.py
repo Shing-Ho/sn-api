@@ -1,13 +1,13 @@
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from api import logger
 from api.locations import airports
-from api.locations.models import LocationResponse, LocationType
+from api.locations.models import Location, LocationType
 from api.models.models import Geoname, Airport, CityMap
 
 
-def find_by_prefix(prefix: str, language_code="en", limit=10) -> List[LocationResponse]:
+def find_by_prefix(prefix: str, language_code="en", limit=10) -> List[Location]:
     if prefix is None:
         return []
 
@@ -35,15 +35,15 @@ def find_by_prefix(prefix: str, language_code="en", limit=10) -> List[LocationRe
     return list(city_matches) + list(airport_matches.keys())
 
 
-def find_city_by_simplenight_id(geoname_id: int, language_code="en") -> Optional[LocationResponse]:
-    matching_locations = Geoname.objects.filter(geoname_id=geoname_id, lang__iso_language_code=language_code)
+def find_city_by_simplenight_id(simplenight_id: Union[int, str], language_code="en") -> Optional[Location]:
+    matching_locations = Geoname.objects.filter(geoname_id=simplenight_id, lang__iso_language_code=language_code)
     if not matching_locations:
         return None
 
     return _geoname_to_location_response(matching_locations.first(), language_code)
 
 
-def find_all_cities(country_code=None, language_code="en") -> List[LocationResponse]:
+def find_all_cities(country_code=None, language_code="en") -> List[Location]:
     locations = Geoname.objects.filter(lang__iso_language_code=language_code)
     if country_code:
         locations = locations.filter(iso_country_code=country_code)
@@ -87,7 +87,7 @@ def _geoname_to_location_response(geoname: Geoname, language_code: str):
         displayed_latitude = geoname.latitude
         displayed_longitude = geoname.longitude
 
-    return LocationResponse(
+    return Location(
         location_id=str(geoname.geoname_id),
         language_code=displayed_language_code,
         location_name=displayed_location_name,
@@ -101,7 +101,7 @@ def _geoname_to_location_response(geoname: Geoname, language_code: str):
 
 
 def _airport_to_location_response(airport: Airport):
-    return LocationResponse(
+    return Location(
         location_id=airport.airport_code,
         language_code="en",
         location_name=airport.airport_name,

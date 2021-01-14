@@ -7,8 +7,9 @@ from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 class TestActivitySearch(SimplenightTestCase):
     def test_activity_search(self):
-        activity_date = date(2020, 1, 1)
-        search = ActivitySpecificSearch(activity_date=activity_date, adults=1, children=0, activity_id="123")
+        search = ActivitySpecificSearch(
+            begin_date=date(2020, 1, 1), end_date=date(2020, 1, 5), adults=1, children=0, activity_id="123"
+        )
 
         activity = activity_search.search_by_id(search)
         self.assertIsNotNone(activity)

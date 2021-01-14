@@ -8,6 +8,7 @@ import api.view.locations
 import api.view.default_view
 import api.view.charging_view
 import api.view.carey_view
+import api.accounts.views
 
 router = routers.SimpleRouter(trailing_slash=False)
 
@@ -18,6 +19,7 @@ router.register(r"search", api.view.search_views.AllProductsViewSet, basename="s
 router.register(r"charging", api.view.charging_view.ChargingViewSet, basename="charging")
 router.register(r"carey", api.view.carey_view.CareyViewSet, basename="carey")
 router.register(r"authentication", api.view.default_view.AuthenticationView, basename="authentication")
+router.urls.append(path("accounts/", include("api.accounts.urls")))
 
 urlpatterns = [
     path("", api.view.default_view.index),

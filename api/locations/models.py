@@ -10,7 +10,7 @@ class LocationType(Enum):
     CITY = "CITY"
 
 
-class LocationResponse(SimplenightModel):
+class Location(SimplenightModel):
     # Make LocationResponse hashable
     def __hash__(self):
         return hash((type(self),) + tuple(self.__dict__.values()))
