@@ -23,4 +23,4 @@ cryptography
 pytz
 django-admin-interface
 bugsnag==4.0.2
-knox
+django-rest-knox
