@@ -11,6 +11,12 @@ charging_service = ChargingService()
 class ChargingViewSet(viewsets.ViewSet):
     @action(detail=False, url_path="poi", methods=["GET"], name="Search charging location")
     def get_poi(self, request: Request):
+        if not(request.GET.get("latitude") and request.GET.get("longitude")):
+            error_message = {
+                "message": "Latitude and longitude are required"
+            }
+            return HttpResponse(json.dumps(error_message), content_type="application/json", status=400)
+            
         response = charging_service.get_poi(request)
         filtered_response = list(map((lambda x: {
             "ID": x["ID"],
@@ -38,7 +44,8 @@ class ChargingViewSet(viewsets.ViewSet):
             error_message = {
                 "message": "Latitude and longitude are required"
             }
-            return HttpResponse(json.dumps(error_message), content_type="application/json", status=400)    
+            return HttpResponse(json.dumps(error_message), content_type="application/json", status=400)   
+             
         response = charging_service.get_address(request)
         return HttpResponse(response, content_type="application/json")
 
