@@ -13,7 +13,8 @@ from api.hotel.models.hotel_api_model import (
     SimplenightRoomType,
     RoomType,
     RatePlan,
-    SimplenightHotel, HotelBatchSearch,
+    SimplenightHotel,
+    HotelBatchSearch,
 )
 
 

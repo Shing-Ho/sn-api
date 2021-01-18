@@ -8,11 +8,12 @@ import requests_mock
 
 from api.hotel.models.hotel_common_models import RoomOccupancy
 from api.hotel import core_hotel_service, hotel_service, converter, hotel_cache_service
-from api.hotel.adapters.hotelbeds.transport import HotelBedsTransport
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
+from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.converter.google_models import RoomParty, GoogleHotelSearchRequest
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch
-from api.tests import test_objects
+from api.tests import test_objects, model_helper
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
 from api.view.exceptions import AvailabilityException
@@ -44,20 +45,32 @@ class TestCoreHotelService(SimplenightTestCase):
 
     def test_error_in_api_response(self):
         error_response = load_test_resource("hotelbeds/error-response.json")
-        with requests_mock.Mocker() as mocker:
-            mocker.post(HotelBedsTransport.get_hotels_url(), text=error_response)
-            search_request = HotelLocationSearch(
-                location_id="SFO",
-                start_date=date(2020, 1, 20),
-                end_date=date(2020, 1, 27),
-                occupancy=RoomOccupancy(adults=2, children=1),
-                provider="hotelbeds",
+        transport = HotelbedsTransport()
+        hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
+        model_helper.create_provider(HotelbedsAdapter.get_provider_name())
+
+        with patch("api.locations.location_service.find_provider_location") as mock_location_service:
+            mock_location_service.return_value = model_helper.create_provider_city(
+                provider_name=HotelbedsAdapter.get_provider_name(),
+                code="SFO",
+                name="San Francisco",
+                province="CA",
+                country="US",
             )
+            with requests_mock.Mocker() as mocker:
+                mocker.post(hotels_url, text=error_response)
+                search_request = HotelLocationSearch(
+                    location_id="SFO",
+                    start_date=date(2020, 1, 20),
+                    end_date=date(2020, 1, 27),
+                    occupancy=RoomOccupancy(adults=2, children=1),
+                    provider="hotelbeds",
+                )
 
-            with pytest.raises(AvailabilityException) as e:
-                hotel_service.search_by_location(search_request)
+                with pytest.raises(AvailabilityException) as e:
+                    hotel_service.search_by_location(search_request)
 
-            assert "The check-in must be in the future" in e.value.detail
+                assert "The check-in must be in the future" in e.value.detail
 
     def test_calculate_min_nightly_rate(self):
         rate_one = test_objects.room_rate(rate_key="one", total="200", tax_rate="40", base_rate="160")

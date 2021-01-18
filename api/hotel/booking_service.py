@@ -218,11 +218,13 @@ def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
         )
     except HotelCancellationPolicy.DoesNotExist:
         raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
+            BookingErrorCode.CANCELLATION_FAILURE,
+            "Could not find cancellation policies",
         )
     except HotelBooking.DoesNotExist:
         raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE, "Could not load hotel booking",
+            BookingErrorCode.CANCELLATION_FAILURE,
+            "Could not load hotel booking",
         )
 
 
@@ -361,7 +363,8 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         )
     except HotelCancellationPolicy.DoesNotExist:
         raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
+            BookingErrorCode.CANCELLATION_FAILURE,
+            "Could not find cancellation policies",
         )
 
 

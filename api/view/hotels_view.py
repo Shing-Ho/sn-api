@@ -11,8 +11,8 @@ from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiDailyT
 from api.common.common_models import from_json
 from api.common.request_cache import get_request_cache
 from api.hotel import hotel_service, google_hotel_service, booking_service
-from api.hotel.google_pricing import google_pricing_api
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
+from api.hotel.google_pricing import google_pricing_api
 from api.hotel.models.booking_model import HotelBookingRequest
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, CancelRequest, HotelBatchSearch
 from api.management import google_reconciliation
@@ -102,6 +102,15 @@ class HotelViewSet(viewsets.ViewSet):
         results = google_pricing_api.generate_property_list(request.GET.get("country_codes"), provider_name=provider)
         return HttpResponse(results, content_type="text/xml")
 
+    @action(
+        detail=False, url_path="google/properties/hotel-codes", methods=["POST"], name="Property API by Hotel Code",
+    )
+    def properties_hotel_codes(self, request):
+        hotel_codes = request.data
+        results = google_pricing_api.generate_property_list_hotel_codes(hotel_codes)
+
+        return HttpResponse(results, content_type="text/xml")
+
     @action(detail=False, url_path="google/reconciliation", methods=["GET"], name="GoogleAds Commission Report")
     def reconciliation(self, request):
         start_date = request.GET.get("start_date")
@@ -120,4 +129,3 @@ class HotelViewSet(viewsets.ViewSet):
         request_cache.set("__status", f"OK {organization_name}")
 
         return Response(data=request_cache.get("__status"))
-

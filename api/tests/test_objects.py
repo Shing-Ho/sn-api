@@ -193,5 +193,8 @@ def adapter_location_search(start_date=None, end_date=None, location_id="123"):
         end_date = date(2020, 1, 7)
 
     return AdapterLocationSearch(
-        start_date=start_date, end_date=end_date, occupancy=AdapterOccupancy(), location_id=location_id,
+        start_date=start_date,
+        end_date=end_date,
+        occupancy=AdapterOccupancy(),
+        location_id=location_id,
     )

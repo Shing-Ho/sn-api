@@ -2,11 +2,13 @@ from enum import Enum
 from typing import List, Union
 
 from api.activities.activity_adapter import ActivityAdapter
+from api.activities.activity_internal_models import AdapterActivitySearch
 from api.activities.adapters.stub_activity_adapter import StubActivityAdapter
+from api.activities.adapters.tiqets.tiqets_activity_adapter import TiqetsActivityAdapter
 from api.common.common_exceptions import FeatureNotFoundException
 from api.common.request_context import get_config_bool, get_config
 from api.hotel.adapters.hotel_adapter import HotelAdapter
-from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelBedsAdapter
+from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
@@ -14,7 +16,7 @@ from api.hotel.models.hotel_api_model import HotelSearch
 from api.models.models import Feature
 from api.restaurants.adapters.stub_restaurant_adapter import StubRestaurantAdapter
 from api.restaurants.restaurant_adapter import RestaurantAdapter
-from api.search.search_models import ActivitySearch, RestaurantSearch
+from api.search.search_models import RestaurantSearch
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
@@ -28,10 +30,10 @@ ADAPTERS = {
     AdapterType.HOTEL: {
         "stub_hotel": StubHotelAdapter,
         "travelport": TravelportHotelAdapter,
-        "hotelbeds": HotelBedsAdapter,
+        "hotelbeds": HotelbedsAdapter,
         "priceline": PricelineAdapter,
     },
-    AdapterType.ACTIVITY: {"stub_activity": StubActivityAdapter},
+    AdapterType.ACTIVITY: {"stub_activity": StubActivityAdapter, "tiqets": TiqetsActivityAdapter},
     AdapterType.RESTAURANT: {"stub_restaurant": StubRestaurantAdapter},
 }
 
@@ -53,7 +55,7 @@ def get_hotel_adapters_to_search(search_request: HotelSearch) -> List[HotelAdapt
     return get_adapters_for_type(search_request, adapter_type=AdapterType.HOTEL)
 
 
-def get_activity_adapters_to_search(search_request: ActivitySearch) -> List[ActivityAdapter]:
+def get_activity_adapters_to_search(search_request: AdapterActivitySearch) -> List[ActivityAdapter]:
     return get_adapters_for_type(search_request, adapter_type=AdapterType.ACTIVITY)
 
 
