@@ -1,6 +1,6 @@
 from datetime import timedelta
 from decimal import Decimal
-from typing import Union, Dict
+from typing import Union, Dict, List
 
 from api import logger
 from api.hotel import hotel_service
@@ -101,6 +101,16 @@ def generate_property_list(country_codes: str, provider_name="giata"):
     logger.info("Looking up Giata hotels which have a Priceline mapping")
     provider_hotels = ProviderHotel.objects.prefetch_related("phone").filter(
         provider__name=provider_name, country_code__in=country_codes, provider_code__in=giata_hotel_codes
+    )
+
+    logger.info(f"Found {len(provider_hotels)} hotels")
+    return google_pricing_serializer.serialize_property_list(provider_hotels)
+
+
+def generate_property_list_hotel_codes(hotel_codes: List[str]):
+    logger.info("Looking up Giata hotels for property list")
+    provider_hotels = ProviderHotel.objects.prefetch_related("phone").filter(
+        provider__name="giata", provider_code__in=hotel_codes
     )
 
     logger.info(f"Found {len(provider_hotels)} hotels")
