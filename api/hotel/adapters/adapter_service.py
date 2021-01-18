@@ -5,6 +5,7 @@ from api.activities.activity_adapter import ActivityAdapter
 from api.activities.activity_internal_models import AdapterActivitySearch
 from api.activities.adapters.stub_activity_adapter import StubActivityAdapter
 from api.activities.adapters.tiqets.tiqets_activity_adapter import TiqetsActivityAdapter
+from api.activities.adapters.travelcurious.travelcurious_activity_adapter import TravelcuriousActivityAdapter
 from api.common.common_exceptions import FeatureNotFoundException
 from api.common.request_context import get_config_bool, get_config
 from api.hotel.adapters.hotel_adapter import HotelAdapter
@@ -33,7 +34,11 @@ ADAPTERS = {
         "hotelbeds": HotelbedsAdapter,
         "priceline": PricelineAdapter,
     },
-    AdapterType.ACTIVITY: {"stub_activity": StubActivityAdapter, "tiqets": TiqetsActivityAdapter},
+    AdapterType.ACTIVITY: {
+        "stub_activity": StubActivityAdapter,
+        "tiqets": TiqetsActivityAdapter,
+        "travelcurious": TravelcuriousActivityAdapter,
+    },
     AdapterType.RESTAURANT: {"stub_restaurant": StubRestaurantAdapter},
 }
 
