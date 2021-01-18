@@ -14,8 +14,8 @@ COPY ./conf/api-nginx.conf /etc/nginx/sites-enabled/default
 
 EXPOSE 80
 
-RUN ln -sf /dev/stdout /var/log/supervisor/access.log
-RUN ln -sf /dev/stderr /var/log/supervisor/error.log
+#RUN ln -sf /dev/stdout /var/log/supervisor/access.log
+#RUN ln -sf /dev/stderr /var/log/supervisor/error.log
 
 # Set certificate permissions
 RUN chmod 0600 /app/api/secrets/*.pem
