@@ -10,6 +10,7 @@ import api.view.charging_view
 import api.view.carey_view
 import api.accounts.views
 import api.view.admin_view
+import api.view.venue_view
 from api.utils.documentations import prepare_schema
 
 router = routers.SimpleRouter(trailing_slash=False)
@@ -23,6 +24,7 @@ router.register(r"charging", api.view.charging_view.ChargingViewSet, basename="c
 router.register(r"carey", api.view.carey_view.CareyViewSet, basename="carey")
 router.register(r"authentication", api.view.default_view.AuthenticationView, basename="authentication")
 router.register(r"users", api.view.admin_view.UserViewSet, basename="user-list")
+router.register(r"venues", api.view.venue_view.VenueViewSet, basename="venue-list")
 
 router.urls.append(path("accounts/", include("api.accounts.urls")))
 

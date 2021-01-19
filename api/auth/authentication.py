@@ -3,6 +3,7 @@ import typing
 from django.conf import settings
 from django.db import models
 from django.http import HttpRequest
+from rest_framework.permissions import BasePermission
 from rest_framework.throttling import SimpleRateThrottle
 from rest_framework_api_key.models import AbstractAPIKey
 from rest_framework_api_key.permissions import BaseHasAPIKey, KeyParser
@@ -118,3 +119,20 @@ class APIAdminPermission(DjangoModelPermissions):
         if self.disallowed_by_setting_and_request(request):
             return False
         return super(APIAdminPermission, self).has_permission(request, view)
+
+
+class IsSuperUser(BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user and request.user.is_superuser or request.user.is_staff
+
+class IsOwner(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.user:
+            if request.user.is_superuser or request.user.is_staff:
+                return True
+            else:
+                return obj.created_by == request.user
+        else:
+            return False

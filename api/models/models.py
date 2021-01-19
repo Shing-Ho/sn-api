@@ -517,47 +517,39 @@ class HotelEvent(models.Model):
     provider_base = models.DecimalField(max_digits=10, decimal_places=2)
     provider_taxes = models.DecimalField(max_digits=10, decimal_places=2)
 
-
-
-class VenueFrom(enum.Enum):
-    SN = 1
-    PO = 2
-
-    __default__ = SN
-
-    @classmethod
-    def choices(cls):
-        return tuple((i.name, i.value) for i in cls)
-
-class VenueType(enum.Enum):
-    NIGHT_LIFE = 1
-    CAR_SERVICE = 2
-    GAS_AND_CHARGING = 3
-    TOLLS = 4
-    PARKING = 5
-    SHOPPINGS = 6
-    THINGS_TO_DO = 7
-    DINING = 8
-    FAST_FOOD = 9
-    COFFEE_AND_TEA = 10
-
-    __default__ = NIGHT_LIFE
-
-    @classmethod
-    def choices(cls):
-        return tuple((i.name, i.value) for i in cls)
-
 class Venue(models.Model):
+    VENUE_FORM_CHOICE  = (
+        ("SN", "SN"),
+        ("PO","PO")
+    )
+    VENUE_TYPE =( 
+        ("NIGHT_LIFE", "NIGHT_LIFE"), 
+        ("CAR_SERVICE", "CAR_SERVICE"), 
+        ("GAS_AND_CHARGING", "GAS_AND_CHARGING"), 
+        ("TOLLS", "TOLLS"), 
+        ("SHOPPINGS", "SHOPPINGS"), 
+        ("THINGS_TO_DO", "THINGS_TO_DO"), 
+        ("DINING", "DINING"), 
+        ("FAST_FOOD", "FAST_FOOD"), 
+        ("COFFEE_AND_TEA", "COFFEE_AND_TEA"), 
+    ) 
     class Meta:
         app_label = "api"
         verbose_name = "Venue"
         verbose_name_plural = "Venues"
-        db_table = "venues"
 
     venue_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=32, unique=True)
-    venue_from = enum.EnumField(VenueFrom)
-    venue_type = enum.EnumField(VenueType)
+    venue_from = models.CharField(
+        max_length = 2,
+        choices = VENUE_FORM_CHOICE,
+        default = "SN"
+    )
+    venue_type = models.CharField(
+        max_length = 20,
+        choices = VENUE_TYPE,
+        default = "NIGHT_LIFE"
+    )
     language_code = models.CharField(max_length=3, default="en")
     tags = models.CharField(max_length=100, null=True, blank=True)
     rating = models.IntegerField(null=True, blank=True)
