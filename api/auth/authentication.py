@@ -9,6 +9,7 @@ from rest_framework_api_key.permissions import BaseHasAPIKey, KeyParser
 
 from api.common.request_context import get_request_context
 from api.models.models import Organization
+from rest_framework.permissions import DjangoModelPermissions
 
 
 class OrganizationAPIKey(AbstractAPIKey):
@@ -95,3 +96,25 @@ class OrganizationApiBurstThrottle(SimpleRateThrottle):
             return f"burst.{organization.name}"
 
         return f"burst.{request.user}"
+
+
+class APIAdminPermission(DjangoModelPermissions):
+    
+    """
+    The permission for all the admin api views. You only get admin api access when:
+    - you are a staff user (is_staff)
+    - you are a super user 
+    Feel free to customize!
+    """
+
+    @staticmethod
+    def disallowed_by_setting_and_request(request):
+        print(request.user.is_staff)
+        return (
+            not request.user.is_staff
+        )
+
+    def has_permission(self, request, view):
+        if self.disallowed_by_setting_and_request(request):
+            return False
+        return super(APIAdminPermission, self).has_permission(request, view)

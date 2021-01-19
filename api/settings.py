@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "sequences.apps.SequencesConfig",
     "knox",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
