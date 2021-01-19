@@ -13,7 +13,6 @@ class CareySearch:
         return {"app_id": self.app_id, "app_key": self.app_key}
 
     def search_reservation(self, request):
-        print(request.data)
         url = "https://api.carey.com:8443/sandbox/CSIProfile_v2/rest/jsonSearchTrips/searchTrips"
         response = requests.post(url, json=request.data, headers=self.generate_header())
         return response
