@@ -326,6 +326,196 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/City'
+
+  /charging/poi:
+    get:
+      tags:
+        - Charging
+      summary: Returns a list of all charging services
+      operationId: getChargingPoi
+      description: |
+        Returns a list of all charging services.
+      parameters:
+        - in: query
+          name: latitude
+          description: |
+            Required. Latitude reference for distance calculation
+          schema:
+            type: number
+            example: 39.7246392
+        - in: query
+          name: longitude
+          description: |
+            Required. Longitude reference for distance calculation
+          schema:
+            type: number
+            example: -86.344028
+        - in: query
+          name: maxresults
+          description: |
+            Optional. Limit on max number of results returned. Default is 100.
+          schema:
+            type: number
+            example: 10
+        - in: query
+          name: client
+          description: |
+            Optional. Optional custom identifier for your app or service (if you can't set a custom http User Agent header).
+          schema:
+            type: number
+            example: 10
+        - in: query
+          name: countrycode
+          description: |
+            Optional. GB, US etc. Single ISO Country Code.
+          schema:
+            type: string
+            example: US
+        - in: query
+          name: countryid
+          description: |
+            Optional. Exact match on a given numeric country id (comma separated list)
+          schema:
+            type: string
+            example: 10,12
+        - in: query
+          name: distance
+          description: |
+            Optional. Return results based on specified distance from specified latitude/longitude
+          schema:
+            type: number
+            example: 100
+        - in: query
+          name: distanceunit
+          description: |
+            Optional. Miles or KM. Default is Miles.
+          schema:
+            type: string
+            example: KM
+        - in: query
+          name: operatorid
+          description: |
+            Optional. Exact match on a given EVSE operator id (comma separated list)
+          schema:
+            type: string
+            example: 1,2
+        - in: query
+          name: connectiontypeid
+          description: |
+            Optional. Exact match on a given connection type id (comma separated list)
+          schema:
+            type: string
+            example: 1,2
+        - in: query
+          name: levelid
+          description: |
+            Optional. Exact match on a given charging level (1-3) id (comma separated list)	
+          schema:
+            type: string
+            example: 1,2
+        - in: query
+          name: minpowerkw
+          description: |
+            Optional. Minimum output power in kW (this information is not known for many locations)	
+          schema:
+            type: number
+            example: 10
+        - in: query
+          name: usagetypeid
+          description: |
+            Optional. Exact match on a given usage type id (comma separated list)	
+          schema:
+            type: string
+            example: 1,2
+        - in: query
+          name: statustypeid
+          description: |
+            Optional. Exact match on a given status type id (comma separated list)	
+          schema:
+            type: string
+            example: 1,2
+        - in: query
+          name: dataproviderid
+          description: |
+            Optional. Exact match on a given data provider id (comma separated list). Use opendata=true for only OCM provided ("Open") data.	
+          schema:
+            type: string
+            example: 1,2
+        - in: query
+          name: modifiedsince
+          description: |
+            Optional. POIs modified since the given date (UTC).	
+          schema:
+            type: date
+            example: 2016-09-15T09:30
+        - in: query
+          name: opendata
+          description: |
+            Optional. True or false. Set to true to include only Open Data licensed content, false to return only non-open licensed data. By default all available data is returned. You should refer to the license of the original data provider in each case.	
+          schema:
+            type: boolean
+            example: true
+        - in: query
+          name: includecomments
+          description: |
+            Optional. True or false. Set to true to also include user comments and media items (photos) per charging location. Default is false.
+          schema:
+            type: boolean
+            example: true
+        - in: query
+          name: compact
+          description: |
+            Optional. True or false. Set to true to remove reference data objects from output (just returns IDs for common reference data such as DataProvider etc). Default is false.
+          schema:
+            type: boolean
+            example: true
+        - in: query
+          name: camelcase
+          description: |
+            Optional. True or false. Set to true to get a property names in camelCase format. Default is false.
+          schema:
+            type: boolean
+            example: true
+        - in: query
+          name: chargepointid
+          description: |
+            Optional. Exact match on a given POI id (comma separated list).	
+          schema:
+            type: string
+            example: 1,2
+        - in: query
+          name: boundingbox
+          description: |
+            Optional. Specify top left and bottom right box corners as: (lat,lng),(lat2,lng2)	
+          schema:
+            type: string
+            example: (39.7246392,-84.344028),(40.7246392,-86.344028)	
+        - in: query
+          name: polygon
+          description: |
+            Optional. Specify an encoded polyline for the polygon shape. Polygon will be automatically closed from the last point to the first point.
+          schema:
+            type: string
+        - in: query
+          name: polygon
+          description: |
+            Optional. Encoded polyline, use with distance param to increase search distance along line. Polyline is expanded into a polygon to cover the search distance.	
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of matching charging services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChargingPoi'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No locations found for input
+
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -1221,3 +1411,273 @@ components:
         last_name:
           type: string
           description: The lead traveler last name, used for verification purposes (exact match)
+    ChargingPoi:
+      properties:
+        ID:
+          type: number
+          example: 28304
+        UUID:
+          type: string
+          example: 4AEB43DF-5750-477C-B258-1C640A2C39E7
+        UserComments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargingUserComment'
+        MediaItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargingMediaItem'
+        UsageType:
+          $ref: '#/components/schemas/ChargingUsageType'
+        StatusType:
+          $ref: '#/components/schemas/ChargingStatusType'
+        UsageCost:
+          type: string
+          example: $0.24/min >=60kW; $0.12/min <60kW; other tariffs for older cars
+        AddressInfo:
+          $ref: '#/components/schemas/ChargingAddress'
+        NumberOfPoints:
+          type: number
+          example: 8
+        GeneralComments:
+          type: string
+        Connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargingConnection'
+    ChargingUserComment:
+      properties:
+        ID:
+          type: number
+          example: 28304
+        ChargePointID:
+          type: number
+          example: 28304
+        CommentTypeID:
+          type: number
+          example: 10
+        CommentType:
+          $ref: '#/components/schemas/ChargingUserCommentType'
+        UserName:
+          type: string
+        Comment:
+          type: string
+        Rating:
+          type: number
+          example: 5
+        RelatedURL:
+          type: string
+        DateCreated:
+          type: string
+          example: "2018-07-22T18:16:01.107Z"
+        User:
+          $ref: '#/components/schemas/ChargingCommentUser'
+        CheckinStatusTypeID:
+          type: number
+          example: 10
+        CheckinStatusType:
+          $ref: '#/components/schemas/ChargingCheckinStatusType'
+    ChargingUserCommentType:
+      properties:
+        ID:
+          type: number
+          example: 28304
+        Title:
+          type: string
+          example: General Comment
+    ChargingCommentUser:
+      properties:
+        ID:
+          type: number
+          example: 28304
+        Username:
+          type: string
+          example: Hypermile
+        ProfileImageURL:
+          type: string
+    ChargingCheckinStatusType:
+      properties:
+        ID:
+          type: number
+          example: 28304
+        Title:
+          type: string
+          example: Hypermile
+        IsPositive:
+          type: boolean
+        IsAutomatedCheckin:
+          type: boolean
+    ChargingMediaItem:
+      properties:
+        ID:
+          type: number
+          example: 28304
+        ChargePointID:
+          type: number
+          example: 28304
+        ItemURL:
+          type: string
+        ItemThumbnailURL:
+          type: string
+        Comment:
+          type: string
+        IsEnabled:
+          type: boolean
+        IsVideo:
+          type: boolean
+        IsFeaturedItem:
+          type: boolean
+        IsExternalResource:
+          type: boolean
+        User:
+          $ref: '#/components/schemas/ChargingCommentUser'
+        DateCreated:
+          type: string
+          example: "2018-07-22T18:16:01.107Z"
+    ChargingUsageType:
+      properties:
+        ID:
+          type: number
+          example: 1
+        Title:
+          type: string
+          example: Hypermile
+        IsPayAtLocation:
+          type: string
+        IsMembershipRequired:
+          type: string
+        IsAccessKeyRequired:
+          type: string
+    ChargingStatusType:
+      properties:
+        ID:
+          type: number
+          example: 1
+        Title:
+          type: string
+          example: Hypermile
+        IsOperational:
+          type: boolean
+        IsUserSelectable:
+          type: boolean
+    ChargingAddress:
+      properties:
+        ID:
+          type: number
+          example: 1
+        Title:
+          type: string
+          example: Hypermile
+        AddressLine1:
+          type: string
+        AddressLine2:
+          type: string
+        Town:
+          type: string
+        StateOrProvince:
+          type: string
+        Postcode:
+          type: string
+        CountryID:
+          type: number
+        Country:
+          $ref: '#/components/schemas/ChargingCountry'
+        Latitude:
+          type: number
+        Longitude:
+          type: number
+        ContactTelephone1:
+          type: string
+        ContactTelephone2:
+          type: string
+        ContactEmail:
+          type: string
+        AccessComments:
+          type: string
+        RelatedURL:
+          type: string
+        Distance:
+          type: number
+        DistanceUnit:
+          type: number
+    ChargingCountry:
+      properties:
+        ID:
+          type: number
+          example: 1
+        Title:
+          type: string
+          example: Hypermile
+        ISOCode:
+          type: string
+          example: US
+        ContinentCode:
+          type: string
+          example: NA
+    ChargingConnection:
+      properties:
+        ID:
+          type: number
+          example: 1
+        ConnectionTypeID:
+          type: number
+        ConnectionType:
+          $ref: '#/components/schemas/ChargingConnectionType'
+        StatusTypeID:
+          type: number
+        StatusType:
+          $ref: '#/components/schemas/ChargingStatusType'
+        LevelID:
+          type: number
+        Level:
+          $ref: '#/components/schemas/ChargingLevel'
+        Amps:
+          type: number
+        Voltage:
+          type: number
+        PowerKW:
+          type: number
+        CurrentTypeID:
+          type: number
+        CurrentType:
+          $ref: '#/components/schemas/ChargingCurrentType'
+        Quantity:
+          type: number
+        Comments:
+          type: string
+    ChargingConnectionType:
+      properties:
+        ID:
+          type: number
+          example: 1
+        Title:
+          type: string
+          example: Hypermile
+        FormalName:
+          type: string
+        IsDiscontinued:
+          type: boolean
+        IsObsolete:
+          type: boolean
+    ChargingLevel:
+      properties:
+        ID:
+          type: number
+          example: 1
+        Title:
+          type: string
+          example: Hypermile
+        Comments:
+          type: string
+        IsFastChargeCapable:
+          type: boolean
+    ChargingCurrentType:
+      properties:
+        ID:
+          type: number
+          example: 1
+        Title:
+          type: string
+          example: Hypermile
+        Description:
+          type: string
