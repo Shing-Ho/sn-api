@@ -55,7 +55,7 @@ def search_request(search: SearchRequest):
             futures.append(executor.submit(search_fn, search))
 
         for future in futures:
-            _set_result_on_response(response, future.result(timeout=5))
+            _set_result_on_response(response, future.result(timeout=30))
 
         executor.shutdown()
 

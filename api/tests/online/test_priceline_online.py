@@ -10,7 +10,8 @@ from api.hotel.models.adapter_models import (
     AdapterLocationSearch,
     AdapterOccupancy,
     AdapterHotelSearch,
-    AdapterCancelRequest, AdapterHotelBatchSearch,
+    AdapterCancelRequest,
+    AdapterHotelBatchSearch,
 )
 from api.hotel.parsers.priceline_details_parser import PricelineDetailsParser
 from api.models.models import CityMap, HotelBooking
@@ -176,7 +177,7 @@ class TestPricelineIntegration(SimplenightTestCase):
         hotel_to_book = availability_response[0]
         room_to_book = hotel_to_book.room_types[0]
         booking_request = test_objects.booking_request(rate_code=room_to_book.code)
-        booking_response = booking_service.book(booking_request)
+        booking_response = booking_service.book_hotel(booking_request)
 
         self.assertIsNotNone(booking_response.transaction_id)
         self.assertIsNotNone(booking_response.booking_id)
@@ -208,7 +209,7 @@ class TestPricelineIntegration(SimplenightTestCase):
         self.assertIsNotNone(availability_response)
         room_to_book = availability_response.room_types[0]
         booking_request = test_objects.booking_request(rate_code=room_to_book.code)
-        booking_response = booking_service.book(booking_request)
+        booking_response = booking_service.book_hotel(booking_request)
 
         hotel_booking = HotelBooking.objects.get(booking__recordlocator__record_locator=booking_response.booking_id)
 

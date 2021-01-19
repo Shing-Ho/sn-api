@@ -8,8 +8,10 @@ from api.activities.activity_internal_models import (
     AdapterActivitySpecificSearch,
     AdapterActivityLocationSearch,
     AdapterActivitySearch,
+    AdapterActivityBookingResponse,
 )
 from api.activities.activity_models import SimplenightActivity
+from api.hotel.models.booking_model import ActivityBookingRequest
 from api.hotel.models.hotel_common_models import Money
 
 
@@ -19,6 +21,9 @@ class StubActivityAdapter(ActivityAdapter):
 
     async def search_by_id(self, search: AdapterActivitySpecificSearch) -> SimplenightActivity:
         return self._create_activity_product(search)
+
+    async def booking(self, booking_request: ActivityBookingRequest) -> AdapterActivityBookingResponse:
+        raise NotImplementedError("Booking not implemented in Stub adapter")
 
     def _create_activity_product(self, search: AdapterActivitySearch):
         tour_name, activity, tour_type, activity_name = self._create_activity_name()

@@ -1,12 +1,13 @@
-from datetime import date
+from datetime import date, time
+from decimal import Decimal
 from enum import Enum
 from typing import Optional, List
 
 from pydantic import Field
 
 from api.common.common_models import SimplenightModel
-from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RoomRate
 from api.hotel.models.hotel_api_model import CancellationDetails
+from api.hotel.models.hotel_common_models import RoomOccupancy, Address, RoomRate
 
 
 class SubmitErrorType(Enum):
@@ -108,7 +109,7 @@ class Locator(SimplenightModel):
     pin: Optional[str] = None
 
 
-class Reservation(SimplenightModel):
+class HotelReservation(SimplenightModel):
     locator: Locator
     hotel_locator: Optional[List[Locator]]
     hotel_id: str
@@ -125,9 +126,52 @@ class HotelBookingResponse(SimplenightModel):
     transaction_id: str
     booking_id: str
     status: Status
-    reservation: Reservation
+    reservation: HotelReservation
 
 
 class HotelPriceVerificationHolder(SimplenightModel):
     original_room_rates: List[RoomRate]
     verified_room_rates: List[RoomRate]
+
+
+class ActivityBookingItem(SimplenightModel):
+    code: str
+    quantity: int
+    price: Decimal
+
+
+class ActivityBookingRequest(SimplenightModel):
+    language_code: str
+    activity_date: date
+    activity_time: time
+    currency: str
+    notes: Optional[str]
+    data: Optional[str]
+    misc: Optional[str]
+    supplier_id: Optional[str]
+    supplier_date: Optional[str]
+    customer: List[Customer]
+    items: List[ActivityBookingItem]
+
+
+class ActivityBookingResponse(SimplenightModel):
+    pass
+
+
+class MultiProductBookingRequest(SimplenightModel):
+    api_version: int
+    transaction_id: str
+    language: str
+    customer: Customer
+    payment: Payment
+    hotel_booking: Optional[HotelBookingRequest]
+    activity_booking: Optional[ActivityBookingRequest]
+
+
+class MultiProductBookingResponse(SimplenightModel):
+    api_version: int
+    transaction_id: str
+    status: Status
+    booking_id: str
+    hotel_reservation: Optional[HotelReservation]
+    activity_reservation: Optional[ActivityBookingResponse]

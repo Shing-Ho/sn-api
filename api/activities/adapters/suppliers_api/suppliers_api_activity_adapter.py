@@ -9,8 +9,10 @@ from api.activities.activity_internal_models import (
     AdapterActivity,
     AdapterActivitySpecificSearch,
     AdapterActivityLocationSearch,
+    AdapterActivityBookingResponse,
 )
 from api.activities.adapters.suppliers_api.suppliers_api_transport import SuppliersApiTransport
+from api.hotel.models.booking_model import Locator, ActivityBookingRequest
 from api.hotel.models.hotel_api_model import Image, ImageType
 from api.hotel.models.hotel_common_models import Money
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
@@ -31,6 +33,10 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
 
     async def search_by_id(self, search: AdapterActivitySpecificSearch) -> AdapterActivity:
         raise NotImplementedError("Search by ID Not Implemented")
+
+    async def booking(self, booking_request: ActivityBookingRequest) -> AdapterActivityBookingResponse:
+        """Temporary scaffolding for booking activities"""
+        return AdapterActivityBookingResponse(success=True, record_locator=Locator(id="XYZ"))
 
     @staticmethod
     def _create_activity(activity, activity_date: date):
