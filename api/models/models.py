@@ -4,9 +4,11 @@ import string
 import uuid
 from datetime import datetime
 from enum import EnumMeta, Enum
+
 from typing import Tuple, List
 
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 from django_enumfield import enum
@@ -514,3 +516,53 @@ class HotelEvent(models.Model):
     provider_total = models.DecimalField(max_digits=10, decimal_places=2)
     provider_base = models.DecimalField(max_digits=10, decimal_places=2)
     provider_taxes = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+
+class VenueFrom(enum.Enum):
+    SN = 1
+    PO = 2
+
+    __default__ = SN
+
+    @classmethod
+    def choices(cls):
+        return tuple((i.name, i.value) for i in cls)
+
+class VenueType(enum.Enum):
+    NIGHT_LIFE = 1
+    CAR_SERVICE = 2
+    GAS_AND_CHARGING = 3
+    TOLLS = 4
+    PARKING = 5
+    SHOPPINGS = 6
+    THINGS_TO_DO = 7
+    DINING = 8
+    FAST_FOOD = 9
+    COFFEE_AND_TEA = 10
+
+    __default__ = NIGHT_LIFE
+
+    @classmethod
+    def choices(cls):
+        return tuple((i.name, i.value) for i in cls)
+
+class Venue(models.Model):
+    class Meta:
+        app_label = "api"
+        verbose_name = "Venue"
+        verbose_name_plural = "Venues"
+        db_table = "venues"
+
+    venue_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    name = models.CharField(max_length=32, unique=True)
+    venue_from = enum.EnumField(VenueFrom)
+    venue_type = enum.EnumField(VenueType)
+    language_code = models.CharField(max_length=3, default="en")
+    tags = models.CharField(max_length=100, null=True, blank=True)
+    rating = models.IntegerField(null=True, blank=True)
+    status = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_requests_created')
+    modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_requests_modified')
