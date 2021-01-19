@@ -5,8 +5,10 @@ from django.http import HttpResponse
 import json
 
 from api.carey.carey_service import CareyService
+from api.carey.carey_search import CareySearch
 
 carey_service = CareyService()
+carey_search = CareySearch()
 
 
 class CareyViewSet(viewsets.ViewSet):
@@ -59,3 +61,8 @@ class CareyViewSet(viewsets.ViewSet):
         else:
             response = json.loads(json.dumps(_response, default=str))
             return HttpResponse(response, content_type="application/json")
+
+    @action(detail=False, url_path="search-reservation", methods=["POST"], name="Search a reservation")
+    def search_reservation(self, request: Request):
+        response = carey_search.search_reservation(request)
+        return HttpResponse(response, content_type="application/json")
