@@ -558,3 +558,25 @@ class Venue(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_requests_created')
     modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_requests_modified')
+
+
+class VenueImage(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "api_venue_images"
+        verbose_name = "Venue Image"
+        verbose_name_plural = "Venue Images"
+
+    FILE_CHOICE  = (
+        ("VIDEO", "VIDEO"),
+        ("IMAGE","IMAGE")
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    type = models.CharField(
+        max_length = 8,
+        choices = FILE_CHOICE,
+        null=True, blank=True
+    )
+    image_url = models.TextField()

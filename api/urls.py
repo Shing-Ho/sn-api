@@ -25,6 +25,7 @@ router.register(r"carey", api.view.carey_view.CareyViewSet, basename="carey")
 router.register(r"authentication", api.view.default_view.AuthenticationView, basename="authentication")
 router.register(r"users", api.view.admin_view.UserViewSet, basename="user-list")
 router.register(r"venues", api.view.venue_view.VenueViewSet, basename="venue-list")
+router.register(r"venues-images", api.view.venue_view.VenueImageViewSet, basename="venue-list-list")
 
 router.urls.append(path("accounts/", include("api.accounts.urls")))
 
