@@ -1,7 +1,7 @@
 from api import logger
 from rest_framework import viewsets
-from api.models.models import Venue, VenueImage
-from api.venue.serializers import VenueSerializer, VenueImageSerializer
+from api.models.models import Venue, VenueMedia
+from api.venue.serializers import VenueSerializer, VenueMediaSerializer
 from api.utils.paginations import ObjectPagination  
 from rest_framework.permissions import IsAuthenticated
 from api.auth.authentication import IsOwner, IsSuperUser   
@@ -30,9 +30,9 @@ class VenueViewSet(viewsets.ModelViewSet):
 
         return super(self.__class__, self).get_permissions()
         
-class VenueImageViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated,]
-    queryset = VenueImage.objects.filter()
-    serializer_class = VenueImageSerializer
+class VenueMediaViewSet(viewsets.ModelViewSet):
+    #permission_classes = [IsAuthenticated,]
+    queryset = VenueMedia.objects.filter()
+    serializer_class = VenueMediaSerializer
     pagination_class = ObjectPagination
     http_method_names = ['get', 'post', 'put','delete']

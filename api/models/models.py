@@ -537,10 +537,10 @@ class Venue(models.Model):
     class Meta:
         app_label = "api"
         verbose_name = "Venue"
-        db_table = "venue"
+        db_table = "venues"
         verbose_name_plural = "Venues"
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    venue_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=32, unique=True)
     venue_from = models.CharField(
         max_length = 2,
@@ -562,11 +562,12 @@ class Venue(models.Model):
     modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_requests_modified')
 
 
-class VenueImage(models.Model):
+class VenueMedia(models.Model):
     class Meta:
         app_label = "api"
         db_table = "venue_media"
-        verbose_name = "Venue Media"
+        verbose_name = "VenueMedia"
+        verbose_name_plural = "VenueMedia"
 
     FILE_CHOICE  = (
         ("VIDEO", "VIDEO"),
