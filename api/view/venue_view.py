@@ -28,7 +28,6 @@ class VenueViewSet(viewsets.ModelViewSet):
         elif self.action =="create":
             self.permission_classes = [IsOwner]
 
-
         return super(self.__class__, self).get_permissions()
         
 class VenueImageViewSet(viewsets.ModelViewSet):

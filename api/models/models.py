@@ -524,6 +524,7 @@ class Venue(models.Model):
     )
     VENUE_TYPE =( 
         ("NIGHT_LIFE", "NIGHT_LIFE"), 
+        ("HOTELS", "HOTELS"), 
         ("CAR_SERVICE", "CAR_SERVICE"), 
         ("GAS_AND_CHARGING", "GAS_AND_CHARGING"), 
         ("TOLLS", "TOLLS"), 
@@ -536,23 +537,24 @@ class Venue(models.Model):
     class Meta:
         app_label = "api"
         verbose_name = "Venue"
+        db_table = "venue"
         verbose_name_plural = "Venues"
 
-    venue_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=32, unique=True)
     venue_from = models.CharField(
         max_length = 2,
         choices = VENUE_FORM_CHOICE,
         default = "SN"
     )
-    venue_type = models.CharField(
+    type = models.CharField(
         max_length = 20,
         choices = VENUE_TYPE,
         default = "NIGHT_LIFE"
     )
     language_code = models.CharField(max_length=3, default="en")
     tags = models.CharField(max_length=100, null=True, blank=True)
-    rating = models.IntegerField(null=True, blank=True)
+    star_rating = models.IntegerField(null=True, blank=True)
     status = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
@@ -563,9 +565,8 @@ class Venue(models.Model):
 class VenueImage(models.Model):
     class Meta:
         app_label = "api"
-        db_table = "api_venue_images"
-        verbose_name = "Venue Image"
-        verbose_name_plural = "Venue Images"
+        db_table = "venue_media"
+        verbose_name = "Venue Media"
 
     FILE_CHOICE  = (
         ("VIDEO", "VIDEO"),
@@ -573,10 +574,12 @@ class VenueImage(models.Model):
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
     type = models.CharField(
         max_length = 8,
         choices = FILE_CHOICE,
         null=True, blank=True
     )
-    image_url = models.TextField()
+    url = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
