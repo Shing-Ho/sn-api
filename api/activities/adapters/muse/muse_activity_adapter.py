@@ -1,12 +1,12 @@
 from api.activities.activity_internal_models import AdapterActivitySpecificSearch, AdapterActivity
+from api.activities.adapters.muse.muse_transport import MuseTransport
 from api.activities.adapters.suppliers_api.suppliers_api_activity_adapter import SuppliersApiActivityAdapter
-from api.activities.adapters.tiqets.tiqets_transport import TiqetsTransport
 
 
 class MuseActivityAdapter(SuppliersApiActivityAdapter):
     @classmethod
     def factory(cls, test_mode=True):
-        return MuseActivityAdapter(TiqetsTransport(test_mode=test_mode))
+        return MuseActivityAdapter(MuseTransport(test_mode=test_mode))
 
     async def search_by_id(self, search: AdapterActivitySpecificSearch) -> AdapterActivity:
         raise NotImplementedError("Search by ID Not Implemented")
