@@ -26,7 +26,7 @@ from api.hotel.models.adapter_models import (
 from api.hotel.models.booking_model import (
     HotelBookingRequest,
     Customer,
-    Reservation,
+    HotelReservation,
     Locator,
 )
 from api.hotel.models.hotel_api_model import (
@@ -178,7 +178,7 @@ class PricelineAdapter(HotelAdapter):
             "room_id": hotel_data["room_data"][0]["id"],
         }
 
-    def booking(self, book_request: HotelBookingRequest) -> Reservation:
+    def booking(self, book_request: HotelBookingRequest) -> HotelReservation:
         params = self._create_booking_params(book_request.customer, book_request.room_code)
         response = self.transport.express_book(**params)
 
@@ -201,7 +201,7 @@ class PricelineAdapter(HotelAdapter):
 
         cancellation_details = self._parse_cancellation_details(booked_rate_data)
 
-        return Reservation(
+        return HotelReservation(
             locator=Locator(id=booking_locator),
             hotel_locator=hotel_locators,
             hotel_id=book_request.hotel_id,

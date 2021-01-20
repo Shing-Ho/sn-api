@@ -8,7 +8,15 @@ from api.common.request_context import get_request_context
 from api.hotel import price_verification_service, hotel_cache_service
 from api.hotel.adapters import adapter_service
 from api.hotel.models.adapter_models import AdapterCancelRequest, AdapterHotel
-from api.hotel.models.booking_model import HotelBookingRequest, HotelBookingResponse, Customer, Status, Reservation
+from api.hotel.models.booking_model import (
+    HotelBookingRequest,
+    HotelBookingResponse,
+    Customer,
+    Status,
+    HotelReservation,
+    MultiProductBookingRequest,
+    MultiProductBookingResponse,
+)
 from api.hotel.models.hotel_api_model import (
     SimplenightRoomType,
     CancelRequest,
@@ -37,41 +45,62 @@ from api.view.exceptions import BookingException, BookingErrorCode
 from common.exceptions import AppException
 
 
-def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
-    logger.info(f"Received Booking Request: {book_request}")
+def book_hotel(booking_request: HotelBookingRequest) -> HotelBookingResponse:
+    multi_booking_request = MultiProductBookingRequest(
+        api_version=booking_request.api_version,
+        transaction_id=booking_request.transaction_id,
+        language=booking_request.language,
+        customer=booking_request.customer,
+        payment=booking_request.payment,
+        hotel_booking=booking_request,
+        activity_booking=None,
+    )
+
+    booking_response = book(multi_booking_request)
+    return HotelBookingResponse(
+        api_version=booking_response.api_version,
+        transaction_id=booking_response.transaction_id,
+        status=booking_response.status,
+        booking_id=booking_response.booking_id,
+        reservation=booking_response.hotel_reservation,
+    )
+
+
+def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResponse:
+    logger.info(f"Received Booking Request: {booking_request}")
     try:
         logger.info("Retrieving saved room rate")
-        provider_rate_cache_payload = hotel_cache_service.get_cached_room_data(book_request.room_code)
+        provider_rate_cache_payload = hotel_cache_service.get_cached_room_data(booking_request.hotel_booking.room_code)
         provider = provider_rate_cache_payload.provider
         simplenight_rate = provider_rate_cache_payload.simplenight_rate
         adapter = adapter_service.get_adapter(provider)
 
         logger.info("Persisting traveler and booking")
-        traveler = _persist_traveler(book_request.customer)
-        booking = _persist_booking_record(book_request, traveler)
+        traveler = _persist_traveler(booking_request.customer)
+        booking = _persist_booking_record(booking_request, traveler)
         simplenight_record_locator = RecordLocator.generate_record_locator(booking)
 
         # Lookup Provider Rates in Cache
         provider_rate = provider_rate_cache_payload.provider_rate
-        book_request.room_code = provider_rate.code
+        booking_request.hotel_booking.room_code = provider_rate.code
 
         logger.info("Starting price verification")
         verified_rates = _price_verification(provider=provider, rate=provider_rate)
 
         # Reset room rates with verified rates.  If prices mismatched above, error will raise
-        book_request.room_code = verified_rates.code
+        booking_request.hotel_booking.room_code = verified_rates.code
 
         logger.info(f"Saved booking {booking.booking_id} {simplenight_record_locator}")
         total_payment_amount = simplenight_rate.total
         logger.info(f"Authorizing payment for {total_payment_amount}")
         auth_response = payment_service.authorize_payment(
             amount=total_payment_amount,
-            payment=book_request.payment,
-            description=f"Simplenight Hotel Booking {book_request.hotel_id}",
+            payment=booking_request.payment,
+            description=f"Simplenight Hotel Booking {booking_request.hotel_booking.hotel_id}",
         )
 
         if not auth_response:
-            logger.error(f"Could not authorize payment for booking: {book_request}")
+            logger.error(f"Could not authorize payment for booking: {booking_request}")
             raise AppException("Error authorizing payment")
         elif auth_response.charge_id is not None:
             logger.info(f"Successfully charged Charge ID {auth_response.charge_id}")
@@ -79,15 +108,15 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
             auth_response.save()
 
         try:
-            reservation = adapter.booking(book_request)
+            reservation = adapter.booking(booking_request.hotel_booking)
             reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
 
             if not reservation or not reservation.locator:
-                logger.error(f"Could not book request: {book_request}")
+                logger.error(f"Could not book request: {booking_request}")
                 raise AppException("Error during booking")
 
             _set_booked_status(booking)
-            _persist_hotel(book_request, provider_rate_cache_payload, booking, reservation)
+            _persist_hotel(booking_request.hotel_booking, provider_rate_cache_payload, booking, reservation)
 
             _send_confirmation_email(
                 hotel=provider_rate_cache_payload.adapter_hotel,
@@ -96,12 +125,12 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
                 record_locator=simplenight_record_locator,
             )
 
-            return HotelBookingResponse(
+            return MultiProductBookingResponse(
                 api_version=1,
-                transaction_id=book_request.transaction_id,
+                transaction_id=booking_request.transaction_id,
                 booking_id=simplenight_record_locator,
                 status=Status(success=True, message="success"),
-                reservation=reservation,
+                hotel_reservation=reservation,
             )
 
         except Exception as e:
@@ -218,13 +247,11 @@ def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
         )
     except HotelCancellationPolicy.DoesNotExist:
         raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE,
-            "Could not find cancellation policies",
+            BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
         )
     except HotelBooking.DoesNotExist:
         raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE,
-            "Could not load hotel booking",
+            BookingErrorCode.CANCELLATION_FAILURE, "Could not load hotel booking",
         )
 
 
@@ -363,8 +390,7 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
         )
     except HotelCancellationPolicy.DoesNotExist:
         raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE,
-            "Could not find cancellation policies",
+            BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
         )
 
 
@@ -397,7 +423,7 @@ def adapter_cancel(hotel_booking: HotelBooking, traveler: Traveler):
 
 
 def _send_confirmation_email(
-    hotel: AdapterHotel, reservation: Reservation, payment: PaymentTransaction, record_locator: str
+    hotel: AdapterHotel, reservation: HotelReservation, payment: PaymentTransaction, record_locator: str
 ):
     try:
         template_name = "order_confirmation"
@@ -418,7 +444,7 @@ def _send_confirmation_email(
 
 
 def _generate_confirmation_email_params(
-    hotel: AdapterHotel, reservation: Reservation, payment: PaymentTransaction, record_locator: str
+    hotel: AdapterHotel, reservation: HotelReservation, payment: PaymentTransaction, record_locator: str
 ):
     friendly_cancellation_map = {
         CancellationSummary.UNKNOWN_CANCELLATION_POLICY: "Call for cancellation details",

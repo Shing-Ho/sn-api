@@ -64,7 +64,7 @@ class HotelViewSet(viewsets.ViewSet):
     @action(detail=False, url_path="booking", methods=["POST"], name="Hotel Booking")
     def booking(self, request):
         booking_request = from_json(request.data, HotelBookingRequest)
-        booking_response = booking_service.book(booking_request)
+        booking_response = booking_service.book_hotel(booking_request)
 
         return _response(booking_response)
 

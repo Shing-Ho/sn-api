@@ -14,6 +14,6 @@ def search_by_id(google_search_request: GoogleHotelSearchRequest) -> GoogleHotel
 
 def booking(google_booking_request: GoogleBookingSubmitRequest):
     booking_request = converter.google.convert_booking_request(google_booking_request)
-    booking_response = booking_service.book(booking_request)
+    booking_response = booking_service.book_hotel(booking_request)
 
     return converter.google.convert_booking_response(google_booking_request, booking_response)

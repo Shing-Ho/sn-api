@@ -1,5 +1,8 @@
 import abc
+import urllib.parse
+from datetime import date
 from enum import Enum
+from typing import Dict
 
 import requests
 
@@ -14,6 +17,9 @@ class SuppliersApiTransport(Transport, abc.ABC):
 
     class Endpoint(Enum):
         SEARCH = "search"
+        DETAILS = "details"
+        BOOK = "book"
+        CANCEL = "cancel"
 
     def _get_headers(self, **kwargs):
         return {
@@ -23,8 +29,22 @@ class SuppliersApiTransport(Transport, abc.ABC):
     def search(self, **data):
         return self.post(self.Endpoint.SEARCH, **data)
 
-    def post(self, endpoint: Endpoint, **params):
-        url = self.get_endpoint(endpoint)
+    def details(self, date_from: date = None, date_to: date = None, **data):
+        query_params = {}
+        if date_from or date_to:
+            query_params["date_from"] = date_from
+            query_params["date_to"] = date_to
+
+        return self.post(self.Endpoint.DETAILS, query_params, **data)
+
+    def book(self, **data):
+        return self.post(self.Endpoint.BOOK, **data)
+
+    def cancel(self, **data):
+        return self.post(self.Endpoint.CANCEL, **data)
+
+    def post(self, endpoint: Endpoint, query_params: Dict = None, **params):
+        url = self.get_endpoint(endpoint,)
 
         logger.info(f"Making request to {url}")
         logger.debug(f"Params: {params}")
@@ -43,5 +63,9 @@ class SuppliersApiTransport(Transport, abc.ABC):
         pass
 
     @classmethod
-    def get_endpoint(cls, endpoint: Endpoint):
-        return f"https://suppliers-api.qa-new.simplenight.com/v1/{cls.get_supplier_name()}/{endpoint.value}"
+    def get_endpoint(cls, endpoint: Endpoint, params: Dict = None):
+        base_url = f"https://suppliers-api.qa-new.simplenight.com/v1/{cls.get_supplier_name()}/{endpoint.value}"
+        if not params:
+            return base_url
+
+        return base_url + urllib.parse.urlencode(params)

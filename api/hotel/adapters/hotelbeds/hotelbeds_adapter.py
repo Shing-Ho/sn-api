@@ -1,18 +1,17 @@
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
 from decimal import Decimal
 from typing import List, Any, Dict, Union
-from dateutil.relativedelta import relativedelta
+
 import pytz
+from dateutil.relativedelta import relativedelta
 
 from api import logger
-from api.hotel.adapters.hotelbeds.hotelbeds_common_models import (
-    get_language_mapping,
-)
+from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_amenity_mappings import get_simplenight_amenity_mappings
+from api.hotel.adapters.hotelbeds.hotelbeds_common_models import get_language_mapping
 from api.hotel.adapters.hotelbeds.hotelbeds_info import HotelbedsInfo
 from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
-from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.models.adapter_models import (
     AdapterLocationSearch,
     AdapterBaseSearch,
@@ -23,7 +22,7 @@ from api.hotel.models.adapter_models import (
 )
 from api.hotel.models.booking_model import (
     HotelBookingRequest,
-    Reservation,
+    HotelReservation,
     Locator,
 )
 from api.hotel.models.hotel_api_model import (
@@ -40,7 +39,6 @@ from api.hotel.models.hotel_api_model import (
 from api.hotel.models.hotel_common_models import (
     Address,
     RoomOccupancy,
-    RateType,
     Money,
     RoomRate,
     HotelReviews,
@@ -64,12 +62,7 @@ class HotelbedsAdapter(HotelAdapter):
         response = self.transport.hotels(**request)
         hotel_results = self._check_hotels_response_and_get_results(response)
 
-        hotels = list(
-            map(
-                lambda result: self._create_hotel_from_response(search, result),
-                hotel_results,
-            )
-        )
+        hotels = list(map(lambda result: self._create_hotel_from_response(search, result), hotel_results,))
         self._enrich_hotels(hotels)
 
         return hotels
@@ -130,11 +123,7 @@ class HotelbedsAdapter(HotelAdapter):
         room_types = self._create_room_types(hotel_response)
         rate_plans = self._create_rate_plans(hotel_response)
         room_rates = self._create_room_rates(hotel_response)
-        hotel_details = HotelDetails(
-            name="",
-            address=Address(),
-            hotel_code=hotel_response["code"],
-        )
+        hotel_details = HotelDetails(name="", address=Address(), hotel_code=hotel_response["code"],)
 
         return AdapterHotel(
             provider=HotelbedsInfo.name,
@@ -196,12 +185,7 @@ class HotelbedsAdapter(HotelAdapter):
         response = self.transport.hotels(**request)
         hotel_results = self._check_hotels_response_and_get_results(response)
 
-        hotels = list(
-            map(
-                lambda result: self._create_hotel_from_response(search, result),
-                hotel_results,
-            )
-        )
+        hotels = list(map(lambda result: self._create_hotel_from_response(search, result), hotel_results,))
         self._enrich_hotels(hotels)
 
         return hotels
@@ -223,7 +207,7 @@ class HotelbedsAdapter(HotelAdapter):
 
         return self._create_room_rate(room_type_code, room_rate, hotel_result["currency"])
 
-    def booking(self, book_request: HotelBookingRequest) -> Reservation:
+    def booking(self, book_request: HotelBookingRequest) -> HotelReservation:
         request = self._create_booking_params(book_request)
         response = self.transport.booking(**request)
 
@@ -239,7 +223,7 @@ class HotelbedsAdapter(HotelAdapter):
 
         cancellation_details = self._parse_cancellation_details(booked_rate_data, hotel_data["currency"])
 
-        return Reservation(
+        return HotelReservation(
             locator=Locator(id=booking_locator),
             hotel_locator=None,
             hotel_id=book_request.hotel_id,
@@ -344,7 +328,7 @@ class HotelbedsAdapter(HotelAdapter):
     def _parse_cancellation_details(rate, currency) -> List[CancellationDetails]:
         total_rate = rate["net"]
         cancellation_detail_lst = []
-        if not "cancellationPolicies" in rate or len(rate["cancellationPolicies"]) == 0:
+        if "cancellationPolicies" not in rate or len(rate["cancellationPolicies"]) == 0:
             return [
                 CancellationDetails(
                     cancellation_type=CancellationSummary.UNKNOWN_CANCELLATION_POLICY,
@@ -384,9 +368,7 @@ class HotelbedsAdapter(HotelAdapter):
         return cancellation_detail_lst
 
     @staticmethod
-    def _cancellation_summary_from_details(
-        cancellation_details: List[CancellationDetails],
-    ) -> CancellationPolicy:
+    def _cancellation_summary_from_details(cancellation_details: List[CancellationDetails],) -> CancellationPolicy:
         sort_order = {
             CancellationSummary.FREE_CANCELLATION: 0,
             CancellationSummary.PARTIAL_REFUND: 1,
@@ -460,8 +442,7 @@ class HotelbedsAdapter(HotelAdapter):
     def _check_operation_response_and_get_results(response, operation):
         if response is None:
             raise AvailabilityException(
-                error_type=AvailabilityErrorCode.PROVIDER_ERROR,
-                detail="Could not retrieve response",
+                error_type=AvailabilityErrorCode.PROVIDER_ERROR, detail="Could not retrieve response",
             )
         if "error" in response:
             error_message = response["error"]
@@ -495,8 +476,7 @@ class HotelbedsAdapter(HotelAdapter):
     def _check_booking_response_and_get_results(self, response):
         if response is None:
             raise BookingException(
-                error_type=AvailabilityErrorCode.PROVIDER_ERROR,
-                detail="Could not retrieve response",
+                error_type=AvailabilityErrorCode.PROVIDER_ERROR, detail="Could not retrieve response",
             )
         if "error" in response:
             error_message = response["error"]
@@ -516,11 +496,7 @@ class HotelbedsAdapter(HotelAdapter):
 
     @staticmethod
     def _get_image(provider_image: ProviderImages):
-        return Image(
-            url=provider_image.image_url,
-            type=ImageType.UNKNOWN,
-            display_order=provider_image.display_order,
-        )
+        return Image(url=provider_image.image_url, type=ImageType.UNKNOWN, display_order=provider_image.display_order,)
 
     @staticmethod
     def _create_hotel_details(hotel, hotel_detail_model: ProviderHotel, photos):
