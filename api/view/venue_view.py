@@ -31,7 +31,7 @@ class VenueViewSet(viewsets.ModelViewSet):
         return super(self.__class__, self).get_permissions()
         
 class VenueMediaViewSet(viewsets.ModelViewSet):
-    #permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated,]
     queryset = VenueMedia.objects.filter()
     serializer_class = VenueMediaSerializer
     pagination_class = ObjectPagination
