@@ -1,4 +1,5 @@
 import abc
+from datetime import date
 from typing import List
 
 from api.activities.activity_internal_models import (
@@ -21,5 +22,13 @@ class ActivityAdapter(BaseAdapter, abc.ABC):
         pass
 
     @abc.abstractmethod
+    async def details(self, product_id: str, date_from: date, date_to: date) -> AdapterActivityBookingResponse:
+        pass
+
+    @abc.abstractmethod
     async def booking(self, booking_request: ActivityBookingRequest) -> AdapterActivityBookingResponse:
+        pass
+
+    @abc.abstractmethod
+    async def cancel(self, order_id: str) -> bool:
         pass

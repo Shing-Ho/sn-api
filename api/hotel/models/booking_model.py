@@ -148,14 +148,15 @@ class ActivityBookingRequest(SimplenightModel):
     notes: Optional[str]
     data: Optional[str]
     misc: Optional[str]
-    supplier_id: Optional[str]
+    product_id: Optional[str]
     supplier_date: Optional[str]
-    customer: List[Customer]
+    customer: Customer
     items: List[ActivityBookingItem]
 
 
 class ActivityBookingResponse(SimplenightModel):
-    pass
+    status: Status
+    record_locator: Locator
 
 
 class MultiProductBookingRequest(SimplenightModel):
