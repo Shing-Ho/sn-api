@@ -572,3 +572,28 @@ class VenueMedia(models.Model):
     url = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+
+
+class VenueContacts(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "venue_contacts"
+        verbose_name = "VenueContact"
+        verbose_name_plural = "VenueContacts"
+
+    CONTACT_TYPE  = (
+        ("MAIN", "MAIN"),
+        ("OTHER","OTHER")
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    type = models.CharField(max_length = 5, choices = CONTACT_TYPE, default="MAIN")
+    website = models.TextField(null=True, blank=True)
+    phone_number = models.TextField(null=True, blank=True)
+    fax = models.TextField(null=True, blank=True)
+    email = models.TextField(null=True, blank=True)
+    title = models.TextField(null=True, blank=True)
+    department = models.TextField(null=True, blank=True)
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
