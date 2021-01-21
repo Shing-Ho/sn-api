@@ -645,3 +645,61 @@ class VenueDetail(models.Model):
     amenities = jsonfield.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductGroup(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+
+    class Meta:
+        app_label = "api"
+        db_table = "product_groups"
+        verbose_name = "ProductGroup"
+        verbose_name_plural = "ProductGroups"
+class ProductsNightLife(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_nightlife"
+        verbose_name = "ProductsNightLife"
+        verbose_name_plural = "ProductsNightLife"
+
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    price = models.TextField()
+    capacity = models.IntegerField()
+    highlight = models.BooleanField(default=0)
+    status = models.BooleanField(default=1)
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    product_group_id = models.ForeignKey(ProductGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_requests_modified')
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductMedia(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "product_media"
+        verbose_name = "ProductMedia"
+        verbose_name_plural = "ProductMedia"
+
+    FILE_CHOICE  = (
+        ("VIDEO", "VIDEO"),
+        ("IMAGE","IMAGE")
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    type = models.CharField(
+        max_length = 8,
+        choices = FILE_CHOICE,
+        null=True, blank=True
+    )
+    url = models.TextField(null=True, blank=True)
+    thumbnail = models.TextField()
+    mail = models.BooleanField(default=0)
+    product_id = models.ForeignKey(ProductsNightLife, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_requests_modified')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)

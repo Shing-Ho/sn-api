@@ -13,12 +13,10 @@ import api.view.charging_view
 import api.view.carey_view
 import api.accounts.views
 from api.view import venue_view
-import api.view.multi_product_views
-from api.utils.documentations import prepare_schema
+from rest_framework.schemas import get_schema_view
 
 router = routers.SimpleRouter(trailing_slash=False)
 
-schema_view = prepare_schema()
 
 router.register(r"locations", api.view.locations.LocationsViewSet, basename="locations")
 router.register(r"hotels", api.view.hotels_view.HotelViewSet, basename="hotels")
@@ -35,5 +33,9 @@ urlpatterns = [
     path("", api.view.default_view.index),
     path("admin/", admin.site.urls),
     path("api/v1/", include(router.urls)),
-    path('docs/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc')
+    path('openapi', get_schema_view(
+        title="Simplenight Hotel API",
+        description="Test data",
+        version="1.0.0"
+    ), name='openapi-schema'),
 ]

@@ -31,3 +31,21 @@ class VenueDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VenueDetail
         fields = "__all__"
+
+
+class ProductGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductGroup
+        fields = "__all__"
+
+
+class ProductsNightLifeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductsNightLife
+        fields = "__all__"
+
+
+class ProductMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductMedia
+        fields = "__all__"

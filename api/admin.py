@@ -10,6 +10,10 @@ from api.models.models import (
         VenueMedia,
         VenueContact,
         VenueDetail,
+        PaymentMethod,
+        ProductMedia,
+        ProductGroup,
+        ProductsNightLife,
 )
 
 
@@ -45,3 +49,8 @@ admin.site.register(Venue)
 admin.site.register(VenueMedia)
 admin.site.register(VenueContact)
 admin.site.register(VenueDetail)
+admin.site.register(PaymentMethod)
+admin.site.register(ProductMedia)
+
+admin.site.register(ProductGroup)
+admin.site.register(ProductsNightLife)
