@@ -8,8 +8,12 @@ import api.view.charging_view
 import api.view.default_view
 import api.view.hotels_view
 import api.view.locations
+import api.view.default_view
+import api.view.charging_view
+import api.view.carey_view
+import api.accounts.views
+from api.view import venue_view
 import api.view.multi_product_views
-import api.view.venue_view
 from api.utils.documentations import prepare_schema
 
 router = routers.SimpleRouter(trailing_slash=False)
@@ -23,11 +27,10 @@ router.register(r"charging", api.view.charging_view.ChargingViewSet, basename="c
 router.register(r"carey", api.view.carey_view.CareyViewSet, basename="carey")
 router.register(r"authentication", api.view.default_view.AuthenticationView, basename="authentication")
 router.register(r"users", api.view.admin_view.UserViewSet, basename="user-list")
-router.register(r"venues", api.view.venue_view.VenueViewSet, basename="venue-list")
-router.register(r"venue-media", api.view.venue_view.VenueMediaViewSet, basename="venue-media-list")
+router.register(r"payment-methods", venue_view.PaymentMethodViewSet, basename="payment-methods-list")
 
 router.urls.append(path("accounts/", include("api.accounts.urls")))
-
+router.urls.append(path("venues/", include("api.venue.urls")))
 urlpatterns = [
     path("", api.view.default_view.index),
     path("admin/", admin.site.urls),

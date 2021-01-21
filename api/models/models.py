@@ -2,9 +2,10 @@
 import random
 import string
 import uuid
+import jsonfield
+
 from datetime import datetime
 from enum import EnumMeta, Enum
-
 from typing import Tuple, List
 
 from django.contrib.postgres.fields import ArrayField
@@ -540,9 +541,17 @@ class Venue(models.Model):
         verbose_name_plural = "Venues"
 
     venue_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    name = models.CharField(max_length=32, unique=True)
-    venue_from = models.CharField(max_length=2, choices=VENUE_FORM_CHOICE, default="SN")
-    type = models.CharField(max_length=20, choices=VENUE_TYPE, default="NIGHT_LIFE")
+    name = models.CharField(max_length=300, unique=True)
+    venue_from = models.CharField(
+        max_length = 2,
+        choices = VENUE_FORM_CHOICE,
+        default = "SN"
+    )
+    type = models.CharField(
+        max_length = 20,
+        choices = VENUE_TYPE,
+        default = "NIGHT_LIFE"
+    )
     language_code = models.CharField(max_length=3, default="en")
     tags = models.CharField(max_length=100, null=True, blank=True)
     star_rating = models.IntegerField(null=True, blank=True)
@@ -574,7 +583,7 @@ class VenueMedia(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
 
 
-class VenueContacts(models.Model):
+class VenueContact(models.Model):
     class Meta:
         app_label = "api"
         db_table = "venue_contacts"
@@ -595,5 +604,44 @@ class VenueContacts(models.Model):
     title = models.TextField(null=True, blank=True)
     department = models.TextField(null=True, blank=True)
     venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+class PaymentMethod(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "payment_methods"
+        verbose_name = "PaymentMethod"
+        verbose_name_plural = "PaymentMethods"
+
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    icon = models.TextField(null=True, blank=True)
+    api_key = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+
+
+class VenueDetail(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "venue_details"
+        verbose_name = "VenueDetail"
+        verbose_name_plural = "VenueDetail"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    description = models.TextField(null=True, blank=True)
+    location = models.TextField(null=True, blank=True)
+    logitude = models.CharField(max_length=10,null=True, blank=True)
+    latitude = models.CharField(max_length=200,null=True, blank=True)
+    capacity = models.IntegerField(null=True, blank=True)
+    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_requests_modified')
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    availability = jsonfield.JSONField()
+    holidays = jsonfield.JSONField()
+    amenities = jsonfield.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
