@@ -1041,7 +1041,7 @@ paths:
           description: ''
       tags:
       - Venue Details
-  /api/v1/venues/{parent_lookup_venue_id}/product_group/:
+  /api/v1/venues/{parent_lookup_venue_id}/product-group/:
     get:
       operationId: listProductGroups
       description: ''
@@ -1109,7 +1109,7 @@ paths:
           description: ''
       tags:
       - Venue Product Group
-  /api/v1/venues/{parent_lookup_venue_id}/product_group/{id}/:
+  /api/v1/venues/{parent_lookup_venue_id}/product-group/{id}/:
     get:
       operationId: retrieveProductGroup
       description: ''
@@ -1186,7 +1186,7 @@ paths:
           description: ''
       tags:
       - Venue Product Group
-  /api/v1/venues/{parent_lookup_venue_id}/product_media/:
+  /api/v1/venues/{parent_lookup_venue_id}/product-media/:
     get:
       operationId: listProductMedias
       description: ''
@@ -1254,7 +1254,7 @@ paths:
           description: ''
       tags:
       - Venue Product Media
-  /api/v1/venues/{parent_lookup_venue_id}/product_media/{id}/:
+  /api/v1/venues/{parent_lookup_venue_id}/product-media/{id}/:
     get:
       operationId: retrieveProductMedia
       description: ''

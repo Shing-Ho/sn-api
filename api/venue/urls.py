@@ -28,14 +28,14 @@ router = ExtendedSimpleRouter()
 )
 (
     router.register(r'', venue_view.VenueViewSet)
-        .register(r'product_group',
+        .register(r'product-group',
                 venue_view.ProductGroupViewSet,
                 'venue_id',
                 parents_query_lookups=['venue_id'])
 )
 (
     router.register(r'', venue_view.VenueViewSet)
-        .register(r'product_media',
+        .register(r'product-media',
                 venue_view.ProductMediaViewSet,
                 'venue_id',
                 parents_query_lookups=['venue_id'])
