@@ -1,11 +1,13 @@
 import hashlib
 
+from api.activities.activity_internal_models import AdapterActivity, ProviderActivityDataCachePayload
+from api.activities.activity_models import SimplenightActivity
 from api.common import cache_storage
 from api.hotel.models.hotel_common_models import RoomRate
 from api.hotel.models.hotel_api_model import ProviderRoomDataCachePayload, AdapterHotel
 
 
-def save_provider_rate_in_cache(hotel: AdapterHotel, room_rate: RoomRate, simplenight_rate: RoomRate):
+def save_provider_rate(hotel: AdapterHotel, room_rate: RoomRate, simplenight_rate: RoomRate):
     payload = ProviderRoomDataCachePayload(
         hotel_id=hotel.hotel_id,
         adapter_hotel=hotel,
@@ -14,11 +16,27 @@ def save_provider_rate_in_cache(hotel: AdapterHotel, room_rate: RoomRate, simple
         checkout=hotel.end_date,
         room_code=room_rate.code,
         provider_rate=room_rate,
-        simplenight_rate=simplenight_rate
+        simplenight_rate=simplenight_rate,
     )
 
     cache_storage.set(_get_cache_key(simplenight_rate.code), payload)
     cache_storage.set(_get_cache_key(room_rate.code), simplenight_rate.code)  # To lookup SN rate with Provider rate
+
+
+def save_provider_activity(adapter_activity: AdapterActivity, simplenight_activity: SimplenightActivity):
+    payload = ProviderActivityDataCachePayload(
+        code=adapter_activity.code, provider=adapter_activity.provider, price=adapter_activity.total_price.amount
+    )
+
+    cache_storage.set(_get_cache_key(simplenight_activity.code), payload)
+
+
+def get_cached_activity(activity_code: str) -> ProviderActivityDataCachePayload:
+    provider_rate = cache_storage.get(_get_cache_key(activity_code))
+    if not provider_rate:
+        raise RuntimeError(f"Could not find Provider Rate for Rate Key {activity_code}")
+
+    return provider_rate
 
 
 def get_cached_room_data(simplenight_rate_code: str) -> ProviderRoomDataCachePayload:

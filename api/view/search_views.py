@@ -3,6 +3,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.decorators import action
 from rest_framework.request import Request
 
+from api.activities.activity_models import SimplenightActivityDetailRequest
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiDailyThrottle, OrganizationApiBurstThrottle
 from api.common.common_models import from_json
 from api.search import search
@@ -19,5 +20,12 @@ class AllProductsViewSet(viewsets.ViewSet):
     def search(self, request: Request):
         request = from_json(request.data, SearchRequest)
         results = search.search_request(request)
+
+        return _response(results)
+
+    @action(detail=False, url_path="details", methods=["POST"], name="Activity Details")
+    def details(self, request: Request):
+        request = from_json(request.data, SimplenightActivityDetailRequest)
+        results = search.details(request)
 
         return _response(results)

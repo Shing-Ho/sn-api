@@ -2,7 +2,7 @@ import random
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
-from api.hotel import hotel_service, hotel_cache_service, booking_service
+from api.hotel import hotel_service, provider_cache_service, booking_service
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.models.hotel_api_model import HotelLocationSearch
 from api.hotel.models.hotel_common_models import RoomOccupancy, RateType
@@ -68,7 +68,7 @@ class TestHotelBedsOnline(SimplenightTestCase):
         booking_request = test_objects.booking_request(rate_code=room_to_book.code)
         booking_response = booking_service.book_hotel(booking_request)
 
-        saved_room_data = hotel_cache_service.get_cached_room_data(room_to_book.code)
+        saved_room_data = provider_cache_service.get_cached_room_data(room_to_book.code)
         assert booking_response.reservation.room_rate.code == saved_room_data.simplenight_rate.code
 
         hotel_booking = HotelBooking.objects.filter(record_locator=booking_response.reservation.locator.id).first()

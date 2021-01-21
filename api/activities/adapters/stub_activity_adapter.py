@@ -1,4 +1,5 @@
 import random
+import uuid
 from datetime import datetime, date
 from decimal import Decimal
 from typing import List
@@ -9,6 +10,7 @@ from api.activities.activity_internal_models import (
     AdapterActivityLocationSearch,
     AdapterActivitySearch,
     AdapterActivityBookingResponse,
+    AdapterActivity,
 )
 from api.activities.activity_models import SimplenightActivity
 from api.hotel.models.booking_model import ActivityBookingRequest
@@ -38,8 +40,10 @@ class StubActivityAdapter(ActivityAdapter):
         total_taxes = Money(amount=Decimal(random.random() * 25), currency="USD")
         total_price = Money(amount=total_base.amount + total_taxes.amount, currency="USD")
 
-        return SimplenightActivity(
+        return AdapterActivity(
             name=activity_name,
+            code=str(uuid.uuid4()),
+            provider="stub",
             description=description,
             activity_date=datetime.now(),
             total_price=total_price,

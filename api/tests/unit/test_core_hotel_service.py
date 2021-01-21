@@ -7,7 +7,7 @@ import pytest
 import requests_mock
 
 from api.hotel.models.hotel_common_models import RoomOccupancy
-from api.hotel import core_hotel_service, hotel_service, converter, hotel_cache_service
+from api.hotel import core_hotel_service, hotel_service, converter, provider_cache_service
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.adapters.stub.stub import StubHotelAdapter
@@ -37,7 +37,7 @@ class TestCoreHotelService(SimplenightTestCase):
         assert len(room_rates) > 10
 
         for room_rate in room_rates:
-            stored_provider_rate_payload = hotel_cache_service.get_cached_room_data(room_rate.code)
+            stored_provider_rate_payload = provider_cache_service.get_cached_room_data(room_rate.code)
             provider_rate = stored_provider_rate_payload.provider_rate
 
             assert provider_rate is not None

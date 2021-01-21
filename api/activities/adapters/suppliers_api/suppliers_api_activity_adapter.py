@@ -1,5 +1,4 @@
 import abc
-import json
 from datetime import date
 from decimal import Decimal
 from typing import List, Any, Dict
@@ -12,7 +11,9 @@ from api.activities.activity_internal_models import (
     AdapterActivityLocationSearch,
     AdapterActivityBookingResponse,
 )
+from api.activities.activity_models import SimplenightActivityDetailResponse
 from api.activities.adapters.suppliers_api.suppliers_api_transport import SuppliersApiTransport
+from api.common.common_models import from_json
 from api.hotel.models.booking_model import ActivityBookingRequest
 from api.hotel.models.hotel_api_model import Image, ImageType
 from api.hotel.models.hotel_common_models import Money
@@ -59,18 +60,20 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
         params = {"uuid": product_id}
 
         response = self.transport.details(date_from, date_to, **params)
-        print(json.dumps(response, indent=2))
+        details = from_json(response, SimplenightActivityDetailResponse)
+
+        return details
 
     async def cancel(self, order_id: str) -> bool:
         pass
 
-    @staticmethod
-    def _create_activity(activity, activity_date: date):
+    def _create_activity(self, activity, activity_date: date):
         def _parse_image(image: Dict) -> Image:
             return Image(url=image["url"], type=ImageType.UNKNOWN)
 
         return AdapterActivity(
             name=activity["name"],
+            provider=self.get_provider_name(),
             code=activity["code"],
             description="",
             activity_date=activity_date,

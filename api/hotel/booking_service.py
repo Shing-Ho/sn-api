@@ -5,7 +5,7 @@ from typing import Union
 from api import logger
 from api.common import mail, currencies, request_context
 from api.common.request_context import get_request_context
-from api.hotel import price_verification_service, hotel_cache_service
+from api.hotel import price_verification_service, provider_cache_service
 from api.hotel.adapters import adapter_service
 from api.hotel.models.adapter_models import AdapterCancelRequest, AdapterHotel
 from api.hotel.models.booking_model import (
@@ -70,7 +70,9 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
     logger.info(f"Received Booking Request: {booking_request}")
     try:
         logger.info("Retrieving saved room rate")
-        provider_rate_cache_payload = hotel_cache_service.get_cached_room_data(booking_request.hotel_booking.room_code)
+        provider_rate_cache_payload = provider_cache_service.get_cached_room_data(
+            booking_request.hotel_booking.room_code
+        )
         provider = provider_rate_cache_payload.provider
         simplenight_rate = provider_rate_cache_payload.simplenight_rate
         adapter = adapter_service.get_adapter(provider)

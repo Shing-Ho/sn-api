@@ -8,7 +8,7 @@ import pytest
 from freezegun import freeze_time
 from stripe.error import CardError
 
-from api.hotel import hotel_cache_service, booking_service
+from api.hotel import provider_cache_service, booking_service
 from api.hotel.models import booking_model
 from api.hotel.models.adapter_models import AdapterCancelResponse
 from api.hotel.models.booking_model import (
@@ -69,9 +69,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         simplenight_rate = test_objects.room_rate("sn-foo", "120", base_rate="96", tax_rate="24")
         hotel = test_objects.hotel()
 
-        hotel_cache_service.save_provider_rate_in_cache(
-            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
-        )
+        provider_cache_service.save_provider_rate(hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate)
 
         payment_transaction = PaymentTransaction(
             provider_name="stripe", currency="USD", transaction_amount=100.0, transaction_type=TransactionType.CHARGE,
@@ -130,9 +128,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             payment_obj=invalid_card_number_payment, rate_code=simplenight_rate.code
         )
 
-        hotel_cache_service.save_provider_rate_in_cache(
-            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
-        )
+        provider_cache_service.save_provider_rate(hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate)
 
         with patch("stripe.Token.create") as stripe_token_mock:
             stripe_token_mock.return_value = {"id": "pt_foo"}
@@ -468,9 +464,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         simplenight_rate = test_objects.room_rate("sn-foo", "120", base_rate="96", tax_rate="24")
         hotel = test_objects.hotel()
 
-        hotel_cache_service.save_provider_rate_in_cache(
-            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
-        )
+        provider_cache_service.save_provider_rate(hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate)
 
         payment_charge_id = str(uuid.uuid4())
         payment_transaction = PaymentTransaction(
@@ -516,9 +510,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         simplenight_rate = test_objects.room_rate("sn-foo", "120", base_rate="96", tax_rate="24")
         hotel = test_objects.hotel()
 
-        hotel_cache_service.save_provider_rate_in_cache(
-            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
-        )
+        provider_cache_service.save_provider_rate(hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate)
 
         with patch("api.hotel.adapters.stub.stub.StubHotelAdapter.recheck") as price_verification_mock:
             price_verification_mock.return_value = recheck_room_rate

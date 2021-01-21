@@ -1,8 +1,15 @@
 import uuid
 from datetime import date
 
-from api.hotel.models.booking_model import Customer, Traveler, PaymentCardParameters, CardType, Payment, HotelBookingRequest
-from api.hotel import hotel_cache_service
+from api.hotel.models.booking_model import (
+    Customer,
+    Traveler,
+    PaymentCardParameters,
+    CardType,
+    Payment,
+    HotelBookingRequest,
+)
+from api.hotel import provider_cache_service
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.models.hotel_common_models import RoomOccupancy, Address
 from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterOccupancy
@@ -82,7 +89,7 @@ class TestStubHotelAdapter(SimplenightTestCase):
 
         adapter_hotel = test_objects.hotel()
         adapter_hotel.hotel_id = "HAUE1X"
-        hotel_cache_service.save_provider_rate_in_cache(adapter_hotel, provider_room_rate, simplenight_room_rate)
+        provider_cache_service.save_provider_rate(adapter_hotel, provider_room_rate, simplenight_room_rate)
 
         stub_adapter = StubHotelAdapter()
         reservation = stub_adapter.booking(booking_request)
