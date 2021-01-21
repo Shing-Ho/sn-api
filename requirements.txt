@@ -25,3 +25,4 @@ django-admin-interface
 bugsnag==4.0.2
 django-rest-knox
 xmltodict
+drf_yasg

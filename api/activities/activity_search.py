@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 from decimal import getcontext, ROUND_UP
 from typing import List
 
@@ -9,7 +10,12 @@ from api.activities.activity_internal_models import (
     AdapterActivitySpecificSearch,
     AdapterActivitySearch,
 )
-from api.activities.activity_models import SimplenightActivity
+from api.activities.activity_models import (
+    SimplenightActivity,
+    SimplenightActivityDetailRequest,
+    SimplenightActivityDetailResponse,
+)
+from api.hotel import provider_cache_service
 from api.hotel.adapters import adapter_service
 from api.hotel.models.hotel_common_models import Money
 from api.locations import location_service
@@ -28,6 +34,12 @@ def search_by_id(search: ActivitySpecificSearch) -> SimplenightActivity:
     activities = _process_activities(activities)
     if activities:
         return activities[0]  # TODO: Unify
+
+
+def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDetailResponse:
+    payload = provider_cache_service.get_cached_activity(request.code)
+    adapter = adapter_service.get_activity_adapter(payload.provider)
+    return asyncio.run(adapter.details(payload.code, request.date_from, request.date_to))
 
 
 def _adapter_location_search(search: ActivityLocationSearch) -> AdapterActivityLocationSearch:
@@ -52,8 +64,9 @@ def _process_activities(activities: List[AdapterActivity]) -> List[SimplenightAc
 
 
 def _adapter_to_simplenight_activity(activity: AdapterActivity) -> SimplenightActivity:
-    return SimplenightActivity(
+    simplenight_activity = SimplenightActivity(
         name=activity.name,
+        code=str(uuid.uuid4())[:8],
         description=activity.description,
         activity_date=activity.activity_date,
         total_price=_format_money(activity.total_price),
@@ -61,6 +74,10 @@ def _adapter_to_simplenight_activity(activity: AdapterActivity) -> SimplenightAc
         total_taxes=_format_money(activity.total_taxes),
         images=activity.images,
     )
+
+    provider_cache_service.save_provider_activity(activity, simplenight_activity)
+
+    return simplenight_activity
 
 
 def _search_all_adapters_location(search: AdapterActivityLocationSearch) -> List[AdapterActivity]:

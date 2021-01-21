@@ -8,6 +8,7 @@ from api.activities.activity_internal_models import (
     AdapterActivitySpecificSearch,
     AdapterActivityBookingResponse,
 )
+from api.activities.activity_models import SimplenightActivityDetailResponse
 from api.common.base_adapter import BaseAdapter
 from api.hotel.models.booking_model import ActivityBookingRequest
 
@@ -22,7 +23,7 @@ class ActivityAdapter(BaseAdapter, abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def details(self, product_id: str, date_from: date, date_to: date) -> AdapterActivityBookingResponse:
+    async def details(self, product_id: str, date_from: date, date_to: date) -> SimplenightActivityDetailResponse:
         pass
 
     @abc.abstractmethod

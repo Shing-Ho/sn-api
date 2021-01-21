@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 from typing import Optional, List
 
 from api.common.common_models import SimplenightModel
@@ -10,6 +11,7 @@ from api.locations.models import Location
 
 class AdapterActivity(SimplenightModel):
     name: str
+    provider: str
     code: str
     description: str
     activity_date: date
@@ -38,3 +40,9 @@ class AdapterActivitySpecificSearch(AdapterActivitySearch):
 class AdapterActivityBookingResponse(SimplenightModel):
     success: bool
     record_locator: Locator
+
+
+class ProviderActivityDataCachePayload(SimplenightModel):
+    code: str
+    provider: str
+    price: Decimal

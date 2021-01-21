@@ -5,7 +5,7 @@ import requests_mock
 from freezegun import freeze_time
 
 from api.common.common_models import from_json
-from api.hotel import hotel_cache_service
+from api.hotel import provider_cache_service
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
@@ -124,7 +124,7 @@ class TestHotelsView(SimplenightTestCase):
         hotel = test_objects.hotel()
         provider_room_rate = test_objects.room_rate(rate_key="rate_key", total="100.00")
         simplenight_room_rate = test_objects.room_rate(rate_key="simplenight_rate_key", total="120.00")
-        hotel_cache_service.save_provider_rate_in_cache(
+        provider_cache_service.save_provider_rate(
             hotel, room_rate=provider_room_rate, simplenight_rate=simplenight_room_rate
         )
 
@@ -145,7 +145,7 @@ class TestHotelsView(SimplenightTestCase):
         hotel = test_objects.hotel()
         provider_room_rate = test_objects.room_rate(rate_key="rate_key", total="100.00")
         simplenight_room_rate = test_objects.room_rate(rate_key="simplenight_rate_key", total="120.00")
-        hotel_cache_service.save_provider_rate_in_cache(
+        provider_cache_service.save_provider_rate(
             hotel, room_rate=provider_room_rate, simplenight_rate=simplenight_room_rate
         )
 

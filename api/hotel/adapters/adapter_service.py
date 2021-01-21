@@ -70,6 +70,10 @@ def get_restaurant_adapters_to_search(search_request: RestaurantSearch) -> List[
     return get_adapters_for_type(search_request, adapter_type=AdapterType.RESTAURANT)
 
 
+def get_activity_adapter(adapter_name: str) -> ActivityAdapter:
+    return get_adapter(adapter_name)
+
+
 def get_adapters_for_type(
     search_request, adapter_type=None
 ) -> List[Union[HotelAdapter, ActivityAdapter, RestaurantAdapter]]:

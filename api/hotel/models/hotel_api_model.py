@@ -92,7 +92,7 @@ class ImageType(Enum):
 
 class Image(SimplenightModel):
     url: str
-    type: ImageType
+    type: Optional[ImageType]
     display_order: Optional[int] = None
 
 

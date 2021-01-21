@@ -6,7 +6,11 @@ from django.db import connection
 
 from api import logger
 from api.activities import activity_search
-from api.activities.activity_models import SimplenightActivity
+from api.activities.activity_models import (
+    SimplenightActivity,
+    SimplenightActivityDetailRequest,
+    SimplenightActivityDetailResponse,
+)
 from api.common import request_cache
 from api.common.request_context import get_config
 from api.hotel import hotel_service
@@ -60,6 +64,10 @@ def search_request(search: SearchRequest):
         executor.shutdown()
 
     return response
+
+
+def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDetailResponse:
+    return activity_search.details(request)
 
 
 def _set_result_on_response(response, result):

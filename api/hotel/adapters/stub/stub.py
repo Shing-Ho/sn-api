@@ -4,7 +4,7 @@ import uuid
 from datetime import timedelta
 from typing import List
 
-from api.hotel import hotel_cache_service
+from api.hotel import provider_cache_service
 from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.models.adapter_models import (
     AdapterLocationSearch,
@@ -84,7 +84,7 @@ class StubHotelAdapter(HotelAdapter):
         return self.search_by_id(search_request)
 
     def booking(self, book_request: HotelBookingRequest) -> HotelReservation:
-        cached_room_data = hotel_cache_service.get_simplenight_rate(book_request.room_code)
+        cached_room_data = provider_cache_service.get_simplenight_rate(book_request.room_code)
         return HotelReservation(
             locator=Locator(id=str(uuid.uuid4())),
             hotel_locator=[Locator(id=random_alphanumeric(6))],
