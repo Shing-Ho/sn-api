@@ -166,7 +166,10 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = "/static/"
+
+
 
 GEONAMES_CITIES_URL = "https://download.geonames.org/export/dump/cities15000.zip"
 GEONAMES_CITIES_FILENAME = "cities15000.txt"
