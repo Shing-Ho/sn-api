@@ -25,8 +25,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 # Change Password
-from rest_framework import serializers
-from django.contrib.auth.models import User
 
 class ChangePasswordSerializer(serializers.Serializer):
     model = User
