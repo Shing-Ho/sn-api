@@ -1,20 +1,16 @@
 from rest_framework import serializers
+from api.accounts.serializers import UserSerializer
 from api.models import models
 
 
 # Venue Serializer
-class VenueSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Venue
-        fields = (
-            "venue_id", "name", "venue_from", "type", "language_code", "tags",
-            "status", "created_at", "modified_at", "created_by", "modified_by"
-        )
+
 
 class VenueMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VenueMedia
         fields = "__all__"
+
 
 class VenueContactSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,6 +22,7 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.PaymentMethod
         fields = "__all__"
+
 
 class VenueDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,13 +36,31 @@ class ProductGroupSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ProductMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductMedia
+        fields = "__all__"
+
+
 class ProductsNightLifeSerializer(serializers.ModelSerializer):
+    media = ProductMediaSerializer(many=True, read_only=True)
+    group = serializers.SerializerMethodField(source="get_group")
+
     class Meta:
         model = models.ProductsNightLife
         fields = "__all__"
 
+    def get_group(self, obj):
+        return obj.name
 
-class ProductMediaSerializer(serializers.ModelSerializer):
+
+class VenueSerializer(serializers.ModelSerializer):
+    media = VenueMediaSerializer(many=True, read_only=True)
+    details = VenueDetailSerializer(many=True, read_only=True)
+    contacts = VenueContactSerializer(many=True, read_only=True)
+    created_by = UserSerializer(read_only=True)
+    products = ProductsNightLifeSerializer(many=True, read_only=True)
+
     class Meta:
-        model = models.ProductMedia
+        model = models.Venue
         fields = "__all__"
