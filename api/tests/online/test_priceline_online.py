@@ -151,7 +151,7 @@ class TestPricelineIntegration(SimplenightTestCase):
         booking_request.customer.last_name = "Morton"
         booking_request.customer.email = "jmorton@simplenight.com"
 
-        reservation = priceline.booking(booking_request)
+        reservation = priceline.book(booking_request)
 
         print(reservation)
         self.assertIsNotNone(reservation.locator)

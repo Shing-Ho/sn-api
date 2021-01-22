@@ -1,7 +1,7 @@
 from datetime import datetime, date
 
-from api.search import search
-from api.search.search_models import SearchRequest, Products, ActivitySpecificSearch, RestaurantSearch
+from api.multi import multi_product
+from api.multi.multi_product_models import SearchRequest, Products, ActivitySpecificSearch, RestaurantSearch
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
@@ -16,5 +16,5 @@ class TestSearch(SimplenightTestCase):
             ),
         )
 
-        results = search.search_request(request)
+        results = multi_product.search_request(request)
         print(results)

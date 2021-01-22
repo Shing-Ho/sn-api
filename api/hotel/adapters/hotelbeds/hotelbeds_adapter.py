@@ -207,7 +207,7 @@ class HotelbedsAdapter(HotelAdapter):
 
         return self._create_room_rate(room_type_code, room_rate, hotel_result["currency"])
 
-    def booking(self, book_request: HotelBookingRequest) -> HotelReservation:
+    def book(self, book_request: HotelBookingRequest) -> HotelReservation:
         request = self._create_booking_params(book_request)
         response = self.transport.booking(**request)
 

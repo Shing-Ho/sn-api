@@ -481,7 +481,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         # Mock Stripe Refund
         with patch("api.payments.stripe_service.stripe.Refund.create", mock_stripe_refund):
             # Mock Stub Adapter booking method.  Throw an exception, to trigger a payment refund
-            with patch("api.hotel.adapters.stub.stub.StubHotelAdapter.booking") as mock_stub_booking:
+            with patch("api.hotel.adapters.stub.stub.StubHotelAdapter.book") as mock_stub_booking:
                 mock_stub_booking.side_effect = Exception("Boom")
                 # Mock authorize transaction, return a mock payment transaction
                 with patch("api.payments.payment_service.authorize_payment") as mock_authorize_payment:

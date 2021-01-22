@@ -99,6 +99,12 @@ class HotelBookingRequest(SimplenightModel):
     payment: Optional[Payment] = None
 
 
+class MultiProductHotelBookingRequest(SimplenightModel):
+    hotel_id: str
+    room_code: str
+    traveler: Traveler
+
+
 class Status(SimplenightModel):
     success: bool
     message: str
@@ -148,9 +154,8 @@ class ActivityBookingRequest(SimplenightModel):
     notes: Optional[str]
     data: Optional[str]
     misc: Optional[str]
-    product_id: Optional[str]
+    code: Optional[str]
     supplier_date: Optional[str]
-    customer: Customer
     items: List[ActivityBookingItem]
 
 
@@ -165,7 +170,7 @@ class MultiProductBookingRequest(SimplenightModel):
     language: str
     customer: Customer
     payment: Payment
-    hotel_booking: Optional[HotelBookingRequest]
+    hotel_booking: Optional[MultiProductHotelBookingRequest]
     activity_booking: Optional[ActivityBookingRequest]
 
 

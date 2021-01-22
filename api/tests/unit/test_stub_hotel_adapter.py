@@ -92,7 +92,7 @@ class TestStubHotelAdapter(SimplenightTestCase):
         provider_cache_service.save_provider_rate(adapter_hotel, provider_room_rate, simplenight_room_rate)
 
         stub_adapter = StubHotelAdapter()
-        reservation = stub_adapter.booking(booking_request)
+        reservation = stub_adapter.book(booking_request)
 
         self.assertIsNotNone(reservation)
         self.assertIsNotNone(reservation.locator.id)

@@ -1,6 +1,6 @@
 from datetime import date
 from decimal import Decimal
-from typing import List
+from typing import List, Optional, Union
 
 from pydantic import Field
 
@@ -37,7 +37,7 @@ class ActivityCancellation(SimplenightModel):
 
 
 class ActivityItem(SimplenightModel):
-    category: List[str]
+    category: Optional[Union[str, List[str]]] = Field(default_factory=list)
     code: str
     status: str
     price: Decimal

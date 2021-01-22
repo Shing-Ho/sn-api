@@ -152,7 +152,7 @@ paths:
       tags:
         - Hotel
       summary: Search for hotels in a location
-      description: Using a Simplenight city ID, search for hotels
+      description: Using a Simplenight city ID, multi for hotels
       requestBody:
         required: true
         content:
