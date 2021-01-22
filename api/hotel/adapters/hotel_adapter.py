@@ -42,7 +42,7 @@ class HotelAdapter(BaseAdapter, abc.ABC):
         """Returns an object containing an average user review, and a list of user reviews for a hotel"""
 
     @abc.abstractmethod
-    def booking(self, book_request: HotelBookingRequest) -> HotelReservation:
+    def book(self, book_request: HotelBookingRequest) -> HotelReservation:
         """Given a HotelBookingRequest, confirm a reservation with a hotel provider"""
 
     @abc.abstractmethod

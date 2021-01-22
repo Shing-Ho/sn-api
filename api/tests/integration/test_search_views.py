@@ -6,10 +6,16 @@ from api.common.common_models import from_json
 from api.hotel.models.hotel_api_model import HotelSpecificSearch
 from api.hotel.models.hotel_common_models import RoomOccupancy
 from api.locations.models import Location, LocationType
-from api.search.search_models import ActivityLocationSearch, SearchRequest, SearchResponse, Products, RestaurantSearch
+from api.multi.multi_product_models import (
+    ActivityLocationSearch,
+    SearchRequest,
+    SearchResponse,
+    Products,
+    RestaurantSearch,
+)
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
-SEARCH_BY_ID = "/api/v1/search/search"
+SEARCH_BY_ID = "/api/v1/multi/search"
 
 
 class TestSearchViews(SimplenightTestCase):

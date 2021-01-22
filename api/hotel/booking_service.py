@@ -1,8 +1,10 @@
+import asyncio
 from datetime import datetime
 from decimal import Decimal
-from typing import Union
+from typing import Union, Optional
 
 from api import logger
+from api.activities.activity_internal_models import ProviderActivityDataCachePayload
 from api.common import mail, currencies, request_context
 from api.common.request_context import get_request_context
 from api.hotel import price_verification_service, provider_cache_service
@@ -16,6 +18,9 @@ from api.hotel.models.booking_model import (
     HotelReservation,
     MultiProductBookingRequest,
     MultiProductBookingResponse,
+    ActivityBookingRequest,
+    ActivityBookingResponse,
+    MultiProductHotelBookingRequest,
 )
 from api.hotel.models.hotel_api_model import (
     SimplenightRoomType,
@@ -25,6 +30,7 @@ from api.hotel.models.hotel_api_model import (
     CancellationSummary,
     HotelItineraryItem,
     CancelConfirmResponse,
+    ProviderRoomDataCachePayload,
 )
 from api.hotel.models.hotel_common_models import Money, RoomRate
 from api.models import models
@@ -46,13 +52,17 @@ from common.exceptions import AppException
 
 
 def book_hotel(booking_request: HotelBookingRequest) -> HotelBookingResponse:
+    hotel_booking_request = MultiProductHotelBookingRequest(
+        hotel_id=booking_request.hotel_id, room_code=booking_request.room_code, traveler=booking_request.traveler
+    )
+
     multi_booking_request = MultiProductBookingRequest(
         api_version=booking_request.api_version,
         transaction_id=booking_request.transaction_id,
         language=booking_request.language,
         customer=booking_request.customer,
         payment=booking_request.payment,
-        hotel_booking=booking_request,
+        hotel_booking=hotel_booking_request,
         activity_booking=None,
     )
 
@@ -69,31 +79,36 @@ def book_hotel(booking_request: HotelBookingRequest) -> HotelBookingResponse:
 def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResponse:
     logger.info(f"Received Booking Request: {booking_request}")
     try:
-        logger.info("Retrieving saved room rate")
-        provider_rate_cache_payload = provider_cache_service.get_cached_room_data(
-            booking_request.hotel_booking.room_code
-        )
-        provider = provider_rate_cache_payload.provider
-        simplenight_rate = provider_rate_cache_payload.simplenight_rate
-        adapter = adapter_service.get_adapter(provider)
-
         logger.info("Persisting traveler and booking")
         traveler = _persist_traveler(booking_request.customer)
         booking = _persist_booking_record(booking_request, traveler)
         simplenight_record_locator = RecordLocator.generate_record_locator(booking)
-
-        # Lookup Provider Rates in Cache
-        provider_rate = provider_rate_cache_payload.provider_rate
-        booking_request.hotel_booking.room_code = provider_rate.code
-
-        logger.info("Starting price verification")
-        verified_rates = _price_verification(provider=provider, rate=provider_rate)
-
-        # Reset room rates with verified rates.  If prices mismatched above, error will raise
-        booking_request.hotel_booking.room_code = verified_rates.code
-
         logger.info(f"Saved booking {booking.booking_id} {simplenight_record_locator}")
-        total_payment_amount = simplenight_rate.total
+
+        # Lookup Hotel Rates in Cache, and Book Hotel
+        logger.info("Retrieving cached hotel")
+
+        hotel_booking_request = None
+        if booking_request.hotel_booking:
+            hotel_booking_request = HotelBookingRequest(
+                api_version=booking_request.api_version,
+                transaction_id=booking_request.transaction_id,
+                hotel_id=booking_request.hotel_booking.hotel_id,
+                room_code=booking_request.hotel_booking.room_code,
+                language=booking_request.language,
+                customer=booking_request.customer,
+                traveler=booking_request.hotel_booking.traveler,
+                payment=booking_request.payment,
+            )
+
+        hotel_cache_payload = _get_cached_hotel_payload(hotel_booking_request)
+
+        # Lookup Activity Rates in Cache, and Book Activity
+        logger.info("Retrieving cached activity")
+        activity_cache_payload = _get_cached_activity_payload(booking_request.activity_booking)
+
+        total_payment_amount = _calculate_total(hotel_cache_payload, activity_cache_payload)
+
         logger.info(f"Authorizing payment for {total_payment_amount}")
         auth_response = payment_service.authorize_payment(
             amount=total_payment_amount,
@@ -110,19 +125,15 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
             auth_response.save()
 
         try:
-            reservation = adapter.booking(booking_request.hotel_booking)
-            reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
-
-            if not reservation or not reservation.locator:
-                logger.error(f"Could not book request: {booking_request}")
-                raise AppException("Error during booking")
+            customer = booking_request.customer
+            hotel_reservation = _book_hotel(hotel_booking_request, hotel_cache_payload, booking)
+            activity_reservation = _book_activity(booking_request.activity_booking, activity_cache_payload, customer)
 
             _set_booked_status(booking)
-            _persist_hotel(booking_request.hotel_booking, provider_rate_cache_payload, booking, reservation)
-
             _send_confirmation_email(
-                hotel=provider_rate_cache_payload.adapter_hotel,
-                reservation=reservation,
+                hotel=hotel_cache_payload.adapter_hotel,
+                hotel_reservation=hotel_reservation,
+                activity_reservation=activity_reservation,
                 payment=auth_response,
                 record_locator=simplenight_record_locator,
             )
@@ -132,7 +143,8 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
                 transaction_id=booking_request.transaction_id,
                 booking_id=simplenight_record_locator,
                 status=Status(success=True, message="success"),
-                hotel_reservation=reservation,
+                hotel_reservation=hotel_reservation,
+                activity_reservation=activity_reservation,
             )
 
         except Exception as e:
@@ -148,7 +160,87 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
         raise BookingException(BookingErrorCode.UNHANDLED_ERROR, str(e))
 
 
-def _price_verification(provider: str, rate: Union[SimplenightRoomType, RoomRate]):
+def _calculate_total(
+    hotel_payload: ProviderRoomDataCachePayload, activity_payload: ProviderActivityDataCachePayload,
+):
+    # TODO !!!!!: Deal with activity currencies
+    total_amount = Decimal(0)
+    if hotel_payload:
+        total_amount += hotel_payload.simplenight_rate.total.amount
+
+    if activity_payload:
+        total_amount += activity_payload.price
+
+    return Money(amount=total_amount, currency=hotel_payload.simplenight_rate.total.currency)
+
+
+def _book_activity(
+    activity_book_request: ActivityBookingRequest,
+    cached_activity_payload: ProviderActivityDataCachePayload,
+    customer: Customer,
+) -> Optional[ActivityBookingResponse]:
+
+    if not activity_book_request:
+        logger.info("No activity booking")
+        return None
+
+    activity_book_request.code = cached_activity_payload.code
+    adapter = adapter_service.get_activity_adapter(cached_activity_payload.provider)
+    booking_response = asyncio.run(adapter.book(activity_book_request, customer))
+
+    status = Status(success=booking_response.success, message="")
+    return ActivityBookingResponse(status=status, record_locator=booking_response.record_locator)
+
+
+def _get_cached_activity_payload(activity_booking_request: ActivityBookingRequest):
+    if not activity_booking_request:
+        return None
+
+    activity_code = activity_booking_request.code
+    return provider_cache_service.get_cached_activity(activity_code)
+
+
+def _get_cached_hotel_payload(hotel_booking_request: HotelBookingRequest):
+    if not hotel_booking_request:
+        return None
+
+    hotel_room_code = hotel_booking_request.room_code
+    return provider_cache_service.get_cached_room_data(hotel_room_code)
+
+
+def _book_hotel(
+    hotel_booking_request: HotelBookingRequest,
+    provider_rate_cache_payload: ProviderRoomDataCachePayload,
+    booking: Booking,
+) -> Optional[HotelReservation]:
+    if not hotel_booking_request:
+        return None
+
+    provider = provider_rate_cache_payload.provider
+    simplenight_rate = provider_rate_cache_payload.simplenight_rate
+    provider_rate = provider_rate_cache_payload.provider_rate
+    hotel_booking_request.room_code = provider_rate.code
+
+    logger.info("Starting price verification")
+    verified_rates = _hotel_price_verification(provider=provider, rate=provider_rate)
+
+    # Reset room rates with verified rates.  If prices mismatched above, error will raise
+    hotel_booking_request.room_code = verified_rates.code
+
+    adapter = adapter_service.get_adapter(provider)
+    reservation = adapter.book(hotel_booking_request)
+    reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
+
+    if not reservation or not reservation.locator:
+        logger.error(f"Could not book hotel: {hotel_booking_request}")
+        raise AppException("Error during hotel booking")
+
+    _persist_hotel(hotel_booking_request, provider_rate_cache_payload, booking, reservation)
+
+    return reservation
+
+
+def _hotel_price_verification(provider: str, rate: Union[SimplenightRoomType, RoomRate]):
     price_verification = price_verification_service.recheck(provider=provider, room_rate=rate)
 
     if not price_verification.is_allowed_change:
@@ -425,21 +517,28 @@ def adapter_cancel(hotel_booking: HotelBooking, traveler: Traveler):
 
 
 def _send_confirmation_email(
-    hotel: AdapterHotel, reservation: HotelReservation, payment: PaymentTransaction, record_locator: str
+    hotel: AdapterHotel,
+    hotel_reservation: HotelReservation,
+    activity_reservation: ActivityBookingResponse,
+    payment: PaymentTransaction,
+    record_locator: str,
 ):
     try:
         template_name = "order_confirmation"
         subject = f"Simplenight Hotel Reservation {record_locator}"
-        recipient = f"{reservation.customer.first_name} {reservation.customer.last_name}"
-        to_email = reservation.customer.email
+        recipient = f"{hotel_reservation.customer.first_name} {hotel_reservation.customer.last_name}"
+        to_email = hotel_reservation.customer.email
 
-        params = _generate_confirmation_email_params(hotel, reservation, payment, record_locator)
+        params = _generate_confirmation_email_params(hotel, hotel_reservation, payment, record_locator)
 
         if not _is_confirmation_email_enabled():
             logger.info(f"Not sending email without email enabled. Parameters: {params}")
             return None
 
         mail.send_mail(template_name, subject, recipient, to_email, variables=params)
+
+        if activity_reservation:
+            logger.warn(f"Activity reservation not implemented in confirmation email: {activity_reservation}")
 
     except Exception as e:
         logger.warn(f"Could not send confirmation email: {str(e)}")

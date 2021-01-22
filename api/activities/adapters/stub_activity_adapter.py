@@ -12,16 +12,15 @@ from api.activities.activity_internal_models import (
     AdapterActivityBookingResponse,
     AdapterActivity,
 )
-from api.activities.activity_models import SimplenightActivity
-from api.hotel.models.booking_model import ActivityBookingRequest
+from api.hotel.models.booking_model import ActivityBookingRequest, Customer
 from api.hotel.models.hotel_common_models import Money
 
 
 class StubActivityAdapter(ActivityAdapter):
-    async def search_by_location(self, search: AdapterActivityLocationSearch) -> List[SimplenightActivity]:
+    async def search_by_location(self, search: AdapterActivityLocationSearch) -> List[AdapterActivity]:
         return list(self._create_activity_product(search) for _ in range(random.randint(2, 25)))
 
-    async def search_by_id(self, search: AdapterActivitySpecificSearch) -> SimplenightActivity:
+    async def search_by_id(self, search: AdapterActivitySpecificSearch) -> AdapterActivity:
         return self._create_activity_product(search)
 
     async def details(self, product_id: str, date_from: date, date_to: date) -> AdapterActivityBookingResponse:
@@ -30,7 +29,7 @@ class StubActivityAdapter(ActivityAdapter):
     async def cancel(self, order_id: str) -> bool:
         raise NotImplementedError("Cancel not implemented")
 
-    async def booking(self, booking_request: ActivityBookingRequest) -> AdapterActivityBookingResponse:
+    async def book(self, booking_request: ActivityBookingRequest, customer: Customer) -> AdapterActivityBookingResponse:
         raise NotImplementedError("Booking not implemented in Stub adapter")
 
     def _create_activity_product(self, search: AdapterActivitySearch):

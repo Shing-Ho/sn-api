@@ -14,7 +14,7 @@ from api.activities.activity_internal_models import (
 from api.activities.activity_models import SimplenightActivityDetailResponse
 from api.activities.adapters.suppliers_api.suppliers_api_transport import SuppliersApiTransport
 from api.common.common_models import from_json
-from api.hotel.models.booking_model import ActivityBookingRequest
+from api.hotel.models.booking_model import ActivityBookingRequest, Customer
 from api.hotel.models.hotel_api_model import Image, ImageType
 from api.hotel.models.hotel_common_models import Money
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
@@ -37,26 +37,28 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
     async def search_by_id(self, search: AdapterActivitySpecificSearch) -> AdapterActivity:
         raise NotImplementedError("Search by ID Not Implemented")
 
-    async def booking(self, booking_request: ActivityBookingRequest) -> AdapterActivityBookingResponse:
+    async def book(self, booking_request: ActivityBookingRequest, customer: Customer) -> AdapterActivityBookingResponse:
         params = {
-            "uuid": booking_request.items[0].code,
+            "uuid": booking_request.code,
             "lang": booking_request.language_code,
-            "date": booking_request.activity_date,
-            "time": booking_request.activity_time,
+            "date": str(booking_request.activity_date),
+            "time": str(booking_request.activity_time),
             "currency": booking_request.currency,
             "customer": {
-                "first_name": booking_request.customer.first_name,
-                "last_name": booking_request.customer.last_name,
-                "email": booking_request.customer.email,
-                "phone": booking_request.customer.phone_number,
+                "first_name": customer.first_name,
+                "last_name": customer.last_name,
+                "email": customer.email,
+                "phone": customer.phone_number,
             },
-            "items": [{"code": booking_request.items[0].code, "quantity": 1, "price": booking_request.product_id}],
+            "items": [
+                {"code": booking_request.items[0].code, "quantity": 1, "price": str(booking_request.items[0].price)}
+            ],
         }
 
         response = self.transport.book(**params)
         print(response)
 
-    async def details(self, product_id: str, date_from: date, date_to: date) -> AdapterActivityBookingResponse:
+    async def details(self, product_id: str, date_from: date, date_to: date) -> SimplenightActivityDetailResponse:
         params = {"uuid": product_id}
 
         response = self.transport.details(date_from, date_to, **params)

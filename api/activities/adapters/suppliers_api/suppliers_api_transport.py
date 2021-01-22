@@ -53,8 +53,9 @@ class SuppliersApiTransport(Transport, abc.ABC):
         logger.info(f"Request complete to {url}")
 
         if not response.ok:
-            logger.error(f"Error while searching Priceline: {response.text}")
+            logger.error(f"Error while searching Suppliers API: {response.text}")
 
+        print(response.text)
         return response.json()
 
     @staticmethod

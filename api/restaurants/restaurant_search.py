@@ -4,7 +4,7 @@ from typing import List
 from api.hotel.adapters import adapter_service
 from api.restaurants.restaurant_internal_models import AdapterRestaurant
 from api.restaurants.restaurant_models import SimplenightRestaurant
-from api.search.search_models import RestaurantSearch
+from api.multi.multi_product_models import RestaurantSearch
 
 
 def search(restaurant_search: RestaurantSearch) -> List[SimplenightRestaurant]:

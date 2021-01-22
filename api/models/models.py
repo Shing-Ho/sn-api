@@ -517,23 +517,22 @@ class HotelEvent(models.Model):
     provider_base = models.DecimalField(max_digits=10, decimal_places=2)
     provider_taxes = models.DecimalField(max_digits=10, decimal_places=2)
 
+
 class Venue(models.Model):
-    VENUE_FORM_CHOICE  = (
-        ("SN", "SN"),
-        ("PO","PO")
+    VENUE_FORM_CHOICE = (("SN", "SN"), ("PO", "PO"))
+    VENUE_TYPE = (
+        ("NIGHT_LIFE", "NIGHT_LIFE"),
+        ("HOTELS", "HOTELS"),
+        ("CAR_SERVICE", "CAR_SERVICE"),
+        ("GAS_AND_CHARGING", "GAS_AND_CHARGING"),
+        ("TOLLS", "TOLLS"),
+        ("SHOPPINGS", "SHOPPINGS"),
+        ("THINGS_TO_DO", "THINGS_TO_DO"),
+        ("DINING", "DINING"),
+        ("FAST_FOOD", "FAST_FOOD"),
+        ("COFFEE_AND_TEA", "COFFEE_AND_TEA"),
     )
-    VENUE_TYPE =( 
-        ("NIGHT_LIFE", "NIGHT_LIFE"), 
-        ("HOTELS", "HOTELS"), 
-        ("CAR_SERVICE", "CAR_SERVICE"), 
-        ("GAS_AND_CHARGING", "GAS_AND_CHARGING"), 
-        ("TOLLS", "TOLLS"), 
-        ("SHOPPINGS", "SHOPPINGS"), 
-        ("THINGS_TO_DO", "THINGS_TO_DO"), 
-        ("DINING", "DINING"), 
-        ("FAST_FOOD", "FAST_FOOD"), 
-        ("COFFEE_AND_TEA", "COFFEE_AND_TEA"), 
-    ) 
+
     class Meta:
         app_label = "api"
         verbose_name = "Venue"
@@ -542,24 +541,20 @@ class Venue(models.Model):
 
     venue_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=32, unique=True)
-    venue_from = models.CharField(
-        max_length = 2,
-        choices = VENUE_FORM_CHOICE,
-        default = "SN"
-    )
-    type = models.CharField(
-        max_length = 20,
-        choices = VENUE_TYPE,
-        default = "NIGHT_LIFE"
-    )
+    venue_from = models.CharField(max_length=2, choices=VENUE_FORM_CHOICE, default="SN")
+    type = models.CharField(max_length=20, choices=VENUE_TYPE, default="NIGHT_LIFE")
     language_code = models.CharField(max_length=3, default="en")
     tags = models.CharField(max_length=100, null=True, blank=True)
     star_rating = models.IntegerField(null=True, blank=True)
     status = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_requests_created')
-    modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_requests_modified')
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="%(class)s_requests_created"
+    )
+    modified_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="%(class)s_requests_modified"
+    )
 
 
 class VenueMedia(models.Model):
@@ -569,18 +564,11 @@ class VenueMedia(models.Model):
         verbose_name = "VenueMedia"
         verbose_name_plural = "VenueMedia"
 
-    FILE_CHOICE  = (
-        ("VIDEO", "VIDEO"),
-        ("IMAGE","IMAGE")
-    )
+    FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
-    type = models.CharField(
-        max_length = 8,
-        choices = FILE_CHOICE,
-        null=True, blank=True
-    )
+    type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
     url = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)

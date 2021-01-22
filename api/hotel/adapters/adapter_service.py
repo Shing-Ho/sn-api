@@ -18,7 +18,7 @@ from api.hotel.models.hotel_api_model import HotelSearch
 from api.models.models import Feature
 from api.restaurants.adapters.stub_restaurant_adapter import StubRestaurantAdapter
 from api.restaurants.restaurant_adapter import RestaurantAdapter
-from api.search.search_models import RestaurantSearch
+from api.multi.multi_product_models import RestaurantSearch
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 

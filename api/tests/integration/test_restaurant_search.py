@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from api.restaurants import restaurant_search
-from api.search.search_models import RestaurantSearch
+from api.multi.multi_product_models import RestaurantSearch
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 

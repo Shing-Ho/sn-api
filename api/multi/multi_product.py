@@ -5,7 +5,7 @@ from typing import Dict, Type, Callable
 from django.db import connection
 
 from api import logger
-from api.activities import activity_search
+from api.activities import activity_service
 from api.activities.activity_models import (
     SimplenightActivity,
     SimplenightActivityDetailRequest,
@@ -16,21 +16,21 @@ from api.common.request_context import get_config
 from api.hotel import hotel_service
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, SimplenightHotel
 from api.models.models import Feature
-from api.restaurants import restaurant_search
-from api.restaurants.restaurant_models import SimplenightRestaurant
-from api.search.search_models import (
+from api.multi.multi_product_models import (
     SearchRequest,
     RestaurantSearch,
     SearchResponse,
     ActivityLocationSearch,
     ActivitySpecificSearch,
 )
+from api.restaurants import restaurant_search
+from api.restaurants.restaurant_models import SimplenightRestaurant
 
 search_map: Dict[Type, Callable] = {
     HotelLocationSearch: hotel_service.search_by_location,
     HotelSpecificSearch: hotel_service.search_by_id,
-    ActivityLocationSearch: activity_search.search_by_location,
-    ActivitySpecificSearch: activity_search.search_by_id,
+    ActivityLocationSearch: activity_service.search_by_location,
+    ActivitySpecificSearch: activity_service.search_by_id,
     RestaurantSearch: restaurant_search.search,
 }
 
@@ -67,7 +67,7 @@ def search_request(search: SearchRequest):
 
 
 def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDetailResponse:
-    return activity_search.details(request)
+    return activity_service.details(request)
 
 
 def _set_result_on_response(response, result):

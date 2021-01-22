@@ -19,7 +19,7 @@ from api.hotel import provider_cache_service
 from api.hotel.adapters import adapter_service
 from api.hotel.models.hotel_common_models import Money
 from api.locations import location_service
-from api.search.search_models import ActivityLocationSearch, ActivitySpecificSearch
+from api.multi.multi_product_models import ActivityLocationSearch, ActivitySpecificSearch
 
 
 def search_by_location(search: ActivityLocationSearch) -> List[SimplenightActivity]:
@@ -39,7 +39,13 @@ def search_by_id(search: ActivitySpecificSearch) -> SimplenightActivity:
 def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDetailResponse:
     payload = provider_cache_service.get_cached_activity(request.code)
     adapter = adapter_service.get_activity_adapter(payload.provider)
-    return asyncio.run(adapter.details(payload.code, request.date_from, request.date_to))
+    activity_details: SimplenightActivityDetailResponse = asyncio.run(
+        adapter.details(payload.code, request.date_from, request.date_to)
+    )
+
+    # Reset to
+    activity_details.code = request.code
+    return activity_details
 
 
 def _adapter_location_search(search: ActivityLocationSearch) -> AdapterActivityLocationSearch:
@@ -64,6 +70,11 @@ def _process_activities(activities: List[AdapterActivity]) -> List[SimplenightAc
 
 
 def _adapter_to_simplenight_activity(activity: AdapterActivity) -> SimplenightActivity:
+    """Converts the response from an Adapter-specific Activity to an API Activity
+    Additionally, because we don't want to expose internal details (like Provider),
+    we save the adapter activity to a cache.  We replace the activity code with a unique code to this request
+    """
+
     simplenight_activity = SimplenightActivity(
         name=activity.name,
         code=str(uuid.uuid4())[:8],

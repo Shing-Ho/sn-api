@@ -178,7 +178,7 @@ class PricelineAdapter(HotelAdapter):
             "room_id": hotel_data["room_data"][0]["id"],
         }
 
-    def booking(self, book_request: HotelBookingRequest) -> HotelReservation:
+    def book(self, book_request: HotelBookingRequest) -> HotelReservation:
         params = self._create_booking_params(book_request.customer, book_request.room_code)
         response = self.transport.express_book(**params)
 

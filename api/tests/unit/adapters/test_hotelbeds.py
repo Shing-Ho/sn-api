@@ -1,7 +1,6 @@
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from unittest.mock import patch
-from decimal import Decimal
 
 import requests_mock
 
@@ -110,7 +109,7 @@ class TestHotelBeds(SimplenightTestCase):
         booking_url = transport.endpoint(transport.Endpoint.BOOKING)
         with requests_mock.Mocker() as mocker:
             mocker.post(booking_url, text=booking_resource)
-            booking_response = hotelbeds.booking(booking_request)
+            booking_response = hotelbeds.book(booking_request)
 
         self.assertIsNotNone(booking_response)
 

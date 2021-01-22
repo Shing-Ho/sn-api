@@ -4,9 +4,9 @@ from unittest.mock import patch
 
 from api.hotel import hotel_service, provider_cache_service, booking_service
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
+from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy
 from api.hotel.models.hotel_api_model import HotelLocationSearch
 from api.hotel.models.hotel_common_models import RoomOccupancy, RateType
-from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy
 from api.models.models import HotelBooking
 from api.tests import test_objects
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
