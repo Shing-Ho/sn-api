@@ -233,6 +233,8 @@ CACHES = {
 CACHE_TIMEOUT = 900
 
 
+REST_AUTH_SERIALIZERS = {"TOKEN_SERIALIZER": "api.accounts.serializers.TokenSerializer"}
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.TokenAuthentication",),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),

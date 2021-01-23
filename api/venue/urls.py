@@ -1,7 +1,7 @@
 from api.view import venue_view
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 
-router = ExtendedSimpleRouter()
+router = ExtendedSimpleRouter(trailing_slash=False)
 (
     router.register(r"", venue_view.VenueViewSet).register(
         r"media", venue_view.VenueMediaViewSet, "venue_id", parents_query_lookups=["venue_id"]

@@ -1,26 +1,33 @@
 #### REGISTERATIONS
-POST http://localhost:8000/api/v1/accounts/register/
+POST http://localhost:8000/api/v1/accounts/register
 Content-Type: application/json
 
 {
-    "username": "username123",
-    "email": "user123@developer.com",
+    "username": "username1223",
+    "email": "user1243@developer.com",
     "password1": "p@ass1234",
     "password2": "p@ass1234"
 }
 
 ##### Login
-POST http://localhost:8000/api/v1/accounts/login/
+POST http://localhost:8000/api/v1/accounts/login
 Content-Type: application/json
 
 {
-    "username":"mi",
-    "password":"lbr123ilyas"
+    "username":"username1223",
+    "password":"p@ass1234"
 }
 
 
 
 ### Reset Password
+POST http://localhost:8000/api/v1/accounts/password/reset/
+Content-Type: application/json
+
+{
+    "email": ""
+}
+
 
 #### STAFF USER
 POST http://localhost:8000/api/v1/accounts/login/
@@ -71,7 +78,7 @@ Authorization: Token 6680621db000147465b2d32141b5c7dcb5d8c8791e91705c14da9366bc3
 
 
 #####
-GET http://localhost:8000/api/v1/venues/6a0bdc2e-d4ed-43b6-8542-d61c69ab74a6/product/916238b2-00d7-488e-93f2-488ee8523002/media
+GET http://localhost:8000/api/v1/venues/6a0bdc2e-d4ed-43b6-8542-d61c69ab74a6/product
 Content-Type: application/json
 Accept: application/json
 Authorization: Token f53cfb5f5feadbc274406c52581d979c84eecb6d
