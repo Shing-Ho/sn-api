@@ -1,37 +1,94 @@
-#### STAFF USER
-POST http://localhost:8000/api/v1/accounts/login
+#### REGISTERATIONS
+POST http://localhost:8000/api/v1/accounts/register/
 Content-Type: application/json
 
 {
-    "username":"username",
-    "password":"password"
+    "username": "username123",
+    "email": "user123@developer.com",
+    "password1": "p@ass1234",
+    "password2": "p@ass1234"
+}
+
+##### Login
+POST http://localhost:8000/api/v1/accounts/login/
+Content-Type: application/json
+
+{
+    "username":"mi",
+    "password":"lbr123ilyas"
+}
+
+
+
+### Reset Password
+
+#### STAFF USER
+POST http://localhost:8000/api/v1/accounts/login/
+Content-Type: application/json
+{
+    "username":"mi",
+    "password":"lbr123ilyas"
 }
 
 
 #### NORMAL USER
-POST http://localhost:8000/api/v1/accounts/login
-Content-Type: application/json
-
-{
-    "username":"username",
-    "password":"password",
-    "email": "user@user.com"
-}
-
-#### REGISTERATION
 POST http://localhost:8000/api/v1/accounts/register
 Content-Type: application/json
 
+{
+    "username":"username1",
+    "password":"password1",
+    "email": "user1@user.com"
+}
+
+#### REGISTERATION
+POST http://localhost:8000/api/v1/users
+Content-Type: application/json
 
 {
     "username":"username",
     "password":"password",
-    "email": "user@user.com"
+    "email": "user@user.com",
+    "is_staff":True,
+    "is_superuser":True,
+    "is_active":True,
 }
 
 #### 
 GET http://localhost:8000/api/v1/users
 Content-Type: application/json
 Accept: application/json
-Authorization: Token ca0c22b11612f1a75d51a28d4fb116d771be9fc19e9eaede17963020953f4307
+Authorization: Token 3af6d74ab3856ffd7708305e542b001faf4135b7
 
+###
+
+
+#### STAFF USER
+POST https://simplenight-api-278418.ue.r.appspot.com/api/v1/users
+Content-Type: application/json
+
+{
+    "username": "simplenight-test",
+    "password": "123456789"
+}
+
+
+#####
+GET http://localhost:8000/api/v1/venues/
+Content-Type: application/json
+Accept: application/json
+Authorization: Token 6680621db000147465b2d32141b5c7dcb5d8c8791e91705c14da9366bc377965
+
+
+#####
+GET http://localhost:8000/api/v1/venues/6a0bdc2e-d4ed-43b6-8542-d61c69ab74a6/product/916238b2-00d7-488e-93f2-488ee8523002/
+Content-Type: application/json
+Accept: application/json
+Authorization: Token f53cfb5f5feadbc274406c52581d979c84eecb6d
+
+
+#####
+GET http://localhost:8000/api/v1/payment-methods
+Content-Type: application/json
+Accept: application/json
+Authorization: Token f53cfb5f5feadbc274406c52581d979c84eecb6d

@@ -24,12 +24,12 @@ router = ExtendedSimpleRouter()
 )
 (
     router.register(r"", venue_view.VenueViewSet).register(
-        r"product-media", venue_view.ProductMediaViewSet, "venue_id", parents_query_lookups=["venue_id"]
+        r"product", venue_view.ProductNightLifeViewSet, "venue_id", parents_query_lookups=["venue_id"]
     )
 )
 (
-    router.register(r"", venue_view.VenueViewSet).register(
-        r"product", venue_view.ProductNightLifeViewSet, "venue_id", parents_query_lookups=["venue_id"]
-    )
+    router.register(r"", venue_view.VenueViewSet)
+    .register(r"product", venue_view.ProductNightLifeViewSet, "venue_id", parents_query_lookups=["venue_id"])
+    .register(r"media", venue_view.ProductMediaViewSet, "id", parents_query_lookups=["product_id", "id"])
 )
 urlpatterns = router.urls

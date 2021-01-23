@@ -35,8 +35,6 @@ class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             self.permission_classes = [
                 IsOwner,
             ]
-        elif self.action == "retrieve":
-            self.permission_classes = [IsOwner]
         elif self.action == "destroy":
             self.permission_classes = [IsOwner]
         elif self.action == "create":
