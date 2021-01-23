@@ -7,6 +7,3 @@ tox
 black
 flake8
 requests_mock
-django-jsonfield
-django-allauth
-django-rest-auth
