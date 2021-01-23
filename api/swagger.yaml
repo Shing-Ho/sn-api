@@ -491,7 +491,7 @@ paths:
           description: ''
       tags:
       - Accounts
-  /api/v1/venues/:
+  /api/v1/venues:
     get:
       operationId: listVenues
       description: ''
@@ -547,7 +547,7 @@ paths:
           description: ''
       tags:
       - Venues
-  /api/v1/venues/{venue_id}/:
+  /api/v1/venues/{venue_id}:
     get:
       operationId: retrieveVenue
       description: ''
@@ -606,7 +606,7 @@ paths:
           description: ''
       tags:
       - Venues
-  /api/v1/venues/{parent_lookup_venue_id}/media/:
+  /api/v1/venues/{parent_lookup_venue_id}/media:
     get:
       operationId: listVenueMedias
       description: ''
@@ -674,7 +674,7 @@ paths:
           description: ''
       tags:
       - Venue Media
-  /api/v1/venues/{parent_lookup_venue_id}/media/{id}/:
+  /api/v1/venues/{parent_lookup_venue_id}/media/{id}:
     get:
       operationId: retrieveVenueMedia
       description: ''
@@ -751,7 +751,7 @@ paths:
           description: ''
       tags:
       - Venue Media
-  /api/v1/venues/{parent_lookup_venue_id}/contact/:
+  /api/v1/venues/{parent_lookup_venue_id}/contact:
     get:
       operationId: listVenueContacts
       description: ''
@@ -819,7 +819,7 @@ paths:
           description: ''
       tags:
       - Venue Contacts
-  /api/v1/venues/{parent_lookup_venue_id}/contact/{id}/:
+  /api/v1/venues/{parent_lookup_venue_id}/contact/{id}:
     get:
       operationId: retrieveVenueContact
       description: ''
@@ -896,7 +896,7 @@ paths:
           description: ''
       tags:
       - Venue Contacts
-  /api/v1/venues/{parent_lookup_venue_id}/details/:
+  /api/v1/venues/{parent_lookup_venue_id}/details:
     get:
       operationId: listVenueDetails
       description: ''
@@ -964,7 +964,7 @@ paths:
           description: ''
       tags:
       - Venue Details
-  /api/v1/venues/{parent_lookup_venue_id}/details/{id}/:
+  /api/v1/venues/{parent_lookup_venue_id}/details/{id}:
     get:
       operationId: retrieveVenueDetail
       description: ''
@@ -1041,7 +1041,7 @@ paths:
           description: ''
       tags:
       - Venue Details
-  /api/v1/venues/{parent_lookup_venue_id}/product-group/:
+  /api/v1/venues/{parent_lookup_venue_id}/product-group:
     get:
       operationId: listProductGroups
       description: ''
@@ -1109,7 +1109,7 @@ paths:
           description: ''
       tags:
       - Venue Product Group
-  /api/v1/venues/{parent_lookup_venue_id}/product-group/{id}/:
+  /api/v1/venues/{parent_lookup_venue_id}/product-group/{id}:
     get:
       operationId: retrieveProductGroup
       description: ''
@@ -1186,7 +1186,7 @@ paths:
           description: ''
       tags:
       - Venue Product Group
-  /api/v1/venues/{parent_lookup_venue_id}/product-media/:
+  /api/v1/venues/{parent_lookup_venue_id}/product-media:
     get:
       operationId: listProductMedias
       description: ''
@@ -1254,7 +1254,7 @@ paths:
           description: ''
       tags:
       - Venue Product Media
-  /api/v1/venues/{parent_lookup_venue_id}/product-media/{id}/:
+  /api/v1/venues/{parent_lookup_venue_id}/product-media/{id}:
     get:
       operationId: retrieveProductMedia
       description: ''
@@ -1331,7 +1331,7 @@ paths:
           description: ''
       tags:
       - Venue Product Media
-  /api/v1/venues/{parent_lookup_venue_id}/product/:
+  /api/v1/venues/{parent_lookup_venue_id}/product:
     get:
       operationId: listProductsNightLifes
       description: ''
@@ -1399,7 +1399,7 @@ paths:
           description: ''
       tags:
       - Venue Product
-  /api/v1/venues/{parent_lookup_venue_id}/product/{id}/:
+  /api/v1/venues/{parent_lookup_venue_id}/product/{id}:
     get:
       operationId: retrieveProductsNightLife
       description: ''
@@ -1882,17 +1882,56 @@ components:
         id:
           type: integer
           readOnly: true
+        password:
+          type: string
+          maxLength: 128
+        last_login:
+          type: string
+          format: date-time
+          nullable: true
+        is_superuser:
+          type: boolean
+          description: Designates that this user has all permissions without explicitly
+            assigning them.
         username:
           type: string
           description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
             only.
           pattern: ^[\w.@+-]+\z
           maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
         email:
           type: string
           format: email
           maxLength: 254
+        is_staff:
+          type: boolean
+          description: Designates whether the user can log into this admin site.
+        is_active:
+          type: boolean
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        date_joined:
+          type: string
+          format: date-time
+        groups:
+          type: array
+          items:
+            type: integer
+          description: The groups this user belongs to. A user will get all permissions
+            granted to each of their groups.
+        user_permissions:
+          type: array
+          items:
+            type: integer
+          description: Specific permissions for this user.
       required:
+      - password
       - username
     PaymentMethod:
       type: object
@@ -1920,12 +1959,303 @@ components:
           readOnly: true
       required:
       - name
+    UserDetails:
+      type: object
+      properties:
+        pk:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+\z
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - username
     Venue:
       type: object
       properties:
         venue_id:
           type: string
           format: uuid
+        media:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                readOnly: true
+              type:
+                enum:
+                - VIDEO
+                - IMAGE
+                type: string
+                nullable: true
+              url:
+                type: string
+              created_at:
+                type: string
+                format: date-time
+                readOnly: true
+              modified_at:
+                type: string
+                format: date-time
+                readOnly: true
+              venue_id:
+                type: string
+            required:
+            - url
+            - venue_id
+          readOnly: true
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                readOnly: true
+              description:
+                type: string
+                nullable: true
+              location:
+                type: string
+                nullable: true
+              logitude:
+                type: string
+                nullable: true
+                maxLength: 10
+              latitude:
+                type: string
+                nullable: true
+                maxLength: 200
+              capacity:
+                type: integer
+                maximum: 2147483647
+                minimum: -2147483648
+                nullable: true
+              availability:
+                type: string
+              holidays:
+                type: string
+              amenities:
+                type: string
+              created_at:
+                type: string
+                format: date-time
+                readOnly: true
+              modified_at:
+                type: string
+                format: date-time
+                readOnly: true
+              payment_method:
+                type: string
+                nullable: true
+              venue_id:
+                type: string
+            required:
+            - venue_id
+          readOnly: true
+        contacts:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                readOnly: true
+              type:
+                enum:
+                - MAIN
+                - OTHER
+                type: string
+              website:
+                type: string
+                nullable: true
+              phone_number:
+                type: string
+                nullable: true
+              fax:
+                type: string
+                nullable: true
+              email:
+                type: string
+                nullable: true
+              title:
+                type: string
+                nullable: true
+              department:
+                type: string
+                nullable: true
+              created_at:
+                type: string
+                format: date-time
+                readOnly: true
+              modified_at:
+                type: string
+                format: date-time
+                readOnly: true
+              venue_id:
+                type: string
+            required:
+            - venue_id
+          readOnly: true
+        created_by:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            password:
+              type: string
+              maxLength: 128
+            last_login:
+              type: string
+              format: date-time
+              nullable: true
+            is_superuser:
+              type: boolean
+              description: Designates that this user has all permissions without explicitly
+                assigning them.
+            username:
+              type: string
+              description: Required. 150 characters or fewer. Letters, digits and
+                @/./+/-/_ only.
+              pattern: ^[\w.@+-]+\z
+              maxLength: 150
+            first_name:
+              type: string
+              maxLength: 150
+            last_name:
+              type: string
+              maxLength: 150
+            email:
+              type: string
+              format: email
+              maxLength: 254
+            is_staff:
+              type: boolean
+              description: Designates whether the user can log into this admin site.
+            is_active:
+              type: boolean
+              description: Designates whether this user should be treated as active.
+                Unselect this instead of deleting accounts.
+            date_joined:
+              type: string
+              format: date-time
+            groups:
+              type: array
+              items:
+                type: integer
+              description: The groups this user belongs to. A user will get all permissions
+                granted to each of their groups.
+            user_permissions:
+              type: array
+              items:
+                type: integer
+              description: Specific permissions for this user.
+          required:
+          - password
+          - username
+          readOnly: true
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                readOnly: true
+              media:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      readOnly: true
+                    type:
+                      enum:
+                      - VIDEO
+                      - IMAGE
+                      type: string
+                      nullable: true
+                    url:
+                      type: string
+                      nullable: true
+                    thumbnail:
+                      type: string
+                    mail:
+                      type: boolean
+                    created_at:
+                      type: string
+                      format: date-time
+                      readOnly: true
+                    modified_at:
+                      type: string
+                      format: date-time
+                      readOnly: true
+                    venue_id:
+                      type: string
+                    product_id:
+                      type: string
+                      nullable: true
+                  required:
+                  - thumbnail
+                  - venue_id
+                readOnly: true
+              group:
+                type: string
+                readOnly: true
+              name:
+                type: string
+                maxLength: 200
+              price:
+                type: string
+              capacity:
+                type: integer
+                maximum: 2147483647
+                minimum: -2147483648
+              highlight:
+                type: boolean
+              status:
+                type: boolean
+              created_at:
+                type: string
+                format: date-time
+                readOnly: true
+              modified_at:
+                type: string
+                format: date-time
+                readOnly: true
+              venue_id:
+                type: string
+              product_group_id:
+                type: string
+                nullable: true
+            required:
+            - name
+            - price
+            - capacity
+            - venue_id
+          readOnly: true
         name:
           type: string
           maxLength: 300
@@ -1954,6 +2284,11 @@ components:
           type: string
           nullable: true
           maxLength: 100
+        star_rating:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
         status:
           type: integer
           maximum: 2147483647
@@ -1966,9 +2301,6 @@ components:
           type: string
           format: date-time
           readOnly: true
-        created_by:
-          type: integer
-          nullable: true
         modified_by:
           type: integer
           nullable: true
@@ -2106,6 +2438,86 @@ components:
       required:
       - name
       - venue_id
+    ProductsNightLife:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        media:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                readOnly: true
+              type:
+                enum:
+                - VIDEO
+                - IMAGE
+                type: string
+                nullable: true
+              url:
+                type: string
+                nullable: true
+              thumbnail:
+                type: string
+              mail:
+                type: boolean
+              created_at:
+                type: string
+                format: date-time
+                readOnly: true
+              modified_at:
+                type: string
+                format: date-time
+                readOnly: true
+              venue_id:
+                type: string
+              product_id:
+                type: string
+                nullable: true
+            required:
+            - thumbnail
+            - venue_id
+          readOnly: true
+        group:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        price:
+          type: string
+        capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        highlight:
+          type: boolean
+        status:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        venue_id:
+          type: string
+        product_group_id:
+          type: string
+          nullable: true
+      required:
+      - name
+      - price
+      - capacity
+      - venue_id
     ProductMedia:
       type: object
       properties:
@@ -2142,50 +2554,9 @@ components:
       required:
       - thumbnail
       - venue_id
-    ProductsNightLife:
+    Login:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-        name:
-          type: string
-          maxLength: 200
-        price:
-          type: string
-        capacity:
-          type: integer
-          maximum: 2147483647
-          minimum: -2147483648
-        highlight:
-          type: boolean
-        status:
-          type: boolean
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        modified_at:
-          type: string
-          format: date-time
-          readOnly: true
-        venue_id:
-          type: string
-        product_group_id:
-          type: string
-          nullable: true
-      required:
-      - name
-      - price
-      - capacity
-      - venue_id
-    Register:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
         username:
           type: string
         email:
@@ -2193,18 +2564,70 @@ components:
           format: email
         password:
           type: string
-          minLength: 8
       required:
-      - username
-      - email
       - password
-    ChangePassword:
+    PasswordReset:
       type: object
       properties:
-        old_password:
+        email:
           type: string
-        new_password:
+          format: email
+      required:
+      - email
+    PasswordChange:
+      type: object
+      properties:
+        new_password1:
+          type: string
+          maxLength: 128
+        new_password2:
+          type: string
+          maxLength: 128
+      required:
+      - new_password1
+      - new_password2
+    PasswordResetConfirm:
+      type: object
+      properties:
+        new_password1:
+          type: string
+          maxLength: 128
+        new_password2:
+          type: string
+          maxLength: 128
+        uid:
+          type: string
+        token:
           type: string
       required:
-      - old_password
-      - new_password
+      - new_password1
+      - new_password2
+      - uid
+      - token
+    Register:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 150
+          minLength: 1
+        email:
+          type: string
+          format: email
+        password1:
+          type: string
+          writeOnly: true
+        password2:
+          type: string
+          writeOnly: true
+      required:
+      - username
+      - password1
+      - password2
+    VerifyEmail:
+      type: object
+      properties:
+        key:
+          type: string
+      required:
+      - key
