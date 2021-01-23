@@ -31,16 +31,6 @@ Content-Type: application/json
 }
 
 
-#### NORMAL USER
-POST http://localhost:8000/api/v1/accounts/register
-Content-Type: application/json
-
-{
-    "username":"username1",
-    "password":"password1",
-    "email": "user1@user.com"
-}
-
 #### REGISTERATION
 POST http://localhost:8000/api/v1/users
 Content-Type: application/json
@@ -81,7 +71,7 @@ Authorization: Token 6680621db000147465b2d32141b5c7dcb5d8c8791e91705c14da9366bc3
 
 
 #####
-GET http://localhost:8000/api/v1/venues/6a0bdc2e-d4ed-43b6-8542-d61c69ab74a6/product/916238b2-00d7-488e-93f2-488ee8523002/
+GET http://localhost:8000/api/v1/venues/6a0bdc2e-d4ed-43b6-8542-d61c69ab74a6/product/916238b2-00d7-488e-93f2-488ee8523002/media
 Content-Type: application/json
 Accept: application/json
 Authorization: Token f53cfb5f5feadbc274406c52581d979c84eecb6d
