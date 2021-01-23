@@ -547,7 +547,7 @@ class Venue(models.Model):
     language_code = models.CharField(max_length=3, default="en")
     tags = models.CharField(max_length=100, null=True, blank=True)
     star_rating = models.IntegerField(null=True, blank=True)
-    status = models.IntegerField(default=0)
+    status = models.BooleanField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_by")
