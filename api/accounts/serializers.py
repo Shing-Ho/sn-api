@@ -1,14 +1,14 @@
 from rest_framework import serializers
 
-# from django.contrib.auth.models import User
+from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
-# from rest_framework.validators import UniqueValidator
 
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ("id", "username", "email")
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "username", "email")
+
 
 # # Register Serializer
 # class RegisterSerializer(serializers.ModelSerializer):
