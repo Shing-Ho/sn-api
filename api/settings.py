@@ -27,7 +27,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = "sh%sqjnk#g0_3n@(uo%&023&s6@-@-fxc277y(7+ytn)kuurq^"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*", "simplenight-api-278418.ue.r.appspot.com", "127.0.0.1", "localhost"]
 
@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     "rest_framework_api_key",
     "corsheaders",
     "sequences.apps.SequencesConfig",
-    "knox",
 ]
 
 SITE_ID = 1
