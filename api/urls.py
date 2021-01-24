@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework import routers
 
 import api.view.admin_view
 import api.view.carey_view
@@ -13,9 +12,10 @@ import api.view.charging_view
 import api.view.carey_view
 import api.accounts.views
 from api.view import venue_view
+from rest_framework_extensions.routers import ExtendedSimpleRouter
 from rest_framework.schemas import get_schema_view
 
-router = routers.ExtendedSimpleRouter(trailing_slash=False)
+router = ExtendedSimpleRouter(trailing_slash=False)
 
 
 router.register(r"locations", api.view.locations.LocationsViewSet, basename="locations")
