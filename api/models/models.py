@@ -564,11 +564,7 @@ class VenueMedia(models.Model):
     FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-<<<<<<< d0566a619361770d2433e25cff41a803bcaed4b7
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
-=======
     venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="media")
->>>>>>> bug fixed
     type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
     url = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

@@ -11,6 +11,7 @@ import api.view.default_view
 import api.view.charging_view
 import api.view.carey_view
 import api.accounts.views
+import api.view.multi_product_views
 from api.view import venue_view
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 from rest_framework.schemas import get_schema_view
