@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from typing import List, Optional, Union
 
@@ -23,11 +23,9 @@ class SimplenightActivity(SimplenightModel):
 class ActivityAvailabilityTime(SimplenightModel):
     type: str
     label: str
-    days: List[str]
-    times: List[str]
+    activity_dates: List[Union[datetime, date, str]]
+    activity_times: List[str]
     capacity: int
-    from_date: date = Field(alias="from")
-    to_date: date = Field(alias="to")
     uuid: str
 
 
@@ -42,6 +40,21 @@ class ActivityItem(SimplenightModel):
     status: str
     price: Decimal
     price_type: str
+
+
+class ActivityVariants(SimplenightModel):
+    code: str
+    name: str
+    description: str
+    capacity: int
+    status: str
+    price: Decimal
+    currency: str
+
+
+class SimplenightActivityVariantRequest(SimplenightModel):
+    code: str
+    activity_date: date
 
 
 class SimplenightActivityDetailRequest(SimplenightModel):

@@ -1,6 +1,6 @@
 from concurrent.futures.thread import ThreadPoolExecutor
 from threading import currentThread
-from typing import Dict, Type, Callable
+from typing import Dict, Type, Callable, List
 
 from django.db import connection
 
@@ -10,6 +10,8 @@ from api.activities.activity_models import (
     SimplenightActivity,
     SimplenightActivityDetailRequest,
     SimplenightActivityDetailResponse,
+    SimplenightActivityVariantRequest,
+    ActivityVariants,
 )
 from api.common import request_cache
 from api.common.request_context import get_config
@@ -68,6 +70,10 @@ def search_request(search: SearchRequest):
 
 def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDetailResponse:
     return activity_service.details(request)
+
+
+def variants(request: SimplenightActivityVariantRequest) -> List[ActivityVariants]:
+    return activity_service.variants(request)
 
 
 def _set_result_on_response(response, result):

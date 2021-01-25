@@ -3,7 +3,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.decorators import action
 from rest_framework.request import Request
 
-from api.activities.activity_models import SimplenightActivityDetailRequest
+from api.activities.activity_models import SimplenightActivityDetailRequest, SimplenightActivityVariantRequest
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiDailyThrottle, OrganizationApiBurstThrottle
 from api.common.common_models import from_json
 from api.hotel import booking_service
@@ -29,6 +29,13 @@ class AllProductsViewSet(viewsets.ViewSet):
     def details(self, request: Request):
         request = from_json(request.data, SimplenightActivityDetailRequest)
         results = multi_product.details(request)
+
+        return _response(results)
+
+    @action(detail=False, url_path="variants", methods=["POST"], name="Activity Variants")
+    def variants(self, request: Request):
+        request = from_json(request.data, SimplenightActivityVariantRequest)
+        results = multi_product.variants(request)
 
         return _response(results)
 

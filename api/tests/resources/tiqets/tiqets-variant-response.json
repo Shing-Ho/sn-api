@@ -1,0 +1,32 @@
+[
+    {
+        "code": 4763,
+        "name": {
+            "en": "Adult (16+)"
+        },
+        "description": {
+            "en": ""
+        },
+        "capacity": 40,
+        "status": "ACTIVE",
+        "price": 24.56,
+        "tax_multiplier": 0,
+        "thumbnail": "https://api.simplenight.com/assets/images/boxoffice/sports/3.jpg",
+        "currency": "EUR"
+    },
+    {
+        "code": 4765,
+        "name": {
+            "en": "Concessions"
+        },
+        "description": {
+            "en": "Full-time student (16 years and over), disabled visitor, over 60 with ID"
+        },
+        "capacity": 40,
+        "status": "ACTIVE",
+        "price": 18.8,
+        "tax_multiplier": 0,
+        "thumbnail": "https://api.simplenight.com/assets/images/boxoffice/sports/3.jpg",
+        "currency": "EUR"
+    }
+]
