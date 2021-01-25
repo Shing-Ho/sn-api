@@ -23,6 +23,8 @@ cryptography
 pytz
 django-admin-interface
 bugsnag==4.0.2
-django-rest-knox
 xmltodict
-drf_yasg
+https://github.com/chibisov/drf-extensions/archive/master.zip
+django-jsonfield
+django-allauth
+django-rest-auth

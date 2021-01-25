@@ -7,4 +7,3 @@ tox
 black
 flake8
 requests_mock
-drf-yasg

@@ -515,6 +515,1343 @@ paths:
           description: bad input parameter
         '404':
           description: No locations found for input
+  /api/v1/users:
+    get:
+      operationId: listUsers
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+          description: ''
+      tags:
+      - Admin API For User Management
+    post:
+      operationId: createUser
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+      tags:
+      - Admin API For User Management
+  /api/v1/users/{id}:
+    get:
+      operationId: retrieveUser
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this user.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+      tags:
+      - Admin API For User Management
+    put:
+      operationId: updateUser
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this user.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+      tags:
+      - Admin API For User Management
+    delete:
+      operationId: destroyUser
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this user.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Admin API For User Management
+  /api/v1/payment-methods:
+    get:
+      operationId: listPaymentMethods
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentMethod'
+          description: ''
+      tags:
+      - Payment Methods
+    post:
+      operationId: createPaymentMethod
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentMethod'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+          description: ''
+      tags:
+      - Payment Methods
+  /api/v1/payment-methods/{id}:
+    get:
+      operationId: retrievePaymentMethod
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this PaymentMethod.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+          description: ''
+      tags:
+      - Payment Methods
+    put:
+      operationId: updatePaymentMethod
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this PaymentMethod.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentMethod'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+          description: ''
+      tags:
+      - Payment Methods
+    delete:
+      operationId: destroyPaymentMethod
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this PaymentMethod.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Payment Methods
+  /api/v1/accounts/user:
+    get:
+      operationId: retrieveUser
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+      tags:
+      - Accounts
+  /api/v1/venues/:
+    get:
+      operationId: listVenues
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Venue'
+          description: ''
+      tags:
+      - Venues
+    post:
+      operationId: createVenue
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Venue'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Venue'
+          description: ''
+      tags:
+      - Venues
+  /api/v1/venues/{venue_id}/:
+    get:
+      operationId: retrieveVenue
+      description: ''
+      parameters:
+      - name: venue_id
+        in: path
+        required: true
+        description: A UUID string identifying this Venue.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Venue'
+          description: ''
+      tags:
+      - Venues
+    put:
+      operationId: updateVenue
+      description: ''
+      parameters:
+      - name: venue_id
+        in: path
+        required: true
+        description: A UUID string identifying this Venue.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Venue'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Venue'
+          description: ''
+      tags:
+      - Venues
+    delete:
+      operationId: destroyVenue
+      description: ''
+      parameters:
+      - name: venue_id
+        in: path
+        required: true
+        description: A UUID string identifying this Venue.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Venues
+  /api/v1/venues/{parent_lookup_venue_id}/media/:
+    get:
+      operationId: listVenueMedias
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VenueMedia'
+          description: ''
+      tags:
+      - Venue Media
+    post:
+      operationId: createVenueMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenueMedia'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueMedia'
+          description: ''
+      tags:
+      - Venue Media
+  /api/v1/venues/{parent_lookup_venue_id}/media/{id}/:
+    get:
+      operationId: retrieveVenueMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueMedia.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueMedia'
+          description: ''
+      tags:
+      - Venue Media
+    put:
+      operationId: updateVenueMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueMedia.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenueMedia'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueMedia'
+          description: ''
+      tags:
+      - Venue Media
+    delete:
+      operationId: destroyVenueMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueMedia.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Venue Media
+  /api/v1/venues/{parent_lookup_venue_id}/contact/:
+    get:
+      operationId: listVenueContacts
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VenueContact'
+          description: ''
+      tags:
+      - Venue Contacts
+    post:
+      operationId: createVenueContact
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenueContact'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueContact'
+          description: ''
+      tags:
+      - Venue Contacts
+  /api/v1/venues/{parent_lookup_venue_id}/contact/{id}/:
+    get:
+      operationId: retrieveVenueContact
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueContact.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueContact'
+          description: ''
+      tags:
+      - Venue Contacts
+    put:
+      operationId: updateVenueContact
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueContact.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenueContact'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueContact'
+          description: ''
+      tags:
+      - Venue Contacts
+    delete:
+      operationId: destroyVenueContact
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueContact.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Venue Contacts
+  /api/v1/venues/{parent_lookup_venue_id}/details/:
+    get:
+      operationId: listVenueDetails
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VenueDetail'
+          description: ''
+      tags:
+      - Venue Details
+    post:
+      operationId: createVenueDetail
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenueDetail'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueDetail'
+          description: ''
+      tags:
+      - Venue Details
+  /api/v1/venues/{parent_lookup_venue_id}/details/{id}/:
+    get:
+      operationId: retrieveVenueDetail
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueDetail.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueDetail'
+          description: ''
+      tags:
+      - Venue Details
+    put:
+      operationId: updateVenueDetail
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueDetail.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenueDetail'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueDetail'
+          description: ''
+      tags:
+      - Venue Details
+    delete:
+      operationId: destroyVenueDetail
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueDetail.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Venue Details
+  /api/v1/venues/{parent_lookup_venue_id}/product-group/:
+    get:
+      operationId: listProductGroups
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductGroup'
+          description: ''
+      tags:
+      - Venue Product Group
+    post:
+      operationId: createProductGroup
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductGroup'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductGroup'
+          description: ''
+      tags:
+      - Venue Product Group
+  /api/v1/venues/{parent_lookup_venue_id}/product-group/{id}/:
+    get:
+      operationId: retrieveProductGroup
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductGroup.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductGroup'
+          description: ''
+      tags:
+      - Venue Product Group
+    put:
+      operationId: updateProductGroup
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductGroup.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductGroup'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductGroup'
+          description: ''
+      tags:
+      - Venue Product Group
+    delete:
+      operationId: destroyProductGroup
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductGroup.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Venue Product Group
+  /api/v1/venues/{parent_lookup_venue_id}/product-media/:
+    get:
+      operationId: listProductMedias
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductMedia'
+          description: ''
+      tags:
+      - Venue Product Media
+    post:
+      operationId: createProductMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductMedia'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductMedia'
+          description: ''
+      tags:
+      - Venue Product Media
+  /api/v1/venues/{parent_lookup_venue_id}/product-media/{id}/:
+    get:
+      operationId: retrieveProductMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductMedia.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductMedia'
+          description: ''
+      tags:
+      - Venue Product Media
+    put:
+      operationId: updateProductMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductMedia.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductMedia'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductMedia'
+          description: ''
+      tags:
+      - Venue Product Media
+    delete:
+      operationId: destroyProductMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductMedia.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Venue Product Media
+  /api/v1/venues/{parent_lookup_venue_id}/product/:
+    get:
+      operationId: listProductsNightLifes
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductsNightLife'
+          description: ''
+      tags:
+      - Venue Product
+    post:
+      operationId: createProductsNightLife
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductsNightLife'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsNightLife'
+          description: ''
+      tags:
+      - Venue Product
+  /api/v1/venues/{parent_lookup_venue_id}/product/{id}/:
+    get:
+      operationId: retrieveProductsNightLife
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsNightLife.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsNightLife'
+          description: ''
+      tags:
+      - Venue Product
+    put:
+      operationId: updateProductsNightLife
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsNightLife.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductsNightLife'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsNightLife'
+          description: ''
+      tags:
+      - Venue Product
+    delete:
+      operationId: destroyProductsNightLife
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsNightLife.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Venue Product
+
+  /api/v1/authentication/create_api_key:
+    post:
+      operationId: createApiKeyAuthentication
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Authentication
+  /api/v1/accounts/register:
+    post:
+      operationId: createRegister
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+      tags:
+      - Accounts
+  /api/v1/accounts/login:
+    post:
+      operationId: createLoginAPI
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Accounts
+  /api/v1/accounts/logout:
+    post:
+      operationId: createLogout
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Accounts
+  /api/v1/accounts/change-password:
+    put:
+      operationId: updateChangePassword
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePassword'
+          description: ''
+      tags:
+      - Accounts
+    patch:
+      operationId: partialUpdateChangePassword
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePassword'
+          description: ''
+      tags:
+      - Accounts
 
 components:
   securitySchemes:
@@ -1681,3 +3018,337 @@ components:
           example: Hypermile
         Description:
           type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+\z
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 254
+      required:
+      - username
+    PaymentMethod:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        icon:
+          type: string
+          nullable: true
+        api_key:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+    Venue:
+      type: object
+      properties:
+        venue_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 300
+        venue_from:
+          enum:
+          - SN
+          - PO
+          type: string
+        type:
+          enum:
+          - NIGHT_LIFE
+          - HOTELS
+          - CAR_SERVICE
+          - GAS_AND_CHARGING
+          - TOLLS
+          - SHOPPINGS
+          - THINGS_TO_DO
+          - DINING
+          - FAST_FOOD
+          - COFFEE_AND_TEA
+          type: string
+        language_code:
+          type: string
+          maxLength: 3
+        tags:
+          type: string
+          nullable: true
+          maxLength: 100
+        status:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: integer
+          nullable: true
+        modified_by:
+          type: integer
+          nullable: true
+      required:
+      - name
+    VenueMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          enum:
+          - VIDEO
+          - IMAGE
+          type: string
+          nullable: true
+        url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        venue_id:
+          type: string
+      required:
+      - url
+      - venue_id
+    VenueContact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          enum:
+          - MAIN
+          - OTHER
+          type: string
+        website:
+          type: string
+          nullable: true
+        phone_number:
+          type: string
+          nullable: true
+        fax:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        department:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        venue_id:
+          type: string
+      required:
+      - venue_id
+    VenueDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        description:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        logitude:
+          type: string
+          nullable: true
+          maxLength: 10
+        latitude:
+          type: string
+          nullable: true
+          maxLength: 200
+        capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        availability:
+          type: string
+        holidays:
+          type: string
+        amenities:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        payment_method:
+          type: string
+          nullable: true
+        venue_id:
+          type: string
+      required:
+      - venue_id
+    ProductGroup:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        venue_id:
+          type: string
+      required:
+      - name
+      - venue_id
+    ProductMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          enum:
+          - VIDEO
+          - IMAGE
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+        thumbnail:
+          type: string
+        mail:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        venue_id:
+          type: string
+        product_id:
+          type: string
+          nullable: true
+      required:
+      - thumbnail
+      - venue_id
+    ProductsNightLife:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        price:
+          type: string
+        capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        highlight:
+          type: boolean
+        status:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        venue_id:
+          type: string
+        product_group_id:
+          type: string
+          nullable: true
+      required:
+      - name
+      - price
+      - capacity
+      - venue_id
+    Register:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+      required:
+      - username
+      - email
+      - password
+    ChangePassword:
+      type: object
+      properties:
+        old_password:
+          type: string
+        new_password:
+          type: string
+      required:
+      - old_password
+      - new_password
+          
+  
