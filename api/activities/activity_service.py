@@ -14,6 +14,8 @@ from api.activities.activity_models import (
     SimplenightActivity,
     SimplenightActivityDetailRequest,
     SimplenightActivityDetailResponse,
+    SimplenightActivityVariantRequest,
+    ActivityVariants,
 )
 from api.hotel import provider_cache_service
 from api.hotel.adapters import adapter_service
@@ -46,6 +48,14 @@ def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDet
     # Reset to
     activity_details.code = request.code
     return activity_details
+
+
+def variants(request: SimplenightActivityVariantRequest) -> List[ActivityVariants]:
+    payload = provider_cache_service.get_cached_activity(request.code)
+    adapter = adapter_service.get_activity_adapter(payload.provider)
+    activity_variants: List[ActivityVariants] = asyncio.run(adapter.variants(payload.code, request.activity_date))
+
+    return activity_variants
 
 
 def _adapter_location_search(search: ActivityLocationSearch) -> AdapterActivityLocationSearch:

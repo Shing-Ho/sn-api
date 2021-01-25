@@ -12,6 +12,7 @@ from api.activities.activity_internal_models import (
     AdapterActivityBookingResponse,
     AdapterActivity,
 )
+from api.activities.activity_models import ActivityVariants
 from api.hotel.models.booking_model import ActivityBookingRequest, Customer
 from api.hotel.models.hotel_common_models import Money
 
@@ -25,6 +26,9 @@ class StubActivityAdapter(ActivityAdapter):
 
     async def details(self, product_id: str, date_from: date, date_to: date) -> AdapterActivityBookingResponse:
         raise NotImplementedError("Details Not Implemented")
+
+    async def variants(self, product_id: str, activity_date: date) -> List[ActivityVariants]:
+        raise NotImplementedError("Variants Not Implemented")
 
     async def cancel(self, order_id: str) -> bool:
         raise NotImplementedError("Cancel not implemented")
