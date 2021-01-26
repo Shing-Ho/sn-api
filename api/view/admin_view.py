@@ -1,13 +1,31 @@
-from api import logger
 from rest_framework import viewsets
 from api.auth.authentication import APIAdminPermission
 from api.accounts.serializers import UserSerializer
 from django.contrib.auth.models import User
-from api.utils.paginations import ObjectPagination       
+from rest_framework.response import Response
+from api.utils.paginations import ObjectPagination
+from rest_framework import status
+
 
 class UserViewSet(viewsets.ModelViewSet):
-    permission_classes =[APIAdminPermission]
+    permission_classes = [APIAdminPermission]
     queryset = User.objects.filter()
     serializer_class = UserSerializer
     pagination_class = ObjectPagination
-    http_method_names = ['get', 'post', 'put','delete']
+    http_method_names = ["get", "post", "put", "delete"]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(data={"reponse": "object deleted now"}, status=status.HTTP_204_NO_CONTENT)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.exclude(id=self.request.user.id)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
