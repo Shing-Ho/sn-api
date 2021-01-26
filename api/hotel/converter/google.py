@@ -20,6 +20,7 @@ from api.hotel.converter.google_models import (
     GoogleStatus,
     GoogleReservation,
     RoomParty,
+    RoomRateLineItem,
 )
 from api.hotel.models.booking_model import (
     HotelBookingRequest,
@@ -30,7 +31,7 @@ from api.hotel.models.booking_model import (
     Locator,
 )
 from api.hotel.models.hotel_api_model import SimplenightAmenities, Image, HotelSpecificSearch, Hotel, CancellationPolicy
-from api.hotel.models.hotel_common_models import RoomOccupancy, RateType, Money, RoomRate
+from api.hotel.models.hotel_common_models import RoomOccupancy, RateType, Money, RoomRate, LineItemType
 
 
 def convert_hotel_specific_search(google_search_request: GoogleHotelSearchRequest) -> HotelSpecificSearch:
@@ -141,9 +142,6 @@ def convert_booking_response(
 
 
 def convert_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Hotel) -> GoogleHotelApiResponse:
-    room_types = _get_room_types(hotel, search_request.language)
-    rate_plans = _get_rate_plans(hotel)
-
     return GoogleHotelApiResponse(
         api_version=1,
         transaction_id=search_request.transaction_id,
@@ -151,8 +149,8 @@ def convert_hotel_response(search_request: GoogleHotelSearchRequest, hotel: Hote
         start_date=hotel.start_date,
         end_date=hotel.end_date,
         party=search_request.party,
-        room_types=room_types,
-        rate_plans=rate_plans,
+        room_types=_get_room_types(hotel, search_request.language),
+        rate_plans=_get_rate_plans(hotel),
         room_rates=_get_room_rates(hotel),
         hotel_details=_get_hotel_details(hotel),
     )
@@ -225,6 +223,10 @@ def _get_room_rates(hotel: Hotel) -> List[GoogleRoomRate]:
     room_rates = []
     for room_rate in hotel.room_rates:
         capacity = room_rate.maximum_allowed_occupancy
+        total_postpaid_fees = 0
+        if room_rate.postpaid_fees:
+            total_postpaid_fees = sum(x.amount.amount for x in room_rate.postpaid_fees.fees)
+
         room_rates.append(
             GoogleRoomRate(
                 code=room_rate.code,
@@ -232,13 +234,28 @@ def _get_room_rates(hotel: Hotel) -> List[GoogleRoomRate]:
                 rate_plan_code=room_rate.rate_plan_code,
                 maximum_allowed_occupancy=RoomCapacity(adults=capacity.adults, children=capacity.children),
                 total_price_at_booking=room_rate.total,
-                total_price_at_checkout=Money(amount=Decimal("0.00"), currency=room_rate.total.currency),
-                line_items=[],
+                total_price_at_checkout=Money(amount=Decimal(total_postpaid_fees), currency=room_rate.total.currency),
+                line_items=_get_line_items(room_rate),
                 partner_data=[],
             )
         )
 
     return room_rates
+
+
+def _get_line_items(room_rate: RoomRate) -> List[RoomRateLineItem]:
+    def line_item(amount, line_item_type, checkout):
+        return RoomRateLineItem(price=amount, type=line_item_type, paid_at_checkout=checkout)
+
+    base_rate = line_item(room_rate.total_base_rate, LineItemType.BASE_RATE, False)
+    taxes = line_item(room_rate.total_tax_rate, LineItemType.UNKNOWN_TAXES, False)
+
+    line_items = [base_rate, taxes]
+    if room_rate.postpaid_fees:
+        for fee in room_rate.postpaid_fees.fees:
+            line_items.append(line_item(fee.amount, fee.type, True))
+
+    return line_items
 
 
 def _get_hotel_details(hotel: Hotel) -> GoogleHotelDetails:

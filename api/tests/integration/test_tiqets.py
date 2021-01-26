@@ -9,7 +9,7 @@ from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
 class TestTiqets(SimplenightTestCase):
-    def test_search(self):
+    def x_test_search(self):
         location = Location(
             location_id="SF",
             language_code="en",
