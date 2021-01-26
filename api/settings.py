@@ -96,11 +96,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "api.wsgi.application"
 
+REST_AUTH_SERIALIZERS = {
+    "TOKEN_SERIALIZER": "api.accounts.serializers.TokenSerializer",
+    "USER_DETAILS_SERIALIZER": "api.accounts.serializers.UserDetailsSerializer",
+}
+
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.TokenAuthentication",
+        "bearer_auth.authentication.BearerTokenAuth",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
-    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.TokenAuthentication"],
     "EXCEPTION_HANDLER": "api.view.exceptions.handler",
 }
 
@@ -233,22 +241,6 @@ CACHES = {
 
 CACHE_TIMEOUT = 900
 
-
-REST_AUTH_SERIALIZERS = {
-    "TOKEN_SERIALIZER": "api.accounts.serializers.TokenSerializer",
-    "USER_DETAILS_SERIALIZER": "api.accounts.serializers.UserDetailsSerializer",
-}
-
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.TokenAuthentication",
-        "bearer_auth.authentication.BearerTokenAuth",
-    ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
-    "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
-    "EXCEPTION_HANDLER": "api.view.exceptions.handler",
-}
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
