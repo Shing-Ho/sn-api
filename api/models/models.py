@@ -687,3 +687,64 @@ class ProductMedia(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductHotels(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_hotel"
+        verbose_name = "ProductHotel"
+        verbose_name_plural = "ProductHotels"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    price = models.TextField()
+    description = models.TextField()
+    room_size = models.TextField()
+    max_guests = models.TextField()
+    item_code = models.CharField(max_length=200, null=True, blank=True)
+
+    highlight = models.BooleanField(default=0)
+    balcony = models.BooleanField(default=0)
+    status = models.BooleanField(default=1)
+    room_details = jsonfield.JSONField()
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="venue")
+    product_group = models.ForeignKey(ProductGroup, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductsHotelRoomDetails(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_hotel_room_details"
+        verbose_name = "ProductsHotelRoomDetails"
+        verbose_name_plural = "ProductsHotelRoomDetails"
+
+    TYPE = (
+        ("BEDROOM", "BEDROOM"),
+        ("BATHROOM", "BATHROOM"),
+        ("ENTERTAINMENT", "ENTERTAINMENT"),
+        ("FOODANDDRINK", "BATHROOM"),
+        ("MORE", "MORE"),
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    type = models.CharField(max_length=20, choices=TYPE, default="BEDROOM")
+    product_hotels = models.ForeignKey(ProductHotels, on_delete=models.SET_NULL, null=True, blank=True)
+
+
+class ProductsHotelRoomPricing(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_hotel_room_pricing"
+        verbose_name = "ProductsHotelRoomPricing"
+        verbose_name_plural = "ProductsHotelRoomPricings"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    rate = jsonfield.JSONField()
+    taxes = jsonfield.JSONField()
+    guests = jsonfield.JSONField()
+    dates = jsonfield.JSONField()
+    product_hotels = models.ForeignKey(ProductHotels, on_delete=models.SET_NULL, null=True, blank=True)
