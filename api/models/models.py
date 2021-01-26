@@ -542,7 +542,7 @@ class Venue(models.Model):
         db_table = "venues"
         verbose_name_plural = "Venues"
 
-    venue_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=300, unique=True)
     venue_from = models.CharField(max_length=2, choices=VENUE_FORM_CHOICE, default="SN")
     type = models.CharField(max_length=20, choices=VENUE_TYPE, default="NIGHT_LIFE")
@@ -566,7 +566,7 @@ class VenueMedia(models.Model):
     FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="media")
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="media")
     type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
     url = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -590,7 +590,7 @@ class VenueContact(models.Model):
     email = models.TextField(null=True, blank=True)
     title = models.TextField(null=True, blank=True)
     department = models.TextField(null=True, blank=True)
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="contacts")
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="contacts")
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -626,7 +626,7 @@ class VenueDetail(models.Model):
     payment_method = models.ForeignKey(
         PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_requests_modified"
     )
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="details")
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="details")
     availability = jsonfield.JSONField()
     holidays = jsonfield.JSONField()
     amenities = jsonfield.JSONField()
@@ -637,7 +637,7 @@ class VenueDetail(models.Model):
 class ProductGroup(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
 
     class Meta:
         app_label = "api"
@@ -659,7 +659,7 @@ class ProductsNightLife(models.Model):
     capacity = models.IntegerField()
     highlight = models.BooleanField(default=0)
     status = models.BooleanField(default=1)
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="products")
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="products")
     product_group_id = models.ForeignKey(
         ProductGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_requests_modified"
     )
@@ -677,7 +677,7 @@ class ProductMedia(models.Model):
     FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
     type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
     url = models.TextField(null=True, blank=True)
     thumbnail = models.TextField()
