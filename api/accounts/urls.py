@@ -6,11 +6,11 @@ from rest_auth.views import (
     PasswordResetView,
     PasswordResetConfirmView,
 )
-from api.accounts.views import LoginAPI
+from bearer_auth.views import ObtainToken
 
 
 urlpatterns = [
-    path("login", LoginAPI.as_view(), name="login"),
+    path("login", ObtainToken.as_view(), name="login"),
     path("logout", LogoutView.as_view(), name="logout"),
     path("password/reset", PasswordResetView.as_view(), name="rest_password_reset"),
     path("user", UserDetailsView.as_view(), name="user"),
