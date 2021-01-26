@@ -349,6 +349,8 @@ class ProviderHotel(models.Model):
     property_description = models.TextField(blank=True, null=True)
     amenities = ArrayField(models.CharField(max_length=100, blank=True), null=True)
     provider_reference = models.TextField(null=True)
+    chain_code = models.TextField(blank=True, null=True)
+    chain_name = models.TextField(blank=True, null=True)
 
     def get_address(self):
         return Address(
