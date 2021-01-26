@@ -660,7 +660,7 @@ class ProductsNightLife(models.Model):
     highlight = models.BooleanField(default=0)
     status = models.BooleanField(default=1)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="products")
-    product_group = models.ForeignKey(
+    product_group_id = models.ForeignKey(
         ProductGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_requests_modified"
     )
     created_at = models.DateTimeField(auto_now_add=True)
