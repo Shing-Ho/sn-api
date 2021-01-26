@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 
 from api.locations import location_service
@@ -7,6 +8,8 @@ from api.view.default_view import _response
 
 
 class LocationsViewSet(viewsets.ViewSet):
+    permission_classes = (AllowAny,)
+
     @action(detail=False, url_path="cities", methods=["GET"], name="Search Locations by Prefix")
     def find_all(self, request: Request):
         lang_code = request.GET.get("lang_code")
