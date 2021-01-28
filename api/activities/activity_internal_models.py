@@ -42,7 +42,7 @@ class AdapterActivityBookingResponse(SimplenightModel):
     record_locator: Locator
 
 
-class ProviderActivityDataCachePayload(SimplenightModel):
+class ActivityDataCachePayload(SimplenightModel):
     code: str
     provider: str
     price: Decimal

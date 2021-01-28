@@ -13,17 +13,17 @@ from api.activities.activity_internal_models import (
 )
 from api.activities.activity_models import (
     SimplenightActivityDetailResponse,
-    ActivityAvailabilityTime,
     ActivityCancellation,
     ActivityItem,
     ActivityVariants,
+    ActivityVariant,
 )
-from api.activities.adapters.suppliers_api import suppliers_api_util
 from api.activities.adapters.suppliers_api.suppliers_api_transport import SuppliersApiTransport
 from api.common.common_models import BusinessContact, BusinessLocation
 from api.hotel.models.booking_model import ActivityBookingRequest, Customer, Locator
 from api.hotel.models.hotel_api_model import Image, ImageType
 from api.hotel.models.hotel_common_models import Money
+from api.view.exceptions import BookingException, BookingErrorCode
 
 
 class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
@@ -46,6 +46,7 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
             "date": str(booking_request.activity_date),
             "time": str(booking_request.activity_time),
             "currency": booking_request.currency,
+            "supplier_proceeds": str(sum(x.price for x in booking_request.items)),
             "booking": {
                 "customer": {
                     "first_name": customer.first_name,
@@ -60,12 +61,17 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
                     "code": booking_request.items[0].code,
                     "quantity": 1,
                     "supplier_proceeds": str(booking_request.items[0].price),
+                    "channel_proceeds": 0,
                     "date": str(booking_request.activity_date),
                 }
             ],
         }
 
         response = self.transport.book(**params)
+        if not response or not response["success"]:
+            logger.warn(f"Error during booking: {response}")
+            raise BookingException(error_type=BookingErrorCode.PROVIDER_BOOKING_FAILURE, detail="Error in booking")
+
         return AdapterActivityBookingResponse(
             success=response["success"], record_locator=Locator(id=response["order_id"])
         )
@@ -76,23 +82,27 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
 
         return details
 
-    async def variants(self, product_id: str, activity_date: date) -> List[ActivityVariants]:
+    async def variants(self, product_id: str, activity_date: date) -> ActivityVariants:
         response = self.transport.variants(product_id, activity_date)
-        return list(map(self._parse_variants, response))
+        parsed_variants = {
+            activity_time: list(map(self._parse_variants, variants)) for activity_time, variants in response.items()
+        }
+
+        variants = ActivityVariants(variants=parsed_variants)
+        return variants
 
     async def cancel(self, order_id: str) -> bool:
         pass
 
     @staticmethod
     def _parse_variants(variant):
-        return ActivityVariants(
+        return ActivityVariant(
             code=variant["code"],
-            name=list(variant["name"].values())[0],
-            description=list(variant["description"].values())[0],
-            capacity=variant["capacity"],
-            status=variant["status"],
+            name=variant["name"],
+            description=variant["description"],
             price=Decimal(variant["price"]),
-            currency=variant["currency"],
+            capacity=variant["capacity"],
+            additional=variant["additional"],
         )
 
     @staticmethod
@@ -103,24 +113,6 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
     def _parse_location(location):
         return BusinessLocation(
             latitude=location["latitude"], longitude=location["longitude"], address=location["address"]
-        )
-
-    @staticmethod
-    def _parse_availability(availability):
-        if availability["type"] == "SINGLE":
-            schedule = [date.fromisoformat(availability["date"])]
-        elif availability["type"] in ("RANGE", "ALWAYS"):
-            schedule = suppliers_api_util.expand_schedule(availability)
-        else:
-            schedule = []
-
-        return ActivityAvailabilityTime(
-            type=availability["type"],
-            label=availability["label"],
-            activity_dates=schedule,
-            activity_times=availability["times"],
-            capacity=availability["capacity"],
-            uuid=availability["uuid"],
         )
 
     @staticmethod
@@ -138,8 +130,7 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
         )
 
     def _create_details(self, detail):
-        availabilities = map(lambda x: self._parse_availability(x), detail["availabilities"])
-        availabilities = filter(None, availabilities)
+        availabilities = map(lambda x: date.fromisoformat(x), detail["availabilities"])
 
         return SimplenightActivityDetailResponse(
             code=detail["code"],
@@ -158,7 +149,6 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
             availabilities=list(availabilities),
             policies=detail["policies"],
             cancellations=list(map(self._parse_cancellation_policy, detail["cancellations"])),
-            items=list(map(self._parse_activity_items, detail["items"])),
         )
 
     def _create_activity(self, activity, activity_date: date):
