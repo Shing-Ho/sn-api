@@ -8,7 +8,7 @@ from api.tests.utils import load_test_resource
 
 
 class TestActivities(unittest.TestCase):
-    def test_deserialize_activity_details_supplier_api(self):
+    def xtest_deserialize_activity_details_supplier_api(self):
         resource = load_test_resource("tiqets/tiqets-details-response.json")
         activity_detail = from_json(resource, SimplenightActivityDetailResponse)
 

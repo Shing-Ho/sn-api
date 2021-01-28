@@ -27,7 +27,7 @@ class ActivityAdapter(BaseAdapter, abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def variants(self, product_id: str, activity_date: date) -> List[ActivityVariants]:
+    async def variants(self, product_id: str, activity_date: date) -> ActivityVariants:
         pass
 
     @abc.abstractmethod

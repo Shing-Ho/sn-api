@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Union, Optional
 
 from api import logger
-from api.activities.activity_internal_models import ProviderActivityDataCachePayload
+from api.activities.activity_internal_models import ActivityDataCachePayload
 from api.common import mail, currencies, request_context
 from api.common.request_context import get_request_context
 from api.hotel import price_verification_service, provider_cache_service
@@ -30,7 +30,7 @@ from api.hotel.models.hotel_api_model import (
     CancellationSummary,
     HotelItineraryItem,
     CancelConfirmResponse,
-    ProviderRoomDataCachePayload,
+    RoomDataCachePayload,
 )
 from api.hotel.models.hotel_common_models import Money, RoomRate
 from api.models import models
@@ -113,7 +113,7 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
         auth_response = payment_service.authorize_payment(
             amount=total_payment_amount,
             payment=booking_request.payment,
-            description=f"Simplenight Hotel Booking {booking_request.hotel_booking.hotel_id}",
+            description=f"Simplenight Hotel Booking {simplenight_record_locator}",
         )
 
         if not auth_response:
@@ -130,13 +130,14 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
             activity_reservation = _book_activity(booking_request.activity_booking, activity_cache_payload, customer)
 
             _set_booked_status(booking)
-            _send_confirmation_email(
-                hotel=hotel_cache_payload.adapter_hotel,
-                hotel_reservation=hotel_reservation,
-                activity_reservation=activity_reservation,
-                payment=auth_response,
-                record_locator=simplenight_record_locator,
-            )
+            if hotel_cache_payload:
+                _send_confirmation_email(
+                    hotel=hotel_cache_payload.adapter_hotel,
+                    hotel_reservation=hotel_reservation,
+                    activity_reservation=activity_reservation,
+                    payment=auth_response,
+                    record_locator=simplenight_record_locator,
+                )
 
             return MultiProductBookingResponse(
                 api_version=1,
@@ -160,10 +161,14 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
         raise BookingException(BookingErrorCode.UNHANDLED_ERROR, str(e))
 
 
-def _calculate_total(
-    hotel_payload: ProviderRoomDataCachePayload, activity_payload: ProviderActivityDataCachePayload,
-):
-    # TODO !!!!!: Deal with activity currencies
+def _calculate_total(hotel_payload: RoomDataCachePayload, activity_payload: ActivityDataCachePayload):
+    def get_hotel_currency():
+        try:
+            return hotel_payload.simplenight_rate.total.currency
+        except AttributeError:
+            pass
+
+    # TODO: Deal with activity currencies
     total_amount = Decimal(0)
     if hotel_payload:
         total_amount += hotel_payload.simplenight_rate.total.amount
@@ -171,15 +176,18 @@ def _calculate_total(
     if activity_payload:
         total_amount += activity_payload.price
 
-    return Money(amount=total_amount, currency=hotel_payload.simplenight_rate.total.currency)
+    currency = get_hotel_currency()
+    if not currency:
+        currency = "USD"
+
+    return Money(amount=total_amount, currency=currency)
 
 
 def _book_activity(
     activity_book_request: ActivityBookingRequest,
-    cached_activity_payload: ProviderActivityDataCachePayload,
+    cached_activity_payload: ActivityDataCachePayload,
     customer: Customer,
 ) -> Optional[ActivityBookingResponse]:
-
     if not activity_book_request:
         logger.info("No activity booking")
         return None
@@ -209,33 +217,31 @@ def _get_cached_hotel_payload(hotel_booking_request: HotelBookingRequest):
 
 
 def _book_hotel(
-    hotel_booking_request: HotelBookingRequest,
-    provider_rate_cache_payload: ProviderRoomDataCachePayload,
-    booking: Booking,
+    booking_request: HotelBookingRequest, room_rate_cache_payload: RoomDataCachePayload, booking: Booking
 ) -> Optional[HotelReservation]:
-    if not hotel_booking_request:
+    if not booking_request:
         return None
 
-    provider = provider_rate_cache_payload.provider
-    simplenight_rate = provider_rate_cache_payload.simplenight_rate
-    provider_rate = provider_rate_cache_payload.provider_rate
-    hotel_booking_request.room_code = provider_rate.code
+    provider = room_rate_cache_payload.provider
+    simplenight_rate = room_rate_cache_payload.simplenight_rate
+    provider_rate = room_rate_cache_payload.provider_rate
+    booking_request.room_code = provider_rate.code
 
     logger.info("Starting price verification")
     verified_rates = _hotel_price_verification(provider=provider, rate=provider_rate)
 
     # Reset room rates with verified rates.  If prices mismatched above, error will raise
-    hotel_booking_request.room_code = verified_rates.code
+    booking_request.room_code = verified_rates.code
 
     adapter = adapter_service.get_adapter(provider)
-    reservation = adapter.book(hotel_booking_request)
+    reservation = adapter.book(booking_request)
     reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
 
     if not reservation or not reservation.locator:
-        logger.error(f"Could not book hotel: {hotel_booking_request}")
+        logger.error(f"Could not book hotel: {booking_request}")
         raise AppException("Error during hotel booking")
 
-    _persist_hotel(hotel_booking_request, provider_rate_cache_payload, booking, reservation)
+    _persist_hotel(booking_request, room_rate_cache_payload, booking, reservation)
 
     return reservation
 
@@ -340,13 +346,9 @@ def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
             f"Could not find booking with ID {simplenight_locator} for last name {last_name}",
         )
     except HotelCancellationPolicy.DoesNotExist:
-        raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
-        )
+        raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies")
     except HotelBooking.DoesNotExist:
-        raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE, "Could not load hotel booking",
-        )
+        raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Could not load hotel booking")
 
 
 def _get_penalty_amount(payment: PaymentTransaction, policy: HotelCancellationPolicy) -> Decimal:
@@ -483,9 +485,7 @@ def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
             f"Could not find booking with ID {simplenight_locator} for last name {last_name}",
         )
     except HotelCancellationPolicy.DoesNotExist:
-        raise BookingException(
-            BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies",
-        )
+        raise BookingException(BookingErrorCode.CANCELLATION_FAILURE, "Could not find cancellation policies")
 
 
 def refund(booking, original_payment, refund_amount):

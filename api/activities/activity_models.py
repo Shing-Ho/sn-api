@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 
 from pydantic import Field
 
@@ -42,14 +42,17 @@ class ActivityItem(SimplenightModel):
     price_type: str
 
 
-class ActivityVariants(SimplenightModel):
+class ActivityVariant(SimplenightModel):
     code: str
     name: str
     description: str
-    capacity: int
-    status: str
     price: Decimal
-    currency: str
+    capacity: int
+    additional: Optional[Dict[str, str]]
+
+
+class ActivityVariants(SimplenightModel):
+    variants: Dict[str, List[ActivityVariant]]
 
 
 class SimplenightActivityVariantRequest(SimplenightModel):
@@ -71,7 +74,6 @@ class SimplenightActivityDetailResponse(SimplenightModel):
     images: List[Image]
     contact: BusinessContact
     locations: List[BusinessLocation]
-    availabilities: List[ActivityAvailabilityTime]
+    availabilities: List[date]
     policies: List[str]
     cancellations: List[ActivityCancellation]
-    items: List[ActivityItem]
