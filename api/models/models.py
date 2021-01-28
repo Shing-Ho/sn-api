@@ -542,7 +542,7 @@ class Venue(models.Model):
         db_table = "venues"
         verbose_name_plural = "Venues"
 
-    venue_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=300, unique=True)
     venue_from = models.CharField(max_length=2, choices=VENUE_FORM_CHOICE, default="SN")
     type = models.CharField(max_length=20, choices=VENUE_TYPE, default="NIGHT_LIFE")
@@ -566,7 +566,7 @@ class VenueMedia(models.Model):
     FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="media")
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="media")
     type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
     url = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -590,7 +590,7 @@ class VenueContact(models.Model):
     email = models.TextField(null=True, blank=True)
     title = models.TextField(null=True, blank=True)
     department = models.TextField(null=True, blank=True)
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="contacts")
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="contacts")
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -626,7 +626,7 @@ class VenueDetail(models.Model):
     payment_method = models.ForeignKey(
         PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_requests_modified"
     )
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="details")
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="details")
     availability = jsonfield.JSONField()
     holidays = jsonfield.JSONField()
     amenities = jsonfield.JSONField()
@@ -637,7 +637,7 @@ class VenueDetail(models.Model):
 class ProductGroup(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
 
     class Meta:
         app_label = "api"
@@ -659,8 +659,8 @@ class ProductsNightLife(models.Model):
     capacity = models.IntegerField()
     highlight = models.BooleanField(default=0)
     status = models.BooleanField(default=1)
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="products")
-    product_group_id = models.ForeignKey(
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="products")
+    product_group = models.ForeignKey(
         ProductGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_requests_modified"
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -677,13 +677,74 @@ class ProductMedia(models.Model):
     FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
     type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
     url = models.TextField(null=True, blank=True)
     thumbnail = models.TextField()
     mail = models.BooleanField(default=0)
-    product_id = models.ForeignKey(
+    product = models.ForeignKey(
         ProductsNightLife, on_delete=models.SET_NULL, null=True, blank=True, related_name="media"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductHotels(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_hotel"
+        verbose_name = "ProductHotel"
+        verbose_name_plural = "ProductHotels"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    price = models.TextField()
+    description = models.TextField()
+    room_size = models.TextField()
+    max_guests = models.TextField()
+    item_code = models.CharField(max_length=200, null=True, blank=True)
+
+    highlight = models.BooleanField(default=0)
+    balcony = models.BooleanField(default=0)
+    status = models.BooleanField(default=1)
+    room_details = jsonfield.JSONField()
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="venue")
+    product_group = models.ForeignKey(ProductGroup, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductsHotelRoomDetails(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_hotel_room_details"
+        verbose_name = "ProductsHotelRoomDetails"
+        verbose_name_plural = "ProductsHotelRoomDetails"
+
+    TYPE = (
+        ("BEDROOM", "BEDROOM"),
+        ("BATHROOM", "BATHROOM"),
+        ("ENTERTAINMENT", "ENTERTAINMENT"),
+        ("FOODANDDRINK", "BATHROOM"),
+        ("MORE", "MORE"),
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    type = models.CharField(max_length=20, choices=TYPE, default="BEDROOM")
+    product_hotels = models.ForeignKey(ProductHotels, on_delete=models.SET_NULL, null=True, blank=True)
+
+
+class ProductsHotelRoomPricing(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_hotel_room_pricing"
+        verbose_name = "ProductsHotelRoomPricing"
+        verbose_name_plural = "ProductsHotelRoomPricings"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    rate = jsonfield.JSONField()
+    taxes = jsonfield.JSONField()
+    guests = jsonfield.JSONField()
+    dates = jsonfield.JSONField()
+    product_hotels = models.ForeignKey(ProductHotels, on_delete=models.SET_NULL, null=True, blank=True)

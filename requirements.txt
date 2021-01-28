@@ -28,3 +28,4 @@ https://github.com/chibisov/drf-extensions/archive/master.zip
 django-jsonfield
 django-allauth
 django-rest-auth
+django-rest-auth-bearer
