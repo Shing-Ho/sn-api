@@ -83,3 +83,4 @@ venv.bak/
 .vscode/
 
 doc.http
+static/

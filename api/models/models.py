@@ -2,9 +2,10 @@
 import random
 import string
 import uuid
+import jsonfield
+
 from datetime import datetime
 from enum import EnumMeta, Enum
-
 from typing import Tuple, List
 
 from django.contrib.postgres.fields import ArrayField
@@ -540,21 +541,17 @@ class Venue(models.Model):
         verbose_name_plural = "Venues"
 
     venue_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    name = models.CharField(max_length=32, unique=True)
+    name = models.CharField(max_length=300, unique=True)
     venue_from = models.CharField(max_length=2, choices=VENUE_FORM_CHOICE, default="SN")
     type = models.CharField(max_length=20, choices=VENUE_TYPE, default="NIGHT_LIFE")
     language_code = models.CharField(max_length=3, default="en")
     tags = models.CharField(max_length=100, null=True, blank=True)
     star_rating = models.IntegerField(null=True, blank=True)
-    status = models.IntegerField(default=0)
+    status = models.BooleanField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="%(class)s_requests_created"
-    )
-    modified_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="%(class)s_requests_modified"
-    )
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_by")
+    modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="modified_by")
 
 
 class VenueMedia(models.Model):
@@ -567,8 +564,124 @@ class VenueMedia(models.Model):
     FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="media")
     type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
     url = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class VenueContact(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "venue_contacts"
+        verbose_name = "VenueContact"
+        verbose_name_plural = "VenueContacts"
+
+    CONTACT_TYPE = (("MAIN", "MAIN"), ("OTHER", "OTHER"))
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    type = models.CharField(max_length=5, choices=CONTACT_TYPE, default="MAIN")
+    website = models.TextField(null=True, blank=True)
+    phone_number = models.TextField(null=True, blank=True)
+    fax = models.TextField(null=True, blank=True)
+    email = models.TextField(null=True, blank=True)
+    title = models.TextField(null=True, blank=True)
+    department = models.TextField(null=True, blank=True)
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="contacts")
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class PaymentMethod(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "payment_methods"
+        verbose_name = "PaymentMethod"
+        verbose_name_plural = "PaymentMethods"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    icon = models.TextField(null=True, blank=True)
+    api_key = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class VenueDetail(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "venue_details"
+        verbose_name = "VenueDetail"
+        verbose_name_plural = "VenueDetail"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    description = models.TextField(null=True, blank=True)
+    location = models.TextField(null=True, blank=True)
+    logitude = models.CharField(max_length=10, null=True, blank=True)
+    latitude = models.CharField(max_length=200, null=True, blank=True)
+    capacity = models.IntegerField(null=True, blank=True)
+    payment_method = models.ForeignKey(
+        PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_requests_modified"
+    )
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="details")
+    availability = jsonfield.JSONField()
+    holidays = jsonfield.JSONField()
+    amenities = jsonfield.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductGroup(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+
+    class Meta:
+        app_label = "api"
+        db_table = "product_groups"
+        verbose_name = "ProductGroup"
+        verbose_name_plural = "ProductGroups"
+
+
+class ProductsNightLife(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_nightlife"
+        verbose_name = "ProductsNightLife"
+        verbose_name_plural = "ProductsNightLife"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    price = models.TextField()
+    capacity = models.IntegerField()
+    highlight = models.BooleanField(default=0)
+    status = models.BooleanField(default=1)
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="products")
+    product_group_id = models.ForeignKey(
+        ProductGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_requests_modified"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductMedia(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "product_media"
+        verbose_name = "ProductMedia"
+        verbose_name_plural = "ProductMedia"
+
+    FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    venue_id = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
+    url = models.TextField(null=True, blank=True)
+    thumbnail = models.TextField()
+    mail = models.BooleanField(default=0)
+    product_id = models.ForeignKey(
+        ProductsNightLife, on_delete=models.SET_NULL, null=True, blank=True, related_name="media"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
