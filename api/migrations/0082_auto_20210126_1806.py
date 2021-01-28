@@ -7,18 +7,12 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0081_auto_20210126_0513"),
+        ("api", "0081_auto_20210126_0955"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="productmedia",
-            name="product_id",
-        ),
-        migrations.RemoveField(
-            model_name="productsnightlife",
-            name="product_group_id",
-        ),
+        migrations.RemoveField(model_name="productmedia", name="product_id",),
+        migrations.RemoveField(model_name="productsnightlife", name="product_group_id",),
         migrations.AddField(
             model_name="productmedia",
             name="product",
