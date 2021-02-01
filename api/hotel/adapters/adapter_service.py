@@ -3,6 +3,7 @@ from typing import List, Union
 
 from api.activities.activity_adapter import ActivityAdapter
 from api.activities.activity_internal_models import AdapterActivitySearch
+from api.activities.adapters.muse.muse_activity_adapter import MuseActivityAdapter
 from api.activities.adapters.stub_activity_adapter import StubActivityAdapter
 from api.activities.adapters.tiqets.tiqets_activity_adapter import TiqetsActivityAdapter
 from api.activities.adapters.travelcurious.travelcurious_activity_adapter import TravelcuriousActivityAdapter
@@ -17,7 +18,7 @@ from api.hotel.models.hotel_api_model import HotelSearch
 from api.models.models import Feature
 from api.restaurants.adapters.stub_restaurant_adapter import StubRestaurantAdapter
 from api.restaurants.restaurant_adapter import RestaurantAdapter
-from api.search.search_models import RestaurantSearch
+from api.multi.multi_product_models import RestaurantSearch
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
@@ -38,6 +39,7 @@ ADAPTERS = {
         "stub_activity": StubActivityAdapter,
         "tiqets": TiqetsActivityAdapter,
         "travelcurious": TravelcuriousActivityAdapter,
+        "musement": MuseActivityAdapter,
     },
     AdapterType.RESTAURANT: {"stub_restaurant": StubRestaurantAdapter},
 }
@@ -66,6 +68,10 @@ def get_activity_adapters_to_search(search_request: AdapterActivitySearch) -> Li
 
 def get_restaurant_adapters_to_search(search_request: RestaurantSearch) -> List[RestaurantAdapter]:
     return get_adapters_for_type(search_request, adapter_type=AdapterType.RESTAURANT)
+
+
+def get_activity_adapter(adapter_name: str) -> ActivityAdapter:
+    return get_adapter(adapter_name)
 
 
 def get_adapters_for_type(

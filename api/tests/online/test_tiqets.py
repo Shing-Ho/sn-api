@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from decimal import Decimal
 
 from api.activities.activity_internal_models import AdapterActivityLocationSearch
@@ -29,3 +29,7 @@ class TestTiqets(SimplenightTestCase):
 
         adapter = TiqetsActivityAdapter(TiqetsTransport(test_mode=True))
         print(asyncio.run(adapter.search_by_location(search)))
+
+    def test_details(self):
+        adapter = TiqetsActivityAdapter(TiqetsTransport(test_mode=True))
+        asyncio.run(adapter.details(product_id="974626", date_from=date(2020, 2, 10), date_to=date(2020, 2, 10)))

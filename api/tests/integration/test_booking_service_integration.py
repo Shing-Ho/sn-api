@@ -8,7 +8,7 @@ import pytest
 from freezegun import freeze_time
 from stripe.error import CardError
 
-from api.hotel import hotel_cache_service, booking_service
+from api.hotel import provider_cache_service, booking_service
 from api.hotel.models import booking_model
 from api.hotel.models.adapter_models import AdapterCancelResponse
 from api.hotel.models.booking_model import (
@@ -69,20 +69,15 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         simplenight_rate = test_objects.room_rate("sn-foo", "120", base_rate="96", tax_rate="24")
         hotel = test_objects.hotel()
 
-        hotel_cache_service.save_provider_rate_in_cache(
-            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
-        )
+        provider_cache_service.save_provider_rate(hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate)
 
         payment_transaction = PaymentTransaction(
-            provider_name="stripe",
-            currency="USD",
-            transaction_amount=100.0,
-            transaction_type=TransactionType.CHARGE,
+            provider_name="stripe", currency="USD", transaction_amount=100.0, transaction_type=TransactionType.CHARGE,
         )
 
         with patch("api.payments.payment_service.authorize_payment") as mock_authorize_payment:
             mock_authorize_payment.return_value = payment_transaction
-            response = booking_service.book(booking_request)
+            response = booking_service.book_hotel(booking_request)
 
         self.assertEqual(1, response.api_version)
         self.assertIsNotNone(response.transaction_id)
@@ -133,9 +128,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             payment_obj=invalid_card_number_payment, rate_code=simplenight_rate.code
         )
 
-        hotel_cache_service.save_provider_rate_in_cache(
-            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
-        )
+        provider_cache_service.save_provider_rate(hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate)
 
         with patch("stripe.Token.create") as stripe_token_mock:
             stripe_token_mock.return_value = {"id": "pt_foo"}
@@ -144,7 +137,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
                 error = {"error": {"code": "card_declined"}}
                 stripe_create_mock.side_effect = CardError("card_declined", 1, 1, json_body=error)
                 with pytest.raises(PaymentException) as e:
-                    booking_service.book(booking_request)
+                    booking_service.book_hotel(booking_request)
 
         assert e.value.error_type == SubmitErrorType.PAYMENT_DECLINED
 
@@ -181,10 +174,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self._create_payment_transaction(booking, 100.50)
         self._create_provider_hotel("Hotel Foo", "SN123")
 
-        cancel_request = CancelRequest(
-            booking_id=simplenight_locator,
-            last_name="Simplenight",
-        )
+        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
         cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertTrue(cancel_response.is_cancellable)
@@ -224,10 +214,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self._create_payment_transaction(booking, 100.50)
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
 
-        cancel_request = CancelRequest(
-            booking_id=str(simplenight_locator),
-            last_name="Simplenight",
-        )
+        cancel_request = CancelRequest(booking_id=str(simplenight_locator), last_name="Simplenight",)
         cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertFalse(cancel_response.is_cancellable)
@@ -270,18 +257,14 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         simplenight_locator = RecordLocator.generate_record_locator(booking)
 
         policy_one = HotelCancellationPolicy(
-            hotel_booking=hotel_booking,
-            cancellation_type=CancellationSummary.NON_REFUNDABLE.value,
+            hotel_booking=hotel_booking, cancellation_type=CancellationSummary.NON_REFUNDABLE.value,
         )
 
         policy_one.save()
 
         self._create_payment_transaction(booking, 100.50)
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(
-            booking_id=str(simplenight_locator),
-            last_name="Simplenight",
-        )
+        cancel_request = CancelRequest(booking_id=str(simplenight_locator), last_name="Simplenight",)
         cancel_response = booking_service.cancel_lookup(cancel_request)
 
         self.assertFalse(cancel_response.is_cancellable)
@@ -305,10 +288,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         policy_one.save()
 
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(
-            booking_id=simplenight_locator,
-            last_name="Simplenight",
-        )
+        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
 
         mock_refund_transaction = PaymentTransaction(
             charge_id="123",
@@ -351,17 +331,14 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self._create_payment_transaction(booking, 1.00)
 
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(
-            booking_id=simplenight_locator,
-            last_name="Simplenight",
-        )
+        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
 
         mock_refund = Mock()
         with patch("api.payments.payment_service.refund_payment", mock_refund):
             with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
                 mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
                 with pytest.raises(BookingException):
-                    cancel_response = booking_service.cancel_confirm(cancel_request)
+                    booking_service.cancel_confirm(cancel_request)
 
         # No Refund Processed
         mock_refund.assert_not_called()
@@ -394,10 +371,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         )
 
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(
-            booking_id=simplenight_locator,
-            last_name="Simplenight",
-        )
+        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
 
         # First time cancelling, should succeed
         with patch("api.payments.payment_service.refund_payment") as mock_refund:
@@ -433,10 +407,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         self._create_payment_transaction(booking, 500.00)
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(
-            booking_id=simplenight_locator,
-            last_name="Simplenight",
-        )
+        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
 
         cancel_response = booking_service.cancel_lookup(cancel_request)
         self.assertEqual(375.00, cancel_response.details.refund_amount)
@@ -457,10 +428,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         self._create_payment_transaction(booking, 450.00)
         self._create_provider_hotel(hotel_name="Foo Hotel", provider_code="PROVIDER123")
-        cancel_request = CancelRequest(
-            booking_id=simplenight_locator,
-            last_name="Simplenight",
-        )
+        cancel_request = CancelRequest(booking_id=simplenight_locator, last_name="Simplenight",)
 
         def mock_stripe_refund(**kwargs):
             return {"id": kwargs["charge"], "amount": kwargs["amount"], "currency": "USD", "object": "foo"}
@@ -496,9 +464,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         simplenight_rate = test_objects.room_rate("sn-foo", "120", base_rate="96", tax_rate="24")
         hotel = test_objects.hotel()
 
-        hotel_cache_service.save_provider_rate_in_cache(
-            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
-        )
+        provider_cache_service.save_provider_rate(hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate)
 
         payment_charge_id = str(uuid.uuid4())
         payment_transaction = PaymentTransaction(
@@ -515,13 +481,13 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         # Mock Stripe Refund
         with patch("api.payments.stripe_service.stripe.Refund.create", mock_stripe_refund):
             # Mock Stub Adapter booking method.  Throw an exception, to trigger a payment refund
-            with patch("api.hotel.adapters.stub.stub.StubHotelAdapter.booking") as mock_stub_booking:
+            with patch("api.hotel.adapters.stub.stub.StubHotelAdapter.book") as mock_stub_booking:
                 mock_stub_booking.side_effect = Exception("Boom")
                 # Mock authorize transaction, return a mock payment transaction
                 with patch("api.payments.payment_service.authorize_payment") as mock_authorize_payment:
                     mock_authorize_payment.return_value = payment_transaction
                     with pytest.raises(BookingException):
-                        booking_service.book(booking_request)
+                        booking_service.book_hotel(booking_request)
 
         booking = Booking.objects.get(transaction_id=transaction_id)
         self.assertIsNotNone(booking)
@@ -544,14 +510,12 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         simplenight_rate = test_objects.room_rate("sn-foo", "120", base_rate="96", tax_rate="24")
         hotel = test_objects.hotel()
 
-        hotel_cache_service.save_provider_rate_in_cache(
-            hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate
-        )
+        provider_cache_service.save_provider_rate(hotel=hotel, room_rate=room_rate, simplenight_rate=simplenight_rate)
 
         with patch("api.hotel.adapters.stub.stub.StubHotelAdapter.recheck") as price_verification_mock:
             price_verification_mock.return_value = recheck_room_rate
             with pytest.raises(BookingException) as e:
-                booking_service.book(booking_request)
+                booking_service.book_hotel(booking_request)
 
         self.assertEquals("Price Verification Failed: Old=100.0, New=150.0", str(e.value))
 

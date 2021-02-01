@@ -10,3 +10,7 @@ class TravelcuriousActivityAdapter(SuppliersApiActivityAdapter):
 
     async def search_by_id(self, search: AdapterActivitySpecificSearch) -> AdapterActivity:
         raise NotImplementedError("Search by ID Not Implemented")
+
+    @classmethod
+    def get_provider_name(cls):
+        return "travelcurious"

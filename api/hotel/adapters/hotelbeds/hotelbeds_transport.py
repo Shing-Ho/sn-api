@@ -19,6 +19,7 @@ class HotelbedsTransport(Transport):
         HOTEL_CONTENT = "/hotel-content-api/1.0/hotels"
         FACILITIES_TYPES = "/hotel-content-api/1.0/types/facilities"
         CATEGORIES_TYPES = "/hotel-content-api/1.0/types/categories"
+        CHAINS_TYPES = "/hotel-content-api/1.0/types/chains"
 
     def __init__(self, test_mode=True):
         super().__init__()
@@ -78,6 +79,9 @@ class HotelbedsTransport(Transport):
 
     def categories_types(self, **params):
         return self.get(self.Endpoint.CATEGORIES_TYPES, **params)
+
+    def chains_types(self, **params):
+        return self.get(self.Endpoint.CHAINS_TYPES, **params)
 
     def booking_detail(self, id, **params):
         return self.get(self.Endpoint.BOOKING + f"/${id}", **params)

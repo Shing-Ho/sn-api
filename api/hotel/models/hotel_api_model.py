@@ -92,7 +92,7 @@ class ImageType(Enum):
 
 class Image(SimplenightModel):
     url: str
-    type: ImageType
+    type: Optional[ImageType]
     display_order: Optional[int] = None
 
 
@@ -268,7 +268,7 @@ class HotelPriceVerification(SimplenightModel):
     price_difference: decimal.Decimal
 
 
-class ProviderRoomDataCachePayload(SimplenightModel):
+class RoomDataCachePayload(SimplenightModel):
     hotel_id: str
     adapter_hotel: AdapterHotel
     provider: str

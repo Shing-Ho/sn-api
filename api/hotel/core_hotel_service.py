@@ -7,7 +7,7 @@ from typing import List, Union, Tuple, Callable, Optional
 
 from api import logger
 from api.common import analytics, request_context
-from api.hotel import markups, hotel_cache_service, hotel_mappings
+from api.hotel import markups, provider_cache_service, hotel_mappings
 from api.hotel.adapters import adapter_service, adapter_common
 from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.models.adapter_models import AdapterHotelSearch, AdapterOccupancy, AdapterHotelBatchSearch
@@ -234,7 +234,7 @@ def _markup_room_rates(hotel: AdapterHotel):
     room_rates = []
     for provider_rate in hotel.room_rates:
         simplenight_rate = markups.markup_rate(provider_rate)
-        hotel_cache_service.save_provider_rate_in_cache(hotel, provider_rate, simplenight_rate)
+        provider_cache_service.save_provider_rate(hotel, provider_rate, simplenight_rate)
         room_rates.append(simplenight_rate)
 
     hotel.room_rates = room_rates

@@ -5,7 +5,7 @@ import requests_mock
 from freezegun import freeze_time
 
 from api.common.common_models import from_json
-from api.hotel import hotel_cache_service
+from api.hotel import provider_cache_service
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
@@ -124,7 +124,7 @@ class TestHotelsView(SimplenightTestCase):
         hotel = test_objects.hotel()
         provider_room_rate = test_objects.room_rate(rate_key="rate_key", total="100.00")
         simplenight_room_rate = test_objects.room_rate(rate_key="simplenight_rate_key", total="120.00")
-        hotel_cache_service.save_provider_rate_in_cache(
+        provider_cache_service.save_provider_rate(
             hotel, room_rate=provider_room_rate, simplenight_rate=simplenight_room_rate
         )
 
@@ -145,7 +145,7 @@ class TestHotelsView(SimplenightTestCase):
         hotel = test_objects.hotel()
         provider_room_rate = test_objects.room_rate(rate_key="rate_key", total="100.00")
         simplenight_room_rate = test_objects.room_rate(rate_key="simplenight_rate_key", total="120.00")
-        hotel_cache_service.save_provider_rate_in_cache(
+        provider_cache_service.save_provider_rate(
             hotel, room_rate=provider_room_rate, simplenight_rate=simplenight_room_rate
         )
 
@@ -229,6 +229,9 @@ class TestHotelsView(SimplenightTestCase):
         self.assertEqual(1, availability_resp_obj.party.adults)
         self.assertEqual("8qJgpBN4M9htbX00RAAmhlGt4vL5QM2kEibAktNLe3M", availability_resp_obj.room_types[0].code)
         self.assertAlmostEqual(953.91, float(availability_resp_obj.room_rates[0].total_price_at_booking.amount), 0)
+
+        self.assertIsNotNone(availability_resp_obj.room_rates[0].line_items)
+        self.assertEqual(2, len(availability_resp_obj.room_rates[0].line_items))
 
         booking_request = GoogleBookingSubmitRequest(
             api_version=1,

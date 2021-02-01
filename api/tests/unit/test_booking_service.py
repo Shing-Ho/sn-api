@@ -2,7 +2,7 @@ from datetime import date
 
 from api.hotel import booking_service
 from api.hotel.models.adapter_models import AdapterHotel
-from api.hotel.models.booking_model import Reservation, Locator
+from api.hotel.models.booking_model import HotelReservation, Locator
 from api.hotel.models.hotel_api_model import HotelDetails, CancellationDetails, CancellationSummary
 from api.hotel.models.hotel_common_models import RoomOccupancy
 from api.models.models import PaymentTransaction
@@ -40,7 +40,7 @@ class TestBookingService(SimplenightTestCase):
         customer = test_objects.customer("John", "Simplenight")
         traveler = test_objects.traveler("John", "Simplenight")
 
-        reservation = Reservation(
+        reservation = HotelReservation(
             locator=Locator(id="123"),
             hotel_id="100",
             checkin=checkin,
