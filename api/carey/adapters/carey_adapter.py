@@ -6,10 +6,11 @@ from zeep import Client, Transport
 
 from api.carey.settings import CONFIG
 from api.common.decorators import cached_property
+from api.carey.models.carey_api_model import RateInquiryRequest
 
 
 class CareyAdapter:
-    def get_rate_inquiry(self, rate_inquiry_request: Request):
+    def get_rate_inquiry(self, rate_inquiry_request: RateInquiryRequest):
         request = self._build_request(rate_inquiry_request)
         return self.client.service.rateInquiry(**request)
 
@@ -60,8 +61,63 @@ class CareyAdapter:
         return wsdl_path
 
     @staticmethod
-    def _build_request(request):
-        build_request: Dict[Any, Any] = request
+    def _build_request(request: RateInquiryRequest):
+        build_request: Dict[Any, Any] = {
+            "Version": "1.0",
+            "POS": {
+                "Source": {
+                    "BookingChannel": {
+                        "Type": "TA",
+                        "CompanyName": {
+                            "Code": "",
+                            "CodeContext": "52969",
+                            "CompanyShortName": "PM744",
+                            "_value_1": "CSI - SimpleNight",
+                        },
+                    }
+                }
+            },
+            "Service": {
+                "Pickup": {
+                    "AirportInfo": {
+                        "Departure": {
+                            "AirportName": request.pickUpLoacation.location_name,
+                            "LocationCode": request.pickUpLoacation.location_id,
+                        }
+                    },
+                    "Airline": {
+                        "FlightDateTime": request.flightInfo.flightDate,
+                        "FlightNumber": request.flightInfo.flightNum,
+                        "Code": request.flightInfo.flightCode,
+                    },
+                    "DateTime": request.dateTime,
+                },
+                "Dropoff": {
+                    "Address": {
+                        "LocationName": request.dropOffLocation.locationName,
+                        "AddressLine": request.dropOffLocation.addressLine,
+                        "CityName": request.dropOffLocation.cityName,
+                        "PostalCode": request.dropOffLocation.postalCode,
+                        "StateProv": {
+                            "_value_1": request.dropOffLocation.stateProv["value"],
+                            "StateCode": request.dropOffLocation.stateProv["StateCode"],
+                        },
+                        "CountryName": {
+                            "_value_1": request.dropOffLocation.countryName.value,
+                            "Code": request.dropOffLocation.countryName.stateCode,
+                        },
+                        "LocationType": "address",
+                    }
+                },
+            },
+            "ServiceType": {"Code": "Point-To-Point", "Description": "ALL"},
+            "PassengerPrefs": {
+                "MaximumBaggage": request.bags,
+                "MaximumPassengers": request.passengers,
+                "GreetingSignInd": "false",
+            },
+        }
+
         return build_request
 
     def __init__(self):
