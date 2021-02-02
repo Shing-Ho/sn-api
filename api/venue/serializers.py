@@ -64,3 +64,15 @@ class VenueSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Venue
         fields = "__all__"
+
+
+class ProductsSerializer(serializers.ModelSerializer):
+    media = ProductMediaSerializer(many=True, read_only=True)
+    group = serializers.SerializerMethodField(source="get_group")
+
+    class Meta:
+        model = models.ProductsNightLife
+        fields = "__all__"
+
+    def get_group(self, obj):
+        return obj.name

@@ -703,7 +703,6 @@ class ProductHotels(models.Model):
     room_size = models.TextField()
     max_guests = models.TextField()
     item_code = models.CharField(max_length=200, null=True, blank=True)
-
     highlight = models.BooleanField(default=0)
     balcony = models.BooleanField(default=0)
     status = models.BooleanField(default=1)

@@ -46,6 +46,7 @@ router.register(r"venues", venue_view.VenueViewSet).register(
     .register(r"product", venue_view.ProductNightLifeViewSet, "venue_id", parents_query_lookups=["venue_id"])
     .register(r"media", venue_view.ProductMediaViewSet, "id", parents_query_lookups=["product_id", "id"])
 )
+
 router.urls.append(path("accounts/", include("api.accounts.urls")))
 
 urlpatterns = [
