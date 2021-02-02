@@ -96,13 +96,17 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
 
     @staticmethod
     def _parse_variants(variant):
+        additional_info = {}
+        if "additional" in variant:
+            additional_info = variant["additional"]
+
         return ActivityVariant(
             code=variant["code"],
             name=variant["name"],
             description=variant["description"],
             price=Decimal(variant["price"]),
             capacity=variant["capacity"],
-            additional=variant["additional"],
+            additional=additional_info,
         )
 
     @staticmethod
