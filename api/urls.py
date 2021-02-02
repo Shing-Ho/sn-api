@@ -51,12 +51,15 @@ router.register(r"venues", venue_view.VenueViewSet).register(
     .register(r"product_nightlife", venue_view.ProductNightLifeViewSet, "venue_id", parents_query_lookups=["venue_id"])
     .register(r"media", venue_view.ProductNightLifeMediaViewSet, "id", parents_query_lookups=["product_id", "id"])
 )
+<<<<<<< HEAD
 (
     router.register(r"venues", venue_view.VenueViewSet)
     .register(r"product_hotels", venue_view.ProductHotelViewSet, "venue_id", parents_query_lookups=["venue_id"])
     .register(r"media", venue_view.ProductHotelMediaViewSet, "id", parents_query_lookups=["product_id", "id"])
 )
 
+=======
+>>>>>>> new model added
 
 router.urls.append(path("accounts/", include("api.accounts.urls")))
 
