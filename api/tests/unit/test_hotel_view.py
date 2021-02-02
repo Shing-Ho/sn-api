@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 from unittest.mock import patch
 
 import requests_mock
@@ -8,6 +9,7 @@ from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.models.hotel_api_model import HotelLocationSearch, SimplenightHotel
 from api.hotel.models.hotel_common_models import RoomOccupancy
+from api.locations.models import Location, LocationType
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
 from api.tests import model_helper
@@ -20,7 +22,9 @@ class TestBookingView(SimplenightTestCase):
     def test_hotelbeds_availability(self):
         hotelbeds_location_response = load_test_resource("hotelbeds/search-by-location-response.json")
         hotelbeds_content_response = load_test_resource("hotelbeds/hotel-details-response.json")
-        model_helper.create_provider(HotelbedsAdapter.get_provider_name())
+        provider = model_helper.create_provider(HotelbedsAdapter.get_provider_name())
+        model_helper.create_provider_hotel(provider, "349168", "Hotel One")
+        model_helper.create_provider_hotel(provider, "97334", "Hotel Two")
 
         search_request = HotelLocationSearch(
             location_id="SFO",
@@ -36,13 +40,15 @@ class TestBookingView(SimplenightTestCase):
             hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
             content_url = transport.endpoint(transport.Endpoint.HOTEL_CONTENT)
 
-            with patch("api.locations.location_service.find_provider_location") as mock_location_service:
-                mock_location_service.return_value = model_helper.create_provider_city(
-                    provider_name=HotelbedsAdapter.get_provider_name(),
-                    code="SFO",
-                    name="San Francisco",
-                    province="CA",
-                    country="US",
+            with patch("api.hotel.adapters.hotelbeds.hotelbeds_adapter.find_city_by_simplenight_id") as mock_find_city:
+                mock_find_city.return_value = Location(
+                    location_id="SFO",
+                    language_code="en",
+                    location_name="San Francisco",
+                    iso_country_code="US",
+                    latitude=Decimal("37.774930"),
+                    longitude=Decimal("-122.419420"),
+                    location_type=LocationType.CITY,
                 )
 
                 with requests_mock.Mocker() as mocker:
@@ -51,4 +57,4 @@ class TestBookingView(SimplenightTestCase):
                     response = self.post(SEARCH_BY_LOCATION, search_request)
 
                 hotels = from_json(response.content, SimplenightHotel, many=True)
-                assert len(hotels) == 24
+                assert len(hotels) == 2

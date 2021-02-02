@@ -1,3 +1,11 @@
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
+
+from bearer_auth.models import AccessToken
+from bearer_auth.settings import token_settings
+
 # from django.contrib.auth import login
 
 # from rest_framework.authtoken.serializers import AuthTokenSerializer
@@ -12,6 +20,29 @@
 # from rest_framework.permissions import IsAuthenticated
 
 # from rest_framework.views import APIView
+
+
+class LoginAPI(ObtainAuthToken):
+    model = AccessToken
+    serializer_class = AuthTokenSerializer
+
+    def post(self, request):
+        data = request.data
+        data["grant_type"] = "password"
+        serializer = self.serializer_class(data=data, context={"request": request})
+        if serializer.is_valid():
+            user = serializer.validated_data["user"]
+            token = AccessToken.objects.create(user=user)
+            return Response(
+                {
+                    "token_type": "Bearer",
+                    "access_token": token.key,
+                    "refresh_token": token.refresh_token,
+                    "expires_in": token_settings.TOKEN_EXPIRES_IN,
+                }
+            )
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
 
 # # Register API
 # class RegisterAPI(generics.GenericAPIView):

@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Any, Dict, Union
+from typing import List, Any, Dict
 
 import pytz
 from dateutil.relativedelta import relativedelta
@@ -39,15 +39,14 @@ from api.hotel.models.hotel_api_model import (
     GeoLocation,
 )
 from api.hotel.models.hotel_common_models import (
-    Address,
     RoomOccupancy,
     Money,
     RoomRate,
     HotelReviews,
 )
+from api.locations.location_service import find_city_by_simplenight_id
 from api.models.models import ProviderImages, ProviderHotel
 from api.view.exceptions import AvailabilityException, BookingException, AvailabilityErrorCode, BookingErrorCode
-from api.locations.location_service import find_city_by_simplenight_id
 
 
 class HotelbedsAdapter(HotelAdapter):
@@ -99,8 +98,9 @@ class HotelbedsAdapter(HotelAdapter):
         """
         convert location search to geolocation
         """
-        location = find_city_by_simplenight_id(search.location_id, language_code=(
-            search.language if search.language else "en"))
+        location = find_city_by_simplenight_id(
+            search.location_id, language_code=(search.language if search.language else "en")
+        )
         if location is None:
             raise AvailabilityException(
                 error_type=AvailabilityErrorCode.LOCATION_NOT_FOUND, detail="Could not find provider location mapping"
@@ -109,11 +109,11 @@ class HotelbedsAdapter(HotelAdapter):
         return {
             **self._create_base_search(search),
             "geolocation": {
-                "latitude": location.latitude,
-                "longitude": location.longitude,
+                "latitude": float(location.latitude),
+                "longitude": float(location.longitude),
                 "radius": 30,
-                "unit": "mi"
-            }
+                "unit": "mi",
+            },
         }
 
     def _create_hotel_id_search(self, search: AdapterHotelSearch):
@@ -136,7 +136,7 @@ class HotelbedsAdapter(HotelAdapter):
                     "children": search.occupancy.children,
                     "rooms": search.occupancy.num_rooms,
                 }
-            ]
+            ],
         }
 
         return params
@@ -147,7 +147,8 @@ class HotelbedsAdapter(HotelAdapter):
         hotelbeds_hotels = ProviderHotel.objects.filter(
             provider__name=self.get_provider_name(),
             provider_code__in=hotel_codes,
-            language_code=(search.language if search.language else "en"))
+            language_code=(search.language if search.language else "en"),
+        )
         hotel_details_map = {x.provider_code: x for x in hotelbeds_hotels}
         logger.info(f"Enrichment: Found {len(hotel_details_map)} stored hotels")
 
@@ -325,6 +326,7 @@ class HotelbedsAdapter(HotelAdapter):
             cancellation_type = CancellationSummary.NON_REFUNDABLE
             current_time = datetime.now(tz=pytz.timezone("US/Pacific"))
             penalty_currency = cancellation_detail_response.get("hotelCurrency", currency)
+
             if current_time <= from_date:
                 if Decimal(total_penalty) == Decimal(rate["net"]):
                     cancellation_type = CancellationSummary.FREE_CANCELLATION
@@ -368,7 +370,8 @@ class HotelbedsAdapter(HotelAdapter):
 
         return room_rates
 
-    def _create_room_rate(self, room_type_code: str, rate: Dict[Any, Any], currency="USD"):
+    @staticmethod
+    def _create_room_rate(room_type_code: str, rate: Dict[Any, Any], currency="USD"):
         net_amount = Decimal(rate.get("net", 0))
 
         total_base_rate = Money(amount=net_amount, currency=currency)
@@ -381,9 +384,8 @@ class HotelbedsAdapter(HotelAdapter):
         total_rate = Money(amount=total_amount, currency=currency)
 
         occupancy = RoomOccupancy(
-            adults=rate.get("adults", 0),
-            children=rate.get("children", 0),
-            num_rooms=rate.get("rooms", 0))
+            adults=rate.get("adults", 0), children=rate.get("children", 0), num_rooms=rate.get("rooms", 0)
+        )
 
         rate_type = rate.get("rateType", "BOOKABLE")
         rate_plan_code = rate.get("rateKey", "")
@@ -444,9 +446,11 @@ class HotelbedsAdapter(HotelAdapter):
                     }],
                 }
             ],
+            "tolerance": 2,
         }
 
-    def _check_booking_response_and_get_results(self, response):
+    @staticmethod
+    def _check_booking_response_and_get_results(response):
         if response is None:
             raise BookingException(
                 error_type=AvailabilityErrorCode.PROVIDER_ERROR, detail="Could not retrieve response",
@@ -462,10 +466,14 @@ class HotelbedsAdapter(HotelAdapter):
 
     @staticmethod
     def _get_image(provider_image: ProviderImages):
-        return Image(url=provider_image.image_url, type=ImageType.UNKNOWN, display_order=provider_image.display_order,)
+        return Image(url=provider_image.image_url, type=ImageType.UNKNOWN, display_order=provider_image.display_order)
 
     @staticmethod
     def _create_hotel_details(hotel, hotel_detail_model: ProviderHotel, photos):
+        star_rating = None
+        if hotel_detail_model.star_rating:
+            star_rating = float(hotel_detail_model.star_rating)
+
         return HotelDetails(
             name=hotel["name"],
             address=hotel_detail_model.get_address(),
@@ -477,9 +485,10 @@ class HotelbedsAdapter(HotelAdapter):
             geolocation=GeoLocation(latitude=hotel["latitude"], longitude=hotel["longitude"]),
             chain_code=hotel_detail_model.chain_code,
             chain_name=hotel_detail_model.chain_name,
-            star_rating=hotel_detail_model.star_rating,
+            star_rating=star_rating,
             property_description=hotel_detail_model.property_description,
         )
 
-    def _create_recheck_params(self, room_rate: RoomRate):
+    @staticmethod
+    def _create_recheck_params(room_rate: RoomRate):
         return {"rooms": [{"rateKey": room_rate.code}]}

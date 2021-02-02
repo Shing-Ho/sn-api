@@ -1,4 +1,5 @@
 from api.carey.adapters.carey_adapter import CareyAdapter
+from api.carey.models.carey_api_model import RateInquiryRequest
 
 
 class CareyService:
@@ -9,7 +10,7 @@ class CareyService:
     def get_wsdl_url(self):
         return "https://sandbox.carey.com/CSIOTAProxy_v2/CareyReservationService?wsdl"
 
-    def get_quote_inquiry(self, request):
+    def get_quote_inquiry(self, request: RateInquiryRequest):
         response = self.carey.get_rate_inquiry(request)
         return response
 

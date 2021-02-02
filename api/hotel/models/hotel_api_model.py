@@ -268,7 +268,7 @@ class HotelPriceVerification(SimplenightModel):
     price_difference: decimal.Decimal
 
 
-class ProviderRoomDataCachePayload(SimplenightModel):
+class RoomDataCachePayload(SimplenightModel):
     hotel_id: str
     adapter_hotel: AdapterHotel
     provider: str

@@ -27,7 +27,7 @@ class StubActivityAdapter(ActivityAdapter):
     async def details(self, product_id: str, date_from: date, date_to: date) -> AdapterActivityBookingResponse:
         raise NotImplementedError("Details Not Implemented")
 
-    async def variants(self, product_id: str, activity_date: date) -> List[ActivityVariants]:
+    async def variants(self, product_id: str, activity_date: date) -> ActivityVariants:
         raise NotImplementedError("Variants Not Implemented")
 
     async def cancel(self, order_id: str) -> bool:

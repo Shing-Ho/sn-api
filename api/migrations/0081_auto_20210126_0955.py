@@ -6,18 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0080_auto_20210123_2314'),
+        ("api", "0081_auto_20210126_0513"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='providerhotel',
-            name='chain_code',
-            field=models.TextField(blank=True, null=True),
+            model_name="providerhotel", name="chain_code", field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='providerhotel',
-            name='chain_name',
-            field=models.TextField(blank=True, null=True),
+            model_name="providerhotel", name="chain_name", field=models.TextField(blank=True, null=True),
         ),
     ]

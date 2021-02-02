@@ -18,7 +18,10 @@ class AdapterActivity(SimplenightModel):
     total_price: Money
     total_base: Money
     total_taxes: Money
+    categories: Optional[List[str]]
     images: List[Image]
+    rating: Optional[Decimal]
+    reviews: Optional[int]
 
 
 class AdapterActivitySearch(SimplenightModel):
@@ -42,7 +45,7 @@ class AdapterActivityBookingResponse(SimplenightModel):
     record_locator: Locator
 
 
-class ProviderActivityDataCachePayload(SimplenightModel):
+class ActivityDataCachePayload(SimplenightModel):
     code: str
     provider: str
     price: Decimal
