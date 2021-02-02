@@ -152,6 +152,10 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
         )
 
     def _create_activity(self, activity, activity_date: date):
+        rating = activity["rating"]
+        if rating:
+            rating = Decimal(rating)
+
         return AdapterActivity(
             name=activity["name"],
             provider=self.get_provider_name(),
@@ -161,7 +165,10 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
             total_price=Money(amount=activity["price"], currency=activity["currency"]),
             total_base=Money(amount=Decimal(0), currency=activity["currency"]),
             total_taxes=Money(amount=Decimal(0), currency=activity["currency"]),
+            categories=activity["categories"],
             images=list(self._parse_image(image, idx) for idx, image in enumerate(activity["images"])),
+            reviews=activity["reviews"],
+            rating=rating,
         )
 
     @staticmethod

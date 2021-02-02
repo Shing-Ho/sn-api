@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Any, Dict, Union
+from typing import List, Any, Dict
 
 import pytz
 from dateutil.relativedelta import relativedelta
@@ -39,15 +39,14 @@ from api.hotel.models.hotel_api_model import (
     GeoLocation,
 )
 from api.hotel.models.hotel_common_models import (
-    Address,
     RoomOccupancy,
     Money,
     RoomRate,
     HotelReviews,
 )
+from api.locations.location_service import find_city_by_simplenight_id
 from api.models.models import ProviderImages, ProviderHotel
 from api.view.exceptions import AvailabilityException, BookingException, AvailabilityErrorCode, BookingErrorCode
-from api.locations.location_service import find_city_by_simplenight_id
 
 
 class HotelbedsAdapter(HotelAdapter):
@@ -99,8 +98,9 @@ class HotelbedsAdapter(HotelAdapter):
         """
         convert location search to geolocation
         """
-        location = find_city_by_simplenight_id(search.location_id, language_code=(
-            search.language if search.language else "en"))
+        location = find_city_by_simplenight_id(
+            search.location_id, language_code=(search.language if search.language else "en")
+        )
         if location is None:
             raise AvailabilityException(
                 error_type=AvailabilityErrorCode.LOCATION_NOT_FOUND, detail="Could not find provider location mapping"
@@ -109,11 +109,11 @@ class HotelbedsAdapter(HotelAdapter):
         return {
             **self._create_base_search(search),
             "geolocation": {
-                "latitude": location.latitude,
-                "longitude": location.longitude,
+                "latitude": float(location.latitude),
+                "longitude": float(location.longitude),
                 "radius": 30,
-                "unit": "mi"
-            }
+                "unit": "mi",
+            },
         }
 
     def _create_hotel_id_search(self, search: AdapterHotelSearch):
@@ -136,7 +136,7 @@ class HotelbedsAdapter(HotelAdapter):
                     "children": search.occupancy.children,
                     "rooms": search.occupancy.num_rooms,
                 }
-            ]
+            ],
         }
 
         return params
@@ -147,7 +147,8 @@ class HotelbedsAdapter(HotelAdapter):
         hotelbeds_hotels = ProviderHotel.objects.filter(
             provider__name=self.get_provider_name(),
             provider_code__in=hotel_codes,
-            language_code=(search.language if search.language else "en"))
+            language_code=(search.language if search.language else "en"),
+        )
         hotel_details_map = {x.provider_code: x for x in hotelbeds_hotels}
         logger.info(f"Enrichment: Found {len(hotel_details_map)} stored hotels")
 
@@ -382,9 +383,8 @@ class HotelbedsAdapter(HotelAdapter):
         total_rate = Money(amount=total_amount, currency=currency)
 
         occupancy = RoomOccupancy(
-            adults=rate.get("adults", 0),
-            children=rate.get("children", 0),
-            num_rooms=rate.get("rooms", 0))
+            adults=rate.get("adults", 0), children=rate.get("children", 0), num_rooms=rate.get("rooms", 0)
+        )
 
         rate_type = rate.get("rateType", "BOOKABLE")
         rate_plan_code = rate.get("rateKey", "")
@@ -431,48 +431,39 @@ class HotelbedsAdapter(HotelAdapter):
     def _create_booking_params(self, book_request: HotelBookingRequest):
         payment = adapter_common.get_virtual_credit_card(self.transport.test_mode)
         payment_card_params = payment.payment_card_parameters
-        expires_string = f"{int(payment_card_params.expiration_month):02d}{int(payment_card_params.expiration_year):02d}"
+        exp_year = int(payment_card_params.expiration_year)
+        exp_month = int(payment_card_params.expiration_month)
+        expires_string = f"{exp_month :02d}{exp_year :02d}"
         customer = book_request.customer
 
-        paxes = [{
-            "roomId": 1,
-            "type": "AD",
-            "name": customer.first_name,
-            "surname": customer.last_name,
-        }]
+        paxes = [{"roomId": 1, "type": "AD", "name": customer.first_name, "surname": customer.last_name}]
 
         if book_request.traveler is not None:
-            paxes.append({
-                "roomId": 2,
-                "type": "AD",
-                "name": book_request.traveler.first_name,
-                "surname": book_request.traveler.last_name
-            })
+            paxes.append(
+                {
+                    "roomId": 2,
+                    "type": "AD",
+                    "name": book_request.traveler.first_name,
+                    "surname": book_request.traveler.last_name,
+                }
+            )
 
         return {
             "holder": {"name": customer.first_name, "surname": customer.last_name},
             "clientReference": book_request.transaction_id,
             "remark": "No remark",
-            "rooms": [
-                {
-                    "rakeKey": book_request.room_code,
-                    "paxes": paxes,
-                }
-            ],
+            "rooms": [{"rakeKey": book_request.room_code, "paxes": paxes}],
             "paymentData": {
                 "paymentCard": {
                     "cardHolderName": payment_card_params.cardholder_name,
                     "cardType": payment_card_params.card_type.name,
                     "cardNumber": payment_card_params.card_number,
                     "expiryDate": expires_string,
-                    "cardCVC": payment_card_params.cvv
+                    "cardCVC": payment_card_params.cvv,
                 },
-                "contactData": {
-                    "email": "info@simplenight.com",
-                    "phoneNumber": customer.phone_number
-                }
+                "contactData": {"email": "info@simplenight.com", "phoneNumber": customer.phone_number},
             },
-            "tolerance": 2
+            "tolerance": 2,
         }
 
     def _check_booking_response_and_get_results(self, response):
@@ -491,7 +482,7 @@ class HotelbedsAdapter(HotelAdapter):
 
     @staticmethod
     def _get_image(provider_image: ProviderImages):
-        return Image(url=provider_image.image_url, type=ImageType.UNKNOWN, display_order=provider_image.display_order,)
+        return Image(url=provider_image.image_url, type=ImageType.UNKNOWN, display_order=provider_image.display_order)
 
     @staticmethod
     def _create_hotel_details(hotel, hotel_detail_model: ProviderHotel, photos):
@@ -506,7 +497,7 @@ class HotelbedsAdapter(HotelAdapter):
             geolocation=GeoLocation(latitude=hotel["latitude"], longitude=hotel["longitude"]),
             chain_code=hotel_detail_model.chain_code,
             chain_name=hotel_detail_model.chain_name,
-            star_rating=hotel_detail_model.star_rating,
+            star_rating=float(hotel_detail_model.star_rating),
             property_description=hotel_detail_model.property_description,
         )
 

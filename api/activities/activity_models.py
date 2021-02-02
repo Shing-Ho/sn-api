@@ -17,7 +17,10 @@ class SimplenightActivity(SimplenightModel):
     total_price: Money
     total_base: Money
     total_taxes: Money
+    categories: Optional[List[str]]
     images: List[Image]
+    rating: Optional[Decimal]
+    reviews: Optional[int]
 
 
 class ActivityAvailabilityTime(SimplenightModel):
