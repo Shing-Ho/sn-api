@@ -370,7 +370,8 @@ class HotelbedsAdapter(HotelAdapter):
 
         return room_rates
 
-    def _create_room_rate(self, room_type_code: str, rate: Dict[Any, Any], currency="USD"):
+    @staticmethod
+    def _create_room_rate(room_type_code: str, rate: Dict[Any, Any], currency="USD"):
         net_amount = Decimal(rate.get("net", 0))
 
         total_base_rate = Money(amount=net_amount, currency=currency)
@@ -466,7 +467,8 @@ class HotelbedsAdapter(HotelAdapter):
             "tolerance": 2,
         }
 
-    def _check_booking_response_and_get_results(self, response):
+    @staticmethod
+    def _check_booking_response_and_get_results(response):
         if response is None:
             raise BookingException(
                 error_type=AvailabilityErrorCode.PROVIDER_ERROR, detail="Could not retrieve response",
@@ -486,6 +488,10 @@ class HotelbedsAdapter(HotelAdapter):
 
     @staticmethod
     def _create_hotel_details(hotel, hotel_detail_model: ProviderHotel, photos):
+        star_rating = None
+        if hotel_detail_model.star_rating:
+            star_rating = float(hotel_detail_model.star_rating)
+
         return HotelDetails(
             name=hotel["name"],
             address=hotel_detail_model.get_address(),
@@ -497,9 +503,10 @@ class HotelbedsAdapter(HotelAdapter):
             geolocation=GeoLocation(latitude=hotel["latitude"], longitude=hotel["longitude"]),
             chain_code=hotel_detail_model.chain_code,
             chain_name=hotel_detail_model.chain_name,
-            star_rating=float(hotel_detail_model.star_rating),
+            star_rating=star_rating,
             property_description=hotel_detail_model.property_description,
         )
 
-    def _create_recheck_params(self, room_rate: RoomRate):
+    @staticmethod
+    def _create_recheck_params(room_rate: RoomRate):
         return {"rooms": [{"rateKey": room_rate.code}]}

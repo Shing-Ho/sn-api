@@ -9,6 +9,7 @@ from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy
 from api.hotel.models.booking_model import HotelBookingRequest, Customer, Traveler
 from api.hotel.models.hotel_common_models import RoomOccupancy
+from api.locations.models import LocationType, Location
 from api.tests import test_objects, model_helper
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
@@ -33,6 +34,11 @@ class TestHotelBeds(SimplenightTestCase):
         self.assertNotIn("foo", transport._get_headers())
 
     def test_hotelbeds_search_by_location_parsing(self):
+        # Create test provider hotels, which are required for HotelBeds to return availability
+        provider = model_helper.create_provider(HotelbedsAdapter.get_provider_name())
+        model_helper.create_provider_hotel(provider, "349168", "Hotel One")
+        model_helper.create_provider_hotel(provider, "97334", "Hotel Two")
+
         resource = load_test_resource("hotelbeds/search-by-location-response.json")
         hotelbeds = HotelbedsAdapter()
 
@@ -46,13 +52,15 @@ class TestHotelBeds(SimplenightTestCase):
         transport = HotelbedsTransport()
         hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
 
-        with patch("api.locations.location_service.find_provider_location") as mock_location_service:
-            mock_location_service.return_value = model_helper.create_provider_city(
-                provider_name=HotelbedsAdapter.get_provider_name(),
-                code="SFO",
-                name="San Francisco",
-                province="CA",
-                country="US",
+        with patch("api.hotel.adapters.hotelbeds.hotelbeds_adapter.find_city_by_simplenight_id") as mock_find_city:
+            mock_find_city.return_value = Location(
+                location_id="SFO",
+                language_code="en",
+                location_name="San Francisco",
+                iso_country_code="US",
+                latitude=Decimal("37.774930"),
+                longitude=Decimal("-122.419420"),
+                location_type=LocationType.CITY,
             )
 
             with requests_mock.Mocker() as mocker:
