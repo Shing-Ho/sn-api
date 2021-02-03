@@ -1085,18 +1085,26 @@ paths:
       operationId: listVenueMedias
       description: ''
       parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          description: A page number within the paginated result set.
-          schema:
-            type: integer
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: url
+        in: formData
+        type: file
+        required: true
+        description: The file to upload.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      
       responses:
         '200':
           content:
@@ -1153,18 +1161,26 @@ paths:
       operationId: retrieveVenueMedia
       description: ''
       parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this VenueMedia.
-          schema:
-            type: string
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: url
+        in: formData
+        type: file
+        required: true
+        description: The file to upload.
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueMedia.
+        schema:
+          type: string
+      
       responses:
         '200':
           content:
@@ -1178,18 +1194,25 @@ paths:
       operationId: updateVenueMedia
       description: ''
       parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this VenueMedia.
-          schema:
-            type: string
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: url
+        in: formData
+        type: file
+        required: true
+        description: The file to upload.
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueMedia.
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1208,18 +1231,25 @@ paths:
       operationId: destroyVenueMedia
       description: ''
       parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this VenueMedia.
-          schema:
-            type: string
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: url
+        in: formData
+        type: file
+        required: true
+        description: The file to upload.
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueMedia.
+        schema:
+          type: string
       responses:
         '204':
           description: ''
@@ -3344,7 +3374,7 @@ components:
           type: string
           nullable: true
         url:
-          type: string
+          type: file
         created_at:
           type: string
           format: date-time
