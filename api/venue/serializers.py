@@ -42,6 +42,18 @@ class ProductNightLifeMediaSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ProductHotelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductHotel
+        fields = "__all__"
+
+
+class ProductHotelsMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductHotelsMedia
+        fields = "__all__"
+
+
 class ProductsNightLifeSerializer(serializers.ModelSerializer):
     # media = ProductMediaSerializer(many=True, read_only=True)
     group = serializers.SerializerMethodField(source="get_group")
