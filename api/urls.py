@@ -11,6 +11,8 @@ import api.view.carey_view
 import api.accounts.views
 import api.view.multi_product_views
 from api.view import venue_view
+from django.conf import settings
+from django.conf.urls.static import static
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 from rest_framework.schemas import get_schema_view
 
@@ -39,12 +41,12 @@ router.register(r"venues", venue_view.VenueViewSet).register(
     r"product-group", venue_view.ProductGroupViewSet, "venue_id", parents_query_lookups=["venue_id"]
 )
 router.register(r"venues", venue_view.VenueViewSet).register(
-    r"product", venue_view.ProductNightLifeViewSet, "venue_id", parents_query_lookups=["venue_id"]
+    r"product_nightlife", venue_view.ProductNightLifeViewSet, "venue_id", parents_query_lookups=["venue_id"]
 )
 (
     router.register(r"venues", venue_view.VenueViewSet)
-    .register(r"product", venue_view.ProductNightLifeViewSet, "venue_id", parents_query_lookups=["venue_id"])
-    .register(r"media", venue_view.ProductMediaViewSet, "id", parents_query_lookups=["product_id", "id"])
+    .register(r"product_nightlife", venue_view.ProductNightLifeViewSet, "venue_id", parents_query_lookups=["venue_id"])
+    .register(r"media", venue_view.ProductNightLifeMediaViewSet, "id", parents_query_lookups=["product_id", "id"])
 )
 
 router.urls.append(path("accounts/", include("api.accounts.urls")))
@@ -58,4 +60,4 @@ urlpatterns = [
         get_schema_view(title="Simplenight Hotel API", description="Test data", version="1.0.0"),
         name="openapi-schema",
     ),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

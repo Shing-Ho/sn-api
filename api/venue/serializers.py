@@ -36,14 +36,14 @@ class ProductGroupSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ProductMediaSerializer(serializers.ModelSerializer):
+class ProductNightLifeMediaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.ProductMedia
+        model = models.ProductsNightLifeMedia
         fields = "__all__"
 
 
 class ProductsNightLifeSerializer(serializers.ModelSerializer):
-    media = ProductMediaSerializer(many=True, read_only=True)
+    # media = ProductMediaSerializer(many=True, read_only=True)
     group = serializers.SerializerMethodField(source="get_group")
 
     class Meta:
@@ -67,7 +67,7 @@ class VenueSerializer(serializers.ModelSerializer):
 
 
 class ProductsSerializer(serializers.ModelSerializer):
-    media = ProductMediaSerializer(many=True, read_only=True)
+    # media = ProductMediaSerializer(many=True, read_only=True)
     group = serializers.SerializerMethodField(source="get_group")
 
     class Meta:

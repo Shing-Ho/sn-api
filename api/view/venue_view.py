@@ -7,8 +7,10 @@ from api.models.models import (
     PaymentMethod,
     VenueDetail,
     ProductGroup,
-    ProductMedia,
+    ProductsNightLifeMedia,
     ProductsNightLife,
+    # ProductHotel,
+    # ProductHotelsMedia,
 )
 from api.venue import serializers
 from api.utils.paginations import ObjectPagination
@@ -93,12 +95,12 @@ class ProductGroupViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "delete"]
 
 
-class ProductMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+class ProductNightLifeMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [
         IsAuthenticated,
     ]
-    queryset = ProductMedia.objects.filter()
-    serializer_class = serializers.ProductMediaSerializer
+    queryset = ProductsNightLifeMedia.objects.filter()
+    serializer_class = serializers.ProductNightLifeMediaSerializer
     pagination_class = ObjectPagination
     http_method_names = ["get", "post", "put", "delete"]
 
