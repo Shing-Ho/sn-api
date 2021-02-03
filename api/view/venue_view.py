@@ -9,8 +9,8 @@ from api.models.models import (
     ProductGroup,
     ProductsNightLifeMedia,
     ProductsNightLife,
-    # ProductHotel,
-    # ProductHotelsMedia,
+    ProductHotel,
+    ProductHotelsMedia,
 )
 from api.venue import serializers
 from api.utils.paginations import ObjectPagination
