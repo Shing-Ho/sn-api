@@ -2,13 +2,11 @@ from django.contrib import admin
 from django.urls import path, include
 
 import api.view.admin_view
-import api.view.carey_view
-import api.view.charging_view
-import api.view.default_view
 import api.view.hotels_view
 import api.view.locations
 import api.view.default_view
 import api.view.charging_view
+import api.view.urban_view
 import api.view.carey_view
 import api.accounts.views
 import api.view.multi_product_views
@@ -23,6 +21,7 @@ router.register(r"locations", api.view.locations.LocationsViewSet, basename="loc
 router.register(r"hotels", api.view.hotels_view.HotelViewSet, basename="hotels")
 router.register(r"multi", api.view.multi_product_views.AllProductsViewSet, basename="multi")
 router.register(r"charging", api.view.charging_view.ChargingViewSet, basename="charging")
+router.register(r"urban", api.view.urban_view.UrbanViewSet, basename="urban")
 router.register(r"carey", api.view.carey_view.CareyViewSet, basename="carey")
 router.register(r"authentication", api.view.default_view.AuthenticationView, basename="authentication")
 router.register(r"users", api.view.admin_view.UserViewSet, basename="user-list")
