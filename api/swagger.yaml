@@ -1835,8 +1835,8 @@ paths:
         '204':
           description: ''
       tags:
-      - Venue Product NightLife
-  /api/v1/venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media:
+      - Venue Product Media
+  /api/v1/venues/{parent_lookup_venue_id}/product_nightlife/:
     get:
       operationId: listProductsNightLifeMedias
       description: ''
@@ -1915,8 +1915,18 @@ paths:
                 $ref: '#/components/schemas/ProductNightLifeMedia'
           description: ''
       tags:
+<<<<<<< 0725f2100f2e976ab5044985d23a33001d088f1e
       - Venue Product NightLife Media
   /api/v1/venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media/{id}:
+=======
+<<<<<<< 67d9dc620ba65866f7b95877c7b7ff4844711b73
+        - Venue Product
+  /api/v1/venues/{parent_lookup_venue_id}/product/{id}/:
+=======
+      - Venue Product
+  /api/v1/venues/{parent_lookup_venue_id}/product_nightlife/{id}/:
+>>>>>>> swagger file update
+>>>>>>> swagger file update
     get:
       operationId: retrieveProductsNightLifeMedia
       description: ''
