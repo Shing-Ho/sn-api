@@ -2473,7 +2473,7 @@ components:
               example: ja
             name:
               type: string
-              example: サンフランシスコ
+              example: ã‚µãƒ³ãƒ•ãƒ©ãƒ³ã‚·ã‚¹ã‚³
         latitude:
           type: number
           example: 49.057980
@@ -2492,7 +2492,7 @@ components:
           example: ja
         location_name:
           type: string
-          example: サンフランシスコ
+          example: ã‚µãƒ³ãƒ•ãƒ©ãƒ³ã‚·ã‚¹ã‚³
         province:
           type: string
           example: CA
@@ -3960,7 +3960,46 @@ components:
           type: string
         description:
           type: string
-        room_size:
+          description: Free-form text describing the activity
+          example: |
+            Not just one of the largest museums in the US, SFMOMA is also one of its finest. Regularly rotating
+            exhibits plus a hefty permanent collection, displayed on the seven floors of the striking SnÃ¸hetta
+            expansion make this a museum well worth your time in San Francisco
+        activity_date:
+          type: string
+          description: The initial date an activity is available
+          format: date
+        total_price:
+          $ref: '#/components/schemas/Price'
+        total_base:
+          $ref: '#/components/schemas/Price'
+        total_tax:
+          $ref: '#/components/schemas/Price'
+        categories:
+          type: array
+          description: A list of categories applicable to this activity product
+          items:
+            type: string
+        images:
+          type: array
+          description: A list of images associated with this activity product
+          items:
+            $ref: '#/components/schemas/Photo'
+        rating:
+          type: number
+          description: The average user rating for this activity product
+          example: 4.5
+        reviews:
+          type: integer
+          description: The number of user reviews for this activity product
+          example: 28
+
+    BusinessContact:
+      type: object
+      description: |
+        Contact information for a business, like an activity provider, or hotel
+      properties:
+        name:
           type: string
         max_guests:
           type: string
