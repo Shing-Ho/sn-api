@@ -1834,8 +1834,8 @@ paths:
         '204':
           description: ''
       tags:
-        - Venue Product Media
-  /api/v1/venues/{parent_lookup_venue_id}/product/:
+      - Venue Product Media
+  /api/v1/venues/{parent_lookup_venue_id}/product_nightlife/:
     get:
       operationId: listProductsNightLifes
       description: ''
@@ -1902,8 +1902,8 @@ paths:
                 $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-        - Venue Product
-  /api/v1/venues/{parent_lookup_venue_id}/product/{id}/:
+      - Venue Product
+  /api/v1/venues/{parent_lookup_venue_id}/product_nightlife/{id}/:
     get:
       operationId: retrieveProductsNightLife
       description: ''
