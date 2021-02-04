@@ -38,7 +38,7 @@ class HotelbedsTransport(Transport):
 
         return response.json()
 
-    def get(self, endpoint: Endpoint, id: str, **params):
+    def get_by_id(self, endpoint: Endpoint, id: str, **params):
         url = f"{self.endpoint(endpoint)}/{id}"
 
         logger.info(f"Making request to {url}")
@@ -96,7 +96,7 @@ class HotelbedsTransport(Transport):
         return self.get(self.Endpoint.CHAINS_TYPES, **params)
 
     def booking_detail(self, id, **params):
-        return self.get(self.Endpoint.BOOKING, id, **params)
+        return self.get_by_id(self.Endpoint.BOOKING, id, **params)
 
     def booking_cancel(self, id, **params):
         return self.delete(self.Endpoint.BOOKING, id, **params)
