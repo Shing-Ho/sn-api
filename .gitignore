@@ -85,3 +85,4 @@ venv.bak/
 doc.http
 static/
 media/
+google-cloud-sdk/
