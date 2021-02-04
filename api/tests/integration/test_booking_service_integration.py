@@ -361,7 +361,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
                 mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
                 with pytest.raises(BookingException):
-                    cancel_response = booking_service.cancel_confirm(cancel_request)
+                    booking_service.cancel_confirm(cancel_request)
 
         # No Refund Processed
         mock_refund.assert_not_called()
