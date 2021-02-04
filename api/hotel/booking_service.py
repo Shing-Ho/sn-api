@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Union
 
@@ -39,6 +39,7 @@ from common.exceptions import AppException
 
 def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
     logger.info(f"Received Booking Request: {book_request}")
+    _check_duplicates(book_request)  # Will raise on duplicate
     try:
         logger.info("Retrieving saved room rate")
         provider_rate_cache_payload = hotel_cache_service.get_cached_room_data(book_request.room_code)
@@ -115,6 +116,22 @@ def book(book_request: HotelBookingRequest) -> HotelBookingResponse:
     except Exception as e:
         logger.exception("Unhandled error during booking")
         raise BookingException(BookingErrorCode.UNHANDLED_ERROR, str(e))
+
+
+def _check_duplicates(booking_request: HotelBookingRequest):
+    logger.info(f"Checking for duplicate booking")
+    duplicate_check_deadline = datetime.now() - timedelta(minutes=5)
+
+    # TODO: Include other attributes, like price
+    recent_bookings = Booking.objects.filter(
+        booking_status=BookingStatus.BOOKED.value,
+        booking_date__gt=duplicate_check_deadline,
+        lead_traveler__first_name=booking_request.customer.first_name,
+        lead_traveler__last_name=booking_request.customer.last_name,
+    )
+
+    if recent_bookings.count() > 0:
+        raise BookingException(BookingErrorCode.DUPLICATE_BOOKING, "Duplicate booking detected")
 
 
 def _price_verification(provider: str, rate: Union[SimplenightRoomType, RoomRate]):

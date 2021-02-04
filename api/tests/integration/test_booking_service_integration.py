@@ -555,6 +555,15 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         self.assertEquals("Price Verification Failed: Old=100.0, New=150.0", str(e.value))
 
+    def test_duplicate_booking(self):
+        booking_request = test_objects.booking_request(rate_code="sn-foo")
+        self._create_booking(booking_request.customer.first_name, booking_request.customer.last_name, 100)
+
+        with pytest.raises(BookingException) as e:
+            booking_service.book(booking_request)
+
+        self.assertEqual("Duplicate booking detected", str(e.value))
+
     @staticmethod
     def _create_payment_transaction(booking, transaction_amount):
         payment_transaction = PaymentTransaction(
