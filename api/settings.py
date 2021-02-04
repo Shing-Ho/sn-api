@@ -279,7 +279,6 @@ else:
 
     STATICFILES_LOCATION = "static"
     MEDIAFILES_LOCATION = "media"
-    GS_BUCKET_NAME = "simplenight-api-dev"
     STATIC_URL = "https://storage.googleapis.com/{}/static/".format(GS_BUCKET_NAME)
     STATIC_ROOT = "static/"
 
