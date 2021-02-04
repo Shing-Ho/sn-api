@@ -38,6 +38,18 @@ class HotelbedsTransport(Transport):
 
         return response.json()
 
+    def get(self, endpoint: Endpoint, id: str, **params):
+        url = f"{self.endpoint(endpoint)}/{id}"
+
+        logger.info(f"Making request to {url}")
+        logger.debug(f"Params: {params}")
+
+        response = requests.get(url, params=params, headers=self._get_headers())
+        if not response.ok:
+            logger.error(f"Error while searching Hotelbeds: {response.text}")
+
+        return response.json()
+
     def post(self, endpoint: Endpoint, **params):
         url = self.endpoint(endpoint)
 
@@ -51,7 +63,7 @@ class HotelbedsTransport(Transport):
         return response.json()
 
     def delete(self, endpoint: Endpoint, id: str, **params):
-        url = self.endpoint(endpoint) + f"/${id}"
+        url = f"{self.endpoint(endpoint)}/{id}"
 
         logger.info(f"Making request to {url}")
         logger.debug(f"Params: {params}")
@@ -84,7 +96,7 @@ class HotelbedsTransport(Transport):
         return self.get(self.Endpoint.CHAINS_TYPES, **params)
 
     def booking_detail(self, id, **params):
-        return self.get(self.Endpoint.BOOKING + f"/${id}", **params)
+        return self.get(self.Endpoint.BOOKING, id, **params)
 
     def booking_cancel(self, id, **params):
         return self.delete(self.Endpoint.BOOKING, id, **params)

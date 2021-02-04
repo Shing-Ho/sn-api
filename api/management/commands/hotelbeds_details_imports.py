@@ -7,7 +7,7 @@ from api.management.commands.simplenight_base_command import SimplenightBaseComm
 
 class Command(SimplenightBaseCommand):
     def handle(self, *args, **options):
-        HotelbedsDetailsParser.remove_old_data()
+        # HotelbedsDetailsParser.remove_old_data()
 
         parser = HotelbedsDetailsParser(transport=HotelbedsTransport(test_mode=True))
         parser.load()

@@ -203,7 +203,7 @@ class HotelbedsAdapter(HotelAdapter):
         hotel_result = self._check_checkrates_response_and_get_results(response)
 
         room_type_code = hotel_result["rooms"][0]["code"]
-        room_rate = hotel_result["rooms"][0]["rate"][0]
+        room_rate = hotel_result["rooms"][0]["rates"][0]
 
         return self._create_room_rate(room_type_code, room_rate, hotel_result["currency"])
 
@@ -327,7 +327,7 @@ class HotelbedsAdapter(HotelAdapter):
             current_time = datetime.now(tz=pytz.timezone("US/Pacific"))
             penalty_currency = cancellation_detail_response.get("hotelCurrency", currency)
 
-            if current_time >= from_date:
+            if current_time <= from_date:
                 if Decimal(total_penalty) == Decimal(rate["net"]):
                     cancellation_type = CancellationSummary.FREE_CANCELLATION
                 elif Decimal(total_penalty) < Decimal(rate["net"]):
@@ -430,40 +430,22 @@ class HotelbedsAdapter(HotelAdapter):
         return response[operation]
 
     def _create_booking_params(self, book_request: HotelBookingRequest):
-        payment = adapter_common.get_virtual_credit_card(self.transport.test_mode)
-        payment_card_params = payment.payment_card_parameters
-        exp_year = int(payment_card_params.expiration_year)
-        exp_month = int(payment_card_params.expiration_month)
-        expires_string = f"{exp_month :02d}{exp_year :02d}"
         customer = book_request.customer
-
-        paxes = [{"roomId": 1, "type": "AD", "name": customer.first_name, "surname": customer.last_name}]
-
-        if book_request.traveler is not None:
-            paxes.append(
-                {
-                    "roomId": 2,
-                    "type": "AD",
-                    "name": book_request.traveler.first_name,
-                    "surname": book_request.traveler.last_name,
-                }
-            )
 
         return {
             "holder": {"name": customer.first_name, "surname": customer.last_name},
-            "clientReference": book_request.transaction_id,
-            "remark": "No remark",
-            "rooms": [{"rakeKey": book_request.room_code, "paxes": paxes}],
-            "paymentData": {
-                "paymentCard": {
-                    "cardHolderName": payment_card_params.cardholder_name,
-                    "cardType": payment_card_params.card_type.name,
-                    "cardNumber": payment_card_params.card_number,
-                    "expiryDate": expires_string,
-                    "cardCVC": payment_card_params.cvv,
-                },
-                "contactData": {"email": "info@simplenight.com", "phoneNumber": customer.phone_number},
-            },
+            "clientReference": book_request.transaction_id.replace("-", "")[:20],
+            "rooms": [
+                {
+                    "rateKey": book_request.room_code,
+                    "paxes": [{
+                        "roomId": 1,
+                        "type": "AD",
+                        "name": book_request.traveler.first_name,
+                        "surname": book_request.traveler.last_name,
+                    }],
+                }
+            ],
             "tolerance": 2,
         }
 
