@@ -238,7 +238,7 @@ CACHES = {
     },
 }
 
-CACHE_TIMEOUT = 900
+CACHE_TIMEOUT = 3600
 
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
