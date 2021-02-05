@@ -361,7 +361,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
                 mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
                 with pytest.raises(BookingException):
-                    cancel_response = booking_service.cancel_confirm(cancel_request)
+                    booking_service.cancel_confirm(cancel_request)
 
         # No Refund Processed
         mock_refund.assert_not_called()
@@ -554,6 +554,15 @@ class TestBookingServiceIntegration(SimplenightTestCase):
                 booking_service.book(booking_request)
 
         self.assertEquals("Price Verification Failed: Old=100.0, New=150.0", str(e.value))
+
+    def test_duplicate_booking(self):
+        booking_request = test_objects.booking_request(rate_code="sn-foo")
+        self._create_booking(booking_request.customer.first_name, booking_request.customer.last_name, 100)
+
+        with pytest.raises(BookingException) as e:
+            booking_service.book(booking_request)
+
+        self.assertEqual("Duplicate booking detected", str(e.value))
 
     @staticmethod
     def _create_payment_transaction(booking, transaction_amount):
