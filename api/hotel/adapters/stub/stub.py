@@ -4,7 +4,7 @@ import uuid
 from datetime import timedelta
 from typing import List
 
-from api.hotel import hotel_cache_service
+from api.hotel import provider_cache_service
 from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.models.adapter_models import (
     AdapterLocationSearch,
@@ -13,7 +13,7 @@ from api.hotel.models.adapter_models import (
     AdapterCancelResponse,
     AdapterHotelBatchSearch,
 )
-from api.hotel.models.booking_model import Reservation, HotelBookingRequest, Locator
+from api.hotel.models.booking_model import HotelReservation, HotelBookingRequest, Locator
 from api.hotel.models.hotel_api_model import (
     AdapterHotel,
     RoomType,
@@ -69,7 +69,7 @@ class StubHotelAdapter(HotelAdapter):
         return response
 
     def search_by_id_batch(self, search_request: AdapterHotelBatchSearch) -> List[AdapterHotel]:
-        raise NotImplemented("Search by ID Batch Not Implemented")
+        raise NotImplementedError("Search by ID Batch Not Implemented")
 
     def recheck(self, room_rate: RoomRate) -> RoomRate:
         return room_rate
@@ -78,14 +78,14 @@ class StubHotelAdapter(HotelAdapter):
         return self._generate_hotel_details(city="Foo")
 
     def reviews(self, *args) -> HotelReviews:
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def booking_availability(self, search_request: AdapterBaseSearch):
         return self.search_by_id(search_request)
 
-    def booking(self, book_request: HotelBookingRequest) -> Reservation:
-        cached_room_data = hotel_cache_service.get_simplenight_rate(book_request.room_code)
-        return Reservation(
+    def book(self, book_request: HotelBookingRequest) -> HotelReservation:
+        cached_room_data = provider_cache_service.get_simplenight_rate(book_request.room_code)
+        return HotelReservation(
             locator=Locator(id=str(uuid.uuid4())),
             hotel_locator=[Locator(id=random_alphanumeric(6))],
             hotel_id=cached_room_data.hotel_id,
@@ -97,7 +97,7 @@ class StubHotelAdapter(HotelAdapter):
         )
 
     def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
-        raise NotImplemented("Cancel not implemented")
+        raise NotImplementedError("Cancel not implemented")
 
     def _generate_room_types(self):
         bed_types = {
@@ -144,10 +144,12 @@ class StubHotelAdapter(HotelAdapter):
 
     @staticmethod
     def _generate_rate_plans(hotel_search: HotelSearch):
+        penalty_date = hotel_search.start_date - timedelta(days=14)
+        cancellation_message = f"Free Cancellation allowed without charge before {penalty_date}"
         refundable_rate_plan = RatePlan(
             name="Free Cancellation",
             code=random_alphanumeric(8),
-            description=f"Free Cancellation allowed without charge before {hotel_search.start_date - timedelta(days=14)}",
+            description=cancellation_message,
             amenities=[SimplenightAmenities.WIFI],
             cancellation_policy=CancellationPolicy(
                 summary=CancellationSummary.FREE_CANCELLATION,

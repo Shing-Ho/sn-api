@@ -123,7 +123,7 @@ class TestPricelineUnit(SimplenightTestCase):
 
         with requests_mock.Mocker() as mocker:
             mocker.post(endpoint, text=priceline_booking_response)
-            reservation = priceline.booking(booking_request)
+            reservation = priceline.book(booking_request)
 
         self.assertEqual("30796806215", reservation.locator.id)
         self.assertEqual("CONF0", reservation.hotel_locator[0].id)
@@ -181,7 +181,7 @@ class TestPricelineUnit(SimplenightTestCase):
                         room_to_book = hotel_to_book.room_types[0]
                         booking_request = test_objects.booking_request(rate_code=room_to_book.code)
 
-                        booking_response = booking_service.book(booking_request)
+                        booking_response = booking_service.book_hotel(booking_request)
 
         booking = Booking.objects.get(transaction_id=booking_response.transaction_id)
         booking_id = booking.booking_id
@@ -323,7 +323,7 @@ class TestPricelineUnit(SimplenightTestCase):
         with requests_mock.Mocker() as mocker:
             mocker.post(booking_endpoint, text=mock_priceline_booking_response)
             with pytest.raises(BookingException) as e:
-                priceline.booking(booking_request)
+                priceline.book(booking_request)
 
         self.assertEqual("Hotel.Express.Book: Invalid name_first", str(e.value))
 
@@ -420,7 +420,7 @@ class TestPricelineUnit(SimplenightTestCase):
                             payment=payment,
                         )
 
-                        booking_response = booking_service.book(booking_request)
+                        booking_response = booking_service.book_hotel(booking_request)
 
         print(booking_response)
 

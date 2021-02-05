@@ -9,6 +9,20 @@ class SimplenightModel(BaseModel):
         arbitrary_types_allowed = True
 
 
+class BusinessContact(SimplenightModel):
+    name: str
+    email: str
+    website: str
+    address: str
+    phones: List[str]
+
+
+class BusinessLocation(SimplenightModel):
+    latitude: float
+    longitude: float
+    address: str
+
+
 T = TypeVar("T")
 
 

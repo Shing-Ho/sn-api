@@ -1,41 +1,18 @@
-from enum import Enum
+from datetime import date
 
-import requests
-
-from api import logger
-from api.hotel.adapters.transport import Transport
+from api.activities.adapters.suppliers_api.suppliers_api_transport import SuppliersApiTransport
 
 
-class TiqetsTransport(Transport):
-    def __init__(self, test_mode=True):
-        super().__init__()
-        self.test_mode = test_mode
-
-    class Endpoint(Enum):
-        SEARCH = "search"
-
-    def _get_headers(self, **kwargs):
-        return {
-            "Content-Type": "application/json",
-        }
-
-    def search(self, **data):
-        return self.post(self.Endpoint.SEARCH, **data)
-
-    def post(self, endpoint: Endpoint, **params):
-        url = self.get_endpoint(endpoint)
-
-        logger.info(f"Making request to {url}")
-        logger.debug(f"Params: {params}")
-
-        response = requests.post(url, json=params, headers=self._get_headers())
-        logger.info(f"Request complete to {url}")
-
-        if not response.ok:
-            logger.error(f"Error while searching Priceline: {response.text}")
-
-        return response.json()
-
+class TiqetsTransport(SuppliersApiTransport):
     @staticmethod
-    def get_endpoint(endpoint: Endpoint):
-        return f"https://suppliers-api.qa-new.simplenight.com/v1/tiqets/{endpoint.value}"
+    def get_supplier_name():
+        return "tiqets"
+
+    # Override the details endpoint, since Tiqets uses a separate endpoint
+    # Because Tiqets is already in-use in the old booking engine, we can't change the
+    # format of the message on the main endpoint.
+    def details(self, product_id: str, date_from: date = None, date_to: date = None):
+        query_params = {"date_from": str(date_from), "date_to": str(date_to)}
+        path_params = [product_id]
+
+        return self.get(self.Endpoint.ACTIVITIES, path_params=path_params, query_params=query_params)

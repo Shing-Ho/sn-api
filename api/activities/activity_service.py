@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 from decimal import getcontext, ROUND_UP
 from typing import List
 
@@ -9,11 +10,18 @@ from api.activities.activity_internal_models import (
     AdapterActivitySpecificSearch,
     AdapterActivitySearch,
 )
-from api.activities.activity_models import SimplenightActivity
+from api.activities.activity_models import (
+    SimplenightActivity,
+    SimplenightActivityDetailRequest,
+    SimplenightActivityDetailResponse,
+    SimplenightActivityVariantRequest,
+    ActivityVariants,
+)
+from api.hotel import provider_cache_service
 from api.hotel.adapters import adapter_service
 from api.hotel.models.hotel_common_models import Money
 from api.locations import location_service
-from api.search.search_models import ActivityLocationSearch, ActivitySpecificSearch
+from api.multi.multi_product_models import ActivityLocationSearch, ActivitySpecificSearch
 
 
 def search_by_location(search: ActivityLocationSearch) -> List[SimplenightActivity]:
@@ -28,6 +36,26 @@ def search_by_id(search: ActivitySpecificSearch) -> SimplenightActivity:
     activities = _process_activities(activities)
     if activities:
         return activities[0]  # TODO: Unify
+
+
+def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDetailResponse:
+    payload = provider_cache_service.get_cached_activity(request.code)
+    adapter = adapter_service.get_activity_adapter(payload.provider)
+    activity_details: SimplenightActivityDetailResponse = asyncio.run(
+        adapter.details(payload.code, request.date_from, request.date_to)
+    )
+
+    # Reset to
+    activity_details.code = request.code
+    return activity_details
+
+
+def variants(request: SimplenightActivityVariantRequest) -> List[ActivityVariants]:
+    payload = provider_cache_service.get_cached_activity(request.code)
+    adapter = adapter_service.get_activity_adapter(payload.provider)
+    activity_variants: List[ActivityVariants] = asyncio.run(adapter.variants(payload.code, request.activity_date))
+
+    return activity_variants
 
 
 def _adapter_location_search(search: ActivityLocationSearch) -> AdapterActivityLocationSearch:
@@ -52,15 +80,28 @@ def _process_activities(activities: List[AdapterActivity]) -> List[SimplenightAc
 
 
 def _adapter_to_simplenight_activity(activity: AdapterActivity) -> SimplenightActivity:
-    return SimplenightActivity(
+    """Converts the response from an Adapter-specific Activity to an API Activity
+    Additionally, because we don't want to expose internal details (like Provider),
+    we save the adapter activity to a cache.  We replace the activity code with a unique code to this request
+    """
+
+    simplenight_activity = SimplenightActivity(
         name=activity.name,
+        code=str(uuid.uuid4())[:8],
         description=activity.description,
         activity_date=activity.activity_date,
         total_price=_format_money(activity.total_price),
         total_base=_format_money(activity.total_base),
         total_taxes=_format_money(activity.total_taxes),
+        categories=activity.categories,
         images=activity.images,
+        rating=activity.rating,
+        reviews=activity.reviews,
     )
+
+    provider_cache_service.save_provider_activity(activity, simplenight_activity)
+
+    return simplenight_activity
 
 
 def _search_all_adapters_location(search: AdapterActivityLocationSearch) -> List[AdapterActivity]:

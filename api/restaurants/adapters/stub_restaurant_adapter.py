@@ -5,7 +5,7 @@ from typing import List
 
 from api.restaurants.restaurant_adapter import RestaurantAdapter
 from api.restaurants.restaurant_internal_models import AdapterRestaurant
-from api.search.search_models import RestaurantSearch
+from api.multi.multi_product_models import RestaurantSearch
 
 
 class StubRestaurantAdapter(RestaurantAdapter):

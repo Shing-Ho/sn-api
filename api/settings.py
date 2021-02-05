@@ -1,3 +1,4 @@
+######
 """
 Django settings for API project.
 
@@ -35,6 +36,7 @@ ALLOWED_HOSTS = ["*", "simplenight-api-278418.ue.r.appspot.com", "127.0.0.1", "l
 INSTALLED_APPS = [
     "admin_interface",
     "colorfield",
+    "django.contrib.sites",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -46,12 +48,19 @@ INSTALLED_APPS = [
     "api.auth",
     # Third-party
     "rest_framework",
+    "rest_framework.authtoken",
+    "rest_auth",
+    "bearer_auth",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "rest_auth.registration",
     "rest_framework_api_key",
     "corsheaders",
     "sequences.apps.SequencesConfig",
-    "knox",
 ]
 
+SITE_ID = 1
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -87,11 +96,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "api.wsgi.application"
 
+REST_AUTH_SERIALIZERS = {
+    "TOKEN_SERIALIZER": "api.accounts.serializers.TokenSerializer",
+    "USER_DETAILS_SERIALIZER": "api.accounts.serializers.UserDetailsSerializer",
+}
+
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.TokenAuthentication",
+        "bearer_auth.authentication.BearerTokenAuth",
+    ),
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
-    "DEFAULT_AUTHENTICATION_CLASSES": ["knox.auth.TokenAuthentication"],
     "EXCEPTION_HANDLER": "api.view.exceptions.handler",
 }
 
@@ -165,7 +181,9 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATIC_URL = "/static/"
+
 
 GEONAMES_CITIES_URL = "https://download.geonames.org/export/dump/cities15000.zip"
 GEONAMES_CITIES_FILENAME = "cities15000.txt"
@@ -221,3 +239,9 @@ CACHES = {
 }
 
 CACHE_TIMEOUT = 3600
+
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+
+TOKEN_EXPIRES_IN = 2  # 2hours

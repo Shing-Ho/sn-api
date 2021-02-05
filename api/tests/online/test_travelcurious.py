@@ -3,13 +3,14 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from api.activities.activity_internal_models import AdapterActivityLocationSearch
-from api.activities.adapters.tiqets.tiqets_activity_adapter import TiqetsActivityAdapter
+from api.activities.adapters.travelcurious.travelcurious_activity_adapter import TravelcuriousActivityAdapter
+from api.activities.adapters.travelcurious.travlecurious_transport import TravelcuriousTransport
 from api.locations.models import Location, LocationType
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
 class TestTiqets(SimplenightTestCase):
-    def x_test_search(self):
+    def test_search(self):
         location = Location(
             location_id="SF",
             language_code="en",
@@ -26,5 +27,5 @@ class TestTiqets(SimplenightTestCase):
             begin_date=begin_date.date(), end_date=end_date, adults=1, children=0, location=location
         )
 
-        adapter = TiqetsActivityAdapter(test_mode=True)
+        adapter = TravelcuriousActivityAdapter(TravelcuriousTransport(test_mode=True))
         print(asyncio.run(adapter.search_by_location(search)))

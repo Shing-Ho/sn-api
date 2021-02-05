@@ -1,0 +1,242 @@
+{
+  "code": "974626",
+  "type": "TOUR",
+  "categories": [
+    "ATTRACTION"
+  ],
+  "timezone": "America/Los_Angeles",
+  "images": [
+    {
+      "url": "https://api.simplenight.com/assets/images/boxoffice/sports/3.jpg",
+      "name": {
+        "en": "Attraction Image"
+      },
+      "description": {
+        "en": "Attraction Large Image"
+      }
+    },
+    {
+      "url": "https://api.simplenight.com/assets/images/boxoffice/family/3.jpg",
+      "name": {
+        "en": "Attraction Image"
+      },
+      "description": {
+        "en": "Attraction Large Image"
+      }
+    },
+    {
+      "url": "https://api.simplenight.com/assets/images/boxoffice/exclusive_parties/2.jpg",
+      "name": {
+        "en": "Attraction Image"
+      },
+      "description": {
+        "en": "Attraction Large Image"
+      }
+    }
+  ],
+  "contact": {
+    "name": "Tiqets",
+    "email": "info@tiqets.com",
+    "website": "https://www.tiqets.com",
+    "address": "James Wattstraat 77 1097 DL, Amsterdam, Netherlands",
+    "phones": []
+  },
+  "locations": [
+    {
+      "latitude": 37.7857182,
+      "longitude": -122.40105080000001,
+      "address": "151, 3rd Street"
+    }
+  ],
+  "availabilities": [
+    {
+      "type": "ALWAYS",
+      "label": "Whole Day Ticket",
+      "days": [
+        "MONDAY",
+        "TUESDAY",
+        "WEDNESDAY",
+        "THURSDAY",
+        "FRIDAY",
+        "SATURDAY",
+        "SUNDAY"
+      ],
+      "times": [],
+      "from": "2021-01-21",
+      "to": "2021-02-19",
+      "uuid": "a9d7fb1a-70d8-3284-9a7f-decfa5116467",
+      "capacity": 20
+    }
+  ],
+  "policies": [],
+  "cancellations": [
+    {
+      "type": "NO_REFUND",
+      "label": "This product is not refundable",
+      "policy": {
+        "en": "This product is not refundable"
+      },
+      "rules": [],
+      "uuid": "e45b200f-cb19-384f-88e4-e8f071ed65d8"
+    }
+  ],
+  "items": [
+    {
+      "status": "ACTIVE",
+      "category": "ATTRACTION",
+      "code": 2636,
+      "cancellation": "e45b200f-cb19-384f-88e4-e8f071ed65d8",
+      "price": 20.59,
+      "price_type": "NET",
+      "tax_multiplier": 0,
+      "availabilities": [
+        {
+          "type": "ALWAYS",
+          "label": "Whole Day Ticket",
+          "days": [
+            "MONDAY",
+            "TUESDAY",
+            "WEDNESDAY",
+            "THURSDAY",
+            "FRIDAY",
+            "SATURDAY",
+            "SUNDAY"
+          ],
+          "times": [],
+          "from": "2021-01-21",
+          "to": "2021-02-19",
+          "uuid": "a9d7fb1a-70d8-3284-9a7f-decfa5116467",
+          "capacity": 20
+        }
+      ],
+      "name": {
+        "en": "Adult"
+      },
+      "description": {
+        "en": "Age: 25 - 64"
+      }
+    },
+    {
+      "status": "ACTIVE",
+      "category": "ATTRACTION",
+      "code": 2637,
+      "cancellation": "e45b200f-cb19-384f-88e4-e8f071ed65d8",
+      "price": 20.59,
+      "price_type": "NET",
+      "tax_multiplier": 0,
+      "availabilities": [
+        {
+          "type": "ALWAYS",
+          "label": "Whole Day Ticket",
+          "days": [
+            "MONDAY",
+            "TUESDAY",
+            "WEDNESDAY",
+            "THURSDAY",
+            "FRIDAY",
+            "SATURDAY",
+            "SUNDAY"
+          ],
+          "times": [],
+          "from": "2021-01-21",
+          "to": "2021-02-19",
+          "uuid": "a9d7fb1a-70d8-3284-9a7f-decfa5116467",
+          "capacity": 20
+        }
+      ],
+      "name": {
+        "en": "Youth"
+      },
+      "description": {
+        "en": "Age: 19 - 24 (with valid ID)"
+      }
+    },
+    {
+      "status": "ACTIVE",
+      "category": "ATTRACTION",
+      "code": 2638,
+      "cancellation": "e45b200f-cb19-384f-88e4-e8f071ed65d8",
+      "price": 20.59,
+      "price_type": "NET",
+      "tax_multiplier": 0,
+      "availabilities": [
+        {
+          "type": "ALWAYS",
+          "label": "Whole Day Ticket",
+          "days": [
+            "MONDAY",
+            "TUESDAY",
+            "WEDNESDAY",
+            "THURSDAY",
+            "FRIDAY",
+            "SATURDAY",
+            "SUNDAY"
+          ],
+          "times": [],
+          "from": "2021-01-21",
+          "to": "2021-02-19",
+          "uuid": "a9d7fb1a-70d8-3284-9a7f-decfa5116467",
+          "capacity": 20
+        }
+      ],
+      "name": {
+        "en": "Senior"
+      },
+      "description": {
+        "en": "Age: 65+ (with ID)"
+      }
+    },
+    {
+      "status": "ACTIVE",
+      "category": "ATTRACTION",
+      "code": 2639,
+      "cancellation": "e45b200f-cb19-384f-88e4-e8f071ed65d8",
+      "price": 20.59,
+      "price_type": "NET",
+      "tax_multiplier": 0,
+      "availabilities": [
+        {
+          "type": "ALWAYS",
+          "label": "Whole Day Ticket",
+          "days": [
+            "MONDAY",
+            "TUESDAY",
+            "WEDNESDAY",
+            "THURSDAY",
+            "FRIDAY",
+            "SATURDAY",
+            "SUNDAY"
+          ],
+          "times": [],
+          "from": "2021-01-21",
+          "to": "2021-02-19",
+          "uuid": "a9d7fb1a-70d8-3284-9a7f-decfa5116467",
+          "capacity": 20
+        }
+      ],
+      "name": {
+        "en": "Child"
+      },
+      "description": {
+        "en": "Age: 0 - 18 (with valid ID)"
+      }
+    }
+  ],
+  "details": {
+    "name": {
+      "en": "San Francisco Museum of Modern Art (SFMOMA)"
+    },
+    "description": {
+      "en": "Not just one of the largest museums in the US, SFMOMA is also one of its finest. Regularly rotating exhibits plus a hefty permanent collection, displayed on the seven floors of the striking Sn\u00f8hetta expansion make this a museum well worth your time in San Francisco."
+    },
+    "hours_operation": {
+      "en": null
+    },
+    "languages": {
+      "en": "Dutch, Spanish, Italian, German, English, Portuguese, French"
+    },
+    "duration": {
+      "en": null
+    }
+  }
+}

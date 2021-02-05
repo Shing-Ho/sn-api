@@ -19,6 +19,7 @@ class HotelbedsTransport(Transport):
         HOTEL_CONTENT = "/hotel-content-api/1.0/hotels"
         FACILITIES_TYPES = "/hotel-content-api/1.0/types/facilities"
         CATEGORIES_TYPES = "/hotel-content-api/1.0/types/categories"
+        CHAINS_TYPES = "/hotel-content-api/1.0/types/chains"
 
     def __init__(self, test_mode=True):
         super().__init__()
@@ -27,6 +28,18 @@ class HotelbedsTransport(Transport):
 
     def get(self, endpoint: Endpoint, **params):
         url = self.endpoint(endpoint)
+
+        logger.info(f"Making request to {url}")
+        logger.debug(f"Params: {params}")
+
+        response = requests.get(url, params=params, headers=self._get_headers())
+        if not response.ok:
+            logger.error(f"Error while searching Hotelbeds: {response.text}")
+
+        return response.json()
+
+    def get_by_id(self, endpoint: Endpoint, id: str, **params):
+        url = f"{self.endpoint(endpoint)}/{id}"
 
         logger.info(f"Making request to {url}")
         logger.debug(f"Params: {params}")
@@ -50,7 +63,7 @@ class HotelbedsTransport(Transport):
         return response.json()
 
     def delete(self, endpoint: Endpoint, id: str, **params):
-        url = self.endpoint(endpoint) + f"/${id}"
+        url = f"{self.endpoint(endpoint)}/{id}"
 
         logger.info(f"Making request to {url}")
         logger.debug(f"Params: {params}")
@@ -79,8 +92,11 @@ class HotelbedsTransport(Transport):
     def categories_types(self, **params):
         return self.get(self.Endpoint.CATEGORIES_TYPES, **params)
 
+    def chains_types(self, **params):
+        return self.get(self.Endpoint.CHAINS_TYPES, **params)
+
     def booking_detail(self, id, **params):
-        return self.get(self.Endpoint.BOOKING + f"/${id}", **params)
+        return self.get_by_id(self.Endpoint.BOOKING, id, **params)
 
     def booking_cancel(self, id, **params):
         return self.delete(self.Endpoint.BOOKING, id, **params)

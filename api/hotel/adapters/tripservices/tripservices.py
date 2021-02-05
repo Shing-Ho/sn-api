@@ -33,18 +33,18 @@ class TripservicesAdapter(HotelAdapter):
         pass
 
     def search_by_id_batch(self, search_request: AdapterHotelBatchSearch) -> List[AdapterHotel]:
-        raise NotImplemented("Search by ID Batch Not Implemented")
+        raise NotImplementedError("Search by ID Batch Not Implemented")
 
     def details(self, *args) -> HotelDetails:
         pass
 
     def reviews(self, *args) -> HotelReviews:
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
         pass
 
-    def booking(self, book_request: HotelBookingRequest):
+    def book(self, book_request: HotelBookingRequest):
         pass
 
     def _create_city_search(self, search: AdapterLocationSearch):

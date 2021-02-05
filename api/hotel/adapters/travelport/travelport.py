@@ -14,8 +14,12 @@ from api.hotel.models.hotel_api_model import (
     GeoLocation,
 )
 from api.hotel.models.hotel_common_models import Address, RateType, Money, DailyRate, RoomRate, HotelReviews
-from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterCancelRequest, AdapterCancelResponse, \
-    AdapterHotelBatchSearch
+from api.hotel.models.adapter_models import (
+    AdapterLocationSearch,
+    AdapterCancelRequest,
+    AdapterCancelResponse,
+    AdapterHotelBatchSearch,
+)
 
 secrets = {
     "url": "https://americas.universal-api.travelport.com/B2BGateway/connect/uAPI/HotelService",
@@ -50,27 +54,24 @@ class TravelportHotelAdapter(HotelAdapter):
         return self._parse_details(response)
 
     def reviews(self, *args) -> HotelReviews:
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def search_by_id(self, search_request: HotelSpecificSearch) -> AdapterHotel:
-        raise NotImplemented("Search by ID Not Implemented")
+        raise NotImplementedError("Search by ID Not Implemented")
 
     def search_by_id_batch(self, search_request: AdapterHotelBatchSearch) -> List[AdapterHotel]:
-        raise NotImplemented("Search by ID Batch Not Implemented")
+        raise NotImplementedError("Search by ID Batch Not Implemented")
 
     def recheck(self, room_rate: RoomRate) -> RoomRate:
-        raise NotImplemented("Recheck price API not implemented")
+        raise NotImplementedError("Recheck price API not implemented")
 
     def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
-        raise NotImplemented("Cancel not implemented")
+        raise NotImplementedError("Cancel not implemented")
 
-    def booking(self, book_request: HotelBookingRequest):
-        raise NotImplemented("Booking not implemented")
+    def book(self, book_request: HotelBookingRequest):
+        raise NotImplementedError("Booking not implemented")
 
     def _parse_hotel(self, hotel):
-        hotel_property = hotel["HotelProperty"]
-        tax, total = self._parse_hotel_min_max_rate(hotel)
-
         return AdapterHotel(
             provider=self.get_provider_name(),
             hotel_id=None,
