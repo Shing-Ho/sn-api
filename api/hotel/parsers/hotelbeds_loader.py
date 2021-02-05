@@ -4,8 +4,12 @@ from api.hotel.adapters.hotelbeds.hotelbeds_common_models import HOTELBEDS_LANGU
 from api.management.commands.simplenight_base_command import SimplenightBaseCommand
 
 ENDPOINT_MAPPING = {
-    HotelbedsTransport.Endpoint.HOTEL_CONTENT: {"result_key": "hotels",},
-    HotelbedsTransport.Endpoint.CHAINS_TYPES: {"result_key": "chains"},
+    HotelbedsTransport.Endpoint.HOTEL_CONTENT: {
+        "result_key": "hotels",
+    },
+    HotelbedsTransport.Endpoint.CHAINS_TYPES: {
+        "result_key": "chains"
+    }
 }
 
 

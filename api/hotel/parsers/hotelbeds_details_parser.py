@@ -2,14 +2,7 @@ import json
 from api import logger
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
-from api.hotel.adapters.hotelbeds.hotelbeds_common_models import (
-    HOTELBEDS_LANGUAGE_MAP,
-    get_language_mapping,
-    get_thumbnail_url,
-    get_image_url,
-    get_star_rating,
-    get_image_type,
-)
+from api.hotel.adapters.hotelbeds.hotelbeds_common_models import HOTELBEDS_LANGUAGE_MAP, get_language_mapping, get_thumbnail_url, get_image_url, get_star_rating, get_image_type
 from api.hotel.adapters.hotelbeds.hotelbeds_amenity_mappings import get_simplenight_amenity_mappings
 from api.hotel.parsers import hotelbeds_loader
 from api.models.models import ProviderHotel, ProviderCity, ProviderImages, ProviderChain
@@ -53,12 +46,8 @@ class HotelbedsDetailsParser:
 
         for language_code in HOTELBEDS_LANGUAGE_MAP.keys():
             chunked_hotel_data = hotelbeds_loader.load_data(
-                self.transport,
-                HotelbedsTransport.Endpoint.HOTEL_CONTENT,
-                chunk_size=chunk_size,
-                showFullPortfolio=True,
-                useSecondaryLanguage=False,
-                language=get_language_mapping(language_code),
+                self.transport, HotelbedsTransport.Endpoint.HOTEL_CONTENT, chunk_size=chunk_size,
+                showFullPortfolio=True, useSecondaryLanguage=False, language=get_language_mapping(language_code)
             )
 
             for chunk in chunked_hotel_data:
@@ -129,8 +118,7 @@ class HotelbedsDetailsParser:
                 type=get_image_type(image["imageTypeCode"]),
                 display_order=image["visualOrder"],
                 image_url=get_image_url(image["path"]),
-            )
-            for image in hotel_data["images"]
+            ) for image in hotel_data["images"]
         ]
 
     def get_hotel_thumbnail_image(self, hotel_data):

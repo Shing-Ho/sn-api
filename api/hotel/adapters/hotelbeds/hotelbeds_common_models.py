@@ -19,7 +19,7 @@ HOTELBEDS_LANGUAGE_MAP = {
     "pl": "POL",
     "sv": "SUE",
     "th": "TAI",
-    "zh": "CHI",
+    "zh": "CHI"
 }
 
 
@@ -57,7 +57,9 @@ def get_image_url(image_path, size="xxl"):
     return f"{IMAGE_URL_PREFIX}/{size}/{image_path}"
 
 
-IMAGE_TYPE_MAP = {"HAB": ImageType.ROOM}
+IMAGE_TYPE_MAP = {
+    "HAB": ImageType.ROOM
+}
 
 
 def get_image_type(image_type_code):

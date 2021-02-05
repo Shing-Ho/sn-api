@@ -104,14 +104,16 @@ class APIAdminPermission(DjangoModelPermissions):
     """
     The permission for all the admin api views. You only get admin api access when:
     - you are a staff user (is_staff)
-    - you are a super user 
+    - you are a super user
     Feel free to customize!
     """
 
     @staticmethod
     def disallowed_by_setting_and_request(request):
         print(request.user.is_staff)
-        return not request.user.is_staff
+        return (
+            not request.user.is_staff
+        )
 
     def has_permission(self, request, view):
         if self.disallowed_by_setting_and_request(request):
@@ -120,11 +122,12 @@ class APIAdminPermission(DjangoModelPermissions):
 
 
 class IsSuperUser(BasePermission):
+
     def has_permission(self, request, view):
         return request.user and request.user.is_superuser or request.user.is_staff
 
-
 class IsOwner(BasePermission):
+
     def has_object_permission(self, request, view, obj):
         if request.user:
             if request.user.is_superuser or request.user.is_staff:

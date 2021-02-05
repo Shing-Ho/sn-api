@@ -440,14 +440,12 @@ class HotelbedsAdapter(HotelAdapter):
             "rooms": [
                 {
                     "rateKey": book_request.room_code,
-                    "paxes": [
-                        {
-                            "roomId": 1,
-                            "type": "AD",
-                            "name": book_request.traveler.first_name,
-                            "surname": book_request.traveler.last_name,
-                        }
-                    ],
+                    "paxes": [{
+                        "roomId": 1,
+                        "type": "AD",
+                        "name": book_request.traveler.first_name,
+                        "surname": book_request.traveler.last_name,
+                    }],
                 }
             ],
             "tolerance": 2,

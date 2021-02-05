@@ -8,83 +8,60 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0073_auto_20210121_0615"),
+        ('api', '0073_auto_20210121_0615'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name="ProductGroup",
+            name='ProductGroup',
             fields=[
-                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ("name", models.CharField(max_length=200)),
-                ("venue_id", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="api.venue")),
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('name', models.CharField(max_length=200)),
+                ('venue_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.venue')),
             ],
             options={
-                "verbose_name": "ProductGroup",
-                "verbose_name_plural": "ProductGroups",
-                "db_table": "product_groups",
+                'verbose_name': 'ProductGroup',
+                'verbose_name_plural': 'ProductGroups',
+                'db_table': 'product_groups',
             },
         ),
         migrations.CreateModel(
-            name="ProductsNightLife",
+            name='ProductsNightLife',
             fields=[
-                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ("name", models.CharField(max_length=200)),
-                ("price", models.TextField()),
-                ("capacity", models.IntegerField()),
-                ("highlight", models.BooleanField(default=0)),
-                ("status", models.BooleanField(default=1)),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
-                ("modified_at", models.DateTimeField(auto_now=True)),
-                (
-                    "product_group_id",
-                    models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="productsnightlife_requests_modified",
-                        to="api.productgroup",
-                    ),
-                ),
-                ("venue_id", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="api.venue")),
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('name', models.CharField(max_length=200)),
+                ('price', models.TextField()),
+                ('capacity', models.IntegerField()),
+                ('highlight', models.BooleanField(default=0)),
+                ('status', models.BooleanField(default=1)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('modified_at', models.DateTimeField(auto_now=True)),
+                ('product_group_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='productsnightlife_requests_modified', to='api.productgroup')),
+                ('venue_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.venue')),
             ],
             options={
-                "verbose_name": "ProductsNightLife",
-                "verbose_name_plural": "ProductsNightLife",
-                "db_table": "products_nightlife",
+                'verbose_name': 'ProductsNightLife',
+                'verbose_name_plural': 'ProductsNightLife',
+                'db_table': 'products_nightlife',
             },
         ),
         migrations.CreateModel(
-            name="ProductMedia",
+            name='ProductMedia',
             fields=[
-                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                (
-                    "type",
-                    models.CharField(
-                        blank=True, choices=[("VIDEO", "VIDEO"), ("IMAGE", "IMAGE")], max_length=8, null=True
-                    ),
-                ),
-                ("url", models.TextField(blank=True, null=True)),
-                ("thumbnail", models.TextField()),
-                ("mail", models.BooleanField(default=0)),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
-                ("modified_at", models.DateTimeField(auto_now=True)),
-                (
-                    "product_id",
-                    models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="productmedia_requests_modified",
-                        to="api.productsnightlife",
-                    ),
-                ),
-                ("venue_id", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="api.venue")),
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('type', models.CharField(blank=True, choices=[('VIDEO', 'VIDEO'), ('IMAGE', 'IMAGE')], max_length=8, null=True)),
+                ('url', models.TextField(blank=True, null=True)),
+                ('thumbnail', models.TextField()),
+                ('mail', models.BooleanField(default=0)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('modified_at', models.DateTimeField(auto_now=True)),
+                ('product_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='productmedia_requests_modified', to='api.productsnightlife')),
+                ('venue_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.venue')),
             ],
             options={
-                "verbose_name": "ProductMedia",
-                "verbose_name_plural": "ProductMedia",
-                "db_table": "product_media",
+                'verbose_name': 'ProductMedia',
+                'verbose_name_plural': 'ProductMedia',
+                'db_table': 'product_media',
             },
         ),
     ]

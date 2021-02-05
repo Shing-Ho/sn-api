@@ -6,31 +6,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0067_auto_20210120_1547"),
+        ('api', '0067_auto_20210120_1547'),
     ]
 
     operations = [
-        migrations.RenameModel(old_name="VenueImage", new_name="VenueMedia",),
+        migrations.RenameModel(
+            old_name='VenueImage',
+            new_name='VenueMedia',
+        ),
         migrations.AlterModelOptions(
-            name="venuemedia", options={"verbose_name": "VenueMedia", "verbose_name_plural": "VenueMedia"},
+            name='venuemedia',
+            options={'verbose_name': 'VenueMedia', 'verbose_name_plural': 'VenueMedia'},
         ),
-        migrations.RenameField(model_name="venuemedia", old_name="venue_id", new_name="venue",),
+        migrations.RenameField(
+            model_name='venuemedia',
+            old_name='venue_id',
+            new_name='venue',
+        ),
         migrations.AlterField(
-            model_name="organizationfeatures",
-            name="name",
-            field=models.TextField(
-                choices=[
-                    ("enabled_connectors", "ENABLED_ADAPTERS"),
-                    ("test_mode", "TEST_MODE"),
-                    ("stripe_api_key", "STRIPE_API_KEY"),
-                    ("priceline_api_url", "PRICELINE_API_URL"),
-                    ("mailgun_api_key", "MAILGUN_API_KEY"),
-                    ("email_enabled", "EMAIL_ENABLED"),
-                    ("hotelbeds_api_url", "HOTELBEDS_API_URL"),
-                    ("hotelbeds_api_key", "HOTELBEDS_API_KEY"),
-                    ("hotelbeds_api_secret", "HOTELBEDS_API_SECRET"),
-                ]
-            ),
+            model_name='organizationfeatures',
+            name='name',
+            field=models.TextField(choices=[('enabled_connectors', 'ENABLED_ADAPTERS'), ('test_mode', 'TEST_MODE'), ('stripe_api_key', 'STRIPE_API_KEY'), ('priceline_api_url', 'PRICELINE_API_URL'), ('mailgun_api_key', 'MAILGUN_API_KEY'), ('email_enabled', 'EMAIL_ENABLED'), ('hotelbeds_api_url', 'HOTELBEDS_API_URL'), ('hotelbeds_api_key', 'HOTELBEDS_API_KEY'), ('hotelbeds_api_secret', 'HOTELBEDS_API_SECRET')]),
         ),
-        migrations.AlterModelTable(name="venue", table="venues",),
+        migrations.AlterModelTable(
+            name='venue',
+            table='venues',
+        ),
     ]

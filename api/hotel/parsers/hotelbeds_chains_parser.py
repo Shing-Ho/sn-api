@@ -14,8 +14,7 @@ class HotelbedsChainsParser:
     def load(self, chunk_size=1000, limit=None):
         num_loaded = 0
         chunked_chain_data = hotelbeds_loader.load_data(
-            self.transport, HotelbedsTransport.Endpoint.CHAINS_TYPES, chunk_size=chunk_size, useSecondaryLanguage=True
-        )
+            self.transport, HotelbedsTransport.Endpoint.CHAINS_TYPES, chunk_size=chunk_size, useSecondaryLanguage=True)
         for chunk in chunked_chain_data:
             chains = list(map(self.parse_chain, chunk))
             ProviderChain.objects.bulk_create(chains)
@@ -32,7 +31,11 @@ class HotelbedsChainsParser:
         if "description" in chain_data:
             description = chain_data["description"]["content"]
 
-        return ProviderChain(provider=self.provider, provider_code=chain_data["code"], chain_name=description)
+        return ProviderChain(
+            provider=self.provider,
+            provider_code=chain_data["code"],
+            chain_name=description
+        )
 
     @classmethod
     def remove_old_data(cls):

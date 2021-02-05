@@ -10,11 +10,39 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(model_name="productgroup", old_name="venue_id", new_name="venue",),
-        migrations.RenameField(model_name="productmedia", old_name="venue_id", new_name="venue",),
-        migrations.RenameField(model_name="productsnightlife", old_name="venue_id", new_name="venue",),
-        migrations.RenameField(model_name="venue", old_name="venue_id", new_name="id",),
-        migrations.RenameField(model_name="venuecontact", old_name="venue_id", new_name="venue",),
-        migrations.RenameField(model_name="venuedetail", old_name="venue_id", new_name="venue",),
-        migrations.RenameField(model_name="venuemedia", old_name="venue_id", new_name="venue",),
+        migrations.RenameField(
+            model_name="productgroup",
+            old_name="venue_id",
+            new_name="venue",
+        ),
+        migrations.RenameField(
+            model_name="productmedia",
+            old_name="venue_id",
+            new_name="venue",
+        ),
+        migrations.RenameField(
+            model_name="productsnightlife",
+            old_name="venue_id",
+            new_name="venue",
+        ),
+        migrations.RenameField(
+            model_name="venue",
+            old_name="venue_id",
+            new_name="id",
+        ),
+        migrations.RenameField(
+            model_name="venuecontact",
+            old_name="venue_id",
+            new_name="venue",
+        ),
+        migrations.RenameField(
+            model_name="venuedetail",
+            old_name="venue_id",
+            new_name="venue",
+        ),
+        migrations.RenameField(
+            model_name="venuemedia",
+            old_name="venue_id",
+            new_name="venue",
+        ),
     ]

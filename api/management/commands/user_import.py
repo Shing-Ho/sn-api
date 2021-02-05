@@ -14,21 +14,22 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         logger.info("Import user data start")
-        f = open(settings.BASE_DIR + "/api/resources/users/user_data.json")
-        data = json.load(f)
-        print(data["users"])
-        for user in data["users"]:
+        f = open(settings.BASE_DIR+'/api/resources/users/user_data.json')
+        data = json.load(f) 
+        print(data['users'])
+        for user in data['users']:
             try:
                 user_obj = User(
-                    email=user["email"],
-                    username=user["username"],
-                    is_staff=user["is_staff"],
-                    is_superuser=user["is_superuser"],
-                    is_active=user["is_active"],
+                    email   = user['email'],
+                    username = user['username'],
+                    is_staff = user['is_staff'],
+                    is_superuser = user['is_superuser'],
+                    is_active = user['is_active'],
                 )
-                user_obj.set_password(user["password"])
+                user_obj.set_password(user['password'])
                 user_obj.save()
             except Exception as e:
                 logger.error("User already exists {}".format(e))
+
 
         logger.info("Import user data End")

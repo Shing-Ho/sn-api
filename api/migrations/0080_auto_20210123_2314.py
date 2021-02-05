@@ -10,5 +10,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(model_name="venue", name="status", field=models.BooleanField(default=0),),
+        migrations.AlterField(
+            model_name="venue",
+            name="status",
+            field=models.BooleanField(default=0),
+        ),
     ]

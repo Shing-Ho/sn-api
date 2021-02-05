@@ -3,17 +3,17 @@ from django.contrib import admin
 from django.forms import TextInput
 
 from api.models.models import (
-    Booking,
-    OrganizationFeatures,
-    PropertyInfo,
-    Venue,
-    VenueMedia,
-    VenueContact,
-    VenueDetail,
-    PaymentMethod,
-    ProductMedia,
-    ProductGroup,
-    ProductsNightLife,
+        Booking,
+        OrganizationFeatures,
+        PropertyInfo,
+        Venue,
+        VenueMedia,
+        VenueContact,
+        VenueDetail,
+        PaymentMethod,
+        ProductMedia,
+        ProductGroup,
+        ProductsNightLife,
 )
 
 
@@ -44,7 +44,6 @@ class OrganizationFeatureInline(admin.ModelAdmin):
 class PropertyInfoAdmin(admin.ModelAdmin):
     list_display = ("provider", "provider_code", "type", "language_code", "description")
     list_filter = ("provider_code", "language_code")
-
 
 admin.site.register(Venue)
 admin.site.register(VenueMedia)

@@ -9,36 +9,35 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0071_auto_20210121_0442"),
+        ('api', '0071_auto_20210121_0442'),
     ]
 
     operations = [
-        migrations.RenameModel(old_name="VenueContacts", new_name="VenueContact",),
+        migrations.RenameModel(
+            old_name='VenueContacts',
+            new_name='VenueContact',
+        ),
         migrations.CreateModel(
-            name="VenueDetail",
+            name='VenueDetail',
             fields=[
-                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ("description", models.TextField(blank=True, null=True)),
-                ("location", models.TextField(blank=True, null=True)),
-                ("logitude", models.CharField(blank=True, max_length=10, null=True)),
-                ("latitude", models.CharField(blank=True, max_length=200, null=True)),
-                ("capacity", models.IntegerField(blank=True, null=True)),
-                ("availability", jsonfield.fields.JSONField(default=dict)),
-                ("holidays", jsonfield.fields.JSONField(default=dict)),
-                ("amenities", jsonfield.fields.JSONField(default=dict)),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
-                ("modified_at", models.DateTimeField(auto_now=True)),
-                (
-                    "payment_method",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="venuedetail_requests_modified",
-                        to="api.paymentmethod",
-                    ),
-                ),
-                ("venue_id", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="api.venue")),
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('description', models.TextField(blank=True, null=True)),
+                ('location', models.TextField(blank=True, null=True)),
+                ('logitude', models.CharField(blank=True, max_length=10, null=True)),
+                ('latitude', models.CharField(blank=True, max_length=200, null=True)),
+                ('capacity', models.IntegerField(blank=True, null=True)),
+                ('availability', jsonfield.fields.JSONField(default=dict)),
+                ('holidays', jsonfield.fields.JSONField(default=dict)),
+                ('amenities', jsonfield.fields.JSONField(default=dict)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('modified_at', models.DateTimeField(auto_now=True)),
+                ('payment_method', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='venuedetail_requests_modified', to='api.paymentmethod')),
+                ('venue_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.venue')),
             ],
-            options={"verbose_name": "VenueDetail", "verbose_name_plural": "VenueDetail", "db_table": "venue_details",},
+            options={
+                'verbose_name': 'VenueDetail',
+                'verbose_name_plural': 'VenueDetail',
+                'db_table': 'venue_details',
+            },
         ),
     ]

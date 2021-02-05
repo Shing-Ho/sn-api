@@ -10,7 +10,6 @@ from api.urban.urban_service import UrbanService
 
 urban_service = UrbanService()
 
-
 class UrbanViewSet(viewsets.ViewSet):
     def xml_to_json(self, response):
         dict_response = xmltodict.parse(response.content)
@@ -22,22 +21,12 @@ class UrbanViewSet(viewsets.ViewSet):
         response = urban_service.get_standard_countries(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
 
-    @action(
-        detail=False,
-        url_path="get_ua_countries",
-        methods=["GET"],
-        name="Get list of available countries in Urban Adventures network",
-    )
+    @action(detail=False, url_path="get_ua_countries", methods=["GET"], name="Get list of available countries in Urban Adventures network")
     def get_ua_countries(self, request: Request):
         response = urban_service.get_ua_countries(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
 
-    @action(
-        detail=False,
-        url_path="get_ua_destinations",
-        methods=["GET"],
-        name="Get list of destinations of a certain country",
-    )
+    @action(detail=False, url_path="get_ua_destinations", methods=["GET"], name="Get list of destinations of a certain country")
     def get_ua_destinations(self, request: Request):
         response = urban_service.get_ua_destinations(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
@@ -46,48 +35,28 @@ class UrbanViewSet(viewsets.ViewSet):
     def get_trips(self, request: Request):
         response = urban_service.get_trips(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
-
+    
     @action(detail=False, url_path="get_trip_info", methods=["GET"], name="Get full information of a trip")
     def get_trip_info(self, request: Request):
         response = urban_service.get_trip_info(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
 
-    @action(
-        detail=False,
-        url_path="get_trip_alm",
-        methods=["GET"],
-        name="Get number of alloment of a specific date of a trip mentioned in request",
-    )
+    @action(detail=False, url_path="get_trip_alm", methods=["GET"], name="Get number of alloment of a specific date of a trip mentioned in request")
     def get_trip_alm(self, request: Request):
         response = urban_service.get_trip_alm(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
 
-    @action(
-        detail=False,
-        url_path="get_trip_price",
-        methods=["GET"],
-        name="Get price detail of a specific trip on a departure date",
-    )
+    @action(detail=False, url_path="get_trip_price", methods=["GET"], name="Get price detail of a specific trip on a departure date")
     def get_trip_price(self, request: Request):
         response = urban_service.get_trip_price(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
 
-    @action(
-        detail=False,
-        url_path="get_trip_avail_date",
-        methods=["GET"],
-        name="Get list of dates having allotment of a trip mentioned in request",
-    )
+    @action(detail=False, url_path="get_trip_avail_date", methods=["GET"], name="Get list of dates having allotment of a trip mentioned in request")
     def get_trip_avail_date(self, request: Request):
         response = urban_service.get_trip_avail_date(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
 
-    @action(
-        detail=False,
-        url_path="get_trip_availabilities",
-        methods=["GET"],
-        name="Get allotment and price info for a date range of a trip mentioned in request",
-    )
+    @action(detail=False, url_path="get_trip_availabilities", methods=["GET"], name="Get allotment and price info for a date range of a trip mentioned in request")
     def get_trip_availabilities(self, request: Request):
         response = urban_service.get_trip_availabilities(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
@@ -102,9 +71,7 @@ class UrbanViewSet(viewsets.ViewSet):
         response = urban_service.cancel_booking(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
 
-    @action(
-        detail=False, url_path="get_booking_voucher", methods=["GET"], name="Get the URL to download UA booking voucher"
-    )
+    @action(detail=False, url_path="get_booking_voucher", methods=["GET"], name="Get the URL to download UA booking voucher")
     def get_booking_voucher(self, request: Request):
         response = urban_service.get_booking_voucher(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
