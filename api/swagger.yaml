@@ -1690,151 +1690,7 @@ paths:
           description: ''
       tags:
         - Venue Product Group
-  /api/v1/venues/{parent_lookup_venue_id}/product-media/:
-    get:
-      operationId: listProductMedias
-      description: ''
-      parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          description: A page number within the paginated result set.
-          schema:
-            type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  count:
-                    type: integer
-                    example: 123
-                  next:
-                    type: string
-                    nullable: true
-                    format: uri
-                    example: http://api.example.org/accounts/?page=4
-                  previous:
-                    type: string
-                    nullable: true
-                    format: uri
-                    example: http://api.example.org/accounts/?page=2
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ProductMedia'
-          description: ''
-      tags:
-        - Venue Product Media
-    post:
-      operationId: createProductMedia
-      description: ''
-      parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductMedia'
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductMedia'
-          description: ''
-      tags:
-        - Venue Product Media
-  /api/v1/venues/{parent_lookup_venue_id}/product-media/{id}/:
-    get:
-      operationId: retrieveProductMedia
-      description: ''
-      parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this ProductMedia.
-          schema:
-            type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductMedia'
-          description: ''
-      tags:
-        - Venue Product Media
-    put:
-      operationId: updateProductMedia
-      description: ''
-      parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this ProductMedia.
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductMedia'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductMedia'
-          description: ''
-      tags:
-        - Venue Product Media
-    delete:
-      operationId: destroyProductMedia
-      description: ''
-      parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this ProductMedia.
-          schema:
-            type: string
-      responses:
-        '204':
-          description: ''
-      tags:
-      - Venue Product Media
+
   /api/v1/venues/{parent_lookup_venue_id}/product_nightlife/:
     get:
       operationId: listProductsNightLifes
@@ -1878,7 +1734,7 @@ paths:
                       $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-        - Venue Product
+        - Venue Product NightLife
     post:
       operationId: createProductsNightLife
       description: ''
@@ -1902,7 +1758,7 @@ paths:
                 $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-      - Venue Product
+      - Venue Product NightLife
   /api/v1/venues/{parent_lookup_venue_id}/product_nightlife/{id}/:
     get:
       operationId: retrieveProductsNightLife
@@ -1928,7 +1784,7 @@ paths:
                 $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-        - Venue Product
+        - Venue Product NightLife
     put:
       operationId: updateProductsNightLife
       description: ''
@@ -1958,7 +1814,7 @@ paths:
                 $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-        - Venue Product
+        - Venue Product NightLife
     delete:
       operationId: destroyProductsNightLife
       description: ''
@@ -1979,7 +1835,7 @@ paths:
         '204':
           description: ''
       tags:
-        - Venue Product
+        - Venue Product NightLife
   /api/v1/venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media:
     get:
       operationId: listProductsNightLifeMedias
@@ -2029,7 +1885,7 @@ paths:
                       $ref: '#/components/schemas/ProductNightLifeMedia'
           description: ''
       tags:
-      - Venue Product
+      - Venue Product NightLife Media
     post:
       operationId: createProductsNightLifeMedia
       description: ''
@@ -2059,7 +1915,7 @@ paths:
                 $ref: '#/components/schemas/ProductNightLifeMedia'
           description: ''
       tags:
-      - Venue Product
+      - Venue Product NightLife Media
   /api/v1/venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media/{id}:
     get:
       operationId: retrieveProductsNightLifeMedia
@@ -2091,7 +1947,7 @@ paths:
                 $ref: '#/components/schemas/ProductNightLifeMedia'
           description: ''
       tags:
-      - Venue Product
+      - Venue Product NightLife Media
     put:
       operationId: updateProductsNightLifeMedia
       description: ''
@@ -2127,7 +1983,7 @@ paths:
                 $ref: '#/components/schemas/ProductNightLifeMedia'
           description: ''
       tags:
-      - Venue Product
+      - Venue Product NightLife Media
     delete:
       operationId: destroyProductsNightLifeMedia
       description: ''
@@ -2154,7 +2010,7 @@ paths:
         '204':
           description: ''
       tags:
-      - Venue Product
+      - Venue Product NightLife Media
   /api/v1/venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media:
     get:
       operationId: listProductHotelsMedias
@@ -2204,7 +2060,7 @@ paths:
                       $ref: '#/components/schemas/ProductHotelsMedia'
           description: ''
       tags:
-      - Venue Product
+      - Venue Product Hotel Media
     post:
       operationId: createProductHotelsMedia
       description: ''
@@ -2234,7 +2090,7 @@ paths:
                 $ref: '#/components/schemas/ProductHotelsMedia'
           description: ''
       tags:
-      - Venue Product
+      - Venue Product Hotel Media
   /api/v1/venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media/{id}:
     get:
       operationId: retrieveProductHotelsMedia
@@ -2266,7 +2122,7 @@ paths:
                 $ref: '#/components/schemas/ProductHotelsMedia'
           description: ''
       tags:
-      - Venue Product
+      - Venue Product Hotel Media
     put:
       operationId: updateProductHotelsMedia
       description: ''
@@ -2302,7 +2158,7 @@ paths:
                 $ref: '#/components/schemas/ProductHotelsMedia'
           description: ''
       tags:
-      - Venue Product
+      - Venue Product Hotel Media
     delete:
       operationId: destroyProductHotelsMedia
       description: ''
@@ -2329,7 +2185,7 @@ paths:
         '204':
           description: ''
       tags:
-      - Venue Product
+      - Venue Product Hotel Media
 
   /api/v1/authentication/create_api_key:
     post:
@@ -2482,7 +2338,7 @@ paths:
                       $ref: '#/components/schemas/ProductHotel'
           description: ''
       tags:
-      - api
+      - Venue Product Hotel
     post:
       operationId: createProductHotel
       description: ''
@@ -2506,7 +2362,7 @@ paths:
                 $ref: '#/components/schemas/ProductHotel'
           description: ''
       tags:
-      - api
+      - Venue Product Hotel
   /api/v1/venues/{parent_lookup_venue_id}/product_hotel/{id}:
     get:
       operationId: retrieveProductHotel
@@ -2532,7 +2388,7 @@ paths:
                 $ref: '#/components/schemas/ProductHotel'
           description: ''
       tags:
-      - api
+      - Venue Product Hotel
     put:
       operationId: updateProductHotel
       description: ''
@@ -2562,7 +2418,7 @@ paths:
                 $ref: '#/components/schemas/ProductHotel'
           description: ''
       tags:
-      - api
+      - Venue Product Hotel
     delete:
       operationId: destroyProductHotel
       description: ''
@@ -2583,7 +2439,7 @@ paths:
         '204':
           description: ''
       tags:
-      - api
+      - Venue Product Hotel
 
 components:
   securitySchemes:
