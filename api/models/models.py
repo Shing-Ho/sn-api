@@ -2,11 +2,14 @@
 import random
 import string
 import uuid
+import jsonfield
+
 from datetime import datetime
 from enum import EnumMeta, Enum
 from typing import Tuple, List
 
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 from django_enumfield import enum
@@ -346,6 +349,8 @@ class ProviderHotel(models.Model):
     property_description = models.TextField(blank=True, null=True)
     amenities = ArrayField(models.CharField(max_length=100, blank=True), null=True)
     provider_reference = models.TextField(null=True)
+    chain_code = models.TextField(blank=True, null=True)
+    chain_name = models.TextField(blank=True, null=True)
 
     def get_address(self):
         return Address(
@@ -514,3 +519,232 @@ class HotelEvent(models.Model):
     provider_total = models.DecimalField(max_digits=10, decimal_places=2)
     provider_base = models.DecimalField(max_digits=10, decimal_places=2)
     provider_taxes = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class Venue(models.Model):
+    VENUE_FORM_CHOICE = (("SN", "SN"), ("PO", "PO"))
+    VENUE_TYPE = (
+        ("NIGHT_LIFE", "NIGHT_LIFE"),
+        ("HOTELS", "HOTELS"),
+        ("CAR_SERVICE", "CAR_SERVICE"),
+        ("GAS_AND_CHARGING", "GAS_AND_CHARGING"),
+        ("TOLLS", "TOLLS"),
+        ("SHOPPINGS", "SHOPPINGS"),
+        ("THINGS_TO_DO", "THINGS_TO_DO"),
+        ("DINING", "DINING"),
+        ("FAST_FOOD", "FAST_FOOD"),
+        ("COFFEE_AND_TEA", "COFFEE_AND_TEA"),
+    )
+
+    class Meta:
+        app_label = "api"
+        verbose_name = "Venue"
+        db_table = "venues"
+        verbose_name_plural = "Venues"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    name = models.CharField(max_length=300, unique=True)
+    venue_from = models.CharField(max_length=2, choices=VENUE_FORM_CHOICE, default="SN")
+    type = models.CharField(max_length=20, choices=VENUE_TYPE, default="NIGHT_LIFE")
+    language_code = models.CharField(max_length=3, default="en")
+    tags = models.CharField(max_length=100, null=True, blank=True)
+    star_rating = models.IntegerField(null=True, blank=True)
+    status = models.BooleanField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_by")
+    modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="modified_by")
+
+
+class VenueMedia(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "venue_media"
+        verbose_name = "VenueMedia"
+        verbose_name_plural = "VenueMedia"
+
+    FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="media")
+    type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
+    url = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class VenueContact(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "venue_contacts"
+        verbose_name = "VenueContact"
+        verbose_name_plural = "VenueContacts"
+
+    CONTACT_TYPE = (("MAIN", "MAIN"), ("OTHER", "OTHER"))
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    type = models.CharField(max_length=5, choices=CONTACT_TYPE, default="MAIN")
+    website = models.TextField(null=True, blank=True)
+    phone_number = models.TextField(null=True, blank=True)
+    fax = models.TextField(null=True, blank=True)
+    email = models.TextField(null=True, blank=True)
+    title = models.TextField(null=True, blank=True)
+    department = models.TextField(null=True, blank=True)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="contacts")
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class PaymentMethod(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "payment_methods"
+        verbose_name = "PaymentMethod"
+        verbose_name_plural = "PaymentMethods"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    icon = models.TextField(null=True, blank=True)
+    api_key = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class VenueDetail(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "venue_details"
+        verbose_name = "VenueDetail"
+        verbose_name_plural = "VenueDetail"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    description = models.TextField(null=True, blank=True)
+    location = models.TextField(null=True, blank=True)
+    logitude = models.CharField(max_length=10, null=True, blank=True)
+    latitude = models.CharField(max_length=200, null=True, blank=True)
+    capacity = models.IntegerField(null=True, blank=True)
+    payment_method = models.ForeignKey(
+        PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_requests_modified"
+    )
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="details")
+    availability = jsonfield.JSONField()
+    holidays = jsonfield.JSONField()
+    amenities = jsonfield.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductGroup(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
+
+    class Meta:
+        app_label = "api"
+        db_table = "product_groups"
+        verbose_name = "ProductGroup"
+        verbose_name_plural = "ProductGroups"
+
+
+class ProductsNightLife(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_nightlife"
+        verbose_name = "ProductsNightLife"
+        verbose_name_plural = "ProductsNightLife"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    price = models.TextField()
+    capacity = models.IntegerField()
+    highlight = models.BooleanField(default=0)
+    status = models.BooleanField(default=1)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="products")
+    product_group = models.ForeignKey(
+        ProductGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_requests_modified"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductMedia(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "product_media"
+        verbose_name = "ProductMedia"
+        verbose_name_plural = "ProductMedia"
+
+    FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
+    url = models.TextField(null=True, blank=True)
+    thumbnail = models.TextField()
+    mail = models.BooleanField(default=0)
+    product = models.ForeignKey(
+        ProductsNightLife, on_delete=models.SET_NULL, null=True, blank=True, related_name="media"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductHotels(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_hotel"
+        verbose_name = "ProductHotel"
+        verbose_name_plural = "ProductHotels"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    price = models.TextField()
+    description = models.TextField()
+    room_size = models.TextField()
+    max_guests = models.TextField()
+    item_code = models.CharField(max_length=200, null=True, blank=True)
+
+    highlight = models.BooleanField(default=0)
+    balcony = models.BooleanField(default=0)
+    status = models.BooleanField(default=1)
+    room_details = jsonfield.JSONField()
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="venue")
+    product_group = models.ForeignKey(ProductGroup, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductsHotelRoomDetails(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_hotel_room_details"
+        verbose_name = "ProductsHotelRoomDetails"
+        verbose_name_plural = "ProductsHotelRoomDetails"
+
+    TYPE = (
+        ("BEDROOM", "BEDROOM"),
+        ("BATHROOM", "BATHROOM"),
+        ("ENTERTAINMENT", "ENTERTAINMENT"),
+        ("FOODANDDRINK", "BATHROOM"),
+        ("MORE", "MORE"),
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    type = models.CharField(max_length=20, choices=TYPE, default="BEDROOM")
+    product_hotels = models.ForeignKey(ProductHotels, on_delete=models.SET_NULL, null=True, blank=True)
+
+
+class ProductsHotelRoomPricing(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_hotel_room_pricing"
+        verbose_name = "ProductsHotelRoomPricing"
+        verbose_name_plural = "ProductsHotelRoomPricings"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    rate = jsonfield.JSONField()
+    taxes = jsonfield.JSONField()
+    guests = jsonfield.JSONField()
+    dates = jsonfield.JSONField()
+    product_hotels = models.ForeignKey(ProductHotels, on_delete=models.SET_NULL, null=True, blank=True)

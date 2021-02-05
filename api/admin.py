@@ -2,7 +2,19 @@ from django import forms
 from django.contrib import admin
 from django.forms import TextInput
 
-from api.models.models import Booking, OrganizationFeatures, PropertyInfo
+from api.models.models import (
+    Booking,
+    OrganizationFeatures,
+    PropertyInfo,
+    Venue,
+    VenueMedia,
+    VenueContact,
+    VenueDetail,
+    PaymentMethod,
+    ProductMedia,
+    ProductGroup,
+    ProductsNightLife,
+)
 
 
 @admin.register(Booking)
@@ -33,3 +45,13 @@ class PropertyInfoAdmin(admin.ModelAdmin):
     list_display = ("provider", "provider_code", "type", "language_code", "description")
     list_filter = ("provider_code", "language_code")
 
+
+admin.site.register(Venue)
+admin.site.register(VenueMedia)
+admin.site.register(VenueContact)
+admin.site.register(VenueDetail)
+admin.site.register(PaymentMethod)
+admin.site.register(ProductMedia)
+
+admin.site.register(ProductGroup)
+admin.site.register(ProductsNightLife)

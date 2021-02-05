@@ -6,13 +6,14 @@ from unittest.mock import patch
 import pytest
 import requests_mock
 
-from api.hotel.models.hotel_common_models import RoomOccupancy
-from api.hotel import core_hotel_service, hotel_service, converter, hotel_cache_service
+from api.hotel import core_hotel_service, hotel_service, converter, provider_cache_service
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.converter.google_models import RoomParty, GoogleHotelSearchRequest
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch
+from api.hotel.models.hotel_common_models import RoomOccupancy
+from api.locations.models import LocationType, Location
 from api.tests import test_objects, model_helper
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 from api.tests.utils import load_test_resource
@@ -37,7 +38,7 @@ class TestCoreHotelService(SimplenightTestCase):
         assert len(room_rates) > 10
 
         for room_rate in room_rates:
-            stored_provider_rate_payload = hotel_cache_service.get_cached_room_data(room_rate.code)
+            stored_provider_rate_payload = provider_cache_service.get_cached_room_data(room_rate.code)
             provider_rate = stored_provider_rate_payload.provider_rate
 
             assert provider_rate is not None
@@ -49,14 +50,17 @@ class TestCoreHotelService(SimplenightTestCase):
         hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
         model_helper.create_provider(HotelbedsAdapter.get_provider_name())
 
-        with patch("api.locations.location_service.find_provider_location") as mock_location_service:
-            mock_location_service.return_value = model_helper.create_provider_city(
-                provider_name=HotelbedsAdapter.get_provider_name(),
-                code="SFO",
-                name="San Francisco",
-                province="CA",
-                country="US",
+        with patch("api.hotel.adapters.hotelbeds.hotelbeds_adapter.find_city_by_simplenight_id") as mock_find_city:
+            mock_find_city.return_value = Location(
+                location_id="SFO",
+                language_code="en",
+                location_name="San Francisco",
+                iso_country_code="US",
+                latitude=Decimal("37.774930"),
+                longitude=Decimal("-122.419420"),
+                location_type=LocationType.CITY,
             )
+
             with requests_mock.Mocker() as mocker:
                 mocker.post(hotels_url, text=error_response)
                 search_request = HotelLocationSearch(

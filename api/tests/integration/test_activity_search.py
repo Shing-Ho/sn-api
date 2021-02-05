@@ -1,7 +1,7 @@
 from datetime import date
 
-from api.activities import activity_search
-from api.search.search_models import ActivitySpecificSearch
+from api.activities import activity_service
+from api.multi.multi_product_models import ActivitySpecificSearch
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
 
 
@@ -11,7 +11,7 @@ class TestActivitySearch(SimplenightTestCase):
             begin_date=date(2020, 1, 1), end_date=date(2020, 1, 5), adults=1, children=0, activity_id="123"
         )
 
-        activity = activity_search.search_by_id(search)
+        activity = activity_service.search_by_id(search)
         self.assertIsNotNone(activity)
         self.assertIsNotNone(activity.name)
         self.assertIsNotNone(activity.description)

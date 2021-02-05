@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta, date
+from decimal import Decimal
 from unittest.mock import patch
 
 import requests_mock
 from freezegun import freeze_time
 
 from api.common.common_models import from_json
-from api.hotel import hotel_cache_service
+from api.hotel import provider_cache_service
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
@@ -28,6 +29,7 @@ from api.hotel.models.hotel_api_model import (
     SimplenightHotel,
 )
 from api.hotel.models.hotel_common_models import RoomOccupancy, Address
+from api.locations.models import Location, LocationType
 from api.models.models import Booking, Feature
 from api.tests import test_objects, model_helper
 from api.tests.unit.simplenight_test_case import SimplenightTestCase
@@ -83,7 +85,9 @@ class TestHotelsView(SimplenightTestCase):
         self.assertIsNotNone(hotels[0].hotel_id)
 
     def test_search_location_by_provider(self):
-        model_helper.create_provider(HotelbedsAdapter.get_provider_name())
+        provider = model_helper.create_provider(HotelbedsAdapter.get_provider_name())
+        model_helper.create_provider_hotel(provider, "13517", "Hotel One")
+        model_helper.create_provider_hotel(provider, "345972", "Hotel Two")
 
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
@@ -95,24 +99,31 @@ class TestHotelsView(SimplenightTestCase):
             provider="hotelbeds",
         )
 
+        hotelbeds_tranport = HotelbedsTransport(test_mode=True)
+        saved_search_response = load_test_resource("hotelbeds/hotelbeds-search-lat-lon-response.json")
+        search_endpoint = hotelbeds_tranport.endpoint(HotelbedsTransport.Endpoint.HOTELS)
         with patch("api.hotel.hotel_mappings.find_simplenight_hotel_id") as mock_find_simplenight_id:
-            mock_find_simplenight_id.return_value = "123"
+            mock_find_simplenight_id.return_value = "SFO"
 
-            with patch("api.locations.location_service.find_provider_location") as mock_location_service:
-                mock_location_service.return_value = model_helper.create_provider_city(
-                    provider_name=HotelbedsAdapter.get_provider_name(),
-                    code="SFO",
-                    name="San Francisco",
-                    province="CA",
-                    country="US",
+            with patch("api.hotel.adapters.hotelbeds.hotelbeds_adapter.find_city_by_simplenight_id") as mock_find_city:
+                mock_find_city.return_value = Location(
+                    location_id="SFO",
+                    language_code="en",
+                    location_name="San Francisco",
+                    iso_country_code="US",
+                    latitude=Decimal("37.774930"),
+                    longitude=Decimal("-122.419420"),
+                    location_type=LocationType.CITY,
                 )
 
-                response = self._post(SEARCH_BY_LOCATION, search)
+                with requests_mock.Mocker() as mocker:
+                    mocker.post(search_endpoint, text=saved_search_response)
+                    response = self._post(SEARCH_BY_LOCATION, search)
 
         self.assertEqual(200, response.status_code)
 
         hotels = from_json(response.content, SimplenightHotel, many=True)
-        self.assertTrue(len(hotels) > 1)
+        self.assertEqual(2, len(hotels))
         self.assertIsNotNone(hotels[0].hotel_id)
 
     def test_booking_invalid_payment(self):
@@ -124,7 +135,7 @@ class TestHotelsView(SimplenightTestCase):
         hotel = test_objects.hotel()
         provider_room_rate = test_objects.room_rate(rate_key="rate_key", total="100.00")
         simplenight_room_rate = test_objects.room_rate(rate_key="simplenight_rate_key", total="120.00")
-        hotel_cache_service.save_provider_rate_in_cache(
+        provider_cache_service.save_provider_rate(
             hotel, room_rate=provider_room_rate, simplenight_rate=simplenight_room_rate
         )
 
@@ -145,7 +156,7 @@ class TestHotelsView(SimplenightTestCase):
         hotel = test_objects.hotel()
         provider_room_rate = test_objects.room_rate(rate_key="rate_key", total="100.00")
         simplenight_room_rate = test_objects.room_rate(rate_key="simplenight_rate_key", total="120.00")
-        hotel_cache_service.save_provider_rate_in_cache(
+        provider_cache_service.save_provider_rate(
             hotel, room_rate=provider_room_rate, simplenight_rate=simplenight_room_rate
         )
 
@@ -163,13 +174,15 @@ class TestHotelsView(SimplenightTestCase):
         error_response = load_test_resource("hotelbeds/error-response.json")
         transport = HotelbedsTransport()
         hotels_url = transport.endpoint(transport.Endpoint.HOTELS)
-        with patch("api.locations.location_service.find_provider_location") as mock_location_service:
-            mock_location_service.return_value = model_helper.create_provider_city(
-                provider_name=HotelbedsAdapter.get_provider_name(),
-                code="SFO",
-                name="San Francisco",
-                province="CA",
-                country="US",
+        with patch("api.hotel.adapters.hotelbeds.hotelbeds_adapter.find_city_by_simplenight_id") as mock_find_city:
+            mock_find_city.return_value = Location(
+                location_id="SFO",
+                language_code="en",
+                location_name="San Francisco",
+                iso_country_code="US",
+                latitude=Decimal("37.774930"),
+                longitude=Decimal("-122.419420"),
+                location_type=LocationType.CITY,
             )
 
             with requests_mock.Mocker() as mocker:

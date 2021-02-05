@@ -2,7 +2,7 @@ import unittest
 from datetime import date
 
 from api.activities.adapters.stub_activity_adapter import StubActivityAdapter
-from api.search.search_models import ActivitySearch
+from api.multi.multi_product_models import ActivitySearch
 
 
 class TestActivityStubAdapter(unittest.TestCase):

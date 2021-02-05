@@ -3,7 +3,7 @@ from typing import List
 
 from api.common.base_adapter import BaseAdapter
 from api.restaurants.restaurant_internal_models import AdapterRestaurant
-from api.search.search_models import RestaurantSearch
+from api.multi.multi_product_models import RestaurantSearch
 
 
 class RestaurantAdapter(BaseAdapter, abc.ABC):
