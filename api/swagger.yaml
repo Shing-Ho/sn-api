@@ -1,8 +1,8 @@
 openapi: 3.0.0
 
 servers:
-# Added by API Auto Mocking Plugin
-# Added by API Auto Mocking Plugin
+  # Added by API Auto Mocking Plugin
+  # Added by API Auto Mocking Plugin
   - description: BOG Production
     url: https://bog.simplenight.com/api/v1/
   - description: Simplenight Live Sandbox
@@ -10,12 +10,18 @@ servers:
   - description: Localhost
     url: http://localhost:8000/api/v1
 info:
-  version: "1.0.2"
+  version: "2.0"
   title: Simplenight Hotel API
   description: |
-    This OpenAPI Specification describes the Simplenight Hotel API.  In the dropdown below, there are a list of two servers to choose from.  The first is a simple automock server which returns static mock responses.  The second is the Simplenight Live Sandbox server, which returns real data.
+    This document describes the Simplenight API.
 
-    Using the Simplenight Live Sandbox server requires a Bearer token.  This key must be provided by Simplenight.  Once you have obtained a token, you can click the "Authorize" button below, and submit your token.
+    * The Hotels API supports availability and booking of hotels alone. This API is now documented, in favor of the
+      multi-product API.
+
+    * The Locations API provides a list of Simplenight-supported locations, and convenience APIs for auto-complete.
+
+    * The Multi-Product API supports Hotel, Activity and Car searches.
+
 tags:
   - name: Locations
     description: Location-related data (cities, regions, airports, etc).  Each of these endpoints takes country code and language code as query parameters.
@@ -23,7 +29,7 @@ tags:
     description: Hotel availabilty, hotel details, and hotel booking endpoints
 
 security:
-  - ApiKeyAuth: []
+  - ApiKeyAuth: [ ]
 
 paths:
   /hotels/booking-availability:
@@ -168,6 +174,60 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/HotelSearchResponse'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No locations found for input
+
+  /multi/search:
+    post:
+      tags:
+        - MultiProduct
+      summary: Search for and book multiple product types together
+      description: |
+        Supports availability, booking, and cancel for Hotels, Activity, and Car
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MultiProductSearchRequest'
+      responses:
+        '200':
+          description: List of matching products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MultiProductSearchResponse'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No locations found for input
+
+  /multi/details:
+    post:
+      tags:
+        - MultiProduct
+      summary: Get details for the given product.
+      description: |
+        Returns the specific details an activity product is available.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityDetailsRequest'
+      responses:
+        '200':
+          description: List of matching products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityDetailsResponse'
         '400':
           description: bad input parameter
         '404':
@@ -409,49 +469,49 @@ paths:
         - in: query
           name: levelid
           description: |
-            Optional. Exact match on a given charging level (1-3) id (comma separated list)	
+            Optional. Exact match on a given charging level (1-3) id (comma separated list)
           schema:
             type: string
             example: 1,2
         - in: query
           name: minpowerkw
           description: |
-            Optional. Minimum output power in kW (this information is not known for many locations)	
+            Optional. Minimum output power in kW (this information is not known for many locations)
           schema:
             type: number
             example: 10
         - in: query
           name: usagetypeid
           description: |
-            Optional. Exact match on a given usage type id (comma separated list)	
+            Optional. Exact match on a given usage type id (comma separated list)
           schema:
             type: string
             example: 1,2
         - in: query
           name: statustypeid
           description: |
-            Optional. Exact match on a given status type id (comma separated list)	
+            Optional. Exact match on a given status type id (comma separated list)
           schema:
             type: string
             example: 1,2
         - in: query
           name: dataproviderid
           description: |
-            Optional. Exact match on a given data provider id (comma separated list). Use opendata=true for only OCM provided ("Open") data.	
+            Optional. Exact match on a given data provider id (comma separated list). Use opendata=true for only OCM provided ("Open") data.
           schema:
             type: string
             example: 1,2
         - in: query
           name: modifiedsince
           description: |
-            Optional. POIs modified since the given date (UTC).	
+            Optional. POIs modified since the given date (UTC).
           schema:
             type: date
             example: 2016-09-15T09:30
         - in: query
           name: opendata
           description: |
-            Optional. True or false. Set to true to include only Open Data licensed content, false to return only non-open licensed data. By default all available data is returned. You should refer to the license of the original data provider in each case.	
+            Optional. True or false. Set to true to include only Open Data licensed content, false to return only non-open licensed data. By default all available data is returned. You should refer to the license of the original data provider in each case.
           schema:
             type: boolean
             example: true
@@ -479,17 +539,17 @@ paths:
         - in: query
           name: chargepointid
           description: |
-            Optional. Exact match on a given POI id (comma separated list).	
+            Optional. Exact match on a given POI id (comma separated list).
           schema:
             type: string
             example: 1,2
         - in: query
           name: boundingbox
           description: |
-            Optional. Specify top left and bottom right box corners as: (lat,lng),(lat2,lng2)	
+            Optional. Specify top left and bottom right box corners as: (lat,lng),(lat2,lng2)
           schema:
             type: string
-            example: (39.7246392,-84.344028),(40.7246392,-86.344028)	
+            example: (39.7246392,-84.344028),(40.7246392,-86.344028)
         - in: query
           name: polygon
           description: |
@@ -499,7 +559,7 @@ paths:
         - in: query
           name: polygon
           description: |
-            Optional. Encoded polyline, use with distance param to increase search distance along line. Polyline is expanded into a polygon to cover the search distance.	
+            Optional. Encoded polyline, use with distance param to increase search distance along line. Polyline is expanded into a polygon to cover the search distance.
           schema:
             type: string
       responses:
@@ -520,12 +580,12 @@ paths:
       operationId: listUsers
       description: ''
       parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
       responses:
         '200':
           content:
@@ -552,11 +612,11 @@ paths:
                       $ref: '#/components/schemas/User'
           description: ''
       tags:
-      - Admin API For User Management
+        - Admin API For User Management
     post:
       operationId: createUser
       description: ''
-      parameters: []
+      parameters: [ ]
       requestBody:
         content:
           application/json:
@@ -570,18 +630,18 @@ paths:
                 $ref: '#/components/schemas/User'
           description: ''
       tags:
-      - Admin API For User Management
+        - Admin API For User Management
   /api/v1/users/{id}:
     get:
       operationId: retrieveUser
       description: ''
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: A unique integer value identifying this user.
-        schema:
-          type: string
+        - name: id
+          in: path
+          required: true
+          description: A unique integer value identifying this user.
+          schema:
+            type: string
       responses:
         '200':
           content:
@@ -590,17 +650,17 @@ paths:
                 $ref: '#/components/schemas/User'
           description: ''
       tags:
-      - Admin API For User Management
+        - Admin API For User Management
     put:
       operationId: updateUser
       description: ''
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: A unique integer value identifying this user.
-        schema:
-          type: string
+        - name: id
+          in: path
+          required: true
+          description: A unique integer value identifying this user.
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -614,33 +674,33 @@ paths:
                 $ref: '#/components/schemas/User'
           description: ''
       tags:
-      - Admin API For User Management
+        - Admin API For User Management
     delete:
       operationId: destroyUser
       description: ''
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: A unique integer value identifying this user.
-        schema:
-          type: string
+        - name: id
+          in: path
+          required: true
+          description: A unique integer value identifying this user.
+          schema:
+            type: string
       responses:
         '204':
           description: ''
       tags:
-      - Admin API For User Management
+        - Admin API For User Management
   /api/v1/payment-methods:
     get:
       operationId: listPaymentMethods
       description: ''
       parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
       responses:
         '200':
           content:
@@ -667,11 +727,11 @@ paths:
                       $ref: '#/components/schemas/PaymentMethod'
           description: ''
       tags:
-      - Payment Methods
+        - Payment Methods
     post:
       operationId: createPaymentMethod
       description: ''
-      parameters: []
+      parameters: [ ]
       requestBody:
         content:
           application/json:
@@ -685,18 +745,18 @@ paths:
                 $ref: '#/components/schemas/PaymentMethod'
           description: ''
       tags:
-      - Payment Methods
+        - Payment Methods
   /api/v1/payment-methods/{id}:
     get:
       operationId: retrievePaymentMethod
       description: ''
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this PaymentMethod.
-        schema:
-          type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this PaymentMethod.
+          schema:
+            type: string
       responses:
         '200':
           content:
@@ -705,17 +765,17 @@ paths:
                 $ref: '#/components/schemas/PaymentMethod'
           description: ''
       tags:
-      - Payment Methods
+        - Payment Methods
     put:
       operationId: updatePaymentMethod
       description: ''
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this PaymentMethod.
-        schema:
-          type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this PaymentMethod.
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -729,27 +789,27 @@ paths:
                 $ref: '#/components/schemas/PaymentMethod'
           description: ''
       tags:
-      - Payment Methods
+        - Payment Methods
     delete:
       operationId: destroyPaymentMethod
       description: ''
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this PaymentMethod.
-        schema:
-          type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this PaymentMethod.
+          schema:
+            type: string
       responses:
         '204':
           description: ''
       tags:
-      - Payment Methods
+        - Payment Methods
   /api/v1/accounts/user:
     get:
       operationId: retrieveUser
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           content:
@@ -758,18 +818,18 @@ paths:
                 $ref: '#/components/schemas/User'
           description: ''
       tags:
-      - Accounts
+        - Accounts
   /api/v1/venues/:
     get:
       operationId: listVenues
       description: ''
       parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
       responses:
         '200':
           content:
@@ -796,11 +856,11 @@ paths:
                       $ref: '#/components/schemas/Venue'
           description: ''
       tags:
-      - Venues
+        - Venues
     post:
       operationId: createVenue
       description: ''
-      parameters: []
+      parameters: [ ]
       requestBody:
         content:
           application/json:
@@ -814,18 +874,18 @@ paths:
                 $ref: '#/components/schemas/Venue'
           description: ''
       tags:
-      - Venues
+        - Venues
   /api/v1/venues/{venue_id}/:
     get:
       operationId: retrieveVenue
       description: ''
       parameters:
-      - name: venue_id
-        in: path
-        required: true
-        description: A UUID string identifying this Venue.
-        schema:
-          type: string
+        - name: venue_id
+          in: path
+          required: true
+          description: A UUID string identifying this Venue.
+          schema:
+            type: string
       responses:
         '200':
           content:
@@ -834,17 +894,17 @@ paths:
                 $ref: '#/components/schemas/Venue'
           description: ''
       tags:
-      - Venues
+        - Venues
     put:
       operationId: updateVenue
       description: ''
       parameters:
-      - name: venue_id
-        in: path
-        required: true
-        description: A UUID string identifying this Venue.
-        schema:
-          type: string
+        - name: venue_id
+          in: path
+          required: true
+          description: A UUID string identifying this Venue.
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -858,39 +918,39 @@ paths:
                 $ref: '#/components/schemas/Venue'
           description: ''
       tags:
-      - Venues
+        - Venues
     delete:
       operationId: destroyVenue
       description: ''
       parameters:
-      - name: venue_id
-        in: path
-        required: true
-        description: A UUID string identifying this Venue.
-        schema:
-          type: string
+        - name: venue_id
+          in: path
+          required: true
+          description: A UUID string identifying this Venue.
+          schema:
+            type: string
       responses:
         '204':
           description: ''
       tags:
-      - Venues
+        - Venues
   /api/v1/venues/{parent_lookup_venue_id}/media/:
     get:
       operationId: listVenueMedias
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
       responses:
         '200':
           content:
@@ -917,17 +977,17 @@ paths:
                       $ref: '#/components/schemas/VenueMedia'
           description: ''
       tags:
-      - Venue Media
+        - Venue Media
     post:
       operationId: createVenueMedia
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -941,24 +1001,24 @@ paths:
                 $ref: '#/components/schemas/VenueMedia'
           description: ''
       tags:
-      - Venue Media
+        - Venue Media
   /api/v1/venues/{parent_lookup_venue_id}/media/{id}/:
     get:
       operationId: retrieveVenueMedia
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this VenueMedia.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this VenueMedia.
+          schema:
+            type: string
       responses:
         '200':
           content:
@@ -967,23 +1027,23 @@ paths:
                 $ref: '#/components/schemas/VenueMedia'
           description: ''
       tags:
-      - Venue Media
+        - Venue Media
     put:
       operationId: updateVenueMedia
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this VenueMedia.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this VenueMedia.
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -997,45 +1057,45 @@ paths:
                 $ref: '#/components/schemas/VenueMedia'
           description: ''
       tags:
-      - Venue Media
+        - Venue Media
     delete:
       operationId: destroyVenueMedia
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this VenueMedia.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this VenueMedia.
+          schema:
+            type: string
       responses:
         '204':
           description: ''
       tags:
-      - Venue Media
+        - Venue Media
   /api/v1/venues/{parent_lookup_venue_id}/contact/:
     get:
       operationId: listVenueContacts
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
       responses:
         '200':
           content:
@@ -1062,17 +1122,17 @@ paths:
                       $ref: '#/components/schemas/VenueContact'
           description: ''
       tags:
-      - Venue Contacts
+        - Venue Contacts
     post:
       operationId: createVenueContact
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -1086,24 +1146,24 @@ paths:
                 $ref: '#/components/schemas/VenueContact'
           description: ''
       tags:
-      - Venue Contacts
+        - Venue Contacts
   /api/v1/venues/{parent_lookup_venue_id}/contact/{id}/:
     get:
       operationId: retrieveVenueContact
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this VenueContact.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this VenueContact.
+          schema:
+            type: string
       responses:
         '200':
           content:
@@ -1112,23 +1172,23 @@ paths:
                 $ref: '#/components/schemas/VenueContact'
           description: ''
       tags:
-      - Venue Contacts
+        - Venue Contacts
     put:
       operationId: updateVenueContact
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this VenueContact.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this VenueContact.
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -1142,45 +1202,45 @@ paths:
                 $ref: '#/components/schemas/VenueContact'
           description: ''
       tags:
-      - Venue Contacts
+        - Venue Contacts
     delete:
       operationId: destroyVenueContact
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this VenueContact.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this VenueContact.
+          schema:
+            type: string
       responses:
         '204':
           description: ''
       tags:
-      - Venue Contacts
+        - Venue Contacts
   /api/v1/venues/{parent_lookup_venue_id}/details/:
     get:
       operationId: listVenueDetails
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
       responses:
         '200':
           content:
@@ -1207,17 +1267,17 @@ paths:
                       $ref: '#/components/schemas/VenueDetail'
           description: ''
       tags:
-      - Venue Details
+        - Venue Details
     post:
       operationId: createVenueDetail
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -1231,24 +1291,24 @@ paths:
                 $ref: '#/components/schemas/VenueDetail'
           description: ''
       tags:
-      - Venue Details
+        - Venue Details
   /api/v1/venues/{parent_lookup_venue_id}/details/{id}/:
     get:
       operationId: retrieveVenueDetail
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this VenueDetail.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this VenueDetail.
+          schema:
+            type: string
       responses:
         '200':
           content:
@@ -1257,23 +1317,23 @@ paths:
                 $ref: '#/components/schemas/VenueDetail'
           description: ''
       tags:
-      - Venue Details
+        - Venue Details
     put:
       operationId: updateVenueDetail
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this VenueDetail.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this VenueDetail.
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -1287,45 +1347,45 @@ paths:
                 $ref: '#/components/schemas/VenueDetail'
           description: ''
       tags:
-      - Venue Details
+        - Venue Details
     delete:
       operationId: destroyVenueDetail
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this VenueDetail.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this VenueDetail.
+          schema:
+            type: string
       responses:
         '204':
           description: ''
       tags:
-      - Venue Details
+        - Venue Details
   /api/v1/venues/{parent_lookup_venue_id}/product-group/:
     get:
       operationId: listProductGroups
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
       responses:
         '200':
           content:
@@ -1352,17 +1412,17 @@ paths:
                       $ref: '#/components/schemas/ProductGroup'
           description: ''
       tags:
-      - Venue Product Group
+        - Venue Product Group
     post:
       operationId: createProductGroup
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -1376,24 +1436,24 @@ paths:
                 $ref: '#/components/schemas/ProductGroup'
           description: ''
       tags:
-      - Venue Product Group
+        - Venue Product Group
   /api/v1/venues/{parent_lookup_venue_id}/product-group/{id}/:
     get:
       operationId: retrieveProductGroup
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this ProductGroup.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this ProductGroup.
+          schema:
+            type: string
       responses:
         '200':
           content:
@@ -1402,23 +1462,23 @@ paths:
                 $ref: '#/components/schemas/ProductGroup'
           description: ''
       tags:
-      - Venue Product Group
+        - Venue Product Group
     put:
       operationId: updateProductGroup
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this ProductGroup.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this ProductGroup.
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -1432,45 +1492,45 @@ paths:
                 $ref: '#/components/schemas/ProductGroup'
           description: ''
       tags:
-      - Venue Product Group
+        - Venue Product Group
     delete:
       operationId: destroyProductGroup
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this ProductGroup.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this ProductGroup.
+          schema:
+            type: string
       responses:
         '204':
           description: ''
       tags:
-      - Venue Product Group
+        - Venue Product Group
   /api/v1/venues/{parent_lookup_venue_id}/product-media/:
     get:
       operationId: listProductMedias
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
       responses:
         '200':
           content:
@@ -1497,17 +1557,17 @@ paths:
                       $ref: '#/components/schemas/ProductMedia'
           description: ''
       tags:
-      - Venue Product Media
+        - Venue Product Media
     post:
       operationId: createProductMedia
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -1521,24 +1581,24 @@ paths:
                 $ref: '#/components/schemas/ProductMedia'
           description: ''
       tags:
-      - Venue Product Media
+        - Venue Product Media
   /api/v1/venues/{parent_lookup_venue_id}/product-media/{id}/:
     get:
       operationId: retrieveProductMedia
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this ProductMedia.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this ProductMedia.
+          schema:
+            type: string
       responses:
         '200':
           content:
@@ -1547,23 +1607,23 @@ paths:
                 $ref: '#/components/schemas/ProductMedia'
           description: ''
       tags:
-      - Venue Product Media
+        - Venue Product Media
     put:
       operationId: updateProductMedia
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this ProductMedia.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this ProductMedia.
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -1577,45 +1637,45 @@ paths:
                 $ref: '#/components/schemas/ProductMedia'
           description: ''
       tags:
-      - Venue Product Media
+        - Venue Product Media
     delete:
       operationId: destroyProductMedia
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this ProductMedia.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this ProductMedia.
+          schema:
+            type: string
       responses:
         '204':
           description: ''
       tags:
-      - Venue Product Media
+        - Venue Product Media
   /api/v1/venues/{parent_lookup_venue_id}/product/:
     get:
       operationId: listProductsNightLifes
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
       responses:
         '200':
           content:
@@ -1642,17 +1702,17 @@ paths:
                       $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-      - Venue Product
+        - Venue Product
     post:
       operationId: createProductsNightLife
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -1666,24 +1726,24 @@ paths:
                 $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-      - Venue Product
+        - Venue Product
   /api/v1/venues/{parent_lookup_venue_id}/product/{id}/:
     get:
       operationId: retrieveProductsNightLife
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this ProductsNightLife.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this ProductsNightLife.
+          schema:
+            type: string
       responses:
         '200':
           content:
@@ -1692,23 +1752,23 @@ paths:
                 $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-      - Venue Product
+        - Venue Product
     put:
       operationId: updateProductsNightLife
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this ProductsNightLife.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this ProductsNightLife.
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -1722,51 +1782,51 @@ paths:
                 $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-      - Venue Product
+        - Venue Product
     delete:
       operationId: destroyProductsNightLife
       description: ''
       parameters:
-      - name: parent_lookup_venue_id
-        in: path
-        required: true
-        description: ''
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        description: A UUID string identifying this ProductsNightLife.
-        schema:
-          type: string
+        - name: parent_lookup_venue_id
+          in: path
+          required: true
+          description: ''
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: A UUID string identifying this ProductsNightLife.
+          schema:
+            type: string
       responses:
         '204':
           description: ''
       tags:
-      - Venue Product
+        - Venue Product
 
   /api/v1/authentication/create_api_key:
     post:
       operationId: createApiKeyAuthentication
       description: ''
-      parameters: []
+      parameters: [ ]
       requestBody:
         content:
           application/json:
-            schema: {}
+            schema: { }
       responses:
         '201':
           content:
             application/json:
-              schema: {}
+              schema: { }
           description: ''
       tags:
-      - Authentication
+        - Authentication
   /api/v1/accounts/register:
     post:
       operationId: createRegister
       description: ''
-      parameters: []
+      parameters: [ ]
       requestBody:
         content:
           application/json:
@@ -1780,46 +1840,46 @@ paths:
                 $ref: '#/components/schemas/Register'
           description: ''
       tags:
-      - Accounts
+        - Accounts
   /api/v1/accounts/login:
     post:
       operationId: createLoginAPI
       description: ''
-      parameters: []
+      parameters: [ ]
       requestBody:
         content:
           application/json:
-            schema: {}
+            schema: { }
       responses:
         '201':
           content:
             application/json:
-              schema: {}
+              schema: { }
           description: ''
       tags:
-      - Accounts
+        - Accounts
   /api/v1/accounts/logout:
     post:
       operationId: createLogout
       description: ''
-      parameters: []
+      parameters: [ ]
       requestBody:
         content:
           application/json:
-            schema: {}
+            schema: { }
       responses:
         '201':
           content:
             application/json:
-              schema: {}
+              schema: { }
           description: ''
       tags:
-      - Accounts
+        - Accounts
   /api/v1/accounts/change-password:
     put:
       operationId: updateChangePassword
       description: ''
-      parameters: []
+      parameters: [ ]
       requestBody:
         content:
           application/json:
@@ -1833,11 +1893,11 @@ paths:
                 $ref: '#/components/schemas/ChangePassword'
           description: ''
       tags:
-      - Accounts
+        - Accounts
     patch:
       operationId: partialUpdateChangePassword
       description: ''
-      parameters: []
+      parameters: [ ]
       requestBody:
         content:
           application/json:
@@ -1851,7 +1911,7 @@ paths:
                 $ref: '#/components/schemas/ChangePassword'
           description: ''
       tags:
-      - Accounts
+        - Accounts
 
 components:
   securitySchemes:
@@ -2127,6 +2187,7 @@ components:
       required:
         - url
         - type
+        - display_order
       properties:
         url:
           type: string
@@ -2136,6 +2197,10 @@ components:
           type: string
           example: 'exterior'
           description: The type of hotel image being returned
+        display_order:
+          type: integer
+          example: 2
+          description: A suggested order to display the images, beginning with 1
 
     BedTypes:
       type: object
@@ -3035,7 +3100,7 @@ components:
           format: email
           maxLength: 254
       required:
-      - username
+        - username
     PaymentMethod:
       type: object
       properties:
@@ -3061,7 +3126,7 @@ components:
           format: date-time
           readOnly: true
       required:
-      - name
+        - name
     Venue:
       type: object
       properties:
@@ -3073,21 +3138,21 @@ components:
           maxLength: 300
         venue_from:
           enum:
-          - SN
-          - PO
+            - SN
+            - PO
           type: string
         type:
           enum:
-          - NIGHT_LIFE
-          - HOTELS
-          - CAR_SERVICE
-          - GAS_AND_CHARGING
-          - TOLLS
-          - SHOPPINGS
-          - THINGS_TO_DO
-          - DINING
-          - FAST_FOOD
-          - COFFEE_AND_TEA
+            - NIGHT_LIFE
+            - HOTELS
+            - CAR_SERVICE
+            - GAS_AND_CHARGING
+            - TOLLS
+            - SHOPPINGS
+            - THINGS_TO_DO
+            - DINING
+            - FAST_FOOD
+            - COFFEE_AND_TEA
           type: string
         language_code:
           type: string
@@ -3115,7 +3180,7 @@ components:
           type: integer
           nullable: true
       required:
-      - name
+        - name
     VenueMedia:
       type: object
       properties:
@@ -3125,8 +3190,8 @@ components:
           readOnly: true
         type:
           enum:
-          - VIDEO
-          - IMAGE
+            - VIDEO
+            - IMAGE
           type: string
           nullable: true
         url:
@@ -3142,8 +3207,8 @@ components:
         venue_id:
           type: string
       required:
-      - url
-      - venue_id
+        - url
+        - venue_id
     VenueContact:
       type: object
       properties:
@@ -3153,8 +3218,8 @@ components:
           readOnly: true
         type:
           enum:
-          - MAIN
-          - OTHER
+            - MAIN
+            - OTHER
           type: string
         website:
           type: string
@@ -3185,7 +3250,7 @@ components:
         venue_id:
           type: string
       required:
-      - venue_id
+        - venue_id
     VenueDetail:
       type: object
       properties:
@@ -3232,7 +3297,7 @@ components:
         venue_id:
           type: string
       required:
-      - venue_id
+        - venue_id
     ProductGroup:
       type: object
       properties:
@@ -3246,8 +3311,8 @@ components:
         venue_id:
           type: string
       required:
-      - name
-      - venue_id
+        - name
+        - venue_id
     ProductMedia:
       type: object
       properties:
@@ -3257,8 +3322,8 @@ components:
           readOnly: true
         type:
           enum:
-          - VIDEO
-          - IMAGE
+            - VIDEO
+            - IMAGE
           type: string
           nullable: true
         url:
@@ -3282,8 +3347,8 @@ components:
           type: string
           nullable: true
       required:
-      - thumbnail
-      - venue_id
+        - thumbnail
+        - venue_id
     ProductsNightLife:
       type: object
       properties:
@@ -3318,10 +3383,10 @@ components:
           type: string
           nullable: true
       required:
-      - name
-      - price
-      - capacity
-      - venue_id
+        - name
+        - price
+        - capacity
+        - venue_id
     Register:
       type: object
       properties:
@@ -3337,9 +3402,9 @@ components:
           type: string
           minLength: 8
       required:
-      - username
-      - email
-      - password
+        - username
+        - email
+        - password
     ChangePassword:
       type: object
       properties:
@@ -3348,7 +3413,222 @@ components:
         new_password:
           type: string
       required:
-      - old_password
-      - new_password
-          
-  
+        - old_password
+        - new_password
+
+    ActivitySearchRequest:
+      type: object
+      description: |
+        Parameters to search for an activity.  Will return all activities available on any date between
+        begin_date and end_date.
+      properties:
+        begin_date:
+          type: string
+          format: date
+          description: Search for activities beginning on this date, inclusive
+        end_date:
+          type: string
+          format: date
+          description: Search for activities until this date, inclusive
+        adults:
+          type: integer
+          example: 2
+          description: The number of adults requesting a ticket, or admittance
+        children:
+          type: integer
+          example: 1
+          description: The number of children request a ticket, or admittance
+
+    ActivitySearchResponse:
+      type: object
+      description: |
+        Returns activity options available between begin_date and end_date.  Activities might not be available on all
+        dates.  To find the days a specific activity is available, the details endpoint must be called, using the code
+        parameter returned in this response.
+      properties:
+        name:
+          type: string
+          description: The activity, or tour name
+          example: San Francisco Museum of Modern Art (SFMOMA)
+        code:
+          type: string
+          description: |
+            The identifier for this product type.  This code is subsequently used to reference the product
+            in either the details, variants, or booking endpoints.
+          example: 1a87b6d7
+        description:
+          type: string
+          description: Free-form text describing the activity
+          example: |
+            Not just one of the largest museums in the US, SFMOMA is also one of its finest. Regularly rotating
+            exhibits plus a hefty permanent collection, displayed on the seven floors of the striking Snøhetta
+            expansion make this a museum well worth your time in San Francisco
+        activity_date:
+          type: string
+          description: The initial date an activity is available
+          format: date
+        total_price:
+          $ref: '#/components/schemas/Price'
+        total_base:
+          $ref: '#/components/schemas/Price'
+        total_tax:
+          $ref: '#/components/schemas/Price'
+        categories:
+          type: array
+          description: A list of categories applicable to this activity product
+          items:
+            type: string
+        images:
+          type: array
+          description: A list of images associated with this activity product
+          items:
+            $ref: '#/components/schemas/Photo'
+        rating:
+          type: number
+          description: The average user rating for this activity product
+          example: 4.5
+        reviews:
+          type: integer
+          description: The number of user reviews for this activity product
+          example: 28
+
+    BusinessContact:
+      type: object
+      description: |
+        Contact information for a business, like an activity provider, or hotel
+      properties:
+        name:
+          type: string
+          description: The business name
+        email:
+          type: string
+          description: An email address for the business
+        website:
+          type: string
+          description: The official website for the business
+        phone:
+          type: array
+          items:
+            type: string
+        address:
+          type: string
+          description: Free form address for the business
+          example: 123 Business Way
+
+    ActivityLocation:
+      type: object
+      description: |
+        The specific location of an activity product, including its latitude and longitude
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+        address:
+          type: string
+          example: 123 Buiness Way
+
+    ActivityDetailsRequest:
+      type: object
+      description: Parameters for activity details, to return the specific dates an activity is available.
+      properties:
+        code:
+          type: string
+          description: The same code returned in the activity search response.
+          example: 1a87b6d7
+        date_from:
+          type: string
+          format: date
+          description: The start date to search for, inclusive
+        date_to:
+          type: string
+          format: date
+          description: The end date to search for, inclusive
+
+    ActivityDetailsResponse:
+      type: object
+      description: |
+        Contains the specific dates an activity is available, along with details like its cancellation policy
+      properties:
+        code:
+          type: string
+          description: The identifier for this activity product
+          example: 1a87b6d7
+        type:
+          type: string
+          description: An enum value representing the type of activity
+        categories:
+          type: array
+          items:
+            type: string
+        timezone:
+          type: string
+          description: The local time zone for the activity
+          example: America/Los_Angeles
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Photo'
+        contact:
+          $ref: '#/components/schemas/BusinessContact'
+        location:
+          $ref: '#/components/schemas/ActivityLocation'
+        availabilities:
+          type: array
+          description: The specific days a property is available.  Times are available in the Variants response.
+          items:
+            type: string
+            format: date
+        policies:
+          type: array
+          description: Free-form policies for the activity
+          items:
+            type: string
+        cancellations:
+          $ref: '#/components/schemas/CancellationPolicy'
+
+
+    MultiProductSearchRequest:
+      type: object
+      description: |
+        Parameters to search for multiple products.  Within this request, there can be multiple sub-search types,
+        such as an ActivitySearch, HotelSearch, or CarSearch.  The results for each product type will be returned
+        in a single response.
+      properties:
+        product_types:
+          type: array
+          enum:
+            - activities
+            - hotels
+            - cars
+        activity_search:
+          $ref: '#/components/schemas/ActivitySearchRequest'
+        hotel_search:
+          $ref: '#/components/schemas/HotelSearchRequest'
+
+    MultiProductSearchResponse:
+      type: object
+      description: |
+        Parameters to search for multiple products.  Within this request, there can be multiple sub-search types,
+        such as an ActivitySearch, HotelSearch, or CarSearch.  The results for each product type will be returned
+        in a single response.
+      properties:
+        product_types:
+          type: array
+          enum:
+            - activities
+            - hotels
+            - cars
+        activity_search:
+          $ref: '#/components/schemas/HotelSearchResponse'
+        hotel_search:
+          $ref: '#/components/schemas/ActivitySearchResponse'
+
+
+
+
+# "begin_date": "2021-04-02",
+  #    "end_date": "2021-04-02",
+  #    "adults": 1,
+  #    "children": 0,
+  #    "location_id": "5391959"
