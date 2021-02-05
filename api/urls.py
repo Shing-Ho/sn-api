@@ -27,7 +27,7 @@ router.register(r"urban", api.view.urban_view.UrbanViewSet, basename="urban")
 router.register(r"carey", api.view.carey_view.CareyViewSet, basename="carey")
 router.register(r"authentication", api.view.default_view.AuthenticationView, basename="authentication")
 router.register(r"users", api.view.admin_view.UserViewSet, basename="user-list")
-router.register(r"payment-methods", venue_view.PaymentMethodViewSet, basename="payment-methods-list")  #
+router.register(r"payment-methods", venue_view.PaymentMethodViewSet, basename="payment-methods-list")
 router.register(r"venues", venue_view.VenueViewSet).register(
     r"media", venue_view.VenueMediaViewSet, "venue_id", parents_query_lookups=["venue_id"]
 )
@@ -50,7 +50,11 @@ router.register(r"venues", venue_view.VenueViewSet).register(
     .register(r"product_hotels", venue_view.ProductHotelViewSet, "venue_id", parents_query_lookups=["venue_id"])
     .register(r"media", venue_view.ProductHotelMediaViewSet, "id", parents_query_lookups=["product_id", "id"])
 )
+router.register(r"hotel_room_details", venue_view.ProductsHotelRoomDetailsViewSet, basename="hotel-room-details-list")
 
+router.register(
+    r"hotel_room_pricing", venue_view.ProductsHotelRoomPricingDetailsViewSet, basename="hotel-room-details-list"
+)
 
 router.urls.append(path("accounts/", include("api.accounts.urls")))
 

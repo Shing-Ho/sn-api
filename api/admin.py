@@ -17,6 +17,7 @@ from api.models.models import (
     ProductGroup,
     ProductsNightLife,
     ProductHotel,
+    ProductsHotelRoomDetails,
 )
 
 
@@ -61,3 +62,4 @@ admin.site.register(ProductHotel)
 
 admin.site.register(ProductGroup)
 admin.site.register(ProductsNightLife)
+admin.site.register(ProductsHotelRoomDetails)

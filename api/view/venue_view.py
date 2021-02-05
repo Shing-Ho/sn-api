@@ -1,5 +1,3 @@
-from rest_framework import viewsets
-from rest_framework_extensions.mixins import NestedViewSetMixin
 from api.models.models import (
     Venue,
     VenueMedia,
@@ -11,11 +9,17 @@ from api.models.models import (
     ProductsNightLife,
     ProductHotel,
     ProductHotelsMedia,
+    ProductsHotelRoomDetails,
+    ProductsHotelRoomPricing,
 )
 from api.venue import serializers
+from rest_framework import viewsets
+from api.auth.authentication import IsOwner
 from api.utils.paginations import ObjectPagination
 from rest_framework.permissions import IsAuthenticated
-from api.auth.authentication import IsOwner
+from rest_framework_extensions.mixins import NestedViewSetMixin
+
+# from django_filters.rest_framework import DjangoFilterBackend
 
 
 class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -131,5 +135,27 @@ class ProductHotelViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     ]
     queryset = ProductHotel.objects.filter()
     serializer_class = serializers.ProductHotelSerializer
+    pagination_class = ObjectPagination
+    http_method_names = ["get", "post", "put", "delete"]
+
+
+class ProductsHotelRoomDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+    queryset = ProductsHotelRoomPricing.objects.filter()
+    serializer_class = serializers.ProductsHotelRoomPricingSerializer
+    pagination_class = ObjectPagination
+    http_method_names = ["get", "post", "put", "delete"]
+    # filter_backends = [DjangoFilterBackend]
+    # filterset_fields = ['product_hotels']
+
+
+class ProductsHotelRoomPricingDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+    queryset = ProductsHotelRoomDetails.objects.filter()
+    serializer_class = serializers.ProductsHotelRoomDetailsSerializer
     pagination_class = ObjectPagination
     http_method_names = ["get", "post", "put", "delete"]

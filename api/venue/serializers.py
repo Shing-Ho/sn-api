@@ -88,3 +88,15 @@ class ProductsSerializer(serializers.ModelSerializer):
 
     def get_group(self, obj):
         return obj.name
+
+
+class ProductsHotelRoomDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductsHotelRoomDetails
+        fields = "__all__"
+
+
+class ProductsHotelRoomPricingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductsHotelRoomPricing
+        fields = "__all__"
