@@ -2,9 +2,9 @@ openapi: 3.0.0
 
 servers:
   - description: BOG Production
-    url: https://bog.simplenight.com/api/v1/
+    url: https://bog.simplenight.com/api/v1
   - description: Simplenight Live Sandbox
-    url: https://simplenight-api-278418.ue.r.appspot.com/api/v1/
+    url: https://simplenight-api-278418.ue.r.appspot.com/api/v1
   - description: Localhost
     url: http://localhost:8000/api/v1
 
@@ -721,7 +721,7 @@ paths:
           description: bad input parameter
         '404':
           description: No locations found for input
-  /api/v1/users:
+  /users:
     get:
       operationId: listUsers
       description: ''
@@ -777,7 +777,7 @@ paths:
           description: ''
       tags:
         - Admin API For User Management
-  /api/v1/users/{id}:
+  /users/{id}:
     get:
       operationId: retrieveUser
       description: ''
@@ -836,7 +836,7 @@ paths:
           description: ''
       tags:
         - Admin API For User Management
-  /api/v1/payment-methods:
+  /payment-methods:
     get:
       operationId: listPaymentMethods
       description: ''
@@ -892,7 +892,7 @@ paths:
           description: ''
       tags:
         - Payment Methods
-  /api/v1/payment-methods/{id}:
+  /payment-methods/{id}:
     get:
       operationId: retrievePaymentMethod
       description: ''
@@ -951,7 +951,7 @@ paths:
           description: ''
       tags:
         - Payment Methods
-  /api/v1/accounts/user:
+  /accounts/user:
     get:
       operationId: retrieveUser
       description: ''
@@ -965,7 +965,7 @@ paths:
           description: ''
       tags:
         - Accounts
-  /api/v1/venues/:
+  /venues/:
     get:
       operationId: listVenues
       description: ''
@@ -1021,7 +1021,7 @@ paths:
           description: ''
       tags:
         - Venues
-  /api/v1/venues/{venue_id}/:
+  /venues/{venue_id}/:
     get:
       operationId: retrieveVenue
       description: ''
@@ -1080,7 +1080,7 @@ paths:
           description: ''
       tags:
         - Venues
-  /api/v1/venues/{parent_lookup_venue_id}/media/:
+  /venues/{parent_lookup_venue_id}/media/:
     get:
       operationId: listVenueMedias
       description: ''
@@ -1156,7 +1156,7 @@ paths:
           description: ''
       tags:
         - Venue Media
-  /api/v1/venues/{parent_lookup_venue_id}/media/{id}/:
+  /venues/{parent_lookup_venue_id}/media/{id}/:
     get:
       operationId: retrieveVenueMedia
       description: ''
@@ -1255,7 +1255,7 @@ paths:
           description: ''
       tags:
         - Venue Media
-  /api/v1/venues/{parent_lookup_venue_id}/contact/:
+  /venues/{parent_lookup_venue_id}/contact/:
     get:
       operationId: listVenueContacts
       description: ''
@@ -1323,7 +1323,7 @@ paths:
           description: ''
       tags:
         - Venue Contacts
-  /api/v1/venues/{parent_lookup_venue_id}/contact/{id}/:
+  /venues/{parent_lookup_venue_id}/contact/{id}/:
     get:
       operationId: retrieveVenueContact
       description: ''
@@ -1400,7 +1400,7 @@ paths:
           description: ''
       tags:
         - Venue Contacts
-  /api/v1/venues/{parent_lookup_venue_id}/details/:
+  /venues/{parent_lookup_venue_id}/details/:
     get:
       operationId: listVenueDetails
       description: ''
@@ -1468,7 +1468,7 @@ paths:
           description: ''
       tags:
         - Venue Details
-  /api/v1/venues/{parent_lookup_venue_id}/details/{id}/:
+  /venues/{parent_lookup_venue_id}/details/{id}/:
     get:
       operationId: retrieveVenueDetail
       description: ''
@@ -1545,7 +1545,7 @@ paths:
           description: ''
       tags:
         - Venue Details
-  /api/v1/venues/{parent_lookup_venue_id}/product-group/:
+  /venues/{parent_lookup_venue_id}/product-group/:
     get:
       operationId: listProductGroups
       description: ''
@@ -1613,7 +1613,7 @@ paths:
           description: ''
       tags:
         - Venue Product Group
-  /api/v1/venues/{parent_lookup_venue_id}/product-group/{id}/:
+  /venues/{parent_lookup_venue_id}/product-group/{id}/:
     get:
       operationId: retrieveProductGroup
       description: ''
@@ -1691,7 +1691,7 @@ paths:
       tags:
         - Venue Product Group
 
-  /api/v1/venues/{parent_lookup_venue_id}/product_nightlife/:
+  /venues/{parent_lookup_venue_id}/product_nightlife/:
     get:
       operationId: listProductsNightLifes
       description: ''
@@ -1759,7 +1759,7 @@ paths:
           description: ''
       tags:
       - Venue Product NightLife
-  /api/v1/venues/{parent_lookup_venue_id}/product_nightlife/{id}/:
+  /venues/{parent_lookup_venue_id}/product_nightlife/{id}/:
     get:
       operationId: retrieveProductsNightLife
       description: ''
@@ -1836,7 +1836,7 @@ paths:
           description: ''
       tags:
         - Venue Product NightLife
-  /api/v1/venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media:
+  /venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media:
     get:
       operationId: listProductsNightLifeMedias
       description: ''
@@ -1916,7 +1916,7 @@ paths:
           description: ''
       tags:
       - Venue Product NightLife Media
-  /api/v1/venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media/{id}:
+  /venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media/{id}:
     get:
       operationId: retrieveProductsNightLifeMedia
       description: ''
@@ -2011,7 +2011,7 @@ paths:
           description: ''
       tags:
       - Venue Product NightLife Media
-  /api/v1/venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media:
+  /venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media:
     get:
       operationId: listProductHotelsMedias
       description: ''
@@ -2091,7 +2091,7 @@ paths:
           description: ''
       tags:
       - Venue Product Hotel Media
-  /api/v1/venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media/{id}:
+  /venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media/{id}:
     get:
       operationId: retrieveProductHotelsMedia
       description: ''
@@ -2187,7 +2187,7 @@ paths:
       tags:
       - Venue Product Hotel Media
 
-  /api/v1/authentication/create_api_key:
+  /authentication/create_api_key:
     post:
       operationId: createApiKeyAuthentication
       description: ''
@@ -2204,7 +2204,7 @@ paths:
           description: ''
       tags:
         - Authentication
-  /api/v1/accounts/register:
+  /accounts/register:
     post:
       operationId: createRegister
       description: ''
@@ -2223,7 +2223,7 @@ paths:
           description: ''
       tags:
         - Accounts
-  /api/v1/accounts/login:
+  /accounts/login:
     post:
       operationId: createLoginAPI
       description: ''
@@ -2240,7 +2240,7 @@ paths:
           description: ''
       tags:
         - Accounts
-  /api/v1/accounts/logout:
+  /accounts/logout:
     post:
       operationId: createLogout
       description: ''
@@ -2257,7 +2257,7 @@ paths:
           description: ''
       tags:
         - Accounts
-  /api/v1/accounts/change-password:
+  /accounts/change-password:
     put:
       operationId: updateChangePassword
       description: ''
@@ -2295,7 +2295,7 @@ paths:
       tags:
         - Accounts
 
-  /api/v1/venues/{parent_lookup_venue_id}/product_hotel:
+  /venues/{parent_lookup_venue_id}/product_hotel:
     get:
       operationId: listProductHotels
       description: ''
@@ -2363,7 +2363,7 @@ paths:
           description: ''
       tags:
       - Venue Product Hotel
-  /api/v1/venues/{parent_lookup_venue_id}/product_hotel/{id}:
+  /venues/{parent_lookup_venue_id}/product_hotel/{id}:
     get:
       operationId: retrieveProductHotel
       description: ''
@@ -2440,7 +2440,7 @@ paths:
           description: ''
       tags:
       - Venue Product Hotel
-  /api/v1/hotel_room_details:
+  /hotel_room_details:
     get:
       operationId: listProductsHotelRoomPricings
       description: ''
@@ -2496,7 +2496,7 @@ paths:
           description: ''
       tags:
       - Hotel Room
-  /api/v1/hotel_room_details/{id}:
+  /hotel_room_details/{id}:
     get:
       operationId: retrieveProductsHotelRoomPricing
       description: ''
@@ -2555,7 +2555,7 @@ paths:
           description: ''
       tags:
       - Hotel Room
-  /api/v1/hotel_room_pricing:
+  /hotel_room_pricing:
     get:
       operationId: listProductsHotelRoomDetails
       description: ''
@@ -2611,7 +2611,7 @@ paths:
           description: ''
       tags:
       - Hotel Room
-  /api/v1/hotel_room_pricing/{id}:
+  /hotel_room_pricing/{id}:
     get:
       operationId: retrieveProductsHotelRoomDetails
       description: ''
