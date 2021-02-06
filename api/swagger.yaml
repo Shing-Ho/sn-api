@@ -4305,6 +4305,130 @@ components:
           type: string
           format: date
           description: The end date to search for, inclusive
+    ProductHotelsMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          enum:
+          - VIDEO
+          - IMAGE
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: binary
+          nullable: true
+        thumbnail:
+          type: string
+        main:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        venue:
+          type: string
+        product:
+          type: string
+          nullable: true
+      required:
+      - thumbnail
+      - venue
+    ProductHotel:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        price:
+          type: string
+        description:
+          type: string
+        room_size:
+          type: string
+        max_guests:
+          type: string
+        item_code:
+          type: string
+          nullable: true
+          maxLength: 200
+        highlight:
+          type: boolean
+        balcony:
+          type: boolean
+        status:
+          type: boolean
+        room_details:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        venue:
+          type: string
+        product_group:
+          type: string
+          nullable: true
+      required:
+      - name
+      - price
+      - description
+      - room_size
+      - max_guests
+      - venue
+    ProductNightLifeMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          enum:
+          - VIDEO
+          - IMAGE
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: binary
+          nullable: true
+        thumbnail:
+          type: string
+        main:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        venue:
+          type: string
+        product:
+          type: string
+          nullable: true
+      required:
+      - thumbnail
+      - venue
     ProductsHotelRoomPricing:
       type: object
       properties:
