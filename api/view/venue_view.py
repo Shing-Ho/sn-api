@@ -19,7 +19,7 @@ from api.utils.paginations import ObjectPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-# from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -36,7 +36,6 @@ class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         serializer.save(created_by=self.request.user)
 
     def get_permissions(self):
-        # print(self.action)
         if self.action == "delete":
             self.permission_classes = [
                 IsOwner,
@@ -139,23 +138,35 @@ class ProductHotelViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "delete"]
 
 
-class ProductsHotelRoomDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
-    permission_classes = [
-        IsAuthenticated,
-    ]
+class ProductsHotelRoomPricingDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = ProductsHotelRoomPricing.objects.filter()
     serializer_class = serializers.ProductsHotelRoomPricingSerializer
     pagination_class = ObjectPagination
     http_method_names = ["get", "post", "put", "delete"]
-    # filter_backends = [DjangoFilterBackend]
-    # filterset_fields = ['product_hotels']
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["product_hotels"]
 
 
-class ProductsHotelRoomPricingDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
-    permission_classes = [
-        IsAuthenticated,
-    ]
+class ProductsHotelRoomDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = ProductsHotelRoomDetails.objects.filter()
     serializer_class = serializers.ProductsHotelRoomDetailsSerializer
     pagination_class = ObjectPagination
+    # lookup_field = 'product_hotels'
     http_method_names = ["get", "post", "put", "delete"]
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["product_hotels"]
+
+    def filter_queryset(self, queryset):
+        response = self.request.GET.get("product_hotels", None)
+        if response == "" or response == "null":
+            self.request.GET._mutable = True
+            if response is not None:
+                del self.request.GET["product_hotels"]
+
+            self.request.GET._mutable = False
+            queryset = queryset.filter(product_hotels__isnull=True)
+
+        for backend in list(self.filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset, view=self)
+        return queryset

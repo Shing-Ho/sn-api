@@ -2328,6 +2328,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: product_hotels
+        required: false
+        in: query
+        description: product_hotels
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -2467,6 +2473,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: product_hotels
+        required: false
+        in: query
+        description: product_hotels
+        schema:
+          type: string
       responses:
         '200':
           content:
