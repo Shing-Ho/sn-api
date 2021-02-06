@@ -757,6 +757,10 @@ paths:
                     items:
                       $ref: '#/components/schemas/User'
           description: ''
+        '400':
+          description: bad input parameter
+        '404':
+            description: No Object Found found for input
       tags:
         - Admin API For User Management
     post:
@@ -775,6 +779,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+        '400':
+          description: bad input parameter
+        '404':
+            description: No Object Found found for input
       tags:
         - Admin API For User Management
   /users/{id}:
@@ -795,6 +803,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+        '400':
+          description: bad input parameter
+        '404':
+            description: No Object Found found for input
       tags:
         - Admin API For User Management
     put:
@@ -819,6 +831,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+        '400':
+          description: bad input parameter
+        '404':
+            description: No Object Found found for input
       tags:
         - Admin API For User Management
     delete:
