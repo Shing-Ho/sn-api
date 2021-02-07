@@ -754,7 +754,7 @@ class ProductsHotelRoomDetails(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=20, choices=TYPE, default="BEDROOM")
-    product_hotels = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True)
+    product = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True)
 
 
 class ProductsHotelRoomPricing(models.Model):
@@ -769,4 +769,4 @@ class ProductsHotelRoomPricing(models.Model):
     taxes = jsonfield.JSONField()
     guests = jsonfield.JSONField()
     dates = jsonfield.JSONField()
-    product_hotels = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True)
+    product = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True)

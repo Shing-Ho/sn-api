@@ -144,7 +144,7 @@ class ProductsHotelRoomPricingDetailsViewSet(NestedViewSetMixin, viewsets.ModelV
     pagination_class = ObjectPagination
     http_method_names = ["get", "post", "put", "delete"]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["product_hotels"]
+    filterset_fields = ["product_id"]
 
 
 class ProductsHotelRoomDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -155,17 +155,17 @@ class ProductsHotelRoomDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet)
     http_method_names = ["get", "post", "put", "delete"]
 
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["product_hotels"]
+    filterset_fields = ["product_id"]
 
     def filter_queryset(self, queryset):
-        response = self.request.GET.get("product_hotels", None)
+        response = self.request.GET.get("product_id", None)
         if response == "" or response == "null":
             self.request.GET._mutable = True
             if response is not None:
-                del self.request.GET["product_hotels"]
+                del self.request.GET["product_id"]
 
             self.request.GET._mutable = False
-            queryset = queryset.filter(product_hotels__isnull=True)
+            queryset = queryset.filter(product_id__isnull=True)
 
         for backend in list(self.filter_backends):
             queryset = backend().filter_queryset(self.request, queryset, view=self)
