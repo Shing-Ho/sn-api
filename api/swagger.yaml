@@ -1,17 +1,21 @@
 openapi: 3.0.0
 
 servers:
-  # Added by API Auto Mocking Plugin
-  # Added by API Auto Mocking Plugin
   - description: BOG Production
     url: https://bog.simplenight.com/api/v1/
   - description: Simplenight Live Sandbox
     url: https://simplenight-api-278418.ue.r.appspot.com/api/v1/
   - description: Localhost
     url: http://localhost:8000/api/v1
+
 info:
   version: "2.0"
-  title: Simplenight Hotel API
+  title: Simplenight API
+  "x-logo": {
+    "url": "simplenight-logo.png",
+    "backgroundColor": "#FFFFFF",
+    "altText": "Simplenight logo"
+  }
   description: |
     This document describes the Simplenight API.
 
@@ -22,22 +26,59 @@ info:
 
     * The Multi-Product API supports Hotel, Activity and Car searches.
 
+    Requests can be tried live in our [Swagger UI interface](/index.html)
+
 tags:
   - name: Locations
-    description: Location-related data (cities, regions, airports, etc).  Each of these endpoints takes country code and language code as query parameters.
+    description: |
+      Location-related data (cities, regions, airports, etc).
+      Each of these endpoints takes country code and language code as query parameters.
+      The following language codes are supported:
+      * de
+      * ja
+      * fr
+      * ko
+      * zh
+      * en
+      * es
+      * th
+
+      When a language code is requested that we do not have a translation for, English will be returned as a fall back.
   - name: Hotel
     description: Hotel availabilty, hotel details, and hotel booking endpoints
+  - name: MultiProduct
+    description: |
+      This API supports searching multiple products in a single availability call.  Currently, hotel, activity, dining,
+      and transportation are supported.  Multiple products can also be booked in a single transaction.
+      For certain product types, additional product-specific requests are required.
+
+      The typical Activity flow involves the following steps:
+
+      1. [Multi-Product Availability Search](#operation/multiProductSearch).  This endpoint searches
+      for activities within a data range (e.g., `begin_date: 2021-01-01` and `end_date: 2021-01-07`.  It returns all
+      activities that have any availability within that range.  It returns activity names, descriptions, lowest price,
+      categories, number of reviews, average rating, and a list of images.  Activites are identified by the `code`
+      identifier.
+
+      2. [Activity Details Endpoint](#operation/activityDetails).  Using the `code` from the availability search,
+      this endpoint returns the specific days an activity is available, along with cancellation policies.
+
+      3. [Activity Tickets Endpoint](#operation/activityTickets).  Using the `code` from the availability search, and
+      one of the available `activity_date` from the details response, this endpoint returns the specific times an
+      activity is available, along with prices for various ticket options available (such as Adults, and Children).
+
+      4. [Multi-Product Booking](#operation/multiProductBooking).  This endpoint supports booking multiple products.
 
 security:
   - ApiKeyAuth: [ ]
 
 paths:
-  /hotels/booking-availability:
+  /hotels/google/search-by-id:
     post:
       tags:
-        - Hotel
-      summary: Uncached availability search
-      description: The search endpoints may return cached availability, which may not be up-to-date.  This endpoint peforms an uncached search, to confirm availability and rates before booking.
+        - BookOnGoogle
+      summary: Book on Google Hotel Availability.
+      description: This endpoint performs a single hotel search, with an API response suitable for Book on Google
       requestBody:
         required: true
         content:
@@ -69,14 +110,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookingRequest'
+              $ref: '#/components/schemas/HotelBookingRequest'
       responses:
         '200':
           description: Reservation on success, or else an Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BookingResponse'
+                $ref: '#/components/schemas/HotelBookingResponse'
         '400':
           description: Bad request
         '500':
@@ -183,9 +224,10 @@ paths:
     post:
       tags:
         - MultiProduct
-      summary: Search for and book multiple product types together
+      summary: Search
+      operationId: multiProductSearch
       description: |
-        Supports availability, booking, and cancel for Hotels, Activity, and Car
+        Availability search for multiple products.  Currently supports Hotel, Activity, Transportation, and Dining.
       requestBody:
         required: true
         content:
@@ -210,9 +252,11 @@ paths:
     post:
       tags:
         - MultiProduct
-      summary: Get details for the given product.
+      summary: Activity Details
       description: |
-        Returns the specific details an activity product is available.
+        Returns the specific details an activity product is available.  Using a `code` from a [Search](#operation/multiProductSearch),
+        return the specific dates an activity is available between a `date_from` and a `date_to`.
+      operationId: activityDetails
       requestBody:
         required: true
         content:
@@ -228,6 +272,108 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ActivityDetailsResponse'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No locations found for input
+
+  /multi/variants:
+    post:
+      tags:
+        - MultiProduct
+      summary: Activity Tickets
+      operationId: activityTickets
+      description: |
+        Returns the specific times an activity is available, along with prices for specific ticket types (e.g., adults,=
+        children, senior, etc).
+
+        This API returns an associative map, keyed by the activity times.  For example,
+
+            {
+              "variants": {
+                "12:00": [
+                  {
+                    "code": "2636",
+                    "name": "Adult",
+                    "description": "Age: 25 - 64",
+                    "price": 16.78,
+                    "capacity": 20,
+                    "additional": {}
+                  }
+                ],
+                "13:00": [
+                  {
+                    "code": "2636",
+                    "name": "Adult",
+                    "description": "Age: 25 - 64",
+                    "price": 16.78,
+                    "capacity": 20,
+                    "additional": {}
+                  }
+                ]
+              }
+            }
+
+          When the key is `whole_day`, the activity has a single start time, and all products apply to that start time.
+
+            {
+              "variants": {
+                "whole_day": [
+                  {
+                    "code": "2636",
+                    "name": "Adult",
+                    "description": "Age: 25 - 64",
+                    "price": 16.78,
+                    "capacity": 20,
+                    "additional": {}
+                  }
+                ]
+              }
+            }
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityTicketRequest'
+      responses:
+        '200':
+          description: List of activity ticket options
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityTicketResponse'
+        '400':
+          description: bad input parameter
+        '404':
+          description: No locations found for input
+
+  /multi/book:
+    post:
+      tags:
+        - MultiProduct
+      summary: Multi-Product Book
+      operationId: multiProductBook
+      description: |
+        Book multiple products in a single transaction.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MultiProductBookingRequest'
+      responses:
+        '200':
+          description: List of matching products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MultiProductBookingResponse'
         '400':
           description: bad input parameter
         '404':
@@ -1919,6 +2065,9 @@ components:
       type: apiKey
       in: header
       name: X-API-KEY
+      description: |
+        Simplenight uses a API Key passed as a header value for authentication.  Simplenight must generate this API Key
+        for you.  API Keys identify your organization, and enable separate configurations and feature flags.
   schemas:
     Airport:
       properties:
@@ -2502,7 +2651,7 @@ components:
         - MC
         - VI
 
-    BookingRequest:
+    HotelBookingRequest:
       required:
         - api_version
         - transaction_id
@@ -2643,7 +2792,7 @@ components:
           example: 123
           description: The payment card verification code
 
-    BookingResponse:
+    HotelBookingResponse:
       type: object
       description: The booking response for a successful booking
       required:
@@ -3625,10 +3774,160 @@ components:
           $ref: '#/components/schemas/ActivitySearchResponse'
 
 
+    ActivityTicketRequest:
+      type: object
+      description: |
+        The `code` from an [Availability](#operation/multiProductAvailability) call, and an `activity_date` from an
+        [Activity Details](#operation/activityDetails) call.
+      properties:
+        code:
+          type: string
+          example: 0e29b9ef
+        activity_date:
+          type: string
+          format: date
 
+    ActivityTicketResponse:
+      type: object
+      description: |
+        The available ticket types for a specific activity on a specific date.
 
-# "begin_date": "2021-04-02",
-  #    "end_date": "2021-04-02",
-  #    "adults": 1,
-  #    "children": 0,
-  #    "location_id": "5391959"
+      properties:
+        variants:
+          additionalProperties:
+            type: object
+            example: foo
+            properties:
+              code:
+                type: string
+              name:
+                type: string
+                example: Adult
+              description:
+                type: string
+                example: "Age: 25 - 64"
+              price:
+                type: number
+                example: 16.78
+              capacity:
+                type: integer
+                example: 20
+              additional:
+                description: Additional policy information
+                additionalProperties:
+                  type: string
+
+    MultiProductHotelBookingRequest:
+      type: object
+      description: Hotel booking request, specifically for use with the [Multi Product](#tags/MultiProduct) API.
+      properties:
+        hotel_id:
+          type: string
+          description: The `hotel_id` from an availability response
+          example: 14479
+        room_code:
+          type: string
+          description: The `code` from a `room_type` object within an availability response
+          example: b9f088ea
+        traveler:
+          $ref: '#/components/schemas/Traveler'
+
+    MultiProductActivityBookingRequest:
+      type: object
+      description: Activity booking request, specifically for use with the [Multi Product](#tags/MultiProduct) API
+      properties:
+        code:
+          type: string
+          example: c8d046ad
+          description: The `code` from an availability response
+        language_code:
+          type: string
+          example: en
+          description: Two-character ISO language code
+        activity_date:
+          type: string
+          format: date
+          description: The date of the activity
+        activity_time:
+          type: string
+          format: time
+          description: The time of the activity
+        currency:
+          type: string
+          description: Three-character ISO currency code
+        items:
+          type: array
+          items:
+            properties:
+              code:
+                type: string
+                description: |
+                  The `code` from the Activity Tickets/Variants response.  This code represents the specific
+                  ticket type being purchased
+              quantity:
+                type: integer
+                description: The number of tickets of this type to purchase
+                example: 2
+              price:
+                type: number
+                description: The echoed price from the variants response
+                example: 25.98
+
+    MultiProductActivityBookingResponse:
+      type: object
+      description: The activity reservation in a multi-product booking
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        record_locator:
+          $ref: '#/components/schemas/Locator'
+
+    MultiProductBookingRequest:
+      type: object
+      description: Booking request supporting multiple products in a single transaction.
+      properties:
+        api_version:
+          type: integer
+          example: 1
+          description: The API version of the request
+        transaction_id:
+          type: string
+          format: uuid
+          description: Arbitrary string used to identify a request, and prevent duplicate bookings
+        language:
+          type: string
+          description: a locale string for the customer
+          example: en_US
+        customer:
+          $ref: '#/components/schemas/Customer'
+        traveler:
+          $ref: '#/components/schemas/Traveler'
+        payment:
+          $ref: '#/components/schemas/Payment'
+        hotel_booking:
+          $ref: '#/components/schemas/MultiProductHotelBookingRequest'
+        activity_booking:
+          $ref: '#/components/schemas/MultiProductActivityBookingRequest'
+
+    MultiProductBookingResponse:
+      type: object
+      description: Booking response for multiple product types, booked in a single transaction/request.
+      properties:
+        api_version:
+          type: integer
+          example: 1
+          description: The API version of the response
+        transaction_id:
+          type: string
+          format: uuid
+          description: The echoed transaction ID from the booking request
+        status:
+          $ref: '#/components/schemas/Status'
+        booking_id:
+          type: string
+          description: The Simplenight Record Locator for the completed booking
+          example: R75QY0B9
+        hotel_reservation:
+          $ref: '#/components/schemas/HotelBookingResponse'
+        activity_booking:
+          $ref: '#/components/schemas/MultiProductActivityBookingResponse'
