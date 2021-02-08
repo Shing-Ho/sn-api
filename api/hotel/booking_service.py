@@ -188,6 +188,7 @@ def _lock_booking(booking_request: MultiProductBookingRequest) -> Optional[Multi
     """
 
     booking_request_lock_key = _get_booking_request_lock_key(booking_request)
+    logger.info(f"Setting Duplicate Booking Lock: {booking_request_lock_key}")
     if not cache_storage.exists(booking_request_lock_key):
         cache_storage.set(booking_request_lock_key, booking_request, timeout=30)
         return None
@@ -195,6 +196,7 @@ def _lock_booking(booking_request: MultiProductBookingRequest) -> Optional[Multi
     booking_response_key = _get_booking_response_lock_key(booking_request)
     deadline = datetime.now() + timedelta(seconds=25)
     while datetime.now() < deadline:
+        logger.info(f"Polling for a booking response: {booking_response_key}")
         if cache_storage.exists(booking_response_key):
             response = cache_storage.get(booking_response_key)
             return response
@@ -208,7 +210,10 @@ def _unlock_booking(book_request: MultiProductBookingRequest, book_response: Opt
     booking_request_lock_key = _get_booking_request_lock_key(book_request)
     booking_response_lock_key = _get_booking_response_lock_key(book_request)
 
+    logger.info(f"Setting a booking response: {booking_response_lock_key}")
     cache_storage.set(booking_response_lock_key, book_response, timeout=60)
+
+    logger.info(f"Unsetting booking lock: {booking_request_lock_key}")
     cache_storage.unset(booking_request_lock_key)
 
 
