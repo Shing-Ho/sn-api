@@ -570,6 +570,7 @@ class VenueMedia(models.Model):
     url = models.FileField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    order = models.IntegerField(default=0)
 
 
 class VenueContact(models.Model):
@@ -637,6 +638,7 @@ class ProductGroup(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    order = models.IntegerField(default=0)
 
     class Meta:
         app_label = "api"
@@ -664,6 +666,7 @@ class ProductsNightLife(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    order = models.IntegerField(default=0)
 
 
 class ProductsNightLifeMedia(models.Model):
@@ -686,6 +689,7 @@ class ProductsNightLifeMedia(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    order = models.IntegerField(default=0)
 
 
 class ProductHotel(models.Model):
@@ -710,6 +714,7 @@ class ProductHotel(models.Model):
     product_group = models.ForeignKey(ProductGroup, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    order = models.IntegerField(default=0)
 
 
 class ProductHotelsMedia(models.Model):
@@ -732,6 +737,7 @@ class ProductHotelsMedia(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    order = models.IntegerField(default=0)
 
 
 class ProductsHotelRoomDetails(models.Model):

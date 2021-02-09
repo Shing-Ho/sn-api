@@ -23,9 +23,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 
 class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
-    permission_classes = [
-        IsAuthenticated,
-    ]
     queryset = Venue.objects.filter()
     serializer_class = serializers.VenueSerializer
     pagination_class = ObjectPagination
@@ -49,9 +46,6 @@ class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
 
 class VenueMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
-    permission_classes = [
-        IsAuthenticated,
-    ]
     queryset = VenueMedia.objects.filter()
     serializer_class = serializers.VenueMediaSerializer
     pagination_class = ObjectPagination
@@ -59,9 +53,6 @@ class VenueMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
 
 class VenueContactViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
-    permission_classes = [
-        IsAuthenticated,
-    ]
     queryset = VenueContact.objects.filter()
     serializer_class = serializers.VenueContactSerializer
     pagination_class = ObjectPagination
@@ -69,9 +60,6 @@ class VenueContactViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
 
 class VenueDetailViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
-    permission_classes = [
-        IsAuthenticated,
-    ]
     queryset = VenueDetail.objects.filter()
     serializer_class = serializers.VenueDetailSerializer
     pagination_class = ObjectPagination

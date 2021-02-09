@@ -1,9 +1,15 @@
 from rest_framework import serializers
-from api.accounts.serializers import UserSerializer
 from api.models import models
 
+from django.contrib.auth.models import User
 
 # Venue Serializer
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("email", "first_name", "last_name", "username", "is_staff", "is_superuser", "is_active")
 
 
 class VenueMediaSerializer(serializers.ModelSerializer):
@@ -79,7 +85,6 @@ class VenueSerializer(serializers.ModelSerializer):
 
 
 class ProductsSerializer(serializers.ModelSerializer):
-    # media = ProductMediaSerializer(many=True, read_only=True)
     group = serializers.SerializerMethodField(source="get_group")
 
     class Meta:

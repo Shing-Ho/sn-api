@@ -245,7 +245,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 APPEND_SLASH = False
-TOKEN_EXPIRES_IN = 2  # 2hours
+TOKEN_EXPIRES_IN = 20000000000  # 2hours
 
 environment = "production"
 if environment == "local":
