@@ -7,7 +7,6 @@ import pytz
 from dateutil.relativedelta import relativedelta
 
 from api import logger
-from api.hotel.adapters import adapter_common
 from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_amenity_mappings import get_simplenight_amenity_mappings
 from api.hotel.adapters.hotelbeds.hotelbeds_common_models import get_language_mapping
@@ -22,9 +21,9 @@ from api.hotel.models.adapter_models import (
     AdapterHotelBatchSearch,
 )
 from api.hotel.models.booking_model import (
-    HotelBookingRequest,
     HotelReservation,
     Locator,
+    AdapterHotelBookingRequest,
 )
 from api.hotel.models.hotel_api_model import (
     HotelDetails,
@@ -209,7 +208,7 @@ class HotelbedsAdapter(HotelAdapter):
 
         return self._create_room_rate(room_type_code, room_rate, hotel_result["currency"])
 
-    def book(self, book_request: HotelBookingRequest) -> HotelReservation:
+    def book(self, book_request: AdapterHotelBookingRequest) -> HotelReservation:
         request = self._create_booking_params(book_request)
         response = self.transport.booking(**request)
 
@@ -431,7 +430,8 @@ class HotelbedsAdapter(HotelAdapter):
 
         return response[operation]
 
-    def _create_booking_params(self, book_request: HotelBookingRequest):
+    @staticmethod
+    def _create_booking_params(book_request: AdapterHotelBookingRequest):
         customer = book_request.customer
 
         return {
@@ -440,12 +440,14 @@ class HotelbedsAdapter(HotelAdapter):
             "rooms": [
                 {
                     "rateKey": book_request.room_code,
-                    "paxes": [{
-                        "roomId": 1,
-                        "type": "AD",
-                        "name": book_request.traveler.first_name,
-                        "surname": book_request.traveler.last_name,
-                    }],
+                    "paxes": [
+                        {
+                            "roomId": 1,
+                            "type": "AD",
+                            "name": book_request.traveler.first_name,
+                            "surname": book_request.traveler.last_name,
+                        }
+                    ],
                 }
             ],
             "tolerance": 2,

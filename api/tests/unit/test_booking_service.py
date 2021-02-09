@@ -1,6 +1,6 @@
 from datetime import date
 
-from api.hotel import booking_service
+from api.booking import booking_service
 from api.hotel.models.adapter_models import AdapterHotel
 from api.hotel.models.booking_model import HotelReservation, Locator
 from api.hotel.models.hotel_api_model import HotelDetails, CancellationDetails, CancellationSummary

@@ -99,6 +99,15 @@ class HotelBookingRequest(SimplenightModel):
     payment: Optional[Payment] = None
 
 
+class AdapterHotelBookingRequest(SimplenightModel):
+    transaction_id: str
+    hotel_id: str
+    room_code: str
+    language: str
+    customer: Customer
+    traveler: Traveler
+
+
 class MultiProductHotelBookingRequest(SimplenightModel):
     hotel_id: str
     room_code: str

@@ -1,3 +1,4 @@
+import abc
 import asyncio
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -22,6 +23,7 @@ from api.hotel.models.booking_model import (
     ActivityBookingRequest,
     ActivityBookingResponse,
     MultiProductHotelBookingRequest,
+    AdapterHotelBookingRequest,
 )
 from api.hotel.models.hotel_api_model import (
     SimplenightRoomType,
@@ -96,20 +98,8 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
         # Lookup Hotel Rates in Cache, and Book Hotel
         logger.info("Retrieving cached hotel")
 
-        hotel_booking_request = None
-        if booking_request.hotel_booking:
-            hotel_booking_request = HotelBookingRequest(
-                api_version=booking_request.api_version,
-                transaction_id=booking_request.transaction_id,
-                hotel_id=booking_request.hotel_booking.hotel_id,
-                room_code=booking_request.hotel_booking.room_code,
-                language=booking_request.language,
-                customer=booking_request.customer,
-                traveler=booking_request.hotel_booking.traveler,
-                payment=booking_request.payment,
-            )
-
-        hotel_cache_payload = _get_cached_hotel_payload(hotel_booking_request)
+        hotel_processor = HotelBookingProcessor(booking_request, booking)
+        hotel_cache_payload = hotel_processor.cached_hotel
 
         # Lookup Activity Rates in Cache, and Book Activity
         logger.info("Retrieving cached activity")
@@ -134,7 +124,7 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
 
         try:
             customer = booking_request.customer
-            hotel_reservation = _book_hotel(hotel_booking_request, hotel_cache_payload, booking)
+            hotel_reservation = hotel_processor.book()
             activity_reservation = _book_activity(booking_request.activity_booking, activity_cache_payload, customer)
 
             _set_booked_status(booking)
@@ -282,36 +272,6 @@ def _get_cached_hotel_payload(hotel_booking_request: HotelBookingRequest):
     return provider_cache_service.get_cached_room_data(hotel_room_code)
 
 
-def _book_hotel(
-    booking_request: HotelBookingRequest, room_rate_cache_payload: RoomDataCachePayload, booking: Booking
-) -> Optional[HotelReservation]:
-    if not booking_request:
-        return None
-
-    provider = room_rate_cache_payload.provider
-    simplenight_rate = room_rate_cache_payload.simplenight_rate
-    provider_rate = room_rate_cache_payload.provider_rate
-    booking_request.room_code = provider_rate.code
-
-    logger.info("Starting price verification")
-    verified_rates = _hotel_price_verification(provider=provider, rate=provider_rate)
-
-    # Reset room rates with verified rates.  If prices mismatched above, error will raise
-    booking_request.room_code = verified_rates.code
-
-    adapter = adapter_service.get_adapter(provider)
-    reservation = adapter.book(booking_request)
-    reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
-
-    if not reservation or not reservation.locator:
-        logger.error(f"Could not book hotel: {booking_request}")
-        raise AppException("Error during hotel booking")
-
-    _persist_hotel(booking_request, room_rate_cache_payload, booking, reservation)
-
-    return reservation
-
-
 def _hotel_price_verification(provider: str, rate: Union[SimplenightRoomType, RoomRate]):
     price_verification = price_verification_service.recheck(provider=provider, room_rate=rate)
 
@@ -322,51 +282,6 @@ def _hotel_price_verification(provider: str, rate: Union[SimplenightRoomType, Ro
         raise BookingException(BookingErrorCode.PRICE_VERIFICATION, error_msg)
 
     return price_verification.verified_room_rate
-
-
-def _persist_hotel(book_request, provider_rate_cache_payload, booking, reservation):
-    # Takes the original room rates as a parameter
-    # Persists both the provider rate (on book_request) and the original rates
-    simplenight_rate = reservation.room_rate
-    provider_rate = provider_rate_cache_payload.provider_rate
-    adapter_hotel = provider_rate_cache_payload.adapter_hotel
-    provider = Provider.objects.get(name=provider_rate_cache_payload.provider)
-    hotel_booking = models.HotelBooking(
-        provider=provider,
-        booking=booking,
-        created_date=datetime.now(),
-        hotel_name=adapter_hotel.hotel_details.name,
-        simplenight_hotel_id=book_request.hotel_id,  # TODO: Don't use hotel id from request
-        provider_hotel_id=provider_rate_cache_payload.hotel_id,
-        record_locator=reservation.locator.id,
-        total_price=simplenight_rate.total.amount,
-        currency=simplenight_rate.total.currency,
-        provider_total=provider_rate.total.amount,
-        provider_currency=provider_rate.total.currency,
-        checkin=adapter_hotel.start_date,
-        checkout=adapter_hotel.end_date,
-    )
-
-    hotel_booking.save()
-
-    cancellation_details = reservation.cancellation_details
-    cancellation_policy_models = []
-    for cancellation_policy in cancellation_details:
-        cancellation_policy_models.append(
-            models.HotelCancellationPolicy(
-                hotel_booking=hotel_booking,
-                cancellation_type=cancellation_policy.cancellation_type.value,
-                description=cancellation_policy.description,
-                begin_date=cancellation_policy.begin_date,
-                end_date=cancellation_policy.end_date,
-                penalty_amount=cancellation_policy.penalty_amount,
-                penalty_currency=cancellation_policy.penalty_currency,
-            )
-        )
-
-    if len(cancellation_policy_models) > 0:
-        logger.info(f"Persisting cancellation policies for hotel booking: {hotel_booking.hotel_booking_id}")
-        models.HotelCancellationPolicy.objects.bulk_create(cancellation_policy_models)
 
 
 def cancel_lookup(cancel_request: CancelRequest) -> CancelResponse:
@@ -689,3 +604,132 @@ def _persist_traveler(customer: Customer):
 
     traveler.save()
     return traveler
+
+
+class BookingProcessor(abc.ABC):
+    @abc.abstractmethod
+    def get_total(self) -> Money:
+        pass
+
+    @abc.abstractmethod
+    def book(self) -> Union[HotelReservation, ActivityBookingResponse]:
+        pass
+
+
+class HotelBookingProcessor(BookingProcessor):
+    def __init__(self, booking_request: MultiProductBookingRequest, booking: Booking):
+        self.booking_request = self._get_hotel_booking_request(booking_request)
+        self.booking = booking
+        self._cached_hotel = None
+
+    def book(self) -> Optional[HotelReservation]:
+        if not self.booking_request:
+            return None
+
+        provider = self.cached_hotel.provider
+        simplenight_rate = self.cached_hotel.simplenight_rate
+        provider_rate = self.cached_hotel.provider_rate
+
+        adapter_booking_request = self.get_adapter_booking_request()
+
+        # Verify rates, and use the rate code from verification.  If prices mismatched above, error will raise
+        logger.info("Starting price verification")
+        verified_rates = _hotel_price_verification(provider=provider, rate=provider_rate)
+        adapter_booking_request.room_code = verified_rates.code
+
+        adapter = adapter_service.get_adapter(provider)
+        reservation: HotelReservation = adapter.book(adapter_booking_request)
+        reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
+        reservation.hotel_id = self.booking_request.hotel_id
+
+        if not reservation or not reservation.locator:
+            logger.error(f"Could not book hotel: {self.booking_request}")
+            raise AppException("Error during hotel booking")
+
+        self._persist_hotel(reservation)
+
+        return reservation
+
+    def get_total(self) -> Money:
+        return self.cached_hotel.simplenight_rate.total
+
+    @property
+    def cached_hotel(self) -> Optional[RoomDataCachePayload]:
+        if self._cached_hotel is not None:
+            return self._cached_hotel
+        elif not self.booking_request:
+            return None
+
+        self._cached_hotel = provider_cache_service.get_cached_room_data(self.booking_request.room_code)
+        return self.cached_hotel
+
+    def get_adapter_booking_request(self):
+        return AdapterHotelBookingRequest(
+            transaction_id=self.booking_request.transaction_id,
+            hotel_id=self.cached_hotel.adapter_hotel.hotel_id,
+            room_code=self.cached_hotel.provider_rate.code,
+            language=self.booking_request.language,
+            customer=self.booking_request.customer,
+            traveler=self.booking_request.traveler,
+        )
+
+    def _persist_hotel(self, reservation):
+        # Takes the original room rates as a parameter
+        # Persists both the provider rate (on book_request) and the original rates
+        simplenight_rate = reservation.room_rate
+        provider_rate = self.cached_hotel.provider_rate
+        adapter_hotel = self.cached_hotel.adapter_hotel
+        provider = Provider.objects.get(name=self.cached_hotel.provider)
+        hotel_booking = models.HotelBooking(
+            provider=provider,
+            booking=self.booking,
+            created_date=datetime.now(),
+            hotel_name=adapter_hotel.hotel_details.name,
+            simplenight_hotel_id=self.booking_request.hotel_id,
+            provider_hotel_id=self.cached_hotel.adapter_hotel.hotel_id,
+            record_locator=reservation.locator.id,
+            total_price=simplenight_rate.total.amount,
+            currency=simplenight_rate.total.currency,
+            provider_total=provider_rate.total.amount,
+            provider_currency=provider_rate.total.currency,
+            checkin=adapter_hotel.start_date,
+            checkout=adapter_hotel.end_date,
+        )
+
+        hotel_booking.save()
+
+        cancellation_details = reservation.cancellation_details
+        cancellation_policy_models = []
+        for cancellation_policy in cancellation_details:
+            cancellation_policy_models.append(
+                models.HotelCancellationPolicy(
+                    hotel_booking=hotel_booking,
+                    cancellation_type=cancellation_policy.cancellation_type.value,
+                    description=cancellation_policy.description,
+                    begin_date=cancellation_policy.begin_date,
+                    end_date=cancellation_policy.end_date,
+                    penalty_amount=cancellation_policy.penalty_amount,
+                    penalty_currency=cancellation_policy.penalty_currency,
+                )
+            )
+
+        if len(cancellation_policy_models) > 0:
+            logger.info(f"Persisting cancellation policies for hotel booking: {hotel_booking.hotel_booking_id}")
+            models.HotelCancellationPolicy.objects.bulk_create(cancellation_policy_models)
+
+    @staticmethod
+    def _get_hotel_booking_request(booking_request: MultiProductBookingRequest) -> Optional[HotelBookingRequest]:
+        # TODO: Temporary scaffolding for refactor
+        if booking_request.hotel_booking:
+            return HotelBookingRequest(
+                api_version=booking_request.api_version,
+                transaction_id=booking_request.transaction_id,
+                hotel_id=booking_request.hotel_booking.hotel_id,
+                room_code=booking_request.hotel_booking.room_code,
+                language=booking_request.language,
+                customer=booking_request.customer,
+                traveler=booking_request.hotel_booking.traveler,
+                payment=booking_request.payment,
+            )
+
+        return None
