@@ -75,3 +75,13 @@ class UrbanViewSet(viewsets.ViewSet):
     def get_booking_voucher(self, request: Request):
         response = urban_service.get_booking_voucher(request)
         return HttpResponse(self.xml_to_json(response), content_type="application/json")
+
+    @action(detail=False, url_path="get_booking_info", methods=["GET"], name="Get booking info")
+    def get_booking_info(self, request: Request):
+        response = urban_service.get_booking_info(request)
+        return HttpResponse(self.xml_to_json(response), content_type="application/json")
+
+    @action(detail=False, url_path="get_exchange_rate_list", methods=["GET"], name="Get exchange rate")
+    def get_exchange_rate_list(self, request: Request):
+        response = urban_service.get_exchange_rate_list(request)
+        return HttpResponse(self.xml_to_json(response), content_type="application/json")
