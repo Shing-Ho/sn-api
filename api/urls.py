@@ -8,6 +8,7 @@ import api.view.default_view
 import api.view.charging_view
 import api.view.urban_view
 import api.view.carey_view
+import api.view.dinings_view
 import api.accounts.views
 import api.view.multi_product_views
 from api.view import venue_view
@@ -23,6 +24,7 @@ router.register(r"multi", api.view.multi_product_views.AllProductsViewSet, basen
 router.register(r"charging", api.view.charging_view.ChargingViewSet, basename="charging")
 router.register(r"urban", api.view.urban_view.UrbanViewSet, basename="urban")
 router.register(r"carey", api.view.carey_view.CareyViewSet, basename="carey")
+router.register(r"dinings", api.view.dinings_view.DiningViewSet, basename="dinings")
 router.register(r"authentication", api.view.default_view.AuthenticationView, basename="authentication")
 router.register(r"users", api.view.admin_view.UserViewSet, basename="user-list")
 router.register(r"payment-methods", venue_view.PaymentMethodViewSet, basename="payment-methods-list")  #
