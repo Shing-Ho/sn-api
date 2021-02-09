@@ -28,6 +28,10 @@ class UrbanService:
         for param in params:
             if type(params[param]) is dict:
                 new_root = etree.Element(param)
+                if param == 'Traveller':
+                    new_root.set('type', 'clsTravellerInfo')
+                elif param == 'Other':
+                    new_root.set('type', 'clsTravellerOther')
                 for new_param in params[param]:
                     new_root_node = etree.Element(new_param)
                     new_root_node.text = params[param][new_param]
@@ -205,4 +209,17 @@ class UrbanService:
         if request.GET.get('ref_no'):
             params['RefNo'] = request.GET.get('ref_no')
         response = requests.post(_url, data=self.get_access_body(params))
+        return response
+    
+    def get_booking_info(self, request):
+        _url = self.url + "get_booking_info"
+        params = {}
+        if request.GET.get('ref_no'):
+            params['RecordLocator'] = request.GET.get('ref_no')
+        response = requests.post(_url, data=self.get_access_body(params))
+        return response
+
+    def get_exchange_rate_list(self, request):
+        _url = self.url + "get_exchange_rate_list"
+        response = requests.post(_url, data=self.get_access_body())
         return response

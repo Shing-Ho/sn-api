@@ -1,6 +1,7 @@
 import decimal
 import uuid
 from collections import Sequence
+from concurrent.futures.thread import ThreadPoolExecutor
 from datetime import datetime, date
 from unittest.mock import patch, Mock
 
@@ -492,7 +493,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         booking = Booking.objects.get(transaction_id=transaction_id)
         self.assertIsNotNone(booking)
         self.assertEqual(transaction_id, booking.transaction_id)
-        self.assertEqual(BookingStatus.PENDING.value, booking.booking_status)
+        self.assertEqual(BookingStatus.FAILED.value, booking.booking_status)
 
         payment = PaymentTransaction.objects.filter(charge_id=payment_charge_id)
         self.assertEqual(2, len(payment))
@@ -518,15 +519,6 @@ class TestBookingServiceIntegration(SimplenightTestCase):
                 booking_service.book_hotel(booking_request)
 
         self.assertEquals("Price Verification Failed: Old=100.0, New=150.0", str(e.value))
-
-    def test_duplicate_booking(self):
-        booking_request = test_objects.booking_request(rate_code="sn-foo")
-        self._create_booking(booking_request.customer.first_name, booking_request.customer.last_name, 100)
-
-        with pytest.raises(BookingException) as e:
-            booking_service.book_hotel(booking_request)
-
-        self.assertEqual("Duplicate booking detected", str(e.value))
 
     @staticmethod
     def _create_payment_transaction(booking, transaction_amount):

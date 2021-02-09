@@ -1,5 +1,3 @@
-from rest_framework import viewsets
-from rest_framework_extensions.mixins import NestedViewSetMixin
 from api.models.models import (
     Venue,
     VenueMedia,
@@ -7,13 +5,21 @@ from api.models.models import (
     PaymentMethod,
     VenueDetail,
     ProductGroup,
-    ProductMedia,
+    ProductsNightLifeMedia,
     ProductsNightLife,
+    ProductHotel,
+    ProductHotelsMedia,
+    ProductsHotelRoomDetails,
+    ProductsHotelRoomPricing,
 )
 from api.venue import serializers
+from rest_framework import viewsets
+from api.auth.authentication import IsOwner
 from api.utils.paginations import ObjectPagination
 from rest_framework.permissions import IsAuthenticated
-from api.auth.authentication import IsOwner
+from rest_framework_extensions.mixins import NestedViewSetMixin
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -30,7 +36,6 @@ class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         serializer.save(created_by=self.request.user)
 
     def get_permissions(self):
-        # print(self.action)
         if self.action == "delete":
             self.permission_classes = [
                 IsOwner,
@@ -93,12 +98,12 @@ class ProductGroupViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "delete"]
 
 
-class ProductMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+class ProductNightLifeMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [
         IsAuthenticated,
     ]
-    queryset = ProductMedia.objects.filter()
-    serializer_class = serializers.ProductMediaSerializer
+    queryset = ProductsNightLifeMedia.objects.filter()
+    serializer_class = serializers.ProductNightLifeMediaSerializer
     pagination_class = ObjectPagination
     http_method_names = ["get", "post", "put", "delete"]
 
@@ -111,3 +116,57 @@ class ProductNightLifeViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     serializer_class = serializers.ProductsNightLifeSerializer
     pagination_class = ObjectPagination
     http_method_names = ["get", "post", "put", "delete"]
+
+
+class ProductHotelMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+    queryset = ProductHotelsMedia.objects.filter()
+    serializer_class = serializers.ProductHotelsMediaSerializer
+    pagination_class = ObjectPagination
+    http_method_names = ["get", "post", "put", "delete"]
+
+
+class ProductHotelViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+    permission_classes = [
+        IsAuthenticated,
+    ]
+    queryset = ProductHotel.objects.filter()
+    serializer_class = serializers.ProductHotelSerializer
+    pagination_class = ObjectPagination
+    http_method_names = ["get", "post", "put", "delete"]
+
+
+class ProductsHotelRoomPricingDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+    queryset = ProductsHotelRoomPricing.objects.filter()
+    serializer_class = serializers.ProductsHotelRoomPricingSerializer
+    pagination_class = ObjectPagination
+    http_method_names = ["get", "post", "put", "delete"]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["product_id"]
+
+
+class ProductsHotelRoomDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+    queryset = ProductsHotelRoomDetails.objects.filter()
+    serializer_class = serializers.ProductsHotelRoomDetailsSerializer
+    pagination_class = ObjectPagination
+    # lookup_field = 'product_hotels'
+    http_method_names = ["get", "post", "put", "delete"]
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["product_id"]
+
+    def filter_queryset(self, queryset):
+        response = self.request.GET.get("product_id", None)
+        if response == "" or response == "null":
+            self.request.GET._mutable = True
+            if response is not None:
+                del self.request.GET["product_id"]
+
+            self.request.GET._mutable = False
+            queryset = queryset.filter(product_id__isnull=True)
+
+        for backend in list(self.filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset, view=self)
+        return queryset

@@ -10,6 +10,7 @@ from typing import Tuple, List
 
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
+
 from django.db import models
 from django.utils import timezone
 from django_enumfield import enum
@@ -568,7 +569,7 @@ class VenueMedia(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="media")
     type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
-    url = models.TextField()
+    url = models.FileField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -667,21 +668,21 @@ class ProductsNightLife(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
 
 
-class ProductMedia(models.Model):
+class ProductsNightLifeMedia(models.Model):
     class Meta:
         app_label = "api"
-        db_table = "product_media"
-        verbose_name = "ProductMedia"
-        verbose_name_plural = "ProductMedia"
+        db_table = "products_nightlife_media"
+        verbose_name = "ProductsNightLifeMedia"
+        verbose_name_plural = "ProductsNightLifeMedia"
 
     FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
     type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
-    url = models.TextField(null=True, blank=True)
+    url = models.FileField(null=True, blank=True)
     thumbnail = models.TextField()
-    mail = models.BooleanField(default=0)
+    main = models.BooleanField(default=True)
     product = models.ForeignKey(
         ProductsNightLife, on_delete=models.SET_NULL, null=True, blank=True, related_name="media"
     )
@@ -689,7 +690,7 @@ class ProductMedia(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
 
 
-class ProductHotels(models.Model):
+class ProductHotel(models.Model):
     class Meta:
         app_label = "api"
         db_table = "products_hotel"
@@ -703,13 +704,34 @@ class ProductHotels(models.Model):
     room_size = models.TextField()
     max_guests = models.TextField()
     item_code = models.CharField(max_length=200, null=True, blank=True)
-
-    highlight = models.BooleanField(default=0)
-    balcony = models.BooleanField(default=0)
-    status = models.BooleanField(default=1)
+    highlight = models.BooleanField(default=False)
+    balcony = models.BooleanField(default=False)
+    status = models.BooleanField(default=True)
     room_details = jsonfield.JSONField()
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="venue")
     product_group = models.ForeignKey(ProductGroup, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductHotelsMedia(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_hotels_media"
+        verbose_name = "ProductHotelMedia"
+        verbose_name_plural = "ProductHotelMedia"
+
+    FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
+    url = models.FileField(null=True, blank=True)
+    thumbnail = models.TextField()
+    main = models.BooleanField(default=False)
+    product = models.ForeignKey(
+        ProductHotel, on_delete=models.SET_NULL, null=True, blank=True, related_name="product_hotels"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -732,7 +754,7 @@ class ProductsHotelRoomDetails(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=20, choices=TYPE, default="BEDROOM")
-    product_hotels = models.ForeignKey(ProductHotels, on_delete=models.SET_NULL, null=True, blank=True)
+    product = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True)
 
 
 class ProductsHotelRoomPricing(models.Model):
@@ -747,4 +769,4 @@ class ProductsHotelRoomPricing(models.Model):
     taxes = jsonfield.JSONField()
     guests = jsonfield.JSONField()
     dates = jsonfield.JSONField()
-    product_hotels = models.ForeignKey(ProductHotels, on_delete=models.SET_NULL, null=True, blank=True)
+    product = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True)

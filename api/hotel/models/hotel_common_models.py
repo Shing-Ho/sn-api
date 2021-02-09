@@ -93,6 +93,7 @@ class BookingStatus(Enum):
     BOOKED = "booked"
     CANCELLED = "cancelled"
     PENDING = "pending"
+    FAILED = "failed"
 
     @classmethod
     def from_value(cls, value):
