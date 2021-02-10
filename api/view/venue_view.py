@@ -15,7 +15,7 @@ from api.models.models import (
 from api.venue import serializers
 from rest_framework import viewsets
 
-# from api.auth.authentication import IsOwner
+from api.auth.authentication import IsOwner
 from api.utils.paginations import ObjectPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -27,29 +27,35 @@ class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = Venue.objects.filter()
     serializer_class = serializers.VenueSerializer
     pagination_class = ObjectPagination
+    permission_classes = [
+        IsAuthenticated,
+    ]
     http_method_names = ["get", "post", "put", "delete"]
 
     def perform_create(self, serializer):
         """Sets the user profile to the logged in User."""
         serializer.save(created_by=self.request.user)
 
-    # def get_permissions(self):
-    #     if self.action == "delete":
-    #         self.permission_classes = [
-    #             IsOwner,
-    #         ]
-    #     elif self.action == "destroy":
-    #         self.permission_classes = [IsOwner]
-    #     elif self.action == "create":
-    #         self.permission_classes = [IsOwner]
+    def get_permissions(self):
+        if self.action == "delete":
+            self.permission_classes = [
+                IsOwner,
+            ]
+        elif self.action == "destroy":
+            self.permission_classes = [IsOwner]
+        elif self.action == "create":
+            self.permission_classes = [IsOwner]
 
-    #     return super(self.__class__, self).get_permissions()
+        return super(self.__class__, self).get_permissions()
 
 
 class VenueMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = VenueMedia.objects.filter()
     serializer_class = serializers.VenueMediaSerializer
     pagination_class = ObjectPagination
+    permission_classes = [
+        IsAuthenticated,
+    ]
     http_method_names = ["get", "post", "put", "delete"]
 
 
@@ -57,6 +63,9 @@ class VenueContactViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = VenueContact.objects.filter()
     serializer_class = serializers.VenueContactSerializer
     pagination_class = ObjectPagination
+    permission_classes = [
+        IsAuthenticated,
+    ]
     http_method_names = ["get", "post", "put", "delete"]
 
 
@@ -64,6 +73,9 @@ class VenueDetailViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = VenueDetail.objects.filter()
     serializer_class = serializers.VenueDetailSerializer
     pagination_class = ObjectPagination
+    permission_classes = [
+        IsAuthenticated,
+    ]
     http_method_names = ["get", "post", "put", "delete"]
 
 
@@ -134,6 +146,9 @@ class ProductsHotelRoomPricingDetailsViewSet(NestedViewSetMixin, viewsets.ModelV
     http_method_names = ["get", "post", "put", "delete"]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["product_id"]
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
 
 class ProductsHotelRoomDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -141,6 +156,9 @@ class ProductsHotelRoomDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet)
     serializer_class = serializers.ProductsHotelRoomDetailsSerializer
     pagination_class = ObjectPagination
     # lookup_field = 'product_hotels'
+    permission_classes = [
+        IsAuthenticated,
+    ]
     http_method_names = ["get", "post", "put", "delete"]
 
     filter_backends = [DjangoFilterBackend]
