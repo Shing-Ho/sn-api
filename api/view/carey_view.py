@@ -38,11 +38,10 @@ class CareyViewSet(viewsets.ViewSet):
         else:
             jsondata = helpers.serialize_object(quote_response["GroundServices"])
             parse_quote_data = CareyParser()
-            quote_data = list(parse_quote_data.parse_quotes(quote_response["GroundServices"]["GroundService"]))
-
+            quote_data = list(
+                parse_quote_data.parse_quotes(quote_response["GroundServices"]["GroundService"], rate_inquiry_request)
+            )
             return _response(quote_data)
-            # response = json.dumps(quote_data, cls=DecimalEncoder)
-            # return HttpResponse(quote_data, content_type="application/json")
 
     @action(detail=False, url_path="book-reservation", methods=["POST"], name="Book a reservation")
     def get_add_reservation(self, request: Request):

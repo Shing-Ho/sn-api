@@ -1,4 +1,5 @@
 from typing import List
+from api.carey.models.carey_api_model import RateInquiryRequest
 from api.carey.models.carey_api_model import (
     QuoteResponse,
     VehicleDetails,
@@ -15,9 +16,8 @@ class CareyParser:
         super().__init__()
 
     # def parse_quotes(self, quotes_data):
-    def parse_quotes(self, quotes_datas) -> List[QuoteResponse]:
+    def parse_quotes(self, quotes_datas, request: RateInquiryRequest) -> List[QuoteResponse]:
         quote_details = []
-
         for quote_data in quotes_datas:
             chargeItemsDetails = quote_data["Reference"]["TPA_Extensions"]["ChargeDetails"]["Charges"]["Items"][
                 "ItemVariable"
@@ -37,6 +37,9 @@ class CareyParser:
                 chargeItemsInfo.append(chargeItemInfo)
 
             quote_detail = QuoteResponse(
+                pickUpDate=request.dateTime,
+                pickUpLoacation=request.pickUpLoacation,
+                dropOffLocation=request.dropOffLocation,
                 vehicleDetails=VehicleDetails(
                     vehicleName=quote_data["Shuttle"][0]["Vehicle"]["Type"]["_value_1"],
                     vehicleCode=quote_data["Shuttle"][0]["Vehicle"]["Type"]["Description"],
@@ -62,6 +65,7 @@ class CareyParser:
                     notice=quote_data["Reference"]["TPA_Extensions"]["Notice"],
                     garageToGarageEstimate=quote_data["Reference"]["TPA_Extensions"]["GarageToGarageEstimate"],
                 ),
+                special=request.special,
             )
 
             quote_details.append(quote_detail)
