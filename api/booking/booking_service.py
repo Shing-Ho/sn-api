@@ -5,6 +5,8 @@ from decimal import Decimal
 from time import sleep
 from typing import Union, Optional
 
+from cachetools import cached
+
 from api import logger
 from api.activities.activity_internal_models import ActivityDataCachePayload
 from api.common import mail, currencies, request_context, cache_storage
@@ -20,10 +22,10 @@ from api.hotel.models.booking_model import (
     HotelReservation,
     MultiProductBookingRequest,
     MultiProductBookingResponse,
-    ActivityBookingRequest,
     ActivityBookingResponse,
     MultiProductHotelBookingRequest,
     AdapterHotelBookingRequest,
+    AdapterActivityBookingRequest,
 )
 from api.hotel.models.hotel_api_model import (
     SimplenightRoomType,
@@ -95,17 +97,14 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
         simplenight_record_locator = RecordLocator.generate_record_locator(booking)
         logger.info(f"Saved booking {booking.booking_id} {simplenight_record_locator}")
 
-        # Lookup Hotel Rates in Cache, and Book Hotel
-        logger.info("Retrieving cached hotel")
-
+        # Create Hotel Booking Processor
         hotel_processor = HotelBookingProcessor(booking_request, booking)
         hotel_cache_payload = hotel_processor.cached_hotel
 
-        # Lookup Activity Rates in Cache, and Book Activity
-        logger.info("Retrieving cached activity")
-        activity_cache_payload = _get_cached_activity_payload(booking_request.activity_booking)
+        # Create Activity Booking Processor
+        activity_processor = ActivityBookingProcessor(booking_request, booking)
 
-        total_payment_amount = _calculate_total(hotel_cache_payload, activity_cache_payload)
+        total_payment_amount = _calculate_total_amount(hotel_processor, activity_processor)
 
         logger.info(f"Authorizing payment for {total_payment_amount}")
         auth_response = payment_service.authorize_payment(
@@ -123,9 +122,8 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
             auth_response.save()
 
         try:
-            customer = booking_request.customer
             hotel_reservation = hotel_processor.book()
-            activity_reservation = _book_activity(booking_request.activity_booking, activity_cache_payload, customer)
+            activity_reservation = activity_processor.book()
 
             _set_booked_status(booking)
             if hotel_cache_payload:
@@ -169,6 +167,16 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
         logger.exception("Unhandled error during booking")
         _unlock_booking(booking_request, None)
         raise BookingException(BookingErrorCode.UNHANDLED_ERROR, str(e))
+
+
+def _calculate_total_amount(*processors):
+    """Calculates a total price for all booking processors, verifying currencies match"""
+    booking_currencies = set(x.total_price.currency for x in processors if x.total_price is not None)
+    if len(booking_currencies) > 1:
+        raise BookingException(BookingErrorCode.MISMATCHED_CURRENCIES, f"Mismatched currencies: {booking_currencies}")
+
+    total_price = sum(x.total_price.amount for x in processors if x.total_price is not None)
+    return Money(amount=total_price, currency=next(iter(booking_currencies)))
 
 
 def _lock_booking(booking_request: MultiProductBookingRequest) -> Optional[MultiProductBookingResponse]:
@@ -215,53 +223,6 @@ def _get_booking_request_lock_key(booking_request: MultiProductBookingRequest):
 def _get_booking_response_lock_key(booking_request: MultiProductBookingRequest):
     customer = booking_request.customer
     return f"booking_lock_response__{customer.first_name}_{customer.last_name}"
-
-
-def _calculate_total(hotel_payload: RoomDataCachePayload, activity_payload: ActivityDataCachePayload):
-    def get_hotel_currency():
-        try:
-            return hotel_payload.simplenight_rate.total.currency
-        except AttributeError:
-            pass
-
-    # TODO: Deal with activity currencies
-    total_amount = Decimal(0)
-    if hotel_payload:
-        total_amount += hotel_payload.simplenight_rate.total.amount
-
-    if activity_payload:
-        total_amount += activity_payload.price
-
-    currency = get_hotel_currency()
-    if not currency:
-        currency = "USD"
-
-    return Money(amount=total_amount, currency=currency)
-
-
-def _book_activity(
-    activity_book_request: ActivityBookingRequest,
-    cached_activity_payload: ActivityDataCachePayload,
-    customer: Customer,
-) -> Optional[ActivityBookingResponse]:
-    if not activity_book_request:
-        logger.info("No activity booking")
-        return None
-
-    activity_book_request.code = cached_activity_payload.code
-    adapter = adapter_service.get_activity_adapter(cached_activity_payload.provider)
-    booking_response = asyncio.run(adapter.book(activity_book_request, customer))
-
-    status = Status(success=booking_response.success, message="")
-    return ActivityBookingResponse(status=status, record_locator=booking_response.record_locator)
-
-
-def _get_cached_activity_payload(activity_booking_request: ActivityBookingRequest):
-    if not activity_booking_request:
-        return None
-
-    activity_code = activity_booking_request.code
-    return provider_cache_service.get_cached_activity(activity_code)
 
 
 def _get_cached_hotel_payload(hotel_booking_request: HotelBookingRequest):
@@ -408,7 +369,7 @@ def _get_itinerary_address(hotel_booking):
 
 def cancel_confirm(cancel_request: CancelRequest) -> CancelConfirmResponse:
     simplenight_locator = cancel_request.booking_id
-    last_name = cancel_request.last_name
+    last_name = cancel_request.last_name.strip()
 
     try:
         logger.info(f"Confirming cancellation for recloc={simplenight_locator}")
@@ -607,8 +568,9 @@ def _persist_traveler(customer: Customer):
 
 
 class BookingProcessor(abc.ABC):
+    @property
     @abc.abstractmethod
-    def get_total(self) -> Money:
+    def total_price(self) -> Money:
         pass
 
     @abc.abstractmethod
@@ -616,11 +578,52 @@ class BookingProcessor(abc.ABC):
         pass
 
 
+class ActivityBookingProcessor(BookingProcessor):
+    def __init__(self, booking_request: MultiProductBookingRequest, booking: Booking):
+        self.booking_request = booking_request
+        self.activity_booking_request = self.booking_request.activity_booking
+        self.booking = booking
+
+    def book(self) -> Optional[ActivityBookingResponse]:
+        if self.activity_booking_request is None:
+            return None
+
+        logger.info(f"Booking activity: {self.booking_request.activity_booking}")
+        adapter_booking_request = self._get_adapter_booking_request()
+        adapter = adapter_service.get_activity_adapter(self.cached_activity.provider)
+        booking_response = asyncio.run(adapter.book(adapter_booking_request, self.booking_request.customer))
+
+        status = Status(success=booking_response.success, message="")
+        return ActivityBookingResponse(status=status, record_locator=booking_response.record_locator)
+
+    @property
+    def total_price(self) -> Optional[Money]:
+        if not self.activity_booking_request:
+            return None
+
+        return Money(amount=self.cached_activity.price, currency=self.cached_activity.currency)
+
+    @property
+    @cached(cache={})
+    def cached_activity(self) -> Optional[ActivityDataCachePayload]:
+        if not self.booking_request.activity_booking:
+            return None
+
+        return provider_cache_service.get_cached_activity(self.booking_request.activity_booking.code)
+
+    def _get_adapter_booking_request(self):
+        if not self.booking_request.activity_booking:
+            return None
+
+        adapter_booking_request = AdapterActivityBookingRequest(**self.booking_request.activity_booking.dict())
+        adapter_booking_request.code = self.cached_activity.code
+        return adapter_booking_request
+
+
 class HotelBookingProcessor(BookingProcessor):
     def __init__(self, booking_request: MultiProductBookingRequest, booking: Booking):
         self.booking_request = self._get_hotel_booking_request(booking_request)
         self.booking = booking
-        self._cached_hotel = None
 
     def book(self) -> Optional[HotelReservation]:
         if not self.booking_request:
@@ -650,18 +653,20 @@ class HotelBookingProcessor(BookingProcessor):
 
         return reservation
 
-    def get_total(self) -> Money:
+    @property
+    def total_price(self) -> Optional[Money]:
+        if not self.booking_request:
+            return None
+
         return self.cached_hotel.simplenight_rate.total
 
     @property
+    @cached(cache={})
     def cached_hotel(self) -> Optional[RoomDataCachePayload]:
-        if self._cached_hotel is not None:
-            return self._cached_hotel
-        elif not self.booking_request:
+        if not self.booking_request:
             return None
 
-        self._cached_hotel = provider_cache_service.get_cached_room_data(self.booking_request.room_code)
-        return self.cached_hotel
+        return provider_cache_service.get_cached_room_data(self.booking_request.room_code)
 
     def get_adapter_booking_request(self):
         return AdapterHotelBookingRequest(

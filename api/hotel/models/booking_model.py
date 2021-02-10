@@ -173,6 +173,24 @@ class ActivityBookingResponse(SimplenightModel):
     record_locator: Locator
 
 
+class AdapterActivityBookingRequest(SimplenightModel):
+    language_code: str
+    activity_date: date
+    activity_time: time
+    currency: str
+    notes: Optional[str]
+    data: Optional[str]
+    misc: Optional[str]
+    code: Optional[str]
+    supplier_date: Optional[str]
+    items: List[ActivityBookingItem]
+
+
+class AdapterActivityBookingResponse(SimplenightModel):
+    status: Status
+    record_locator: Locator
+
+
 class MultiProductBookingRequest(SimplenightModel):
     api_version: int
     transaction_id: str

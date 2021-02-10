@@ -49,3 +49,4 @@ class ActivityDataCachePayload(SimplenightModel):
     code: str
     provider: str
     price: Decimal
+    currency: str
