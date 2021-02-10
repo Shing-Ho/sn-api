@@ -34,9 +34,14 @@ class VenueMediaSerializer(serializers.ModelSerializer):
     #     for file in validated_files:
     #         models.VenueMedia.objects.create(submission=submission_instance, file=file)
     #     return submission_instance
+    venue_id = serializers.SerializerMethodField("get_venue", read_only=True)
+
     class Meta:
         model = models.VenueMedia
-        fields = "__all__"
+        fields = ("venue_id", "url", "id", "type", "order", "created_at", "modified_at")
+
+    def get_venue(self, obj):
+        return obj.venue_id
 
 
 class VenueContactSerializer(serializers.ModelSerializer):
