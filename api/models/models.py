@@ -776,6 +776,15 @@ class ActivityReservation(models.Model):
 
 
 class ActivityReservationItem(models.Model):
+    """
+    Stores individual activity tickets.
+    An activity reservation can contain multiple items (e.g., child, adult)
+    """
+
+    class Meta:
+        app_label = "api"
+        db_table = "activity_reservation_items"
+
     activity_reservation_item_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     activity_reservation = models.ForeignKey(
         ActivityReservation, on_delete=models.CASCADE, related_name="activity_reservation"
