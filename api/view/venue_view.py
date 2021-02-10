@@ -14,10 +14,12 @@ from api.models.models import (
 )
 from api.venue import serializers
 from rest_framework import viewsets
-
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from api.auth.authentication import IsOwner
 from api.utils.paginations import ObjectPagination
 from rest_framework.permissions import IsAuthenticated
+
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -50,13 +52,22 @@ class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
 
 class VenueMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
-    queryset = VenueMedia.objects.filter()
+    queryset = VenueMedia.objects.filter().order_by("order")
     serializer_class = serializers.VenueCreateMediaSerializer
     pagination_class = ObjectPagination
     permission_classes = [
         IsAuthenticated,
     ]
     http_method_names = ["get", "post", "put", "delete"]
+
+    @action(detail=False, methods=["POST"], url_path="order", url_name="order")
+    def order(self, request, parent_lookup_venue_id=None):
+        orders = request.data.get("order", None)
+        counter = 1
+        for order in orders:
+            self.queryset.filter(id=order).update(order=counter)
+            counter += 1
+        return Response({"response": "status updated"}, status=200)
 
 
 class VenueContactViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
