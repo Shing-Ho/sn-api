@@ -34,14 +34,16 @@ class VenueMediaSerializer(serializers.ModelSerializer):
     #     for file in validated_files:
     #         models.VenueMedia.objects.create(submission=submission_instance, file=file)
     #     return submission_instance
-    venue_id = serializers.SerializerMethodField("get_venue", read_only=True)
 
     class Meta:
         model = models.VenueMedia
-        fields = ("venue_id", "url", "id", "type", "order", "created_at", "modified_at")
+        fields = "__all__"
 
-    def get_venue(self, obj):
-        return obj.venue_id
+    def to_representation(self, instance):
+        rep = super(VenueMediaSerializer, self).to_representation(instance)
+        rep["venue_id"] = instance.venue.id
+        del rep["venue"]
+        return rep
 
 
 class VenueCreateMediaSerializer(serializers.ModelSerializer):
@@ -73,11 +75,23 @@ class ProductGroupSerializer(serializers.ModelSerializer):
         model = models.ProductGroup
         fields = "__all__"
 
+    def to_representation(self, instance):
+        rep = super(ProductGroupSerializer, self).to_representation(instance)
+        rep["venue_id"] = instance.venue.id
+        del rep["venue"]
+        return rep
+
 
 class ProductNightLifeMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProductsNightLifeMedia
         fields = "__all__"
+
+    def to_representation(self, instance):
+        rep = super(ProductNightLifeMediaSerializer, self).to_representation(instance)
+        rep["venue_id"] = instance.venue.id
+        del rep["venue"]
+        return rep
 
 
 class ProductHotelSerializer(serializers.ModelSerializer):
@@ -102,6 +116,12 @@ class ProductsNightLifeSerializer(serializers.ModelSerializer):
 
     def get_group(self, obj):
         return obj.name
+
+    def to_representation(self, instance):
+        rep = super(ProductsNightLifeSerializer, self).to_representation(instance)
+        rep["venue_id"] = instance.venue.id
+        del rep["venue"]
+        return rep
 
 
 class VenueSerializer(serializers.ModelSerializer):

@@ -637,8 +637,10 @@ class VenueDetail(models.Model):
 class ProductGroup(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
-    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="venue_id")
     order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         app_label = "api"
