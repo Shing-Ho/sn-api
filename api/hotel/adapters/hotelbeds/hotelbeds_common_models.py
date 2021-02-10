@@ -53,7 +53,7 @@ def get_thumbnail_url(images):
     return f"{IMAGE_URL_PREFIX}/{image_path}"
 
 
-def get_image_url(image_path, size="xxl"):
+def get_image_url(image_path, size="bigger"):
     return f"{IMAGE_URL_PREFIX}/{size}/{image_path}"
 
 
