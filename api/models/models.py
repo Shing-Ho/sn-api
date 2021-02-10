@@ -542,7 +542,7 @@ class Venue(models.Model):
         verbose_name_plural = "Venues"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    name = models.CharField(max_length=300, unique=True)
+    name = models.CharField(max_length=300)
     venue_from = models.CharField(max_length=2, choices=VENUE_FORM_CHOICE, default="SN")
     type = models.CharField(max_length=20, choices=VENUE_TYPE, default="NIGHT_LIFE")
     language_code = models.CharField(max_length=3, default="en")
