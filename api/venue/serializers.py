@@ -44,6 +44,12 @@ class VenueMediaSerializer(serializers.ModelSerializer):
         return obj.venue_id
 
 
+class VenueCreateMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VenueMedia
+        fields = "__all__"
+
+
 class VenueContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VenueContact

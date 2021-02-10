@@ -51,7 +51,7 @@ class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
 class VenueMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = VenueMedia.objects.filter()
-    serializer_class = serializers.VenueMediaSerializer
+    serializer_class = serializers.VenueCreateMediaSerializer
     pagination_class = ObjectPagination
     permission_classes = [
         IsAuthenticated,
