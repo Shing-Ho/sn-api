@@ -168,6 +168,8 @@ class HotelbedsAdapter(HotelAdapter):
 
             hotel_detail_model = hotel_details_map[hotel_code]
             photos = list(map(self._get_image, hotel_images_by_id.get(hotel_code) or []))
+            if not photos or len(photos) == 0:
+                continue
             hotel_details = self._create_hotel_details(hotel, hotel_detail_model, photos)
 
             room_types = self._create_room_types(hotel)
@@ -481,6 +483,7 @@ class HotelbedsAdapter(HotelAdapter):
             checkin_time=None,
             checkout_time=None,
             photos=photos,
+            thumbnail_url=hotel_detail_model.thumbnail_url,
             amenities=get_simplenight_amenity_mappings(hotel_detail_model.amenities),
             geolocation=GeoLocation(latitude=hotel["latitude"], longitude=hotel["longitude"]),
             chain_code=hotel_detail_model.chain_code,

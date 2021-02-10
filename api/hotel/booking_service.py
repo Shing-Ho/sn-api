@@ -1,11 +1,12 @@
 import asyncio
 from datetime import datetime, timedelta
 from decimal import Decimal
+from time import sleep
 from typing import Union, Optional
 
 from api import logger
 from api.activities.activity_internal_models import ActivityDataCachePayload
-from api.common import mail, currencies, request_context
+from api.common import mail, currencies, request_context, cache_storage
 from api.common.request_context import get_request_context
 from api.hotel import price_verification_service, provider_cache_service
 from api.hotel.adapters import adapter_service
@@ -78,7 +79,12 @@ def book_hotel(booking_request: HotelBookingRequest) -> HotelBookingResponse:
 
 def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResponse:
     logger.info(f"Received Booking Request: {booking_request}")
-    _check_duplicates(booking_request)  # Will raise on duplicate
+    existing_booking_response = _lock_booking(booking_request)  # Will raise on duplicate
+    if existing_booking_response and isinstance(existing_booking_response, MultiProductBookingResponse):
+        logger.warn(f"Found an existing booking existing_booking_response! Txid={booking_request.transaction_id}")
+        logger.warn(f"Response: {existing_booking_response}")
+
+        return existing_booking_response
 
     try:
         logger.info("Persisting traveler and booking")
@@ -141,7 +147,7 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
                     record_locator=simplenight_record_locator,
                 )
 
-            return MultiProductBookingResponse(
+            booking_response = MultiProductBookingResponse(
                 api_version=1,
                 transaction_id=booking_request.transaction_id,
                 booking_id=simplenight_record_locator,
@@ -150,33 +156,75 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
                 activity_reservation=activity_reservation,
             )
 
+            _unlock_booking(booking_request, booking_response)
+
+            return booking_response
+
         except Exception as e:
             logger.exception(f"Booking Error.  Refunding {auth_response.charge_id} {auth_response.transaction_amount}")
             refund(booking, auth_response, total_payment_amount.amount)
+
+            logger.error(f"Setting booking {booking.booking_id} to state FAILED")
+            booking.booking_status = BookingStatus.FAILED.value
+            booking.save()
+
+            _unlock_booking(booking_request, None)
             raise BookingException(BookingErrorCode.PROVIDER_BOOKING_FAILURE, str(e))
 
     except BookingException as e:
         logger.exception("Error during booking")
+        _unlock_booking(booking_request, None)
         raise e
     except Exception as e:
         logger.exception("Unhandled error during booking")
+        _unlock_booking(booking_request, None)
         raise BookingException(BookingErrorCode.UNHANDLED_ERROR, str(e))
 
 
-def _check_duplicates(booking_request: MultiProductBookingRequest):
-    logger.info(f"Checking for duplicate booking")
-    duplicate_check_deadline = datetime.now() - timedelta(minutes=5)
+def _lock_booking(booking_request: MultiProductBookingRequest) -> Optional[MultiProductBookingResponse]:
+    """To prevent duplicate bookings, we set a cache key with the customer's first and last name.
+    If we detect this key exists, we wait up to 25 seconds for a booking result from another process, and return that.
+    Otherwise, we raise a duplicate booking error.
+    """
 
-    # TODO: Include other attributes, like price
-    recent_bookings = Booking.objects.filter(
-        booking_status=BookingStatus.BOOKED.value,
-        booking_date__gt=duplicate_check_deadline,
-        lead_traveler__first_name=booking_request.customer.first_name,
-        lead_traveler__last_name=booking_request.customer.last_name,
-    )
+    booking_request_lock_key = _get_booking_request_lock_key(booking_request)
+    logger.info(f"Setting Duplicate Booking Lock: {booking_request_lock_key}")
+    if not cache_storage.exists(booking_request_lock_key):
+        cache_storage.set(booking_request_lock_key, booking_request, timeout=30)
+        return None
 
-    if recent_bookings.count() > 0:
-        raise BookingException(BookingErrorCode.DUPLICATE_BOOKING, "Duplicate booking detected")
+    booking_response_key = _get_booking_response_lock_key(booking_request)
+    deadline = datetime.now() + timedelta(seconds=25)
+    while datetime.now() < deadline:
+        logger.info(f"Polling for a booking response: {booking_response_key}")
+        if cache_storage.exists(booking_response_key):
+            response = cache_storage.get(booking_response_key)
+            return response
+        else:
+            sleep(0.5)
+
+    raise BookingException(BookingErrorCode.DUPLICATE_BOOKING, detail="Duplicate booking detected")
+
+
+def _unlock_booking(book_request: MultiProductBookingRequest, book_response: Optional[MultiProductBookingResponse]):
+    booking_request_lock_key = _get_booking_request_lock_key(book_request)
+    booking_response_lock_key = _get_booking_response_lock_key(book_request)
+
+    logger.info(f"Setting a booking response: {booking_response_lock_key}")
+    cache_storage.set(booking_response_lock_key, book_response, timeout=60)
+
+    logger.info(f"Unsetting booking lock: {booking_request_lock_key}")
+    cache_storage.unset(booking_request_lock_key)
+
+
+def _get_booking_request_lock_key(booking_request: MultiProductBookingRequest):
+    customer = booking_request.customer
+    return f"booking_lock_request__{customer.first_name}_{customer.last_name}"
+
+
+def _get_booking_response_lock_key(booking_request: MultiProductBookingRequest):
+    customer = booking_request.customer
+    return f"booking_lock_response__{customer.first_name}_{customer.last_name}"
 
 
 def _calculate_total(hotel_payload: RoomDataCachePayload, activity_payload: ActivityDataCachePayload):

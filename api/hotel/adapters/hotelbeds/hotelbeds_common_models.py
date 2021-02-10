@@ -27,7 +27,7 @@ def get_language_mapping(language):
     return HOTELBEDS_LANGUAGE_MAP.get(language, "ENG")
 
 
-IMAGE_URL_PREFIX = "//photos.hotelbeds.com/giata/"
+IMAGE_URL_PREFIX = "//photos.hotelbeds.com/giata"
 """
     format: http://photos.hotelbeds.com/giata/{size}/{path}
     e.g.  : http://photos.hotelbeds.com/giata/00/000001/000001a_hb_a_001.jpg
