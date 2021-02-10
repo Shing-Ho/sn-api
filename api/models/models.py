@@ -668,7 +668,7 @@ class ProductsNightLife(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
-    order = models.IntegerField(default=0)
+    order = models.IntegerField(default=0, null=True, blank=True)
 
 
 class ProductsNightLifeMedia(models.Model):

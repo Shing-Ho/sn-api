@@ -76,10 +76,11 @@ class VenueMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
             order = self.queryset.filter(venue=self.request.POST["venue"]).order_by("-created_at")
             if order.exists():
+                request.POST._mutable = True
                 order = order.first().order + 1
-            request.data["order"] = order
-            request.data._mutable = False
-            request = request
+                request.data["order"] = order
+                request.POST._mutable = False
+                request = request
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -142,10 +143,11 @@ class ProductGroupViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
             order = self.queryset.filter(venue=self.request.data["venue"]).order_by("-created_at")
             if order.exists():
+                request.POST._mutable = True
                 order = order.first().order + 1
-            request.data["order"] = order
-            request.POST._mutable = False
-            request = request
+                request.data["order"] = order
+                request.POST._mutable = False
+                request = request
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -179,10 +181,11 @@ class ProductNightLifeMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             order = self.queryset.filter(venue=self.request.data["venue"]).order_by("-created_at")
             print(order)
             if order.exists():
+                request.POST._mutable = True
                 order = order.first().order + 1
-            request.data["order"] = order
-            request.POST._mutable = False
-            request = request
+                request.data["order"] = order
+                request.POST._mutable = False
+                request = request
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -211,15 +214,15 @@ class ProductNightLifeViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         if self.request.data.get("venue", None) is not None:
-            request.POST._mutable = True
 
             order = self.queryset.filter(venue=self.request.data["venue"]).order_by("-created_at")
             print(order)
             if order.exists():
+                request.POST._mutable = True
                 order = order.first().order + 1
-            request.data["order"] = order
-            request.POST._mutable = False
-            request = request
+                request.data["order"] = order
+                request.POST._mutable = False
+                request = request
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
