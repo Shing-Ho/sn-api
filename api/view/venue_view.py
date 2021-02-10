@@ -14,6 +14,7 @@ from api.models.models import (
 )
 from api.venue import serializers
 from rest_framework import viewsets
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from api.auth.authentication import IsOwner
@@ -68,6 +69,23 @@ class VenueMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             self.queryset.filter(id=order).update(order=counter)
             counter += 1
         return Response({"response": "status updated"}, status=200)
+
+    def create(self, request, *args, **kwargs):
+        if self.request.POST.get("venue", None) is not None:
+            request.data._mutable = True
+
+            order = self.queryset.filter(venue=self.request.POST["venue"]).order_by("-created_at")
+            if order.exists():
+                order = order.first().order + 1
+            request.data["order"] = order
+            request.data._mutable = False
+            request = request
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class VenueContactViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
