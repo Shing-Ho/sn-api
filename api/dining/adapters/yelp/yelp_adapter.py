@@ -26,7 +26,7 @@ class YelpAdapter(DiningAdapter):
             self.transport = YelpTransport(test_mode=True)
 
     def get_businesses(self, search: DiningSearch) -> List[AdapterDining]:
-        if hasattr(search, "date"):
+        if search.date and search.time and search.covers:
             request = self._create_business_search(search)
         else:
             request = self._create_location_search(search)
@@ -60,7 +60,7 @@ class YelpAdapter(DiningAdapter):
             name=response["name"],
             rating=response["rating"],
             phone=response["phone"],
-            photos=response["photos"],
+            images=response["photos"],
             location={
                 **response["coordinates"],
                 "address": ", ".join(str(x) for x in response["location"]["display_address"]),
@@ -136,6 +136,7 @@ class YelpAdapter(DiningAdapter):
         for dining in dining_results:
             result.append(
                 AdapterDining(
+                    dining_id=dining["id"],
                     name=dining["name"],
                     image=dining["image_url"],
                     rating=dining["rating"],

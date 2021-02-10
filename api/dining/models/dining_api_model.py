@@ -19,6 +19,7 @@ class DiningSearch(DiningBase):
 
 
 class AdapterDining(SimplenightModel):
+    dining_id: str
     name: str
     image: str
     rating: float
@@ -44,7 +45,7 @@ class DiningDetail(SimplenightModel):
     name: str
     rating: float
     phone: str
-    photos: List[str] = Field(default_factory=list)
+    images: List[str] = Field(default_factory=list)
     location: BusinessLocation
 
 
