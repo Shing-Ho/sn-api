@@ -3,6 +3,8 @@ from api.models import models
 
 from django.contrib.auth.models import User
 
+# from django.core.files.uploadedfile import InMemoryUploadedFile
+
 # Venue Serializer
 
 
@@ -13,6 +15,25 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class VenueMediaSerializer(serializers.ModelSerializer):
+    # def __init__(self, *args, **kwargs):
+    #     file_fields = kwargs.pop('file_fields', None)
+    #     super().__init__(*args, **kwargs)
+    #     if file_fields:
+    #         field_update_dict = {field: serializers.FileField
+    # (required=False, write_only=True) for field in file_fields}
+    #         self.fields.update(**field_update_dict)
+
+    # def create(self, validated_data):
+    #     validated_data_copy = validated_data.copy()
+    #     validated_files = []
+    #     for key, value in validated_data_copy.items():
+    #         if isinstance(value, InMemoryUploadedFile):
+    #             validated_files.append(value)
+    #             validated_data.pop(key)
+    #     submission_instance = super().create(validated_data)
+    #     for file in validated_files:
+    #         models.VenueMedia.objects.create(submission=submission_instance, file=file)
+    #     return submission_instance
     class Meta:
         model = models.VenueMedia
         fields = "__all__"
