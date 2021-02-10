@@ -1,9 +1,7 @@
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, List
 
 from api.common.common_models import SimplenightModel
-
-from api.locations.models import Location
 
 
 class StateProvType(SimplenightModel):
@@ -22,7 +20,7 @@ class FlightInfo(SimplenightModel):
     flightCode: str
 
 
-class DropOffLocation(SimplenightModel):
+class Location(SimplenightModel):
     latitude: Decimal
     longitude: Decimal
     locationName: str
@@ -31,6 +29,9 @@ class DropOffLocation(SimplenightModel):
     postalCode: str
     stateProv: object
     countryName: Optional[CountryNameType]
+    airport: Optional[bool]
+    airportCode: Optional[str]
+    trainStation: Optional[bool]
 
 
 class RateInquiryRequest(SimplenightModel):
@@ -39,6 +40,55 @@ class RateInquiryRequest(SimplenightModel):
     bags: int
     tripType: str = "Point-To-Point"
     pickUpLoacation: Location
-    flightInfo: FlightInfo
-    dropOffLocation: DropOffLocation
+    flightInfo: Optional[FlightInfo]
+    dropOffLocation: Location
     special: Optional[str]
+
+
+class VehicleDetails(SimplenightModel):
+    vehicleName: str
+    vehicleCode: str
+    vehicleDescriptionDetail: str
+    maxPassengers: int
+    maxBags: int
+
+
+class Reference(SimplenightModel):
+    estimatedDistance: str
+    estimatedTime: str
+
+
+class ChargeDetails(SimplenightModel):
+    readBack: str
+    billingType: str
+
+
+class ChargeItem(SimplenightModel):
+    itemName: str
+    itemDescription: str
+    itemUnit: str
+    itemUnitValue: Decimal
+    itemUnitPrice: Decimal
+    itemUnitPriceCurrency: str
+    readBack: str
+    sequenceNumber: int
+
+
+class TotalAmount(SimplenightModel):
+    totalAmountValue: Decimal
+    totalAmountCurrency: str
+    totalAmountDescription: str
+
+
+class AdditionalInfo(SimplenightModel):
+    notice: str
+    garageToGarageEstimate: str
+
+
+class QuoteResponse(SimplenightModel):
+    vehicleDetails: VehicleDetails
+    chargeDetails: ChargeDetails
+    chargeItems: List[ChargeItem]
+    reference: Reference
+    total: TotalAmount
+    additional: AdditionalInfo

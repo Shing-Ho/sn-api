@@ -11,6 +11,8 @@ from api.carey.carey_search import CareySearch
 from api.common.common_models import from_json
 
 from api.carey.models.carey_api_model import RateInquiryRequest
+from api.carey.parsers.carey_parser import CareyParser
+from api.view.default_view import _response
 
 carey_service = CareyService()
 carey_search = CareySearch()
@@ -28,15 +30,19 @@ class CareyViewSet(viewsets.ViewSet):
     @action(detail=False, url_path="rate-inqury", methods=["POST"], name="Get quotes for a journey")
     def get_rate_inquiry(self, request: Request):
         rate_inquiry_request = from_json(request.data, RateInquiryRequest)
-        _response = carey_service.get_quote_inquiry(rate_inquiry_request)
-        if _response["Errors"]:
-            jsondata = helpers.serialize_object(_response["Errors"]["Error"][0]["_value_1"])
+        quote_response = carey_service.get_quote_inquiry(rate_inquiry_request)
+        if quote_response["Errors"]:
+            jsondata = helpers.serialize_object(quote_response["Errors"]["Error"][0]["_value_1"])
             error_message = {"message": jsondata}
             return HttpResponse(json.dumps(error_message), content_type="application/json", status=404)
         else:
-            jsondata = helpers.serialize_object(_response["GroundServices"])
-            response = json.dumps(jsondata, cls=DecimalEncoder)
-            return HttpResponse(response, content_type="application/json")
+            jsondata = helpers.serialize_object(quote_response["GroundServices"])
+            parse_quote_data = CareyParser()
+            quote_data = list(parse_quote_data.parse_quotes(quote_response["GroundServices"]["GroundService"]))
+
+            return _response(quote_data)
+            # response = json.dumps(quote_data, cls=DecimalEncoder)
+            # return HttpResponse(quote_data, content_type="application/json")
 
     @action(detail=False, url_path="book-reservation", methods=["POST"], name="Book a reservation")
     def get_add_reservation(self, request: Request):
