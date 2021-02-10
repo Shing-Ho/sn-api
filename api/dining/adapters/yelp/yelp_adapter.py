@@ -24,13 +24,14 @@ class YelpAdapter(DiningAdapter):
         self.transport = transport
         if self.transport is None:
             self.transport = YelpTransport(test_mode=True)
- 
+
     def get_businesses(self, search: DiningSearch) -> List[AdapterDining]:
         if hasattr(search, "date"):
-          request = self._create_business_search(search)
+            request = self._create_business_search(search)
         else:
-          request = self._create_location_search(search)
+            request = self._create_location_search(search)
 
+        print(request)
         response = self.transport.businesses(params=request)
         dining_results = self._check_operation_response_and_get_results(response, "businesses")
 
@@ -56,14 +57,14 @@ class YelpAdapter(DiningAdapter):
     def details(self, search) -> DiningDetail:
         response = self.transport.business_details(id=search.dining_id, params={})
         dining_detail = DiningDetail(
-            name=response['name'],
-            rating=response['rating'],
-            phone=response['phone'],
-            photos=response['photos'],
+            name=response["name"],
+            rating=response["rating"],
+            phone=response["phone"],
+            photos=response["photos"],
             location={
-                **response['coordinates'],
-                "address": ", ".join(str(x) for x in response['location']['display_address'])
-            }
+                **response["coordinates"],
+                "address": ", ".join(str(x) for x in response["location"]["display_address"]),
+            },
         )
 
         return dining_detail
@@ -91,15 +92,12 @@ class YelpAdapter(DiningAdapter):
             **self._create_base_search(request),
             **request.customer.__dict__,
             "unique_id": request.user_id,
-            "hold_id": hold_result['hold_id'],
+            "hold_id": hold_result["hold_id"],
         }
         response = self.transport.booking(id=request.dining_id, params=booking_params)
         booking_result = self._check_operation_response_and_get_results(response, "")
 
-        return DiningReservation(
-            note=booking_result['notes'],
-            booking_id=booking_result['reservation_id']
-        )
+        return DiningReservation(note=booking_result["notes"], booking_id=booking_result["reservation_id"])
 
     def cancel(self, booking_id: str):
         response = self.transport.booking_cancel(id=booking_id, params={})
@@ -115,7 +113,7 @@ class YelpAdapter(DiningAdapter):
             "reservation_covers": search.covers,
         }
 
-        return params 
+        return params
 
     def _create_base_search(self, search: OpeningSearch):
         params = {
@@ -124,17 +122,12 @@ class YelpAdapter(DiningAdapter):
             "covers": search.covers,
         }
 
-        return params 
+        return params
 
     def _create_openings_from_response(self, search, opening_result) -> List[AdapterDining]:
         result = []
         for opening in opening_result:
-            result.append(
-                AdapterOpening(
-                    date=opening['date'],
-                    times=[x['time'] for x in opening['times']]
-                )
-            )
+            result.append(AdapterOpening(date=opening["date"], times=[x["time"] for x in opening["times"]]))
 
         return result
 
@@ -143,14 +136,14 @@ class YelpAdapter(DiningAdapter):
         for dining in dining_results:
             result.append(
                 AdapterDining(
-                    name=dining['name'],
-                    image=dining['image_url'],
-                    rating=dining['rating'],
+                    name=dining["name"],
+                    image=dining["image_url"],
+                    rating=dining["rating"],
                     location={
-                        **dining['coordinates'],
-                        "address": ", ".join(str(x) for x in dining['location']['display_address'])
+                        **dining["coordinates"],
+                        "address": ", ".join(str(x) for x in dining["location"]["display_address"]),
                     },
-                    phone=dining['phone'],
+                    phone=dining["phone"],
                 )
             )
 
@@ -161,12 +154,12 @@ class YelpAdapter(DiningAdapter):
         for review in review_results:
             result.append(
                 DiningReview(
-                    rating=review['rating'],
-                    text=review['text'],
-                    timestamp=review['time_created'],
+                    rating=review["rating"],
+                    text=review["text"],
+                    timestamp=review["time_created"],
                     user={
-                       "name": review['user']['name'],
-                       "image": review['user']['image_url'],
+                        "name": review["user"]["name"],
+                        "image": review["user"]["image_url"],
                     },
                 )
             )
@@ -176,15 +169,10 @@ class YelpAdapter(DiningAdapter):
     def _create_dining_detail_from_response(self, dining_result) -> List[AdapterOpening]:
         result = []
         for opening in opening_results:
-            result.append(
-                AdapterOpening(
-                    date=opening['date'],
-                    times=[x['time'] for x in opening['times']]
-                )
-            )
+            result.append(AdapterOpening(date=opening["date"], times=[x["time"] for x in opening["times"]]))
 
         return result
-    
+
     @classmethod
     def factory(cls, test_mode=True):
         return YelpAdapter(YelpTransport(test_mode=test_mode))
@@ -195,10 +183,7 @@ class YelpAdapter(DiningAdapter):
 
     @staticmethod
     def _create_location_search(search: DiningSearch):
-        params = {
-            "latitude": search.latitude,
-            "longitude": search.longitude
-        }
+        params = {"latitude": search.latitude, "longitude": search.longitude}
 
         return params
 
@@ -207,7 +192,8 @@ class YelpAdapter(DiningAdapter):
         print(response)
         if response is None:
             raise AvailabilityException(
-                error_type=AvailabilityErrorCode.PROVIDER_ERROR, detail="Could not retrieve response",
+                error_type=AvailabilityErrorCode.PROVIDER_ERROR,
+                detail="Could not retrieve response",
             )
         if "error" in response:
             error_message = response["error"]

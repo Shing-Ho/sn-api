@@ -9,13 +9,13 @@ from api.common.common_models import SimplenightModel, BusinessLocation
 class DiningBase(SimplenightModel):
     date: Optional[str] = None
     time: Optional[str] = None
-    covers: Optional[int] = 1
+    covers: Optional[int] = None
     currency: Optional[str] = "USD"
 
 
 class DiningSearch(DiningBase):
-    latitude: decimal.Decimal = None
-    longitude: decimal.Decimal = None
+    latitude: Optional[decimal.Decimal] = None
+    longitude: Optional[decimal.Decimal] = None
 
 
 class AdapterDining(SimplenightModel):
@@ -80,5 +80,3 @@ class DiningReservation(SimplenightModel):
 
 class AdapterCancelRequest(SimplenightModel):
     booking_id: str
-
-
