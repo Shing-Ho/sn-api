@@ -14,7 +14,8 @@ from api.models.models import (
 )
 from api.venue import serializers
 from rest_framework import viewsets
-from api.auth.authentication import IsOwner
+
+# from api.auth.authentication import IsOwner
 from api.utils.paginations import ObjectPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -32,17 +33,17 @@ class VenueViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         """Sets the user profile to the logged in User."""
         serializer.save(created_by=self.request.user)
 
-    def get_permissions(self):
-        if self.action == "delete":
-            self.permission_classes = [
-                IsOwner,
-            ]
-        elif self.action == "destroy":
-            self.permission_classes = [IsOwner]
-        elif self.action == "create":
-            self.permission_classes = [IsOwner]
+    # def get_permissions(self):
+    #     if self.action == "delete":
+    #         self.permission_classes = [
+    #             IsOwner,
+    #         ]
+    #     elif self.action == "destroy":
+    #         self.permission_classes = [IsOwner]
+    #     elif self.action == "create":
+    #         self.permission_classes = [IsOwner]
 
-        return super(self.__class__, self).get_permissions()
+    #     return super(self.__class__, self).get_permissions()
 
 
 class VenueMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
