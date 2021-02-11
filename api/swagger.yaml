@@ -1852,7 +1852,7 @@ paths:
           description: ''
       tags:
         - Venue Product NightLife
-  /venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media:
+  /product_nightlife_media:
     get:
       operationId: listProductsNightLifeMedias
       description: ''
@@ -1932,7 +1932,7 @@ paths:
           description: ''
       tags:
       - Venue Product NightLife Media
-  /venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media/{id}:
+  /product_nightlife_media/{id}:
     get:
       operationId: retrieveProductsNightLifeMedia
       description: ''
@@ -2288,7 +2288,7 @@ paths:
           description: ''
       tags:
       - Venue Product Hotel
-  /venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media:
+  /product_hotels_media:
     get:
       operationId: listProductHotelsMedias
       description: ''
@@ -2368,7 +2368,7 @@ paths:
           description: ''
       tags:
       - Venue Product Hotel Media
-  /venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media/{id}:
+  /product_hotels_media/{id}:
     get:
       operationId: retrieveProductHotelsMedia
       description: ''
