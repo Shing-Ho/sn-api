@@ -1,6 +1,5 @@
 from decimal import Decimal
 from typing import Optional, List
-from datetime import datetime
 from api.common.common_models import SimplenightModel
 
 
@@ -86,9 +85,10 @@ class AdditionalInfo(SimplenightModel):
 
 
 class QuoteResponse(SimplenightModel):
-    pickUpDate: datetime
+    pickUpDate: str
     pickUpLoacation: Location
     dropOffLocation: Location
+    flightInfo: FlightInfo
     vehicleDetails: VehicleDetails
     chargeDetails: ChargeDetails
     chargeItems: List[ChargeItem]
@@ -96,3 +96,27 @@ class QuoteResponse(SimplenightModel):
     total: TotalAmount
     additional: AdditionalInfo
     special: Optional[str]
+    tripType: str = "Point-To-Point"
+    passengers: int
+    bags: int
+
+
+class PassengerInfo(SimplenightModel):
+    firstName: str
+    lastName: str
+    phoneNum: str
+
+
+class PaymentInfo(SimplenightModel):
+    cardType: str
+    cardNum: str
+    cardName: str
+    expCVV: str
+    expDate: str
+    billingAddress: Location
+
+
+class BookReservationRequest(SimplenightModel):
+    passengerInfo: PassengerInfo
+    paymentInfo: PaymentInfo
+    quoteInfo: QuoteResponse

@@ -66,6 +66,10 @@ class CareyParser:
                     garageToGarageEstimate=quote_data["Reference"]["TPA_Extensions"]["GarageToGarageEstimate"],
                 ),
                 special=request.special,
+                tripType=request.tripType,
+                passengers=request.passengers,
+                bags=request.bags,
+                flightInfo=request.flightInfo,
             )
 
             quote_details.append(quote_detail)
