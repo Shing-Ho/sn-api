@@ -58,11 +58,12 @@ router.register(
     r"hotel_room_pricing", venue_view.ProductsHotelRoomPricingDetailsViewSet, basename="hotel-room-details-list"
 )
 
-router.urls.append(path("accounts/", include("api.accounts.urls")))
 router.register(r"product_hotels_media", venue_view.ProductHotelMediaViewSet, basename="product-hotels-media-list")
 router.register(
     r"product_nightlife_media", venue_view.ProductNightLifeMediaViewSet, basename="product-hotels-media-list"
 )
+
+router.urls.append(path("accounts/", include("api.accounts.urls")))
 
 urlpatterns = [
     path("", api.view.default_view.index),
