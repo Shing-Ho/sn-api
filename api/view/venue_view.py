@@ -71,14 +71,15 @@ class VenueMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         return Response({"response": "status updated"}, status=200)
 
     def create(self, request, *args, **kwargs):
-        if self.request.POST.get("venue", None) is not None:
+        if self.request.POST.get("venue_id", None) is not None:
             request.data._mutable = True
 
-            order = self.queryset.filter(venue=self.request.POST["venue"]).order_by("-created_at")
+            order = self.queryset.filter(venue=self.request.POST["venue_id"]).order_by("-created_at")
             if order.exists():
                 request.POST._mutable = True
                 order = order.first().order + 1
                 request.data["order"] = order
+                request.data["venue"] = self.request.POST["venue_id"]
                 request.POST._mutable = False
                 request = request
 
