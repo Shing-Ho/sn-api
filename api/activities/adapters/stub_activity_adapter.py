@@ -13,7 +13,7 @@ from api.activities.activity_internal_models import (
     AdapterActivity,
 )
 from api.activities.activity_models import ActivityVariants
-from api.hotel.models.booking_model import ActivityBookingRequest, Customer
+from api.hotel.models.booking_model import Customer, AdapterActivityBookingRequest
 from api.hotel.models.hotel_common_models import Money
 
 
@@ -33,7 +33,7 @@ class StubActivityAdapter(ActivityAdapter):
     async def cancel(self, order_id: str) -> bool:
         raise NotImplementedError("Cancel not implemented")
 
-    async def book(self, booking_request: ActivityBookingRequest, customer: Customer) -> AdapterActivityBookingResponse:
+    async def book(self, request: AdapterActivityBookingRequest, customer: Customer) -> AdapterActivityBookingResponse:
         raise NotImplementedError("Booking not implemented in Stub adapter")
 
     def _create_activity_product(self, search: AdapterActivitySearch):

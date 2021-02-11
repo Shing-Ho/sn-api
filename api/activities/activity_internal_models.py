@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional, List
 
+from api.activities.activity_models import SimplenightActivity
 from api.common.common_models import SimplenightModel
 from api.hotel.models.booking_model import Locator
 from api.hotel.models.hotel_api_model import Image
@@ -49,3 +50,6 @@ class ActivityDataCachePayload(SimplenightModel):
     code: str
     provider: str
     price: Decimal
+    currency: str
+    adapter_activity: AdapterActivity
+    simplenight_activity: SimplenightActivity

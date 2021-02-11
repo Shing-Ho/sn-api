@@ -2,15 +2,13 @@
 import random
 import string
 import uuid
-import jsonfield
-
 from datetime import datetime
 from enum import EnumMeta, Enum
 from typing import Tuple, List
 
-from django.contrib.postgres.fields import ArrayField
+import jsonfield
 from django.contrib.auth.models import User
-
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 from django_enumfield import enum
@@ -770,3 +768,50 @@ class ProductsHotelRoomPricing(models.Model):
     guests = jsonfield.JSONField()
     dates = jsonfield.JSONField()
     product = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True)
+
+
+class ActivityBookingModel(models.Model):
+    """
+    Top-level model for an activity reservation.  An ActivityReservation belongs to a Booking,
+    and it can have multiple ActivityReservationItems.  It represents the total value of an activity
+    reservation, which might contain several tickets.
+    """
+
+    class Meta:
+        app_label = "api"
+        db_table = "activity_reservations"
+
+    activity_reservation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="activity_reservation")
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE, related_name="provider")
+    activity_name = models.TextField()
+    activity_code = models.TextField()
+    activity_date = models.DateField()
+    activity_time = models.TextField(null=True)
+    thumbnail = models.TextField(null=True)
+    total_price = models.DecimalField(max_digits=7, decimal_places=2)
+    total_taxes = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+    total_base = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+    provider_price = models.DecimalField(max_digits=7, decimal_places=2)
+    provider_taxes = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+    provider_base = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+    currency = models.CharField(max_length=3)
+
+
+class ActivityBookingItemModel(models.Model):
+    """
+    Stores individual activity tickets.
+    An activity reservation can contain multiple items (e.g., child, adult)
+    """
+
+    class Meta:
+        app_label = "api"
+        db_table = "activity_reservation_items"
+
+    activity_reservation_item_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    activity_reservation = models.ForeignKey(
+        ActivityBookingModel, on_delete=models.CASCADE, related_name="activity_reservation"
+    )
+    item_code = models.TextField()
+    quantity = models.IntegerField()
+    price = models.DecimalField(max_digits=7, decimal_places=2)

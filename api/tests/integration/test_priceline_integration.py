@@ -7,7 +7,8 @@ import pytest
 import requests_mock
 from freezegun import freeze_time
 
-from api.hotel import hotel_service, booking_service
+from api.hotel import hotel_service
+from api.booking import booking_service
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.models.adapter_models import (

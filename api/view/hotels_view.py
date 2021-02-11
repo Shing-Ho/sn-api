@@ -10,7 +10,8 @@ from api import logger
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiDailyThrottle, OrganizationApiBurstThrottle
 from api.common.common_models import from_json
 from api.common.request_cache import get_request_cache
-from api.hotel import hotel_service, google_hotel_service, booking_service
+from api.hotel import hotel_service, google_hotel_service
+from api.booking import booking_service
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
 from api.hotel.google_pricing import google_pricing_api
 from api.hotel.models.booking_model import HotelBookingRequest

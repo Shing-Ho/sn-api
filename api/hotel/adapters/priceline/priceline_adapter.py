@@ -24,10 +24,10 @@ from api.hotel.models.adapter_models import (
     AdapterHotelBatchSearch,
 )
 from api.hotel.models.booking_model import (
-    HotelBookingRequest,
     Customer,
     HotelReservation,
     Locator,
+    AdapterHotelBookingRequest,
 )
 from api.hotel.models.hotel_api_model import (
     HotelDetails,
@@ -178,7 +178,7 @@ class PricelineAdapter(HotelAdapter):
             "room_id": hotel_data["room_data"][0]["id"],
         }
 
-    def book(self, book_request: HotelBookingRequest) -> HotelReservation:
+    def book(self, book_request: AdapterHotelBookingRequest) -> HotelReservation:
         params = self._create_booking_params(book_request.customer, book_request.room_code)
         response = self.transport.express_book(**params)
 

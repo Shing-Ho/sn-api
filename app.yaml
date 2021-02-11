@@ -14,7 +14,6 @@ env_variables:
   DB_PASSWORD: 'daux!bauc7nooc7YIP'
   DB_HOST: '/cloudsql/simplenight-api-278418:us-east1:simplenight-api-instance'
   REDIS_URL: "redis://10.44.122.51:6379/1"
-  BUGSNAG_API_KEY: "2fe2e86e86b73f6decc09ae069b6fe8e"
 
 network:
   name: default

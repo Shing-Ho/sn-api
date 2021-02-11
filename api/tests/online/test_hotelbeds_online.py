@@ -2,7 +2,8 @@ import random
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
-from api.hotel import hotel_service, provider_cache_service, booking_service
+from api.hotel import hotel_service, provider_cache_service
+from api.booking import booking_service
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.models.adapter_models import AdapterLocationSearch, AdapterOccupancy
 from api.hotel.models.hotel_api_model import HotelLocationSearch
