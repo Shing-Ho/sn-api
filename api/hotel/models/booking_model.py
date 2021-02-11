@@ -168,9 +168,10 @@ class ActivityBookingRequest(SimplenightModel):
     items: List[ActivityBookingItem]
 
 
-class ActivityBookingResponse(SimplenightModel):
+class ActivityReservation(SimplenightModel):
     status: Status
     record_locator: Locator
+    items: List[ActivityBookingItem]
 
 
 class AdapterActivityBookingRequest(SimplenightModel):
@@ -207,4 +208,4 @@ class MultiProductBookingResponse(SimplenightModel):
     status: Status
     booking_id: str
     hotel_reservation: Optional[HotelReservation]
-    activity_reservation: Optional[ActivityBookingResponse]
+    activity_reservation: Optional[ActivityReservation]

@@ -22,7 +22,7 @@ from api.hotel.models.booking_model import (
     HotelReservation,
     MultiProductBookingRequest,
     MultiProductBookingResponse,
-    ActivityBookingResponse,
+    ActivityReservation,
     MultiProductHotelBookingRequest,
     AdapterHotelBookingRequest,
     AdapterActivityBookingRequest,
@@ -50,6 +50,8 @@ from api.models.models import (
     PaymentTransaction,
     RecordLocator,
     Feature,
+    ActivityBookingModel,
+    ActivityBookingItemModel,
 )
 from api.payments import payment_service
 from api.view.exceptions import BookingException, BookingErrorCode
@@ -82,8 +84,18 @@ def book_hotel(booking_request: HotelBookingRequest) -> HotelBookingResponse:
 
 
 def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResponse:
+    """
+    Orchestrates booking multiple products in a single transaction.
+    Prevents duplicate bookings, by creating a lock key in Redis.
+    Calculates a total price for all products, collects a payment,
+    retrieves the Adapter (pre-markup) product cached during availability,
+    creates an adapter for each product to book and completes a booking for that product.
+    In the event of an error while booking a product, any already-booked products are added to a cancel queue,
+    and payment is refunded.
+    """
+
     logger.info(f"Received Booking Request: {booking_request}")
-    existing_booking_response = _lock_booking(booking_request)  # Will raise on duplicate
+    existing_booking_response = _lock_booking(booking_request)  # See duplicate booking logic comment in function
     if existing_booking_response and isinstance(existing_booking_response, MultiProductBookingResponse):
         logger.warn(f"Found an existing booking existing_booking_response! Txid={booking_request.transaction_id}")
         logger.warn(f"Response: {existing_booking_response}")
@@ -97,11 +109,8 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
         simplenight_record_locator = RecordLocator.generate_record_locator(booking)
         logger.info(f"Saved booking {booking.booking_id} {simplenight_record_locator}")
 
-        # Create Hotel Booking Processor
+        # Create Product-specific booking processors
         hotel_processor = HotelBookingProcessor(booking_request, booking)
-        hotel_cache_payload = hotel_processor.cached_hotel
-
-        # Create Activity Booking Processor
         activity_processor = ActivityBookingProcessor(booking_request, booking)
 
         total_payment_amount = _calculate_total_amount(hotel_processor, activity_processor)
@@ -126,9 +135,9 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
             activity_reservation = activity_processor.book()
 
             _set_booked_status(booking)
-            if hotel_cache_payload:
+            if hotel_processor.cached_hotel:
                 _send_confirmation_email(
-                    hotel=hotel_cache_payload.adapter_hotel,
+                    hotel=hotel_processor.cached_hotel.adapter_hotel,
                     hotel_reservation=hotel_reservation,
                     activity_reservation=activity_reservation,
                     payment=auth_response,
@@ -461,7 +470,7 @@ def adapter_cancel(hotel_booking: HotelBooking, traveler: Traveler):
 def _send_confirmation_email(
     hotel: AdapterHotel,
     hotel_reservation: HotelReservation,
-    activity_reservation: ActivityBookingResponse,
+    activity_reservation: ActivityReservation,
     payment: PaymentTransaction,
     record_locator: str,
 ):
@@ -574,7 +583,7 @@ class BookingProcessor(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def book(self) -> Union[HotelReservation, ActivityBookingResponse]:
+    def book(self) -> Union[HotelReservation, ActivityReservation]:
         pass
 
 
@@ -583,8 +592,9 @@ class ActivityBookingProcessor(BookingProcessor):
         self.booking_request = booking_request
         self.activity_booking_request = self.booking_request.activity_booking
         self.booking = booking
+        self.booked_reservation: Optional[ActivityReservation] = None
 
-    def book(self) -> Optional[ActivityBookingResponse]:
+    def book(self) -> Optional[ActivityReservation]:
         if self.activity_booking_request is None:
             return None
 
@@ -594,7 +604,14 @@ class ActivityBookingProcessor(BookingProcessor):
         booking_response = asyncio.run(adapter.book(adapter_booking_request, self.booking_request.customer))
 
         status = Status(success=booking_response.success, message="")
-        return ActivityBookingResponse(status=status, record_locator=booking_response.record_locator)
+        activity_reservation = ActivityReservation(
+            status=status, record_locator=booking_response.record_locator, items=self.activity_booking_request.items
+        )
+
+        self._persist_activity_reservation()
+        self.booked_reservation = activity_reservation
+
+        return activity_reservation
 
     @property
     def total_price(self) -> Optional[Money]:
@@ -619,11 +636,43 @@ class ActivityBookingProcessor(BookingProcessor):
         adapter_booking_request.code = self.cached_activity.code
         return adapter_booking_request
 
+    def _persist_activity_reservation(self):
+        provider = Provider.objects.get_or_create(name=self.cached_activity.provider)[0]
+        activity_booking = ActivityBookingModel.objects.create(
+            provider=provider,
+            booking=self.booking,
+            activity_name=self.cached_activity.adapter_activity.name,
+            activity_code=self.cached_activity.adapter_activity.code,
+            activity_date=self.cached_activity.adapter_activity.activity_date,
+            activity_time=self.activity_booking_request.activity_time,
+            thumbnail=self._get_thumbnail_url(),
+            currency=self.cached_activity.simplenight_activity.total_price.currency,
+            total_price=self.cached_activity.simplenight_activity.total_price.amount,
+            total_taxes=self.cached_activity.simplenight_activity.total_taxes.amount,
+            total_base=self.cached_activity.simplenight_activity.total_base.amount,
+            provider_price=self.cached_activity.adapter_activity.total_price.amount,
+            provider_base=self.cached_activity.adapter_activity.total_base.amount,
+            provider_taxes=self.cached_activity.adapter_activity.total_taxes.amount,
+        )
+
+        for item in self.activity_booking_request.items:
+            ActivityBookingItemModel.objects.create(
+                activity_reservation=activity_booking, item_code=item.code, quantity=item.quantity, price=item.price
+            )
+
+    def _get_thumbnail_url(self):
+        images = self.cached_activity.adapter_activity.images
+        if images:
+            return images[0].url
+
+        return None
+
 
 class HotelBookingProcessor(BookingProcessor):
     def __init__(self, booking_request: MultiProductBookingRequest, booking: Booking):
         self.booking_request = self._get_hotel_booking_request(booking_request)
         self.booking = booking
+        self.booked_reservation: Optional[HotelReservation] = None
 
     def book(self) -> Optional[HotelReservation]:
         if not self.booking_request:
@@ -650,6 +699,7 @@ class HotelBookingProcessor(BookingProcessor):
             raise AppException("Error during hotel booking")
 
         self._persist_hotel(reservation)
+        self.booked_reservation = reservation
 
         return reservation
 
