@@ -70,24 +70,43 @@ class VenueMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             counter += 1
         return Response({"response": "status updated"}, status=200)
 
+    def modify_input_for_multiple_files(self, data, image, order):
+        dict = {}
+        dict["venue"] = data["venue_id"]
+        dict["url"] = image
+        if data.get("type", None):
+            dict["type"] = data["type"]
+        dict["order"] = order
+        return dict
+
     def create(self, request, *args, **kwargs):
+        flag = 1
+        arr = []
         if self.request.POST.get("venue_id", None) is not None:
             request.data._mutable = True
 
             order = self.queryset.filter(venue=self.request.POST["venue_id"]).order_by("-created_at")
             if order.exists():
-                request.POST._mutable = True
                 order = order.first().order + 1
-                request.data["order"] = order
-                request.data["venue"] = self.request.POST["venue_id"]
-                request.POST._mutable = False
-                request = request
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            urls = dict((request.data).lists())["url"]
+            for url in urls:
+                modified_data = self.modify_input_for_multiple_files(request.data, url, order)
+                file_serializer = serializers.VenueMediaSerializer(data=modified_data)
+                if file_serializer.is_valid():
+                    file_serializer.save()
+                    arr.append(file_serializer.data)
+                    order += 1
+                else:
+                    flag = 0
+
+        else:
+            flag = 0
+
+        if flag == 1:
+            return Response(arr, status=status.HTTP_201_CREATED)
+        else:
+            return Response(arr, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VenueContactViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
