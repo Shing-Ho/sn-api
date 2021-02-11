@@ -99,6 +99,12 @@ class ProductHotelSerializer(serializers.ModelSerializer):
         model = models.ProductHotel
         fields = "__all__"
 
+    def to_representation(self, instance):
+        rep = super(ProductHotelSerializer, self).to_representation(instance)
+        rep["venue_id"] = instance.venue.id
+        del rep["venue"]
+        return rep
+
 
 class ProductHotelsMediaSerializer(serializers.ModelSerializer):
     class Meta:

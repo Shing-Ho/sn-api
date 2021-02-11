@@ -164,34 +164,8 @@ class ProductNightLifeMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     serializer_class = serializers.ProductNightLifeMediaSerializer
     pagination_class = ObjectPagination
     http_method_names = ["get", "post", "put", "delete"]
-
-    @action(detail=False, methods=["POST"], url_path="order", url_name="order")
-    def order(self, request, parent_lookup_venue_id=None):
-        orders = request.data.get("order", None)
-        counter = 1
-        for order in orders:
-            self.queryset.filter(id=order).update(order=counter)
-            counter += 1
-        return Response({"response": "status updated"}, status=200)
-
-    def create(self, request, *args, **kwargs):
-        if self.request.data.get("venue", None) is not None:
-            request.POST._mutable = True
-
-            order = self.queryset.filter(venue=self.request.data["venue"]).order_by("-created_at")
-            print(order)
-            if order.exists():
-                request.POST._mutable = True
-                order = order.first().order + 1
-                request.data["order"] = order
-                request.POST._mutable = False
-                request = request
-
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["product_id"]
 
 
 class ProductNightLifeViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
@@ -239,16 +213,45 @@ class ProductHotelMediaViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     serializer_class = serializers.ProductHotelsMediaSerializer
     pagination_class = ObjectPagination
     http_method_names = ["get", "post", "put", "delete"]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["product_id"]
 
 
 class ProductHotelViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [
         IsAuthenticated,
     ]
-    queryset = ProductHotel.objects.filter()
+    queryset = ProductHotel.objects.filter().order_by("created_at")
     serializer_class = serializers.ProductHotelSerializer
     pagination_class = ObjectPagination
     http_method_names = ["get", "post", "put", "delete"]
+
+    @action(detail=False, methods=["POST"], url_path="order", url_name="order")
+    def order(self, request, parent_lookup_venue_id=None):
+        orders = request.data.get("order", None)
+        counter = 1
+        for order in orders:
+            self.queryset.filter(id=order).update(order=counter)
+            counter += 1
+        return Response({"response": "status updated"}, status=200)
+
+    def create(self, request, *args, **kwargs):
+        if self.request.data.get("venue", None) is not None:
+
+            order = self.queryset.filter(venue=self.request.data["venue"]).order_by("-created_at")
+            print(order)
+            if order.exists():
+                request.POST._mutable = True
+                order = order.first().order + 1
+                request.data["order"] = order
+                request.POST._mutable = False
+                request = request
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class ProductsHotelRoomPricingDetailsViewSet(NestedViewSetMixin, viewsets.ModelViewSet):

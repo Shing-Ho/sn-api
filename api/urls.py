@@ -43,14 +43,14 @@ router.register(r"venues", venue_view.VenueViewSet).register(
     r"product-group", venue_view.ProductGroupViewSet, "venue_id", parents_query_lookups=["venue_id"]
 )
 (
-    router.register(r"venues", venue_view.VenueViewSet)
-    .register(r"product_nightlife", venue_view.ProductNightLifeViewSet, "venue_id", parents_query_lookups=["venue_id"])
-    .register(r"media", venue_view.ProductNightLifeMediaViewSet, "id", parents_query_lookups=["product_id", "id"])
+    router.register(r"venues", venue_view.VenueViewSet).register(
+        r"product_nightlife", venue_view.ProductNightLifeViewSet, "venue_id", parents_query_lookups=["venue_id"]
+    )
 )
 (
-    router.register(r"venues", venue_view.VenueViewSet)
-    .register(r"product_hotels", venue_view.ProductHotelViewSet, "venue_id", parents_query_lookups=["venue_id"])
-    .register(r"media", venue_view.ProductHotelMediaViewSet, "id", parents_query_lookups=["product_id", "id"])
+    router.register(r"venues", venue_view.VenueViewSet).register(
+        r"product_hotels", venue_view.ProductHotelViewSet, "venue_id", parents_query_lookups=["venue_id"]
+    )
 )
 router.register(r"hotel_room_details", venue_view.ProductsHotelRoomDetailsViewSet, basename="hotel-room-details-list")
 
@@ -59,6 +59,10 @@ router.register(
 )
 
 router.urls.append(path("accounts/", include("api.accounts.urls")))
+router.register(r"product_hotels_media", venue_view.ProductHotelMediaViewSet, basename="product-hotels-media-list")
+router.register(
+    r"product_nightlife_media", venue_view.ProductNightLifeMediaViewSet, basename="product-hotels-media-list"
+)
 
 urlpatterns = [
     path("", api.view.default_view.index),
