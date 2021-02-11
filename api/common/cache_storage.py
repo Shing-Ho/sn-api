@@ -8,12 +8,23 @@ from django.core.cache import cache
 
 
 # noinspection PyShadowingBuiltins
-def set(key: str, value: Any):
-    cache.set(key, value, timeout=_timeout())
+def set(key: str, value: Any, timeout=None):
+    if timeout is None:
+        timeout = _timeout()
+
+    cache.set(key, value, timeout=timeout)
 
 
 def get(key: str):
     return cache.get(key)
+
+
+def unset(key: str):
+    cache.delete(key)
+
+
+def exists(key: str) -> bool:
+    return key in cache
 
 
 def _timeout():

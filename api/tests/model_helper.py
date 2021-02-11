@@ -2,6 +2,7 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 
+from api.hotel.models.hotel_api_model import ImageType
 from api.hotel.models.hotel_common_models import BookingStatus
 from api.models.models import (
     Geoname,
@@ -15,6 +16,7 @@ from api.models.models import (
     Booking,
     HotelBooking,
     RecordLocator,
+    ProviderImages,
 )
 
 
@@ -116,6 +118,12 @@ def create_provider_hotel(provider, provider_code, hotel_name):
 
     provider_hotel.save()
     return provider_hotel
+
+
+def create_provider_image(provider, provider_code, url):
+    ProviderImages.objects.create(
+        provider=provider, provider_code=provider_code, image_url=url, display_order=1, type=ImageType.UNKNOWN
+    )
 
 
 def create_traveler(first_name="John", last_name="Simplenight"):

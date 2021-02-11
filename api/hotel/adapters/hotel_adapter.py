@@ -11,7 +11,7 @@ from api.hotel.models.adapter_models import (
     AdapterCancelResponse,
     AdapterHotelBatchSearch,
 )
-from api.hotel.models.booking_model import HotelBookingRequest, HotelReservation
+from api.hotel.models.booking_model import HotelReservation, AdapterHotelBookingRequest
 from api.hotel.models.hotel_api_model import (
     HotelSpecificSearch,
     AdapterHotel,
@@ -42,7 +42,7 @@ class HotelAdapter(BaseAdapter, abc.ABC):
         """Returns an object containing an average user review, and a list of user reviews for a hotel"""
 
     @abc.abstractmethod
-    def book(self, book_request: HotelBookingRequest) -> HotelReservation:
+    def book(self, book_request: AdapterHotelBookingRequest) -> HotelReservation:
         """Given a HotelBookingRequest, confirm a reservation with a hotel provider"""
 
     @abc.abstractmethod

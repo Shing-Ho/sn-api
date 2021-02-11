@@ -8,7 +8,8 @@ import pytest
 from freezegun import freeze_time
 from stripe.error import CardError
 
-from api.hotel import provider_cache_service, booking_service
+from api.hotel import provider_cache_service
+from api.booking import booking_service
 from api.hotel.models import booking_model
 from api.hotel.models.adapter_models import AdapterCancelResponse
 from api.hotel.models.booking_model import (
@@ -83,7 +84,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         self.assertIsNotNone(response.transaction_id)
         self.assertTrue(response.status.success)
         self.assertEqual("success", response.status.message)
-        self.assertEqual("100", response.reservation.hotel_id)
+        self.assertEqual("ABC123", response.reservation.hotel_id)
         self.assertIsNotNone(response.reservation.locator)
         self.assertEqual("2020-01-01", str(response.reservation.checkin))
         self.assertEqual("2020-02-01", str(response.reservation.checkout))
@@ -300,7 +301,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         with patch("api.payments.payment_service.refund_payment") as mock_refund:
             mock_refund.return_value = mock_refund_transaction
-            with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
+            with patch("api.booking.booking_service.adapter_cancel") as mock_adapter_cancel:
                 mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
                 cancel_response = booking_service.cancel_confirm(cancel_request)
 
@@ -335,7 +336,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
 
         mock_refund = Mock()
         with patch("api.payments.payment_service.refund_payment", mock_refund):
-            with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
+            with patch("api.booking.booking_service.adapter_cancel") as mock_adapter_cancel:
                 mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
                 with pytest.raises(BookingException):
                     booking_service.cancel_confirm(cancel_request)
@@ -376,7 +377,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         # First time cancelling, should succeed
         with patch("api.payments.payment_service.refund_payment") as mock_refund:
             mock_refund.return_value = mock_refund_transaction
-            with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
+            with patch("api.booking.booking_service.adapter_cancel") as mock_adapter_cancel:
                 mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
                 response = booking_service.cancel_confirm(cancel_request)
 
@@ -385,7 +386,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         # Second time cancelling, fails because already cancelled
         with patch("api.payments.payment_service.refund_payment") as mock_refund:
             mock_refund.return_value = mock_refund_transaction
-            with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
+            with patch("api.booking.booking_service.adapter_cancel") as mock_adapter_cancel:
                 with pytest.raises(BookingException) as e:
                     mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
                     booking_service.cancel_confirm(cancel_request)
@@ -434,7 +435,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
             return {"id": kwargs["charge"], "amount": kwargs["amount"], "currency": "USD", "object": "foo"}
 
         with patch("api.payments.stripe_service.stripe.Refund.create", mock_stripe_refund):
-            with patch("api.hotel.booking_service.adapter_cancel") as mock_adapter_cancel:
+            with patch("api.booking.booking_service.adapter_cancel") as mock_adapter_cancel:
                 mock_adapter_cancel.return_value = AdapterCancelResponse(is_cancelled=True)
                 booking_service.cancel_confirm(cancel_request)
 
@@ -492,7 +493,7 @@ class TestBookingServiceIntegration(SimplenightTestCase):
         booking = Booking.objects.get(transaction_id=transaction_id)
         self.assertIsNotNone(booking)
         self.assertEqual(transaction_id, booking.transaction_id)
-        self.assertEqual(BookingStatus.PENDING.value, booking.booking_status)
+        self.assertEqual(BookingStatus.FAILED.value, booking.booking_status)
 
         payment = PaymentTransaction.objects.filter(charge_id=payment_charge_id)
         self.assertEqual(2, len(payment))

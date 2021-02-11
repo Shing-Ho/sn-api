@@ -20,7 +20,7 @@ from api.activities.activity_models import (
 )
 from api.activities.adapters.suppliers_api.suppliers_api_transport import SuppliersApiTransport
 from api.common.common_models import BusinessContact, BusinessLocation
-from api.hotel.models.booking_model import ActivityBookingRequest, Customer, Locator
+from api.hotel.models.booking_model import Customer, Locator, AdapterActivityBookingRequest
 from api.hotel.models.hotel_api_model import Image, ImageType
 from api.hotel.models.hotel_common_models import Money
 from api.view.exceptions import BookingException, BookingErrorCode
@@ -40,29 +40,29 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
     async def search_by_id(self, search: AdapterActivitySpecificSearch) -> AdapterActivity:
         raise NotImplementedError("Search by ID Not Implemented")
 
-    async def book(self, booking_request: ActivityBookingRequest, customer: Customer) -> AdapterActivityBookingResponse:
+    async def book(self, request: AdapterActivityBookingRequest, customer: Customer) -> AdapterActivityBookingResponse:
         params = {
-            "code": booking_request.code,
-            "date": str(booking_request.activity_date),
-            "time": str(booking_request.activity_time),
-            "currency": booking_request.currency,
-            "supplier_proceeds": str(sum(x.price for x in booking_request.items)),
+            "code": request.code,
+            "date": str(request.activity_date),
+            "time": str(request.activity_time),
+            "currency": request.currency,
+            "supplier_proceeds": str(sum(x.price for x in request.items)),
             "booking": {
                 "customer": {
                     "first_name": customer.first_name,
                     "last_name": customer.last_name,
                     "email": customer.email,
                     "phone": customer.phone_number,
-                    "locale": booking_request.language_code,
+                    "locale": request.language_code,
                 }
             },
             "items": [
                 {
-                    "code": booking_request.items[0].code,
+                    "code": request.items[0].code,
                     "quantity": 1,
-                    "supplier_proceeds": str(booking_request.items[0].price),
+                    "supplier_proceeds": str(request.items[0].price),
                     "channel_proceeds": 0,
-                    "date": str(booking_request.activity_date),
+                    "date": str(request.activity_date),
                 }
             ],
         }
@@ -96,13 +96,17 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
 
     @staticmethod
     def _parse_variants(variant):
+        additional_info = {}
+        if "additional" in variant:
+            additional_info = variant["additional"]
+
         return ActivityVariant(
             code=variant["code"],
             name=variant["name"],
             description=variant["description"],
             price=Decimal(variant["price"]),
             capacity=variant["capacity"],
-            additional=variant["additional"],
+            additional=additional_info,
         )
 
     @staticmethod
@@ -152,6 +156,14 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
         )
 
     def _create_activity(self, activity, activity_date: date):
+        rating = None
+        if "rating" in activity and activity["rating"]:
+            rating = Decimal(activity["rating"])
+
+        reviews = 0
+        if "reviews" in activity and activity["reviews"]:
+            reviews = activity["reviews"]
+
         return AdapterActivity(
             name=activity["name"],
             provider=self.get_provider_name(),
@@ -161,7 +173,10 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
             total_price=Money(amount=activity["price"], currency=activity["currency"]),
             total_base=Money(amount=Decimal(0), currency=activity["currency"]),
             total_taxes=Money(amount=Decimal(0), currency=activity["currency"]),
+            categories=activity["categories"],
             images=list(self._parse_image(image, idx) for idx, image in enumerate(activity["images"])),
+            reviews=reviews,
+            rating=rating,
         )
 
     @staticmethod

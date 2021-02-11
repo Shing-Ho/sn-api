@@ -23,6 +23,15 @@ def get_state_by_code(country_code, state_code):
     return (country["isoCode"], state["name"])
 
 
+def safeget(dct, *keys):
+    for key in keys:
+        try:
+            dct = dct[key]
+        except KeyError:
+            return None
+    return dct
+
+
 class HotelbedsDetailsParser:
     def __init__(self, transport: HotelbedsTransport):
         self.transport = transport
@@ -92,7 +101,7 @@ class HotelbedsDetailsParser:
             longitude=longitude,
             thumbnail_url=self.get_hotel_thumbnail_image(hotel_data),
             star_rating=get_star_rating(hotel_data["categoryCode"]),
-            property_description=hotel_data["description"]["content"],
+            property_description=safeget(hotel_data, "description", "content"),
             amenities=self.get_amenities(hotel_data),
             chain_code=chain_code,
             chain_name=chain_name,

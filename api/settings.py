@@ -17,6 +17,8 @@ import os
 import time
 
 import corsheaders.defaults
+from google.oauth2 import service_account
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -27,7 +29,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = "sh%sqjnk#g0_3n@(uo%&023&s6@-@-fxc277y(7+ytn)kuurq^"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*", "simplenight-api-278418.ue.r.appspot.com", "127.0.0.1", "localhost"]
 
@@ -58,6 +60,7 @@ INSTALLED_APPS = [
     "rest_framework_api_key",
     "corsheaders",
     "sequences.apps.SequencesConfig",
+    "django_filters",
 ]
 
 SITE_ID = 1
@@ -72,7 +75,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "api.common.request_cache.RequestCacheMiddleware",
     "api.common.context_middleware.RequestContextMiddleware",
-    "bugsnag.django.middleware.BugsnagMiddleware",
 ]
 
 ROOT_URLCONF = "api.urls"
@@ -106,9 +108,11 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
         "bearer_auth.authentication.BearerTokenAuth",
     ),
+    # "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
     "EXCEPTION_HANDLER": "api.view.exceptions.handler",
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
 
 DATABASES = {
@@ -181,9 +185,6 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-STATIC_URL = "/static/"
-
 
 GEONAMES_CITIES_URL = "https://download.geonames.org/export/dump/cities15000.zip"
 GEONAMES_CITIES_FILENAME = "cities15000.txt"
@@ -200,10 +201,9 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {
-        "bugsnag": {"level": "ERROR", "class": "bugsnag.handlers.BugsnagHandler", "formatter": "default"},
         "console": {"class": "api.common.logging.CustomHandler", "formatter": "default", "filters": ["message_id"]},
     },
-    "root": {"handlers": ["console", "bugsnag"], "level": "ERROR"},
+    "root": {"handlers": ["console"], "level": "ERROR"},
     "filters": {"message_id": {"()": "api.common.logging.MessageIDFilter"}},
     "formatters": {
         "default": {
@@ -238,7 +238,7 @@ CACHES = {
     },
 }
 
-CACHE_TIMEOUT = 900
+CACHE_TIMEOUT = 3600
 
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
@@ -246,3 +246,29 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 APPEND_SLASH = False
 TOKEN_EXPIRES_IN = 2  # 2hours
+
+environment = "production"
+if environment == "local":
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+    STATIC_URL = "/static/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+    MEDIA_URL = "/media/"
+
+else:
+
+    DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    GS_BUCKET_NAME = "simplenight-api-dev"
+    GS_LOCATION = "app-media"
+
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+        os.path.join(BASE_DIR, "qa_gcs_crednetials.json")
+    )
+
+    STATICFILES_LOCATION = "static"
+    MEDIAFILES_LOCATION = "media"
+    STATIC_URL = "https://storage.googleapis.com/{}/static/".format(GS_BUCKET_NAME)
+    STATIC_ROOT = "static/"
+
+    MEDIA_URL = "https://storage.googleapis.com/{}/media/".format(GS_BUCKET_NAME)
+    MEDIA_ROOT = "media/"

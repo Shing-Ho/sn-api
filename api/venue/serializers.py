@@ -36,14 +36,26 @@ class ProductGroupSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ProductMediaSerializer(serializers.ModelSerializer):
+class ProductNightLifeMediaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.ProductMedia
+        model = models.ProductsNightLifeMedia
+        fields = "__all__"
+
+
+class ProductHotelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductHotel
+        fields = "__all__"
+
+
+class ProductHotelsMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductHotelsMedia
         fields = "__all__"
 
 
 class ProductsNightLifeSerializer(serializers.ModelSerializer):
-    media = ProductMediaSerializer(many=True, read_only=True)
+    # media = ProductMediaSerializer(many=True, read_only=True)
     group = serializers.SerializerMethodField(source="get_group")
 
     class Meta:
@@ -63,4 +75,28 @@ class VenueSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Venue
+        fields = "__all__"
+
+
+class ProductsSerializer(serializers.ModelSerializer):
+    # media = ProductMediaSerializer(many=True, read_only=True)
+    group = serializers.SerializerMethodField(source="get_group")
+
+    class Meta:
+        model = models.ProductsNightLife
+        fields = "__all__"
+
+    def get_group(self, obj):
+        return obj.name
+
+
+class ProductsHotelRoomDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductsHotelRoomDetails
+        fields = "__all__"
+
+
+class ProductsHotelRoomPricingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ProductsHotelRoomPricing
         fields = "__all__"

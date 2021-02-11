@@ -2,14 +2,13 @@
 import random
 import string
 import uuid
-import jsonfield
-
 from datetime import datetime
 from enum import EnumMeta, Enum
 from typing import Tuple, List
 
-from django.contrib.postgres.fields import ArrayField
+import jsonfield
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 from django_enumfield import enum
@@ -568,7 +567,7 @@ class VenueMedia(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="media")
     type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
-    url = models.TextField()
+    url = models.FileField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -667,21 +666,21 @@ class ProductsNightLife(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
 
 
-class ProductMedia(models.Model):
+class ProductsNightLifeMedia(models.Model):
     class Meta:
         app_label = "api"
-        db_table = "product_media"
-        verbose_name = "ProductMedia"
-        verbose_name_plural = "ProductMedia"
+        db_table = "products_nightlife_media"
+        verbose_name = "ProductsNightLifeMedia"
+        verbose_name_plural = "ProductsNightLifeMedia"
 
     FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
     type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
-    url = models.TextField(null=True, blank=True)
+    url = models.FileField(null=True, blank=True)
     thumbnail = models.TextField()
-    mail = models.BooleanField(default=0)
+    main = models.BooleanField(default=True)
     product = models.ForeignKey(
         ProductsNightLife, on_delete=models.SET_NULL, null=True, blank=True, related_name="media"
     )
@@ -689,7 +688,7 @@ class ProductMedia(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
 
 
-class ProductHotels(models.Model):
+class ProductHotel(models.Model):
     class Meta:
         app_label = "api"
         db_table = "products_hotel"
@@ -703,13 +702,34 @@ class ProductHotels(models.Model):
     room_size = models.TextField()
     max_guests = models.TextField()
     item_code = models.CharField(max_length=200, null=True, blank=True)
-
-    highlight = models.BooleanField(default=0)
-    balcony = models.BooleanField(default=0)
-    status = models.BooleanField(default=1)
+    highlight = models.BooleanField(default=False)
+    balcony = models.BooleanField(default=False)
+    status = models.BooleanField(default=True)
     room_details = jsonfield.JSONField()
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="venue")
     product_group = models.ForeignKey(ProductGroup, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class ProductHotelsMedia(models.Model):
+    class Meta:
+        app_label = "api"
+        db_table = "products_hotels_media"
+        verbose_name = "ProductHotelMedia"
+        verbose_name_plural = "ProductHotelMedia"
+
+    FILE_CHOICE = (("VIDEO", "VIDEO"), ("IMAGE", "IMAGE"))
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    type = models.CharField(max_length=8, choices=FILE_CHOICE, null=True, blank=True)
+    url = models.FileField(null=True, blank=True)
+    thumbnail = models.TextField()
+    main = models.BooleanField(default=False)
+    product = models.ForeignKey(
+        ProductHotel, on_delete=models.SET_NULL, null=True, blank=True, related_name="product_hotels"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -732,7 +752,7 @@ class ProductsHotelRoomDetails(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=20, choices=TYPE, default="BEDROOM")
-    product_hotels = models.ForeignKey(ProductHotels, on_delete=models.SET_NULL, null=True, blank=True)
+    product = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True)
 
 
 class ProductsHotelRoomPricing(models.Model):
@@ -747,4 +767,51 @@ class ProductsHotelRoomPricing(models.Model):
     taxes = jsonfield.JSONField()
     guests = jsonfield.JSONField()
     dates = jsonfield.JSONField()
-    product_hotels = models.ForeignKey(ProductHotels, on_delete=models.SET_NULL, null=True, blank=True)
+    product = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True)
+
+
+class ActivityBookingModel(models.Model):
+    """
+    Top-level model for an activity reservation.  An ActivityReservation belongs to a Booking,
+    and it can have multiple ActivityReservationItems.  It represents the total value of an activity
+    reservation, which might contain several tickets.
+    """
+
+    class Meta:
+        app_label = "api"
+        db_table = "activity_reservations"
+
+    activity_reservation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="activity_reservation")
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE, related_name="provider")
+    activity_name = models.TextField()
+    activity_code = models.TextField()
+    activity_date = models.DateField()
+    activity_time = models.TextField(null=True)
+    thumbnail = models.TextField(null=True)
+    total_price = models.DecimalField(max_digits=7, decimal_places=2)
+    total_taxes = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+    total_base = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+    provider_price = models.DecimalField(max_digits=7, decimal_places=2)
+    provider_taxes = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+    provider_base = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+    currency = models.CharField(max_length=3)
+
+
+class ActivityBookingItemModel(models.Model):
+    """
+    Stores individual activity tickets.
+    An activity reservation can contain multiple items (e.g., child, adult)
+    """
+
+    class Meta:
+        app_label = "api"
+        db_table = "activity_reservation_items"
+
+    activity_reservation_item_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    activity_reservation = models.ForeignKey(
+        ActivityBookingModel, on_delete=models.CASCADE, related_name="activity_reservation"
+    )
+    item_code = models.TextField()
+    quantity = models.IntegerField()
+    price = models.DecimalField(max_digits=7, decimal_places=2)

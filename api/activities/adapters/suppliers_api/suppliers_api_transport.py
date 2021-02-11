@@ -20,7 +20,7 @@ class SuppliersApiTransport(Transport, abc.ABC):
         DETAILS = "details"
         VARIANTS = "variants"
         BOOK = "book"
-        CANCEL = "cancel"
+        CANCEL = "CANCEL"
         ACTIVITIES = "activities"
 
     def _get_headers(self, **kwargs):
@@ -57,7 +57,6 @@ class SuppliersApiTransport(Transport, abc.ABC):
         if not response.ok:
             logger.error(f"Error while searching Suppliers API: {response.text}")
 
-        print(response.text)
         return response.json()
 
     def post(self, endpoint: Endpoint, path_params: List = None, query_params: Dict = None, **params):
@@ -72,7 +71,6 @@ class SuppliersApiTransport(Transport, abc.ABC):
         if not response.ok:
             logger.error(f"Error while searching Suppliers API: {response.text}")
 
-        print(response.text)
         return response.json()
 
     @staticmethod
@@ -82,8 +80,7 @@ class SuppliersApiTransport(Transport, abc.ABC):
 
     @classmethod
     def get_endpoint(cls, endpoint: Endpoint, path_params: List = None, query_params: Dict = None):
-        # base_url = f"https://suppliers-api.qa-new.simplenight.com/v1/{cls.get_supplier_name()}/{endpoint.value}"
-        base_url = f"http://localhost:8001/v1/{cls.get_supplier_name()}/{endpoint.value}"
+        base_url = f"https://suppliers-api.qa-new.simplenight.com/v1/{cls.get_supplier_name()}/{endpoint.value}"
         if path_params:
             path_url = str.join("/", path_params)
             base_url = f"{base_url}/{path_url}"
