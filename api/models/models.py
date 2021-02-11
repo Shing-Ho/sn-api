@@ -7,9 +7,8 @@ from enum import EnumMeta, Enum
 from typing import Tuple, List
 
 import jsonfield
-from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
-
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 from django_enumfield import enum
