@@ -28,3 +28,6 @@ django-jsonfield
 django-allauth
 django-rest-auth
 django-rest-auth-bearer
+django-storages[google]
+google-cloud-storage==1.10.0
+django-filter==2.4.0

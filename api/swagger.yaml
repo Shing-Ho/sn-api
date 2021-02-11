@@ -2,9 +2,9 @@ openapi: 3.0.0
 
 servers:
   - description: BOG Production
-    url: https://bog.simplenight.com/api/v1/
+    url: https://bog.simplenight.com/api/v1
   - description: Simplenight Live Sandbox
-    url: https://simplenight-api-278418.ue.r.appspot.com/api/v1/
+    url: https://simplenight-api-278418.ue.r.appspot.com/api/v1
   - description: Localhost
     url: http://localhost:8000/api/v1
 
@@ -721,7 +721,7 @@ paths:
           description: bad input parameter
         '404':
           description: No locations found for input
-  /api/v1/users:
+  /users:
     get:
       operationId: listUsers
       description: ''
@@ -757,6 +757,10 @@ paths:
                     items:
                       $ref: '#/components/schemas/User'
           description: ''
+        '400':
+          description: bad input parameter
+        '404':
+            description: No Object Found found for input
       tags:
         - Admin API For User Management
     post:
@@ -775,9 +779,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+        '400':
+          description: bad input parameter
+        '404':
+            description: No Object Found found for input
       tags:
         - Admin API For User Management
-  /api/v1/users/{id}:
+  /users/{id}:
     get:
       operationId: retrieveUser
       description: ''
@@ -795,6 +803,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+        '400':
+          description: bad input parameter
+        '404':
+            description: No Object Found found for input
       tags:
         - Admin API For User Management
     put:
@@ -819,6 +831,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+        '400':
+          description: bad input parameter
+        '404':
+            description: No Object Found found for input
       tags:
         - Admin API For User Management
     delete:
@@ -836,7 +852,7 @@ paths:
           description: ''
       tags:
         - Admin API For User Management
-  /api/v1/payment-methods:
+  /payment-methods:
     get:
       operationId: listPaymentMethods
       description: ''
@@ -892,7 +908,7 @@ paths:
           description: ''
       tags:
         - Payment Methods
-  /api/v1/payment-methods/{id}:
+  /payment-methods/{id}:
     get:
       operationId: retrievePaymentMethod
       description: ''
@@ -951,7 +967,7 @@ paths:
           description: ''
       tags:
         - Payment Methods
-  /api/v1/accounts/user:
+  /accounts/user:
     get:
       operationId: retrieveUser
       description: ''
@@ -965,7 +981,7 @@ paths:
           description: ''
       tags:
         - Accounts
-  /api/v1/venues/:
+  /venues/:
     get:
       operationId: listVenues
       description: ''
@@ -1021,7 +1037,7 @@ paths:
           description: ''
       tags:
         - Venues
-  /api/v1/venues/{venue_id}/:
+  /venues/{venue_id}/:
     get:
       operationId: retrieveVenue
       description: ''
@@ -1080,23 +1096,31 @@ paths:
           description: ''
       tags:
         - Venues
-  /api/v1/venues/{parent_lookup_venue_id}/media/:
+  /venues/{parent_lookup_venue_id}/media/:
     get:
       operationId: listVenueMedias
       description: ''
       parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          description: A page number within the paginated result set.
-          schema:
-            type: integer
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: url
+        in: formData
+        type: file
+        required: true
+        description: The file to upload.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      
       responses:
         '200':
           content:
@@ -1148,23 +1172,31 @@ paths:
           description: ''
       tags:
         - Venue Media
-  /api/v1/venues/{parent_lookup_venue_id}/media/{id}/:
+  /venues/{parent_lookup_venue_id}/media/{id}/:
     get:
       operationId: retrieveVenueMedia
       description: ''
       parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this VenueMedia.
-          schema:
-            type: string
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: url
+        in: formData
+        type: file
+        required: true
+        description: The file to upload.
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueMedia.
+        schema:
+          type: string
+      
       responses:
         '200':
           content:
@@ -1178,18 +1210,25 @@ paths:
       operationId: updateVenueMedia
       description: ''
       parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this VenueMedia.
-          schema:
-            type: string
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: url
+        in: formData
+        type: file
+        required: true
+        description: The file to upload.
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueMedia.
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1208,24 +1247,31 @@ paths:
       operationId: destroyVenueMedia
       description: ''
       parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this VenueMedia.
-          schema:
-            type: string
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: url
+        in: formData
+        type: file
+        required: true
+        description: The file to upload.
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this VenueMedia.
+        schema:
+          type: string
       responses:
         '204':
           description: ''
       tags:
         - Venue Media
-  /api/v1/venues/{parent_lookup_venue_id}/contact/:
+  /venues/{parent_lookup_venue_id}/contact/:
     get:
       operationId: listVenueContacts
       description: ''
@@ -1293,7 +1339,7 @@ paths:
           description: ''
       tags:
         - Venue Contacts
-  /api/v1/venues/{parent_lookup_venue_id}/contact/{id}/:
+  /venues/{parent_lookup_venue_id}/contact/{id}/:
     get:
       operationId: retrieveVenueContact
       description: ''
@@ -1370,7 +1416,7 @@ paths:
           description: ''
       tags:
         - Venue Contacts
-  /api/v1/venues/{parent_lookup_venue_id}/details/:
+  /venues/{parent_lookup_venue_id}/details/:
     get:
       operationId: listVenueDetails
       description: ''
@@ -1438,7 +1484,7 @@ paths:
           description: ''
       tags:
         - Venue Details
-  /api/v1/venues/{parent_lookup_venue_id}/details/{id}/:
+  /venues/{parent_lookup_venue_id}/details/{id}/:
     get:
       operationId: retrieveVenueDetail
       description: ''
@@ -1515,7 +1561,7 @@ paths:
           description: ''
       tags:
         - Venue Details
-  /api/v1/venues/{parent_lookup_venue_id}/product-group/:
+  /venues/{parent_lookup_venue_id}/product-group/:
     get:
       operationId: listProductGroups
       description: ''
@@ -1583,7 +1629,7 @@ paths:
           description: ''
       tags:
         - Venue Product Group
-  /api/v1/venues/{parent_lookup_venue_id}/product-group/{id}/:
+  /venues/{parent_lookup_venue_id}/product-group/{id}/:
     get:
       operationId: retrieveProductGroup
       description: ''
@@ -1660,152 +1706,8 @@ paths:
           description: ''
       tags:
         - Venue Product Group
-  /api/v1/venues/{parent_lookup_venue_id}/product-media/:
-    get:
-      operationId: listProductMedias
-      description: ''
-      parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          description: A page number within the paginated result set.
-          schema:
-            type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  count:
-                    type: integer
-                    example: 123
-                  next:
-                    type: string
-                    nullable: true
-                    format: uri
-                    example: http://api.example.org/accounts/?page=4
-                  previous:
-                    type: string
-                    nullable: true
-                    format: uri
-                    example: http://api.example.org/accounts/?page=2
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ProductMedia'
-          description: ''
-      tags:
-        - Venue Product Media
-    post:
-      operationId: createProductMedia
-      description: ''
-      parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductMedia'
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductMedia'
-          description: ''
-      tags:
-        - Venue Product Media
-  /api/v1/venues/{parent_lookup_venue_id}/product-media/{id}/:
-    get:
-      operationId: retrieveProductMedia
-      description: ''
-      parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this ProductMedia.
-          schema:
-            type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductMedia'
-          description: ''
-      tags:
-        - Venue Product Media
-    put:
-      operationId: updateProductMedia
-      description: ''
-      parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this ProductMedia.
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductMedia'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductMedia'
-          description: ''
-      tags:
-        - Venue Product Media
-    delete:
-      operationId: destroyProductMedia
-      description: ''
-      parameters:
-        - name: parent_lookup_venue_id
-          in: path
-          required: true
-          description: ''
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          description: A UUID string identifying this ProductMedia.
-          schema:
-            type: string
-      responses:
-        '204':
-          description: ''
-      tags:
-        - Venue Product Media
-  /api/v1/venues/{parent_lookup_venue_id}/product/:
+
+  /venues/{parent_lookup_venue_id}/product_nightlife/:
     get:
       operationId: listProductsNightLifes
       description: ''
@@ -1848,7 +1750,7 @@ paths:
                       $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-        - Venue Product
+        - Venue Product NightLife
     post:
       operationId: createProductsNightLife
       description: ''
@@ -1872,8 +1774,8 @@ paths:
                 $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-        - Venue Product
-  /api/v1/venues/{parent_lookup_venue_id}/product/{id}/:
+      - Venue Product NightLife
+  /venues/{parent_lookup_venue_id}/product_nightlife/{id}/:
     get:
       operationId: retrieveProductsNightLife
       description: ''
@@ -1898,7 +1800,7 @@ paths:
                 $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-        - Venue Product
+        - Venue Product NightLife
     put:
       operationId: updateProductsNightLife
       description: ''
@@ -1928,7 +1830,7 @@ paths:
                 $ref: '#/components/schemas/ProductsNightLife'
           description: ''
       tags:
-        - Venue Product
+        - Venue Product NightLife
     delete:
       operationId: destroyProductsNightLife
       description: ''
@@ -1949,9 +1851,185 @@ paths:
         '204':
           description: ''
       tags:
-        - Venue Product
+        - Venue Product NightLife
+  /venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media:
+    get:
+      operationId: listProductsNightLifeMedias
+      description: ''
+      parameters:
+      - name: parent_lookup_product_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: parent_lookup_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductNightLifeMedia'
+          description: ''
+      tags:
+      - Venue Product NightLife Media
+    post:
+      operationId: createProductsNightLifeMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_product_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: parent_lookup_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductNightLifeMedia'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductNightLifeMedia'
+          description: ''
+      tags:
+      - Venue Product NightLife Media
+  /venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media/{id}:
+    get:
+      operationId: retrieveProductsNightLifeMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_product_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: parent_lookup_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsNightLifeMedia.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductNightLifeMedia'
+          description: ''
+      tags:
+      - Venue Product NightLife Media
+    put:
+      operationId: updateProductsNightLifeMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_product_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: parent_lookup_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsNightLifeMedia.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductNightLifeMedia'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductNightLifeMedia'
+          description: ''
+      tags:
+      - Venue Product NightLife Media
+    delete:
+      operationId: destroyProductsNightLifeMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_product_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: parent_lookup_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsNightLifeMedia.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Venue Product NightLife Media
+  
 
-  /api/v1/authentication/create_api_key:
+  /authentication/create_api_key:
     post:
       operationId: createApiKeyAuthentication
       description: ''
@@ -1968,7 +2046,7 @@ paths:
           description: ''
       tags:
         - Authentication
-  /api/v1/accounts/register:
+  /accounts/register:
     post:
       operationId: createRegister
       description: ''
@@ -1987,7 +2065,7 @@ paths:
           description: ''
       tags:
         - Accounts
-  /api/v1/accounts/login:
+  /accounts/login:
     post:
       operationId: createLoginAPI
       description: ''
@@ -2004,7 +2082,7 @@ paths:
           description: ''
       tags:
         - Accounts
-  /api/v1/accounts/logout:
+  /accounts/logout:
     post:
       operationId: createLogout
       description: ''
@@ -2021,7 +2099,7 @@ paths:
           description: ''
       tags:
         - Accounts
-  /api/v1/accounts/change-password:
+  /accounts/change-password:
     put:
       operationId: updateChangePassword
       description: ''
@@ -2058,6 +2136,570 @@ paths:
           description: ''
       tags:
         - Accounts
+
+  /venues/{parent_lookup_venue_id}/product_hotel:
+    get:
+      operationId: listProductHotels
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: product_id
+        required: false
+        in: query
+        description: Product Hotel object details
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductHotel'
+          description: ''
+      tags:
+      - Venue Product Hotel
+    post:
+      operationId: createProductHotel
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductHotel'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductHotel'
+          description: ''
+      tags:
+      - Venue Product Hotel
+  /venues/{parent_lookup_venue_id}/product_hotel/{id}:
+    get:
+      operationId: retrieveProductHotel
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductHotel.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductHotel'
+          description: ''
+      tags:
+      - Venue Product Hotel
+    put:
+      operationId: updateProductHotel
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductHotel.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductHotel'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductHotel'
+          description: ''
+      tags:
+      - Venue Product Hotel
+    delete:
+      operationId: destroyProductHotel
+      description: ''
+      parameters:
+      - name: parent_lookup_venue_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductHotel.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Venue Product Hotel
+  /venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media:
+    get:
+      operationId: listProductHotelsMedias
+      description: ''
+      parameters:
+      - name: parent_lookup_product_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: parent_lookup_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductHotelsMedia'
+          description: ''
+      tags:
+      - Venue Product Hotel Media
+    post:
+      operationId: createProductHotelsMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_product_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: parent_lookup_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductHotelsMedia'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductHotelsMedia'
+          description: ''
+      tags:
+      - Venue Product Hotel Media
+  /venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media/{id}:
+    get:
+      operationId: retrieveProductHotelsMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_product_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: parent_lookup_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductHotelMedia.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductHotelsMedia'
+          description: ''
+      tags:
+      - Venue Product Hotel Media
+    put:
+      operationId: updateProductHotelsMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_product_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: parent_lookup_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductHotelMedia.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductHotelsMedia'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductHotelsMedia'
+          description: ''
+      tags:
+      - Venue Product Hotel Media
+    delete:
+      operationId: destroyProductHotelsMedia
+      description: ''
+      parameters:
+      - name: parent_lookup_product_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: parent_lookup_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductHotelMedia.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Venue Product Hotel Media
+      
+  /hotel_room_details:
+    get:
+      operationId: listProductsHotelRoomDetails
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: product_id
+        required: false
+        in: query
+        description: Product Hotel Object 
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductsHotelRoomDetails'
+          description: ''
+      tags:
+      - Hotel Room Details
+    post:
+      operationId: createProductsHotelRoomDetails
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductsHotelRoomDetail'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsHotelRoomDetail'
+          description: ''
+      tags:
+      - Hotel Room Details
+  /hotel_room_details/{id}:
+    get:
+      operationId: retrieveProductsHotelRoomDetails
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsHotelRoomDetails.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsHotelRoomDetails'
+          description: ''
+      tags:
+      - Hotel Room Details
+    put:
+      operationId: updateProductsHotelRoomDetails
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsHotelRoomDetails.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductsHotelRoomDetails'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsHotelRoomDetails'
+          description: ''
+      tags:
+      - Hotel Room Details
+    delete:
+      operationId: destroyProductsHotelRoomDetails
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsHotelRoomDetails.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Hotel Room Details
+  /hotel_room_pricing:
+    get:
+      operationId: listProductsHotelRoomPricings
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductsHotelRoomPricing'
+          description: ''
+      tags:
+      - Hotel Room Pricing
+    post:
+      operationId: createProductsHotelRoomPricing
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductsHotelRoomPricing'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsHotelRoomPricing'
+          description: ''
+      tags:
+      - Hotel Room Pricing
+  /hotel_room_pricing/{id}:
+    get:
+      operationId: retrieveProductsHotelRoomPricing
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsHotelRoomPricing.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsHotelRoomPricing'
+          description: ''
+      tags:
+      - Hotel Room Pricing
+    put:
+      operationId: updateProductsHotelRoomPricing
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsHotelRoomPricing.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductsHotelRoomPricing'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsHotelRoomDetails'
+          description: ''
+      tags:
+      - Hotel Room Pricing
+    delete:
+      operationId: destroyProductsHotelRoomPricing
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A UUID string identifying this ProductsHotelRoomPricing.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Hotel Room Pricing
 
 components:
   securitySchemes:
@@ -3344,7 +3986,7 @@ components:
           type: string
           nullable: true
         url:
-          type: string
+          type: file
         created_at:
           type: string
           format: date-time
@@ -3693,7 +4335,171 @@ components:
           type: string
           format: date
           description: The end date to search for, inclusive
-
+    ProductHotelsMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          enum:
+          - VIDEO
+          - IMAGE
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: binary
+          nullable: true
+        thumbnail:
+          type: string
+        main:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        venue:
+          type: string
+        product:
+          type: string
+          nullable: true
+      required:
+      - thumbnail
+      - venue
+    ProductHotel:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        price:
+          type: string
+        description:
+          type: string
+        room_size:
+          type: string
+        max_guests:
+          type: string
+        item_code:
+          type: string
+          nullable: true
+          maxLength: 200
+        highlight:
+          type: boolean
+        balcony:
+          type: boolean
+        status:
+          type: boolean
+        room_details:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        venue:
+          type: string
+        product_group:
+          type: string
+          nullable: true
+      required:
+      - name
+      - price
+      - description
+      - room_size
+      - max_guests
+      - venue
+    ProductNightLifeMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          enum:
+          - VIDEO
+          - IMAGE
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: binary
+          nullable: true
+        thumbnail:
+          type: string
+        main:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+        venue:
+          type: string
+        product:
+          type: string
+          nullable: true
+      required:
+      - thumbnail
+      - venue
+    ProductsHotelRoomPricing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        rate:
+          type: string
+        taxes:
+          type: string
+        guests:
+          type: string
+        dates:
+          type: string
+        product_hotels:
+          type: string
+          nullable: true
+    ProductsHotelRoomDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        type:
+          enum:
+          - BEDROOM
+          - BATHROOM
+          - ENTERTAINMENT
+          - FOODANDDRINK
+          - MORE
+          type: string
+        product_hotels:
+          type: string
+          nullable: true
+      required:
+      - name
     ActivityDetailsResponse:
       type: object
       description: |
@@ -3774,160 +4580,10 @@ components:
           $ref: '#/components/schemas/ActivitySearchResponse'
 
 
-    ActivityTicketRequest:
-      type: object
-      description: |
-        The `code` from an [Availability](#operation/multiProductAvailability) call, and an `activity_date` from an
-        [Activity Details](#operation/activityDetails) call.
-      properties:
-        code:
-          type: string
-          example: 0e29b9ef
-        activity_date:
-          type: string
-          format: date
 
-    ActivityTicketResponse:
-      type: object
-      description: |
-        The available ticket types for a specific activity on a specific date.
 
-      properties:
-        variants:
-          additionalProperties:
-            type: object
-            example: foo
-            properties:
-              code:
-                type: string
-              name:
-                type: string
-                example: Adult
-              description:
-                type: string
-                example: "Age: 25 - 64"
-              price:
-                type: number
-                example: 16.78
-              capacity:
-                type: integer
-                example: 20
-              additional:
-                description: Additional policy information
-                additionalProperties:
-                  type: string
-
-    MultiProductHotelBookingRequest:
-      type: object
-      description: Hotel booking request, specifically for use with the [Multi Product](#tags/MultiProduct) API.
-      properties:
-        hotel_id:
-          type: string
-          description: The `hotel_id` from an availability response
-          example: 14479
-        room_code:
-          type: string
-          description: The `code` from a `room_type` object within an availability response
-          example: b9f088ea
-        traveler:
-          $ref: '#/components/schemas/Traveler'
-
-    MultiProductActivityBookingRequest:
-      type: object
-      description: Activity booking request, specifically for use with the [Multi Product](#tags/MultiProduct) API
-      properties:
-        code:
-          type: string
-          example: c8d046ad
-          description: The `code` from an availability response
-        language_code:
-          type: string
-          example: en
-          description: Two-character ISO language code
-        activity_date:
-          type: string
-          format: date
-          description: The date of the activity
-        activity_time:
-          type: string
-          format: time
-          description: The time of the activity
-        currency:
-          type: string
-          description: Three-character ISO currency code
-        items:
-          type: array
-          items:
-            properties:
-              code:
-                type: string
-                description: |
-                  The `code` from the Activity Tickets/Variants response.  This code represents the specific
-                  ticket type being purchased
-              quantity:
-                type: integer
-                description: The number of tickets of this type to purchase
-                example: 2
-              price:
-                type: number
-                description: The echoed price from the variants response
-                example: 25.98
-
-    MultiProductActivityBookingResponse:
-      type: object
-      description: The activity reservation in a multi-product booking
-      properties:
-        status:
-          $ref: '#/components/schemas/Status'
-        record_locator:
-          $ref: '#/components/schemas/Locator'
-
-    MultiProductBookingRequest:
-      type: object
-      description: Booking request supporting multiple products in a single transaction.
-      properties:
-        api_version:
-          type: integer
-          example: 1
-          description: The API version of the request
-        transaction_id:
-          type: string
-          format: uuid
-          description: Arbitrary string used to identify a request, and prevent duplicate bookings
-        language:
-          type: string
-          description: a locale string for the customer
-          example: en_US
-        customer:
-          $ref: '#/components/schemas/Customer'
-        traveler:
-          $ref: '#/components/schemas/Traveler'
-        payment:
-          $ref: '#/components/schemas/Payment'
-        hotel_booking:
-          $ref: '#/components/schemas/MultiProductHotelBookingRequest'
-        activity_booking:
-          $ref: '#/components/schemas/MultiProductActivityBookingRequest'
-
-    MultiProductBookingResponse:
-      type: object
-      description: Booking response for multiple product types, booked in a single transaction/request.
-      properties:
-        api_version:
-          type: integer
-          example: 1
-          description: The API version of the response
-        transaction_id:
-          type: string
-          format: uuid
-          description: The echoed transaction ID from the booking request
-        status:
-          $ref: '#/components/schemas/Status'
-        booking_id:
-          type: string
-          description: The Simplenight Record Locator for the completed booking
-          example: R75QY0B9
-        hotel_reservation:
-          $ref: '#/components/schemas/HotelBookingResponse'
-        activity_booking:
-          $ref: '#/components/schemas/MultiProductActivityBookingResponse'
+# "begin_date": "2021-04-02",
+  #    "end_date": "2021-04-02",
+  #    "adults": 1,
+  #    "children": 0,
+  #    "location_id": "5391959"
