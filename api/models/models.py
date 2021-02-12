@@ -542,7 +542,7 @@ class Venue(models.Model):
         verbose_name_plural = "Venues"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    name = models.CharField(max_length=300, unique=True)
+    name = models.CharField(max_length=300)
     venue_from = models.CharField(max_length=2, choices=VENUE_FORM_CHOICE, default="SN")
     type = models.CharField(max_length=20, choices=VENUE_TYPE, default="NIGHT_LIFE")
     language_code = models.CharField(max_length=3, default="en")
@@ -570,6 +570,7 @@ class VenueMedia(models.Model):
     url = models.FileField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    order = models.IntegerField(default=0)
 
 
 class VenueContact(models.Model):
@@ -636,7 +637,10 @@ class VenueDetail(models.Model):
 class ProductGroup(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
-    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="venue_id")
+    order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         app_label = "api"
@@ -664,6 +668,7 @@ class ProductsNightLife(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    order = models.IntegerField(default=0, null=True, blank=True)
 
 
 class ProductsNightLifeMedia(models.Model):
@@ -686,6 +691,7 @@ class ProductsNightLifeMedia(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    order = models.IntegerField(default=0)
 
 
 class ProductHotel(models.Model):
@@ -710,6 +716,7 @@ class ProductHotel(models.Model):
     product_group = models.ForeignKey(ProductGroup, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    order = models.IntegerField(default=0)
 
 
 class ProductHotelsMedia(models.Model):
@@ -732,6 +739,7 @@ class ProductHotelsMedia(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    order = models.IntegerField(default=0)
 
 
 class ProductsHotelRoomDetails(models.Model):
