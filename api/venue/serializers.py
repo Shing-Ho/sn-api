@@ -94,18 +94,6 @@ class ProductNightLifeMediaSerializer(serializers.ModelSerializer):
         return rep
 
 
-class ProductHotelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.ProductHotel
-        fields = "__all__"
-
-    def to_representation(self, instance):
-        rep = super(ProductHotelSerializer, self).to_representation(instance)
-        rep["venue_id"] = instance.venue.id
-        del rep["venue"]
-        return rep
-
-
 class ProductHotelsMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProductHotelsMedia
@@ -113,7 +101,7 @@ class ProductHotelsMediaSerializer(serializers.ModelSerializer):
 
 
 class ProductsNightLifeSerializer(serializers.ModelSerializer):
-    # media = ProductMediaSerializer(many=True, read_only=True)
+    media = ProductNightLifeMediaSerializer(many=True, read_only=True)
     group = serializers.SerializerMethodField(source="get_group")
 
     class Meta:
@@ -142,17 +130,6 @@ class VenueSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ProductsSerializer(serializers.ModelSerializer):
-    group = serializers.SerializerMethodField(source="get_group")
-
-    class Meta:
-        model = models.ProductsNightLife
-        fields = "__all__"
-
-    def get_group(self, obj):
-        return obj.name
-
-
 class ProductsHotelRoomDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProductsHotelRoomDetails
@@ -163,3 +140,19 @@ class ProductsHotelRoomPricingSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProductsHotelRoomPricing
         fields = "__all__"
+
+
+class ProductHotelSerializer(serializers.ModelSerializer):
+    media = ProductHotelsMediaSerializer(many=True, read_only=True)
+    hotels_room_details = ProductsHotelRoomDetailsSerializer(many=True, read_only=True)
+    hotels_room_pricing = ProductsHotelRoomPricingSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.ProductHotel
+        fields = "__all__"
+
+    def to_representation(self, instance):
+        rep = super(ProductHotelSerializer, self).to_representation(instance)
+        rep["venue_id"] = instance.venue.id
+        del rep["venue"]
+        return rep
