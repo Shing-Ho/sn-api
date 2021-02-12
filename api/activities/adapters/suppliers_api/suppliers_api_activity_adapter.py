@@ -10,6 +10,7 @@ from api.activities.activity_internal_models import (
     AdapterActivitySpecificSearch,
     AdapterActivityLocationSearch,
     AdapterActivityBookingResponse,
+    ActivityLocation,
 )
 from api.activities.activity_models import (
     SimplenightActivityDetailResponse,
@@ -177,6 +178,11 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
             images=list(self._parse_image(image, idx) for idx, image in enumerate(activity["images"])),
             reviews=reviews,
             rating=rating,
+            location=ActivityLocation(
+                address=activity["locations"][0]["address"],
+                latitude=activity["locations"][0]["latitude"],
+                longitude=activity["locations"][0]["longitude"],
+            ),
         )
 
     @staticmethod

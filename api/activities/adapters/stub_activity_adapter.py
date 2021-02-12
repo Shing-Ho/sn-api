@@ -12,7 +12,7 @@ from api.activities.activity_internal_models import (
     AdapterActivityBookingResponse,
     AdapterActivity,
 )
-from api.activities.activity_models import ActivityVariants
+from api.activities.activity_models import ActivityVariants, ActivityLocation
 from api.hotel.models.booking_model import Customer, AdapterActivityBookingRequest
 from api.hotel.models.hotel_common_models import Money
 
@@ -53,6 +53,7 @@ class StubActivityAdapter(ActivityAdapter):
             total_base=total_base,
             total_taxes=total_taxes,
             images=[],
+            location=ActivityLocation(address="123 Foo Bar", latitude=Decimal(50.0), longitude=Decimal(-50.0),),
         )
 
     @staticmethod

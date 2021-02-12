@@ -93,6 +93,7 @@ def _adapter_to_simplenight_activity(activity: AdapterActivity) -> SimplenightAc
         total_price=_format_money(activity.total_price),
         total_base=_format_money(activity.total_base),
         total_taxes=_format_money(activity.total_taxes),
+        location=activity.location,
         categories=activity.categories,
         images=activity.images,
         rating=activity.rating,
