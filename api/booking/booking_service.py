@@ -112,6 +112,7 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
         # Create Product-specific booking processors
         hotel_processor = HotelBookingProcessor(booking_request, booking)
         activity_processor = ActivityBookingProcessor(booking_request, booking)
+        all_processors = [hotel_processor, activity_processor]
 
         total_payment_amount = _calculate_total_amount(hotel_processor, activity_processor)
 
@@ -160,6 +161,8 @@ def book(booking_request: MultiProductBookingRequest) -> MultiProductBookingResp
         except Exception as e:
             logger.exception(f"Booking Error.  Refunding {auth_response.charge_id} {auth_response.transaction_amount}")
             refund(booking, auth_response, total_payment_amount.amount)
+            for processor in all_processors:
+                processor.cancel_reservation()
 
             logger.error(f"Setting booking {booking.booking_id} to state FAILED")
             booking.booking_status = BookingStatus.FAILED.value
@@ -586,6 +589,10 @@ class BookingProcessor(abc.ABC):
     def book(self) -> Union[HotelReservation, ActivityReservation]:
         pass
 
+    @abc.abstractmethod
+    def cancel_reservation(self) -> bool:
+        pass
+
 
 class ActivityBookingProcessor(BookingProcessor):
     def __init__(self, booking_request: MultiProductBookingRequest, booking: Booking):
@@ -593,6 +600,7 @@ class ActivityBookingProcessor(BookingProcessor):
         self.activity_booking_request = self.booking_request.activity_booking
         self.booking = booking
         self.booked_reservation: Optional[ActivityReservation] = None
+        self.activity_booking_model: Optional[ActivityBookingModel] = None
 
     def book(self) -> Optional[ActivityReservation]:
         if self.activity_booking_request is None:
@@ -608,10 +616,23 @@ class ActivityBookingProcessor(BookingProcessor):
             status=status, record_locator=booking_response.record_locator, items=self.activity_booking_request.items
         )
 
-        self._persist_activity_reservation()
+        self.activity_booking_model = self._persist_activity_reservation()
         self.booked_reservation = activity_reservation
 
         return activity_reservation
+
+    def cancel_reservation(self) -> bool:
+        if not self.booked_reservation:
+            logger.info("No activity booking to cancel")
+            return True
+
+        try:
+            logger.info(f"Cancelling activity booking: {self.booked_reservation}")
+            adapter = adapter_service.get_adapter(self.cached_activity.provider)
+
+            adapter.cancel(self.booked_reservation.record_locator.id)
+        except Exception as e:
+            logger.critical(f"Failure to cancel activity booking: {self.booked_reservation} {e}")
 
     @property
     def total_price(self) -> Optional[Money]:
@@ -660,6 +681,8 @@ class ActivityBookingProcessor(BookingProcessor):
                 activity_reservation=activity_booking, item_code=item.code, quantity=item.quantity, price=item.price
             )
 
+        return activity_booking
+
     def _get_thumbnail_url(self):
         images = self.cached_activity.adapter_activity.images
         if images:
@@ -673,6 +696,7 @@ class HotelBookingProcessor(BookingProcessor):
         self.booking_request = self._get_hotel_booking_request(booking_request)
         self.booking = booking
         self.booked_reservation: Optional[HotelReservation] = None
+        self.hotel_booking: Optional[HotelBooking] = None
 
     def book(self) -> Optional[HotelReservation]:
         if not self.booking_request:
@@ -689,7 +713,7 @@ class HotelBookingProcessor(BookingProcessor):
         verified_rates = _hotel_price_verification(provider=provider, rate=provider_rate)
         adapter_booking_request.room_code = verified_rates.code
 
-        adapter = adapter_service.get_adapter(provider)
+        adapter = self._get_adapter()
         reservation: HotelReservation = adapter.book(adapter_booking_request)
         reservation.room_rate = simplenight_rate  # TODO: Don't create Reservation in Adapter
         reservation.hotel_id = self.booking_request.hotel_id
@@ -698,7 +722,7 @@ class HotelBookingProcessor(BookingProcessor):
             logger.error(f"Could not book hotel: {self.booking_request}")
             raise AppException("Error during hotel booking")
 
-        self._persist_hotel(reservation)
+        self.hotel_booking = self._persist_hotel(reservation)
         self.booked_reservation = reservation
 
         return reservation
@@ -772,6 +796,8 @@ class HotelBookingProcessor(BookingProcessor):
             logger.info(f"Persisting cancellation policies for hotel booking: {hotel_booking.hotel_booking_id}")
             models.HotelCancellationPolicy.objects.bulk_create(cancellation_policy_models)
 
+        return hotel_booking
+
     @staticmethod
     def _get_hotel_booking_request(booking_request: MultiProductBookingRequest) -> Optional[HotelBookingRequest]:
         # TODO: Temporary scaffolding for refactor
@@ -788,3 +814,27 @@ class HotelBookingProcessor(BookingProcessor):
             )
 
         return None
+
+    def cancel_reservation(self) -> bool:
+        if not self.booked_reservation:
+            logger.info("No hotel reservation to cancel")
+            return True
+
+        try:
+            adapter_cancel_request = AdapterCancelRequest(
+                hotel_id=self.hotel_booking.provider_hotel_id,
+                record_locator=self.hotel_booking.record_locator,
+                email_address=self.booking.lead_traveler.email_address,
+            )
+
+            adapter = self._get_adapter()
+            logger.info(f"Cancelling hotel booking {self.booked_reservation.hotel_locator}")
+            adapter.cancel(adapter_cancel_request)
+
+            return True
+        except Exception:
+            logger.critical(f"Could not cancel booking: {self.booked_reservation}")
+            return False
+
+    def _get_adapter(self):
+        return adapter_service.get_adapter(self.cached_hotel.provider)
