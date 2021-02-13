@@ -89,6 +89,9 @@ class TestHotelsView(SimplenightTestCase):
         model_helper.create_provider_hotel(provider, "13517", "Hotel One")
         model_helper.create_provider_hotel(provider, "345972", "Hotel Two")
 
+        model_helper.create_provider_image(provider, "13517", "http://img.foo")
+        model_helper.create_provider_image(provider, "345972", "http://img.foo")
+
         checkin = datetime.now().date() + timedelta(days=30)
         checkout = datetime.now().date() + timedelta(days=35)
         search = HotelLocationSearch(
@@ -160,7 +163,7 @@ class TestHotelsView(SimplenightTestCase):
             hotel, room_rate=provider_room_rate, simplenight_rate=simplenight_room_rate
         )
 
-        with patch("api.hotel.booking_service._persist_booking_record", side_effect=Exception("Boom")):
+        with patch("api.booking.booking_service._persist_booking_record", side_effect=Exception("Boom")):
             response = self.post(endpoint=BOOKING, obj=booking_request)
 
         self.assertEqual(500, response.status_code)

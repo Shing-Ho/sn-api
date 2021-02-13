@@ -22,7 +22,6 @@ django-redis
 cryptography
 pytz
 django-admin-interface
-bugsnag==4.0.2
 xmltodict
 https://github.com/chibisov/drf-extensions/archive/master.zip
 django-jsonfield

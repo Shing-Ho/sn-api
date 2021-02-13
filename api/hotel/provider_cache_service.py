@@ -25,7 +25,12 @@ def save_provider_rate(hotel: AdapterHotel, room_rate: RoomRate, simplenight_rat
 
 def save_provider_activity(adapter_activity: AdapterActivity, simplenight_activity: SimplenightActivity):
     payload = ActivityDataCachePayload(
-        code=adapter_activity.code, provider=adapter_activity.provider, price=adapter_activity.total_price.amount
+        code=adapter_activity.code,
+        provider=adapter_activity.provider,
+        price=adapter_activity.total_price.amount,
+        currency=adapter_activity.total_price.currency,
+        adapter_activity=adapter_activity,
+        simplenight_activity=simplenight_activity,
     )
 
     cache_storage.set(_get_cache_key(simplenight_activity.code), payload)

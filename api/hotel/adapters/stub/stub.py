@@ -13,7 +13,7 @@ from api.hotel.models.adapter_models import (
     AdapterCancelResponse,
     AdapterHotelBatchSearch,
 )
-from api.hotel.models.booking_model import HotelReservation, HotelBookingRequest, Locator
+from api.hotel.models.booking_model import HotelReservation, Locator, AdapterHotelBookingRequest
 from api.hotel.models.hotel_api_model import (
     AdapterHotel,
     RoomType,
@@ -83,7 +83,7 @@ class StubHotelAdapter(HotelAdapter):
     def booking_availability(self, search_request: AdapterBaseSearch):
         return self.search_by_id(search_request)
 
-    def book(self, book_request: HotelBookingRequest) -> HotelReservation:
+    def book(self, book_request: AdapterHotelBookingRequest) -> HotelReservation:
         cached_room_data = provider_cache_service.get_simplenight_rate(book_request.room_code)
         return HotelReservation(
             locator=Locator(id=str(uuid.uuid4())),

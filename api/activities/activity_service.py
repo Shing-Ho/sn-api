@@ -61,8 +61,14 @@ def variants(request: SimplenightActivityVariantRequest) -> List[ActivityVariant
 def _adapter_location_search(search: ActivityLocationSearch) -> AdapterActivityLocationSearch:
     """Converts an API Activity Location Search to an object suitable for an activity adapter"""
 
-    location = location_service.find_city_by_simplenight_id(search.location_id)
-    return AdapterActivityLocationSearch(**search.dict(), location=location)
+    merged = dict()
+    city_location = location_service.find_city_by_simplenight_id(search.location_id)
+    if city_location:
+        merged.update(city_location)
+    provider_location = location_service.find_provider_location("urban_adventures", search.location_id)
+    if provider_location:
+        merged.update(provider_location)
+    return AdapterActivityLocationSearch(**search.dict(), location=merged)
 
 
 def _adapter_specific_search(search: ActivitySpecificSearch) -> AdapterActivitySpecificSearch:
@@ -93,6 +99,7 @@ def _adapter_to_simplenight_activity(activity: AdapterActivity) -> SimplenightAc
         total_price=_format_money(activity.total_price),
         total_base=_format_money(activity.total_base),
         total_taxes=_format_money(activity.total_taxes),
+        location=activity.location,
         categories=activity.categories,
         images=activity.images,
         rating=activity.rating,

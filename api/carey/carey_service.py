@@ -7,9 +7,6 @@ class CareyService:
         if carey is None:
             self.carey = CareyAdapter()
 
-    def get_wsdl_url(self):
-        return "https://sandbox.carey.com/CSIOTAProxy_v2/CareyReservationService?wsdl"
-
     def get_quote_inquiry(self, request: RateInquiryRequest):
         response = self.carey.get_rate_inquiry(request)
         return response

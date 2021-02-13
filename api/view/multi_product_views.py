@@ -6,7 +6,7 @@ from rest_framework.request import Request
 from api.activities.activity_models import SimplenightActivityDetailRequest, SimplenightActivityVariantRequest
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiDailyThrottle, OrganizationApiBurstThrottle
 from api.common.common_models import from_json
-from api.hotel import booking_service
+from api.booking import booking_service
 from api.hotel.models.booking_model import MultiProductBookingRequest
 from api.multi import multi_product
 from api.multi.multi_product_models import SearchRequest

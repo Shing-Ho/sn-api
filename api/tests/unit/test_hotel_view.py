@@ -26,6 +26,9 @@ class TestBookingView(SimplenightTestCase):
         model_helper.create_provider_hotel(provider, "349168", "Hotel One")
         model_helper.create_provider_hotel(provider, "97334", "Hotel Two")
 
+        model_helper.create_provider_image(provider, "349168", "http://foo.image")
+        model_helper.create_provider_image(provider, "97334", "http://foo.image")
+
         search_request = HotelLocationSearch(
             location_id="SFO",
             start_date=date(2020, 1, 20),

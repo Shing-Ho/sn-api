@@ -75,7 +75,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "api.common.request_cache.RequestCacheMiddleware",
     "api.common.context_middleware.RequestContextMiddleware",
-    "bugsnag.django.middleware.BugsnagMiddleware",
 ]
 
 ROOT_URLCONF = "api.urls"
@@ -111,7 +110,11 @@ REST_FRAMEWORK = {
     ),
     # "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
-    "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
+    ],
     "EXCEPTION_HANDLER": "api.view.exceptions.handler",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
@@ -202,10 +205,9 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {
-        "bugsnag": {"level": "ERROR", "class": "bugsnag.handlers.BugsnagHandler", "formatter": "default"},
         "console": {"class": "api.common.logging.CustomHandler", "formatter": "default", "filters": ["message_id"]},
     },
-    "root": {"handlers": ["console", "bugsnag"], "level": "ERROR"},
+    "root": {"handlers": ["console"], "level": "ERROR"},
     "filters": {"message_id": {"()": "api.common.logging.MessageIDFilter"}},
     "formatters": {
         "default": {
@@ -247,7 +249,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 APPEND_SLASH = False
-TOKEN_EXPIRES_IN = 2  # 2hours
+TOKEN_EXPIRES_IN = 200000  # 2hours
 
 environment = "production"
 if environment == "local":

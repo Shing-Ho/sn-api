@@ -1109,7 +1109,6 @@ paths:
           type: string
       - name: url
         in: formData
-        type: file
         required: true
         description: The file to upload.
         schema:
@@ -1120,7 +1119,7 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
-      
+
       responses:
         '200':
           content:
@@ -1185,7 +1184,6 @@ paths:
           type: string
       - name: url
         in: formData
-        type: file
         required: true
         description: The file to upload.
         schema:
@@ -1196,7 +1194,7 @@ paths:
         description: A UUID string identifying this VenueMedia.
         schema:
           type: string
-      
+
       responses:
         '200':
           content:
@@ -1218,7 +1216,6 @@ paths:
           type: string
       - name: url
         in: formData
-        type: file
         required: true
         description: The file to upload.
         schema:
@@ -1255,7 +1252,6 @@ paths:
           type: string
       - name: url
         in: formData
-        type: file
         required: true
         description: The file to upload.
         schema:
@@ -1852,7 +1848,7 @@ paths:
           description: ''
       tags:
         - Venue Product NightLife
-  /venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media:
+  /product_nightlife_media:
     get:
       operationId: listProductsNightLifeMedias
       description: ''
@@ -1932,7 +1928,7 @@ paths:
           description: ''
       tags:
       - Venue Product NightLife Media
-  /venues/{parent_lookup_product_id}/product_nightlife/{parent_lookup_id}/media/{id}:
+  /product_nightlife_media/{id}:
     get:
       operationId: retrieveProductsNightLifeMedia
       description: ''
@@ -2027,7 +2023,7 @@ paths:
           description: ''
       tags:
       - Venue Product NightLife Media
-  
+
 
   /authentication/create_api_key:
     post:
@@ -2288,7 +2284,7 @@ paths:
           description: ''
       tags:
       - Venue Product Hotel
-  /venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media:
+  /product_hotels_media:
     get:
       operationId: listProductHotelsMedias
       description: ''
@@ -2368,7 +2364,7 @@ paths:
           description: ''
       tags:
       - Venue Product Hotel Media
-  /venues/{parent_lookup_product_id}/product_hotel/{parent_lookup_id}/media/{id}:
+  /product_hotels_media/{id}:
     get:
       operationId: retrieveProductHotelsMedia
       description: ''
@@ -2463,7 +2459,7 @@ paths:
           description: ''
       tags:
       - Venue Product Hotel Media
-      
+
   /hotel_room_details:
     get:
       operationId: listProductsHotelRoomDetails
@@ -2478,7 +2474,7 @@ paths:
       - name: product_id
         required: false
         in: query
-        description: Product Hotel Object 
+        description: Product Hotel Object
         schema:
           type: string
       responses:
@@ -2516,13 +2512,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductsHotelRoomDetail'
+              $ref: '#/components/schemas/ProductsHotelRoomDetails'
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductsHotelRoomDetail'
+                $ref: '#/components/schemas/ProductsHotelRoomDetails'
           description: ''
       tags:
       - Hotel Room Details
@@ -4213,6 +4209,10 @@ components:
         Parameters to search for an activity.  Will return all activities available on any date between
         begin_date and end_date.
       properties:
+        location_id:
+          type: string
+          example: 562567381
+          description: Simplenight Location ID, returned in a [Location Response](#tag/Locations)
         begin_date:
           type: string
           format: date
@@ -4477,6 +4477,7 @@ components:
         product_hotels:
           type: string
           nullable: true
+
     ProductsHotelRoomDetails:
       type: object
       properties:
@@ -4547,7 +4548,7 @@ components:
       type: object
       description: |
         Parameters to search for multiple products.  Within this request, there can be multiple sub-search types,
-        such as an ActivitySearch, HotelSearch, or CarSearch.  The results for each product type will be returned
+        such as an ActivitySearch, HotelSearch, or TransportationSearch.  The results for each product type will be returned
         in a single response.
       properties:
         product_types:
@@ -4555,7 +4556,8 @@ components:
           enum:
             - activities
             - hotels
-            - cars
+            - transporation
+            - dining
         activity_search:
           $ref: '#/components/schemas/ActivitySearchRequest'
         hotel_search:
@@ -4565,7 +4567,7 @@ components:
       type: object
       description: |
         Parameters to search for multiple products.  Within this request, there can be multiple sub-search types,
-        such as an ActivitySearch, HotelSearch, or CarSearch.  The results for each product type will be returned
+        such as an ActivitySearch, HotelSearch, or TransportationSearch.  The results for each product type will be returned
         in a single response.
       properties:
         product_types:
@@ -4573,7 +4575,8 @@ components:
           enum:
             - activities
             - hotels
-            - cars
+            - transportation
+            - dining
         activity_search:
           $ref: '#/components/schemas/HotelSearchResponse'
         hotel_search:
@@ -4581,9 +4584,160 @@ components:
 
 
 
+    ActivityTicketRequest:
+      type: object
+      description: |
+        The `code` from an [Availability](#operation/multiProductAvailability) call, and an `activity_date` from an
+        [Activity Details](#operation/activityDetails) call.
+      properties:
+        code:
+          type: string
+          example: 0e29b9ef
+        activity_date:
+          type: string
+          format: date
 
-# "begin_date": "2021-04-02",
-  #    "end_date": "2021-04-02",
-  #    "adults": 1,
-  #    "children": 0,
-  #    "location_id": "5391959"
+    ActivityTicketResponse:
+      type: object
+      description: |
+        The available ticket types for a specific activity on a specific date.
+
+      properties:
+        variants:
+          additionalProperties:
+            type: object
+            example: foo
+            properties:
+              code:
+                type: string
+              name:
+                type: string
+                example: Adult
+              description:
+                type: string
+                example: "Age: 25 - 64"
+              price:
+                type: number
+                example: 16.78
+              capacity:
+                type: integer
+                example: 20
+              additional:
+                description: Additional policy information
+                additionalProperties:
+                  type: string
+
+    MultiProductHotelBookingRequest:
+      type: object
+      description: Hotel booking request, specifically for use with the [Multi Product](#tags/MultiProduct) API.
+      properties:
+        hotel_id:
+          type: string
+          description: The `hotel_id` from an availability response
+          example: 14479
+        room_code:
+          type: string
+          description: The `code` from a `room_type` object within an availability response
+          example: b9f088ea
+        traveler:
+          $ref: '#/components/schemas/Traveler'
+
+    MultiProductActivityBookingRequest:
+      type: object
+      description: Activity booking request, specifically for use with the [Multi Product](#tags/MultiProduct) API
+      properties:
+        code:
+          type: string
+          example: c8d046ad
+          description: The `code` from an availability response
+        language_code:
+          type: string
+          example: en
+          description: Two-character ISO language code
+        activity_date:
+          type: string
+          format: date
+          description: The date of the activity
+        activity_time:
+          type: string
+          format: time
+          description: The time of the activity
+        currency:
+          type: string
+          description: Three-character ISO currency code
+        items:
+          type: array
+          items:
+            properties:
+              code:
+                type: string
+                description: |
+                  The `code` from the Activity Tickets/Variants response.  This code represents the specific
+                  ticket type being purchased
+              quantity:
+                type: integer
+                description: The number of tickets of this type to purchase
+                example: 2
+              price:
+                type: number
+                description: The echoed price from the variants response
+                example: 25.98
+
+    MultiProductActivityBookingResponse:
+      type: object
+      description: The activity reservation in a multi-product booking
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        record_locator:
+          $ref: '#/components/schemas/Locator'
+
+    MultiProductBookingRequest:
+      type: object
+      description: Booking request supporting multiple products in a single transaction.
+      properties:
+        api_version:
+          type: integer
+          example: 1
+          description: The API version of the request
+        transaction_id:
+          type: string
+          format: uuid
+          description: Arbitrary string used to identify a request, and prevent duplicate bookings
+        language:
+          type: string
+          description: a locale string for the customer
+          example: en_US
+        customer:
+          $ref: '#/components/schemas/Customer'
+        traveler:
+          $ref: '#/components/schemas/Traveler'
+        payment:
+          $ref: '#/components/schemas/Payment'
+        hotel_booking:
+          $ref: '#/components/schemas/MultiProductHotelBookingRequest'
+        activity_booking:
+          $ref: '#/components/schemas/MultiProductActivityBookingRequest'
+
+    MultiProductBookingResponse:
+      type: object
+      description: Booking response for multiple product types, booked in a single transaction/request.
+      properties:
+        api_version:
+          type: integer
+          example: 1
+          description: The API version of the response
+        transaction_id:
+          type: string
+          format: uuid
+          description: The echoed transaction ID from the booking request
+        status:
+          $ref: '#/components/schemas/Status'
+        booking_id:
+          type: string
+          description: The Simplenight Record Locator for the completed booking
+          example: R75QY0B9
+        hotel_reservation:
+          $ref: '#/components/schemas/HotelBookingResponse'
+        activity_booking:
+          $ref: '#/components/schemas/MultiProductActivityBookingResponse'
