@@ -9,16 +9,17 @@ from api.common.common_models import SimplenightModel, BusinessLocation
 class DiningBase(SimplenightModel):
     date: Optional[str] = None
     time: Optional[str] = None
-    covers: Optional[int] = 1
+    covers: Optional[int] = None
     currency: Optional[str] = "USD"
 
 
 class DiningSearch(DiningBase):
-    latitude: decimal.Decimal = None
-    longitude: decimal.Decimal = None
+    latitude: Optional[decimal.Decimal] = None
+    longitude: Optional[decimal.Decimal] = None
 
 
 class AdapterDining(SimplenightModel):
+    dining_id: str
     name: str
     image: str
     rating: float
@@ -44,7 +45,7 @@ class DiningDetail(SimplenightModel):
     name: str
     rating: float
     phone: str
-    photos: List[str] = Field(default_factory=list)
+    images: List[str] = Field(default_factory=list)
     location: BusinessLocation
 
 
@@ -80,5 +81,3 @@ class DiningReservation(SimplenightModel):
 
 class AdapterCancelRequest(SimplenightModel):
     booking_id: str
-
-
