@@ -30,7 +30,7 @@ class HotelbedsTransport(Transport):
         url = self.endpoint(endpoint)
 
         logger.info(f"Making request to {url}")
-        logger.debug(f"Params: {params}")
+        logger.warn(f"Params: {params}")
 
         response = requests.get(url, params=params, headers=self._get_headers())
         if not response.ok:
@@ -42,7 +42,7 @@ class HotelbedsTransport(Transport):
         url = f"{self.endpoint(endpoint)}/{id}"
 
         logger.info(f"Making request to {url}")
-        logger.debug(f"Params: {params}")
+        logger.warn(f"Params: {params}")
 
         response = requests.get(url, params=params, headers=self._get_headers())
         if not response.ok:
@@ -54,7 +54,7 @@ class HotelbedsTransport(Transport):
         url = self.endpoint(endpoint)
 
         logger.info(f"Making request to {url}")
-        logger.debug(f"Params: {params}")
+        logger.warn(f"Params: {params}")
 
         response = requests.post(url, data=json.dumps(params), headers=self._get_headers())
         if not response.ok:

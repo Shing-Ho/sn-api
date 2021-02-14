@@ -1,11 +1,17 @@
 from datetime import date, timedelta
 from typing import List, Optional
 
-from api.hotel.models.booking_model import HotelBookingRequest
+from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.adapters.travelport.hotel_details import TravelportHotelDetailsBuilder
 from api.hotel.adapters.travelport.search import TravelportHotelSearchBuilder
 from api.hotel.adapters.travelport.transport import TravelportTransport
-from api.hotel.adapters.hotel_adapter import HotelAdapter
+from api.hotel.models.adapter_models import (
+    AdapterLocationSearch,
+    AdapterCancelRequest,
+    AdapterCancelResponse,
+    AdapterHotelBatchSearch,
+)
+from api.hotel.models.booking_model import AdapterHotelBookingRequest
 from api.hotel.models.hotel_api_model import (
     HotelDetailsSearchRequest,
     HotelDetails,
@@ -14,12 +20,6 @@ from api.hotel.models.hotel_api_model import (
     GeoLocation,
 )
 from api.hotel.models.hotel_common_models import Address, RateType, Money, DailyRate, RoomRate, HotelReviews
-from api.hotel.models.adapter_models import (
-    AdapterLocationSearch,
-    AdapterCancelRequest,
-    AdapterCancelResponse,
-    AdapterHotelBatchSearch,
-)
 
 secrets = {
     "url": "https://americas.universal-api.travelport.com/B2BGateway/connect/uAPI/HotelService",
@@ -68,7 +68,7 @@ class TravelportHotelAdapter(HotelAdapter):
     def cancel(self, cancel_request: AdapterCancelRequest) -> AdapterCancelResponse:
         raise NotImplementedError("Cancel not implemented")
 
-    def book(self, book_request: HotelBookingRequest):
+    def book(self, book_request: AdapterHotelBookingRequest):
         raise NotImplementedError("Booking not implemented")
 
     def _parse_hotel(self, hotel):

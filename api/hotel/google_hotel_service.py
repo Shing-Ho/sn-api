@@ -1,4 +1,5 @@
-from api.hotel import core_hotel_service, converter, booking_service
+from api.hotel import core_hotel_service, converter
+from api.booking import booking_service
 from api.hotel.converter.google_models import (
     GoogleHotelSearchRequest,
     GoogleHotelApiResponse,

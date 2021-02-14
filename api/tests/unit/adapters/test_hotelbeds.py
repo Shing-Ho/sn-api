@@ -39,6 +39,9 @@ class TestHotelBeds(SimplenightTestCase):
         model_helper.create_provider_hotel(provider, "349168", "Hotel One")
         model_helper.create_provider_hotel(provider, "97334", "Hotel Two")
 
+        model_helper.create_provider_image(provider, "349168", "http://foo.image")
+        model_helper.create_provider_image(provider, "97334", "http://foo.image")
+
         resource = load_test_resource("hotelbeds/search-by-location-response.json")
         hotelbeds = HotelbedsAdapter()
 

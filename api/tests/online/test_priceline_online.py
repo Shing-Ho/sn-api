@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from api.hotel.models.hotel_common_models import RoomOccupancy
-from api.hotel import hotel_service, booking_service
+from api.hotel import hotel_service
+from api.booking import booking_service
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch

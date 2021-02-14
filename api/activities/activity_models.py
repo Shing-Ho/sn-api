@@ -9,6 +9,12 @@ from api.hotel.models.hotel_api_model import Image
 from api.hotel.models.hotel_common_models import Money
 
 
+class ActivityLocation(SimplenightModel):
+    address: str
+    latitude: Decimal
+    longitude: Decimal
+
+
 class SimplenightActivity(SimplenightModel):
     name: str
     code: str
@@ -17,6 +23,7 @@ class SimplenightActivity(SimplenightModel):
     total_price: Money
     total_base: Money
     total_taxes: Money
+    location: ActivityLocation
     categories: Optional[List[str]]
     images: List[Image]
     rating: Optional[Decimal]
