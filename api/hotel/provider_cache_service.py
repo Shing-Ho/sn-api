@@ -1,10 +1,11 @@
 import hashlib
+from datetime import date
 
 from api.activities.activity_internal_models import AdapterActivity, ActivityDataCachePayload
-from api.activities.activity_models import SimplenightActivity
+from api.activities.activity_models import SimplenightActivity, ActivityVariant
 from api.common import cache_storage
-from api.hotel.models.hotel_common_models import RoomRate
 from api.hotel.models.hotel_api_model import RoomDataCachePayload, AdapterHotel
+from api.hotel.models.hotel_common_models import RoomRate
 
 
 def save_provider_rate(hotel: AdapterHotel, room_rate: RoomRate, simplenight_rate: RoomRate):
@@ -34,6 +35,20 @@ def save_provider_activity(adapter_activity: AdapterActivity, simplenight_activi
     )
 
     cache_storage.set(_get_cache_key(simplenight_activity.code), payload)
+
+
+def save_activity_variant(activity_code: str, activity_date: date, variant: ActivityVariant):
+    cache_key = _get_activity_variant_cache_cache(activity_code, activity_date, variant.code)
+    cache_storage.set(cache_key, variant)
+
+
+def get_activity_variant(activity_code: str, activity_date: date, variant_code: str) -> ActivityVariant:
+    cache_key = _get_activity_variant_cache_cache(activity_code, activity_date, variant_code)
+    return cache_storage.get(cache_key)
+
+
+def _get_activity_variant_cache_cache(activity_code: str, activity_date: date, variant_code: str) -> str:
+    return f"{activity_code}__{activity_date}__{variant_code}"
 
 
 def get_cached_activity(activity_code: str) -> ActivityDataCachePayload:

@@ -118,9 +118,7 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
     def _parse_location(locations) -> Optional[ActivityLocation]:
         try:
             return ActivityLocation(
-                address=locations[0]["address"],
-                latitude=locations[0]["latitude"],
-                longitude=locations[0]["longitude"],
+                address=locations[0]["address"], latitude=locations[0]["latitude"], longitude=locations[0]["longitude"],
             )
         except KeyError:
             return None
@@ -140,8 +138,7 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
         )
 
     def _create_details(self, detail):
-        print("Details: ", detail)
-        
+        logger.info("Found activity details: ", detail)
         availabilities = map(lambda x: date.fromisoformat(x), detail["availabilities"])
 
         return SimplenightActivityDetailResponse(
@@ -179,8 +176,6 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
             description=activity["description"],
             activity_date=activity_date,
             total_price=Money(amount=activity["price"], currency=activity["currency"]),
-            total_base=Money(amount=Decimal(0), currency=activity["currency"]),
-            total_taxes=Money(amount=Decimal(0), currency=activity["currency"]),
             categories=activity["categories"],
             images=list(self._parse_image(image, idx) for idx, image in enumerate(activity["images"])),
             reviews=reviews,
