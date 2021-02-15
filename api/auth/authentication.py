@@ -100,11 +100,11 @@ class OrganizationApiBurstThrottle(SimpleRateThrottle):
 
 
 class APIAdminPermission(DjangoModelPermissions):
-    
+
     """
     The permission for all the admin api views. You only get admin api access when:
     - you are a staff user (is_staff)
-    - you are a super user 
+    - you are a super user
     Feel free to customize!
     """
 

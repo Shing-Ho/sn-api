@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional, List
 
-from api.activities.activity_models import SimplenightActivity
+from api.activities.activity_models import SimplenightActivity, ActivityLocation
 from api.common.common_models import SimplenightModel
 from api.hotel.models.booking_model import Locator
 from api.hotel.models.hotel_api_model import Image
@@ -19,6 +19,7 @@ class AdapterActivity(SimplenightModel):
     total_price: Money
     total_base: Money
     total_taxes: Money
+    location: Optional[ActivityLocation]
     categories: Optional[List[str]]
     images: List[Image]
     rating: Optional[Decimal]

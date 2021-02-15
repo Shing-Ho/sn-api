@@ -1,4 +1,4 @@
-from api.hotel.adapters.transport import Transport
+from api.common.transport import Transport
 from rauth import OAuth2Service
 import json
 

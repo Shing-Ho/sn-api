@@ -1,7 +1,7 @@
 import abc
 from datetime import date
 from decimal import Decimal
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 
 from api import logger
 from api.activities.activity_adapter import ActivityAdapter
@@ -10,6 +10,7 @@ from api.activities.activity_internal_models import (
     AdapterActivitySpecificSearch,
     AdapterActivityLocationSearch,
     AdapterActivityBookingResponse,
+    ActivityLocation,
 )
 from api.activities.activity_models import (
     SimplenightActivityDetailResponse,
@@ -19,7 +20,7 @@ from api.activities.activity_models import (
     ActivityVariant,
 )
 from api.activities.adapters.suppliers_api.suppliers_api_transport import SuppliersApiTransport
-from api.common.common_models import BusinessContact, BusinessLocation
+from api.common.common_models import BusinessContact
 from api.hotel.models.booking_model import Customer, Locator, AdapterActivityBookingRequest
 from api.hotel.models.hotel_api_model import Image, ImageType
 from api.hotel.models.hotel_common_models import Money
@@ -114,10 +115,15 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
         return Image(url=image["url"], type=ImageType.UNKNOWN, display_order=display_order)
 
     @staticmethod
-    def _parse_location(location):
-        return BusinessLocation(
-            latitude=location["latitude"], longitude=location["longitude"], address=location["address"]
-        )
+    def _parse_location(locations) -> Optional[ActivityLocation]:
+        try:
+            return ActivityLocation(
+                address=locations[0]["address"],
+                latitude=locations[0]["latitude"],
+                longitude=locations[0]["longitude"],
+            )
+        except KeyError:
+            return None
 
     @staticmethod
     def _parse_cancellation_policy(policy):
@@ -134,6 +140,8 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
         )
 
     def _create_details(self, detail):
+        print("Details: ", detail)
+        
         availabilities = map(lambda x: date.fromisoformat(x), detail["availabilities"])
 
         return SimplenightActivityDetailResponse(
@@ -149,7 +157,7 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
                 address=detail["contact"]["address"],
                 phones=detail["contact"]["phones"],
             ),
-            locations=list(map(self._parse_location, detail["locations"])),
+            locations=self._parse_location(detail["locations"]),
             availabilities=list(availabilities),
             policies=detail["policies"],
             cancellations=list(map(self._parse_cancellation_policy, detail["cancellations"])),
@@ -177,6 +185,7 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
             images=list(self._parse_image(image, idx) for idx, image in enumerate(activity["images"])),
             reviews=reviews,
             rating=rating,
+            location=self._parse_location(activity["locations"]),
         )
 
     @staticmethod

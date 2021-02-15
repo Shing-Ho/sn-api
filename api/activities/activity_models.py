@@ -4,9 +4,15 @@ from typing import List, Optional, Union, Dict
 
 from pydantic import Field
 
-from api.common.common_models import SimplenightModel, BusinessContact, BusinessLocation
+from api.common.common_models import SimplenightModel, BusinessContact
 from api.hotel.models.hotel_api_model import Image
 from api.hotel.models.hotel_common_models import Money
+
+
+class ActivityLocation(SimplenightModel):
+    address: str
+    latitude: Decimal
+    longitude: Decimal
 
 
 class SimplenightActivity(SimplenightModel):
@@ -17,6 +23,7 @@ class SimplenightActivity(SimplenightModel):
     total_price: Money
     total_base: Money
     total_taxes: Money
+    location: Optional[ActivityLocation]
     categories: Optional[List[str]]
     images: List[Image]
     rating: Optional[Decimal]
@@ -76,7 +83,7 @@ class SimplenightActivityDetailResponse(SimplenightModel):
     timezone: str
     images: List[Image]
     contact: BusinessContact
-    locations: List[BusinessLocation]
+    locations: Optional[ActivityLocation]
     availabilities: List[date]
     policies: List[str]
     cancellations: List[ActivityCancellation]

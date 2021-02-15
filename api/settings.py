@@ -110,7 +110,11 @@ REST_FRAMEWORK = {
     ),
     # "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
-    "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
+    ],
     "EXCEPTION_HANDLER": "api.view.exceptions.handler",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
@@ -244,8 +248,7 @@ CACHE_TIMEOUT = 3600
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
-APPEND_SLASH = False
-TOKEN_EXPIRES_IN = 2  # 2hours
+TOKEN_EXPIRES_IN = 200000  # 2hours
 
 environment = "production"
 if environment == "local":
