@@ -3,6 +3,7 @@ import uuid
 from decimal import getcontext, ROUND_UP
 from typing import List
 
+from api import logger
 from api.activities.activity_adapter import ActivityAdapter
 from api.activities.activity_internal_models import (
     AdapterActivity,
@@ -22,6 +23,7 @@ from api.hotel.adapters import adapter_service
 from api.hotel.models.hotel_common_models import Money
 from api.locations import location_service
 from api.multi.multi_product_models import ActivityLocationSearch, ActivitySpecificSearch
+from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 
 def search_by_location(search: ActivityLocationSearch) -> List[SimplenightActivity]:
@@ -62,6 +64,9 @@ def _adapter_location_search(search: ActivityLocationSearch) -> AdapterActivityL
     """Converts an API Activity Location Search to an object suitable for an activity adapter"""
 
     location = location_service.find_city_by_simplenight_id(search.location_id)
+    if not location:
+        raise AvailabilityException("Could not find simplenight location", AvailabilityErrorCode.LOCATION_NOT_FOUND)
+
     return AdapterActivityLocationSearch(**search.dict(), location=location)
 
 
@@ -118,11 +123,14 @@ def _search_all_adapters(search: AdapterActivitySearch, fn_name: str, many=True)
 
     adapters = adapter_service.get_activity_adapters_to_search(search)
     for adapter in adapters:
-        search_fn = getattr(adapter, fn_name)
-        if many:
-            yield from asyncio.run(search_fn(search))
-        else:
-            yield asyncio.run(search_fn(search))
+        try:
+            search_fn = getattr(adapter, fn_name)
+            if many:
+                yield from asyncio.run(search_fn(search))
+            else:
+                yield asyncio.run(search_fn(search))
+        except Exception:
+            logger.exception(f"Error searching {adapter.get_provider_name()}")
 
 
 def _format_money(money: Money):
