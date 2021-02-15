@@ -52,10 +52,16 @@ def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDet
     return activity_details
 
 
-def variants(request: SimplenightActivityVariantRequest) -> List[ActivityVariants]:
+def variants(request: SimplenightActivityVariantRequest) -> ActivityVariants:
     payload = provider_cache_service.get_cached_activity(request.code)
     adapter = adapter_service.get_activity_adapter(payload.provider)
-    activity_variants: List[ActivityVariants] = asyncio.run(adapter.variants(payload.code, request.activity_date))
+    activity_variants: ActivityVariants = asyncio.run(adapter.variants(payload.code, request.activity_date))
+
+    # Variants are returned as a map keyed by time, with the value as a list of variants available at that time
+    # We flatten this into a unique set, and save the unique variants for use in the booking process
+    unique_variants = set(variant for x in activity_variants.variants.values() for variant in x)
+    for variant in unique_variants:
+        provider_cache_service.save_activity_variant(request.code, request.activity_date, variant)
 
     return activity_variants
 
@@ -96,8 +102,6 @@ def _adapter_to_simplenight_activity(activity: AdapterActivity) -> SimplenightAc
         description=activity.description,
         activity_date=activity.activity_date,
         total_price=_format_money(activity.total_price),
-        total_base=_format_money(activity.total_base),
-        total_taxes=_format_money(activity.total_taxes),
         location=activity.location,
         categories=activity.categories,
         images=activity.images,

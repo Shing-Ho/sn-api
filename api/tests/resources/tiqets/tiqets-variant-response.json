@@ -1,32 +1,36 @@
-[
+{
+  "whole_day": [
     {
-        "code": 4763,
-        "name": {
-            "en": "Adult (16+)"
-        },
-        "description": {
-            "en": ""
-        },
-        "capacity": 40,
-        "status": "ACTIVE",
-        "price": 24.56,
-        "tax_multiplier": 0,
-        "thumbnail": "https://api.simplenight.com/assets/images/boxoffice/sports/3.jpg",
-        "currency": "EUR"
+      "code": 2636,
+      "name": "Adult",
+      "description": "Age: 25 - 64",
+      "price": 16.66,
+      "capacity": 20,
+      "questions": []
     },
     {
-        "code": 4765,
-        "name": {
-            "en": "Concessions"
-        },
-        "description": {
-            "en": "Full-time student (16 years and over), disabled visitor, over 60 with ID"
-        },
-        "capacity": 40,
-        "status": "ACTIVE",
-        "price": 18.8,
-        "tax_multiplier": 0,
-        "thumbnail": "https://api.simplenight.com/assets/images/boxoffice/sports/3.jpg",
-        "currency": "EUR"
+      "code": 2637,
+      "name": "Youth",
+      "description": "Age: 19 - 24 (with valid ID)",
+      "price": 12.36,
+      "capacity": 20,
+      "questions": []
+    },
+    {
+      "code": 2638,
+      "name": "Senior",
+      "description": "Age: 65+ (with ID)",
+      "price": 14.9,
+      "capacity": 20,
+      "questions": []
+    },
+    {
+      "code": 2639,
+      "name": "Child",
+      "description": "Age: 0 - 18 (with valid ID)",
+      "price": 0.0,
+      "capacity": 20,
+      "questions": []
     }
-]
+  ]
+}

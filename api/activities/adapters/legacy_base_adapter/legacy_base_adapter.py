@@ -1,6 +1,5 @@
 import abc
 from datetime import date
-from decimal import Decimal
 from typing import List, Dict, Any
 
 from api import logger
@@ -54,8 +53,6 @@ class LegacyActivityAdapter(ActivityAdapter, abc.ABC):
             description=activity["description"],
             activity_date=activity_date,
             total_price=Money(amount=total_price["amount"], currency=total_price["currency"]),
-            total_base=Money(amount=Decimal(0), currency=total_price["currency"]),
-            total_taxes=Money(amount=Decimal(0), currency=total_price["currency"]),
             categories=activity["categories"],
             images=list(Image(url=image, display_order=idx) for idx, image in enumerate(activity["images"])),
         )
