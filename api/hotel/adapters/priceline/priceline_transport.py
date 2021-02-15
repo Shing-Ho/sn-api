@@ -5,7 +5,7 @@ import requests
 from api import logger
 from api.common.common_exceptions import FeatureNotFoundException
 from api.common.request_context import get_config
-from api.hotel.adapters.transport import Transport
+from api.common.transport import Transport
 from api.models.models import Feature
 
 

@@ -4,6 +4,7 @@ from typing import List, Union
 from api.activities.activity_adapter import ActivityAdapter
 from api.activities.activity_internal_models import AdapterActivitySearch
 from api.activities.adapters.muse.muse_activity_adapter import MuseActivityAdapter
+from api.activities.adapters.tourcms.tourcms_activity_adapter import TourCmsActivityAdapter
 from api.activities.adapters.urban.urban_activity_adapter import UrbanActivityAdapter
 from api.activities.adapters.stub_activity_adapter import StubActivityAdapter
 from api.activities.adapters.tiqets.tiqets_activity_adapter import TiqetsActivityAdapter
@@ -42,6 +43,7 @@ ADAPTERS = {
         "travelcurious": TravelcuriousActivityAdapter,
         "musement": MuseActivityAdapter,
         "urban": UrbanActivityAdapter,
+        "tourcms": TourCmsActivityAdapter,
     },
     AdapterType.RESTAURANT: {"stub_restaurant": StubRestaurantAdapter},
 }
