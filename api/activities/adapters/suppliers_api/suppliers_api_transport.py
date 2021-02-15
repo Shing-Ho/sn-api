@@ -7,7 +7,7 @@ from typing import Dict, List
 import requests
 
 from api import logger
-from api.hotel.adapters.transport import Transport
+from api.common.transport import Transport
 
 
 class SuppliersApiTransport(Transport, abc.ABC):
@@ -20,7 +20,7 @@ class SuppliersApiTransport(Transport, abc.ABC):
         DETAILS = "details"
         VARIANTS = "variants"
         BOOK = "book"
-        CANCEL = "CANCEL"
+        CANCEL = "cancel"
         ACTIVITIES = "activities"
 
     def _get_headers(self, **kwargs):

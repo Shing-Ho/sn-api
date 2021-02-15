@@ -18,7 +18,7 @@ def find_by_prefix(prefix: str, language_code="en", limit=10) -> List[Location]:
     matching_cities = matching_cities.distinct()
     matching_cities.prefetch_related("lang")
 
-    city_matches = list(_geoname_to_location_response(city, language_code) for city in matching_cities[:limit])
+    city_matches = list(_geoname_to_location_response(city, language_code, True) for city in matching_cities[:limit])
     airport_matches = {
         _airport_to_location_response(airport): None for airport in airports.find_by_prefix(name_prefix=prefix)
     }
@@ -60,7 +60,7 @@ def find_provider_location(provider: str, simplenight_location_id):
         return None
 
 
-def _geoname_to_location_response(geoname: Geoname, language_code: str):
+def _geoname_to_location_response(geoname: Geoname, language_code: str, use_provider_location=False):
     localization = geoname.lang.filter(iso_language_code=language_code).order_by("-is_preferred").first()
     if not localization:
         localization = geoname.lang.filter(iso_language_code="en").first()
@@ -72,7 +72,9 @@ def _geoname_to_location_response(geoname: Geoname, language_code: str):
         displayed_language_code = "en"
         displayed_location_name = geoname.location_name
 
-    provider_location = find_provider_location("priceline", geoname.geoname_id)
+    provider_location = None
+    if use_provider_location:
+        provider_location = find_provider_location("priceline", geoname.geoname_id)
 
     if provider_location:
         displayed_aircode = provider_location.provider_code
