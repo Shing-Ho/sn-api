@@ -19,7 +19,7 @@ class ActivitySearch(SimplenightModel):
     begin_date: date
     end_date: date
     adults: int
-    children: int
+    children: int = 0
     provider: Optional[str] = None
 
 

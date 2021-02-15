@@ -149,13 +149,19 @@ class HotelPriceVerificationHolder(SimplenightModel):
     verified_room_rates: List[RoomRate]
 
 
+class AdapterActivityBookingItem(SimplenightModel):
+    code: str
+    quantity: int
+    price: Optional[Decimal]
+
+
 class ActivityBookingItem(SimplenightModel):
     code: str
     quantity: int
-    price: Decimal
 
 
 class ActivityBookingRequest(SimplenightModel):
+    code: str
     language_code: str
     activity_date: date
     activity_time: time
@@ -163,7 +169,6 @@ class ActivityBookingRequest(SimplenightModel):
     notes: Optional[str]
     data: Optional[str]
     misc: Optional[str]
-    code: Optional[str]
     supplier_date: Optional[str]
     items: List[ActivityBookingItem]
 
@@ -175,6 +180,7 @@ class ActivityReservation(SimplenightModel):
 
 
 class AdapterActivityBookingRequest(SimplenightModel):
+    code: str
     language_code: str
     activity_date: date
     activity_time: time
@@ -182,9 +188,8 @@ class AdapterActivityBookingRequest(SimplenightModel):
     notes: Optional[str]
     data: Optional[str]
     misc: Optional[str]
-    code: Optional[str]
     supplier_date: Optional[str]
-    items: List[ActivityBookingItem]
+    items: List[AdapterActivityBookingItem]
 
 
 class AdapterActivityBookingResponse(SimplenightModel):

@@ -800,11 +800,7 @@ class ActivityBookingModel(models.Model):
     activity_time = models.TextField(null=True)
     thumbnail = models.TextField(null=True)
     total_price = models.DecimalField(max_digits=7, decimal_places=2)
-    total_taxes = models.DecimalField(max_digits=7, decimal_places=2, null=True)
-    total_base = models.DecimalField(max_digits=7, decimal_places=2, null=True)
     provider_price = models.DecimalField(max_digits=7, decimal_places=2)
-    provider_taxes = models.DecimalField(max_digits=7, decimal_places=2, null=True)
-    provider_base = models.DecimalField(max_digits=7, decimal_places=2, null=True)
     currency = models.CharField(max_length=3)
 
 

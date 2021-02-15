@@ -1,6 +1,6 @@
 import abc
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from decimal import Decimal
 from time import sleep
 from typing import Union, Optional
@@ -26,6 +26,8 @@ from api.hotel.models.booking_model import (
     MultiProductHotelBookingRequest,
     AdapterHotelBookingRequest,
     AdapterActivityBookingRequest,
+    ActivityBookingItem,
+    AdapterActivityBookingItem,
 )
 from api.hotel.models.hotel_api_model import (
     SimplenightRoomType,
@@ -639,7 +641,8 @@ class ActivityBookingProcessor(BookingProcessor):
         if not self.activity_booking_request:
             return None
 
-        return Money(amount=self.cached_activity.price, currency=self.cached_activity.currency)
+        total_amount = sum(x.price * x.quantity for x in self._get_adapter_booking_items())
+        return Money(amount=total_amount, currency=self.cached_activity.currency)
 
     @property
     @cached(cache={})
@@ -649,12 +652,47 @@ class ActivityBookingProcessor(BookingProcessor):
 
         return provider_cache_service.get_cached_activity(self.booking_request.activity_booking.code)
 
+    def _get_adapter_booking_items(self):
+        """Retrieves stored ActivityVariants, and updates ActivityBookingItem with a price from the cache"""
+
+        def _get_adapter_activity_booking_item(item: ActivityBookingItem):
+            @cached(cache={})
+            def _retrieve_from_cache(c_activity_code: str, c_activity_date: date, variant_code: str):
+                return provider_cache_service.get_activity_variant(c_activity_code, c_activity_date, variant_code)
+
+            activity_code = self.booking_request.activity_booking.code
+            activity_date = self.booking_request.activity_booking.activity_date
+
+            cached_activity_variant = _retrieve_from_cache(activity_code, activity_date, item.code)
+            return AdapterActivityBookingItem(
+                code=item.code, quantity=item.quantity, price=cached_activity_variant.price,
+            )
+
+        return list(map(_get_adapter_activity_booking_item, self.booking_request.activity_booking.items))
+
     def _get_adapter_booking_request(self):
+        """Retrieves the stored adapter activity from the cache,
+        and converts a booking request into a request suitable for an adapter.
+        Among other things, the `code` from the API booking request is substitued
+        for a provider code from by an adapter in availability.
+        """
+
         if not self.booking_request.activity_booking:
             return None
 
-        adapter_booking_request = AdapterActivityBookingRequest(**self.booking_request.activity_booking.dict())
-        adapter_booking_request.code = self.cached_activity.code
+        adapter_booking_request = AdapterActivityBookingRequest(
+            code=self.cached_activity.code,
+            language_code=self.booking_request.activity_booking.language_code,
+            activity_date=self.booking_request.activity_booking.activity_date,
+            activity_time=self.booking_request.activity_booking.activity_time,
+            currency=self.booking_request.activity_booking.currency,
+            notes=self.booking_request.activity_booking.notes,
+            data=self.booking_request.activity_booking.data,
+            misc=self.booking_request.activity_booking.misc,
+            supplier_date=self.booking_request.activity_booking.supplier_date,
+            items=self._get_adapter_booking_items(),
+        )
+
         return adapter_booking_request
 
     def _persist_activity_reservation(self):
@@ -668,15 +706,11 @@ class ActivityBookingProcessor(BookingProcessor):
             activity_time=self.activity_booking_request.activity_time,
             thumbnail=self._get_thumbnail_url(),
             currency=self.cached_activity.simplenight_activity.total_price.currency,
-            total_price=self.cached_activity.simplenight_activity.total_price.amount,
-            total_taxes=self.cached_activity.simplenight_activity.total_taxes.amount,
-            total_base=self.cached_activity.simplenight_activity.total_base.amount,
-            provider_price=self.cached_activity.adapter_activity.total_price.amount,
-            provider_base=self.cached_activity.adapter_activity.total_base.amount,
-            provider_taxes=self.cached_activity.adapter_activity.total_taxes.amount,
+            total_price=self.total_price.amount,
+            provider_price=self.total_price.amount,
         )
 
-        for item in self.activity_booking_request.items:
+        for item in self._get_adapter_booking_items():
             ActivityBookingItemModel.objects.create(
                 activity_reservation=activity_booking, item_code=item.code, quantity=item.quantity, price=item.price
             )

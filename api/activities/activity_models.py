@@ -21,8 +21,6 @@ class SimplenightActivity(SimplenightModel):
     description: str
     activity_date: date
     total_price: Money
-    total_base: Money
-    total_taxes: Money
     location: Optional[ActivityLocation]
     categories: Optional[List[str]]
     images: List[Image]
@@ -53,6 +51,9 @@ class ActivityItem(SimplenightModel):
 
 
 class ActivityVariant(SimplenightModel):
+    def __hash__(self):  # make hashable for use in a set
+        return hash((self.code, self.name, self.price))
+
     code: str
     name: str
     description: str
