@@ -34,6 +34,7 @@ class AdapterActivitySearch(SimplenightModel):
 
 class AdapterActivityLocationSearch(AdapterActivitySearch):
     location: Location
+    provider_location_code: Optional[str]
 
 
 class AdapterActivitySpecificSearch(AdapterActivitySearch):
