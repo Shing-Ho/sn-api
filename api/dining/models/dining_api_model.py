@@ -42,6 +42,7 @@ class AdapterOpening(SimplenightModel):
 
 
 class DiningDetail(SimplenightModel):
+    dining_id: str
     name: str
     rating: float
     phone: str

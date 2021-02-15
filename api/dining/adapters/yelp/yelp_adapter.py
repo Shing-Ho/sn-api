@@ -57,6 +57,7 @@ class YelpAdapter(DiningAdapter):
     def details(self, search) -> DiningDetail:
         response = self.transport.business_details(id=search.dining_id, params={})
         dining_detail = DiningDetail(
+            dining_id=search.dining_id,
             name=response["name"],
             rating=response["rating"],
             phone=response["phone"],
@@ -190,7 +191,6 @@ class YelpAdapter(DiningAdapter):
 
     @staticmethod
     def _check_operation_response_and_get_results(response, operation):
-        print(response)
         if response is None:
             raise AvailabilityException(
                 error_type=AvailabilityErrorCode.PROVIDER_ERROR,
