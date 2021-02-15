@@ -118,7 +118,9 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
     def _parse_location(locations) -> Optional[ActivityLocation]:
         try:
             return ActivityLocation(
-                address=locations[0]["address"], latitude=locations[0]["latitude"], longitude=locations[0]["longitude"],
+                address=locations[0]["address"],
+                latitude=locations[0]["latitude"],
+                longitude=locations[0]["longitude"],
             )
         except KeyError:
             return None
@@ -153,7 +155,7 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
                 address=detail["contact"]["address"],
                 phones=detail["contact"]["phones"],
             ),
-            locations=list(map(self._parse_location, detail["locations"])),
+            locations=self._parse_location(detail["locations"]),
             availabilities=list(availabilities),
             policies=detail["policies"],
             cancellations=list(map(self._parse_cancellation_policy, detail["cancellations"])),
