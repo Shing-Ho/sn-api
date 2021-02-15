@@ -61,7 +61,10 @@ def search_request(search: SearchRequest):
             futures.append(executor.submit(search_fn, search))
 
         for future in futures:
-            _set_result_on_response(response, future.result(timeout=30))
+            try:
+                _set_result_on_response(response, future.result(timeout=30))
+            except Exception:
+                logger.exception("Exception while searching adapter")
 
         executor.shutdown()
 

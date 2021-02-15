@@ -734,9 +734,7 @@ class ProductHotelsMedia(models.Model):
     url = models.FileField(null=True, blank=True)
     thumbnail = models.TextField()
     main = models.BooleanField(default=False)
-    product = models.ForeignKey(
-        ProductHotel, on_delete=models.SET_NULL, null=True, blank=True, related_name="product_hotels"
-    )
+    product = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True, related_name="media")
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
     order = models.IntegerField(default=0)
@@ -760,7 +758,9 @@ class ProductsHotelRoomDetails(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=20, choices=TYPE, default="BEDROOM")
-    product = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True)
+    product = models.ForeignKey(
+        ProductHotel, on_delete=models.SET_NULL, null=True, blank=True, related_name="hotels_room_details"
+    )
 
 
 class ProductsHotelRoomPricing(models.Model):
@@ -775,7 +775,9 @@ class ProductsHotelRoomPricing(models.Model):
     taxes = jsonfield.JSONField()
     guests = jsonfield.JSONField()
     dates = jsonfield.JSONField()
-    product = models.ForeignKey(ProductHotel, on_delete=models.SET_NULL, null=True, blank=True)
+    product = models.ForeignKey(
+        ProductHotel, on_delete=models.SET_NULL, null=True, blank=True, related_name="hotels_room_pricing"
+    )
 
 
 class ActivityBookingModel(models.Model):
