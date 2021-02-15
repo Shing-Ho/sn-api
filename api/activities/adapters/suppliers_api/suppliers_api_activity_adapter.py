@@ -138,6 +138,8 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
         )
 
     def _create_details(self, detail):
+        print("Details: ", detail)
+        
         availabilities = map(lambda x: date.fromisoformat(x), detail["availabilities"])
 
         return SimplenightActivityDetailResponse(
