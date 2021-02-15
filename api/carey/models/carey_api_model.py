@@ -25,7 +25,7 @@ class Location(SimplenightModel):
     locationName: str
     addressLine: Optional[str]
     cityName: Optional[str]
-    postalCode: str
+    postalCode: Optional[str]
     stateProv: object
     countryName: Optional[CountryNameType]
     airport: Optional[bool]
@@ -37,7 +37,7 @@ class RateInquiryRequest(SimplenightModel):
     dateTime: str
     passengers: int
     bags: int
-    tripType: str = "Point-To-Point"
+    tripType: Optional[str] = "Point-To-Point"
     pickUpLoacation: Location
     flightInfo: Optional[FlightInfo]
     dropOffLocation: Location
@@ -45,50 +45,50 @@ class RateInquiryRequest(SimplenightModel):
 
 
 class VehicleDetails(SimplenightModel):
-    vehicleName: str
-    vehicleCode: str
-    vehicleDescriptionDetail: str
-    maxPassengers: int
-    maxBags: int
+    vehicleName: Optional[str]
+    vehicleCode: Optional[str]
+    vehicleDescriptionDetail: Optional[str]
+    maxPassengers: Optional[str]
+    maxBags: Optional[str]
 
 
 class Reference(SimplenightModel):
-    estimatedDistance: str
-    estimatedTime: str
+    estimatedDistance: Optional[str]
+    estimatedTime: Optional[str]
 
 
 class ChargeDetails(SimplenightModel):
-    readBack: str
-    billingType: str
+    readBack: Optional[str]
+    billingType: Optional[str]
 
 
 class ChargeItem(SimplenightModel):
-    itemName: str
-    itemDescription: str
-    itemUnit: str
-    itemUnitValue: Decimal
-    itemUnitPrice: Decimal
-    itemUnitPriceCurrency: str
-    readBack: str
-    sequenceNumber: int
+    itemName: Optional[str]
+    itemDescription: Optional[str]
+    itemUnit: Optional[str]
+    itemUnitValue: Optional[Decimal]
+    itemUnitPrice: Optional[Decimal]
+    itemUnitPriceCurrency: Optional[str]
+    readBack: Optional[str]
+    sequenceNumber: Optional[str]
 
 
 class TotalAmount(SimplenightModel):
     totalAmountValue: Decimal
-    totalAmountCurrency: str
-    totalAmountDescription: str
+    totalAmountCurrency: Optional[str]
+    totalAmountDescription: Optional[str]
 
 
 class AdditionalInfo(SimplenightModel):
-    notice: str
-    garageToGarageEstimate: str
+    notice: Optional[str]
+    garageToGarageEstimate: Optional[str]
 
 
 class QuoteResponse(SimplenightModel):
     pickUpDate: str
     pickUpLoacation: Location
     dropOffLocation: Location
-    flightInfo: FlightInfo
+    flightInfo: Optional[FlightInfo]
     vehicleDetails: VehicleDetails
     chargeDetails: ChargeDetails
     chargeItems: List[ChargeItem]
@@ -120,3 +120,8 @@ class BookReservationRequest(SimplenightModel):
     passengerInfo: PassengerInfo
     paymentInfo: PaymentInfo
     quoteInfo: QuoteResponse
+
+
+class FindReservationRequest(SimplenightModel):
+    reservation_id: str
+    lastname: str

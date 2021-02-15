@@ -3,20 +3,184 @@ from rest_framework.request import Request
 from requests import Session
 from typing import Dict, Any
 from zeep import Client, Transport, xsd
-
 from api.carey.settings import CONFIG
 from api.common.decorators import cached_property
-from api.carey.models.carey_api_model import RateInquiryRequest, BookReservationRequest
+from api.carey.models.carey_api_model import RateInquiryRequest, BookReservationRequest, FindReservationRequest
 
 
 class CareyAdapter:
     def get_rate_inquiry(self, rate_inquiry_request: RateInquiryRequest):
-        request = self._build_request(rate_inquiry_request)
-        return self.client.service.rateInquiry(**request)
+        POS_Type = self.client.get_type("ns1:POS_Type")
+        GroundLocationsType = self.client.get_type("ns1:GroundLocationsType")
+        GroundLocationType = self.client.get_type("ns1:GroundLocationType")
+        GroundAirportType = self.client.get_type("ns1:GroundAirportType")
+        List_GroundServiceProvided = self.client.get_type("ns1:List_GroundServiceProvided")
+        GroundServiceType = self.client.get_type("ns1:GroundServiceType")
+        pos = POS_Type(
+            Source=[
+                {
+                    "BookingChannel": {
+                        "Type": "TA",
+                        "CompanyName": {
+                            "_value_1": "CSI - SimpleNight",
+                            "Code": "",
+                            "CodeContext": "52969",
+                            "CompanyShortName": "PM744",
+                        },
+                    }
+                }
+            ]
+        )
+        pickUp = GroundLocationType(
+            DateTime=rate_inquiry_request.dateTime,
+            Address={
+                "LocationName": rate_inquiry_request.pickUpLoacation.locationName,
+                "AddressLine": rate_inquiry_request.pickUpLoacation.addressLine,
+                "CityName": rate_inquiry_request.pickUpLoacation.cityName,
+                "PostalCode": rate_inquiry_request.pickUpLoacation.postalCode,
+                "StateProv": {
+                    "_value_1": rate_inquiry_request.pickUpLoacation.stateProv["value"],
+                    "StateCode": rate_inquiry_request.pickUpLoacation.stateProv["StateCode"],
+                },
+                "CountryName": {
+                    "_value_1": rate_inquiry_request.pickUpLoacation.countryName.value,
+                    "Code": rate_inquiry_request.pickUpLoacation.countryName.stateCode,
+                },
+                "LocationType": "address",
+            },
+        )
+        dropOff = {}
+        if rate_inquiry_request.dropOffLocation.airport:
+            dropOff = GroundLocationType(
+                AirportInfo={
+                    "Departure": GroundAirportType(
+                        AirportName=rate_inquiry_request.dropOffLocation.locationName,
+                        LocationCode=rate_inquiry_request.dropOffLocation.airportCode,
+                    )
+                }
+            )
+        else:
+            dropOff = GroundLocationType(
+                Address={
+                    "LocationName": rate_inquiry_request.dropOffLocation.locationName,
+                    "AddressLine": rate_inquiry_request.dropOffLocation.addressLine,
+                    "CityName": rate_inquiry_request.dropOffLocation.cityName,
+                    "PostalCode": rate_inquiry_request.dropOffLocation.postalCode,
+                    "StateProv": {
+                        "_value_1": rate_inquiry_request.dropOffLocation.stateProv["value"],
+                        "StateCode": rate_inquiry_request.dropOffLocation.stateProv["StateCode"],
+                    },
+                    "CountryName": {
+                        "_value_1": rate_inquiry_request.dropOffLocation.countryName.value,
+                        "Code": rate_inquiry_request.dropOffLocation.countryName.stateCode,
+                    },
+                    "LocationType": "address",
+                }
+            )
+
+        service = GroundLocationsType(Pickup=pickUp, Dropoff=dropOff)
+        service_type = List_GroundServiceProvided(Code="Point-to-Point", Description="ALL")
+        passengerPrefs = GroundServiceType(
+            MaximumPassengers=rate_inquiry_request.passengers, MaximumBaggage=rate_inquiry_request.bags
+        )
+
+        return self.client.service.rateInquiry(
+            Version="1.0", POS=pos, Service=service, ServiceType=service_type, PassengerPrefs=passengerPrefs
+        )
 
     def get_book_reservation(self, book_reservation_request: BookReservationRequest):
-        request = self._build_book_request(book_reservation_request)
-        return self.client.service.addReservation(**request)
+        POS_Type = self.client.get_type("ns1:POS_Type")
+        GroundLocationsType = self.client.get_type("ns1:GroundLocationsType")
+        GroundLocationType = self.client.get_type("ns1:GroundLocationType")
+        GroundAirportType = self.client.get_type("ns1:GroundAirportType")
+        GroundPrimaryAdditionalPassengerType = self.client.get_type("ns1:GroundPrimaryAdditionalPassengerType")
+        GroundServiceDetailType = self.client.get_type("ns1:GroundServiceDetailType")
+        PaymentFormType = self.client.get_type("ns1:PaymentFormType")
+
+        pos = POS_Type(
+            Source=[
+                {
+                    "RequestorID": {"MessagePassword": "Carey123", "Type": "TA", "ID": "testarranger@testnone.com"},
+                    "BookingChannel": {
+                        "Type": "TA",
+                        "CompanyName": {
+                            "_value_1": "CSI - SimpleNight",
+                            "Code": "",
+                            "CodeContext": "52969",
+                            "CompanyShortName": "PM744",
+                        },
+                    },
+                }
+            ]
+        )
+
+        pickUp = GroundLocationType(
+            DateTime=book_reservation_request.quoteInfo.pickUpDate,
+            Address={
+                "LocationName": book_reservation_request.quoteInfo.pickUpLoacation.locationName,
+                "AddressLine": book_reservation_request.quoteInfo.pickUpLoacation.addressLine,
+                "CityName": book_reservation_request.quoteInfo.pickUpLoacation.cityName,
+                "PostalCode": book_reservation_request.quoteInfo.pickUpLoacation.postalCode,
+                "StateProv": {
+                    "_value_1": book_reservation_request.quoteInfo.pickUpLoacation.stateProv["value"],
+                    "StateCode": book_reservation_request.quoteInfo.pickUpLoacation.stateProv["StateCode"],
+                },
+                "CountryName": {
+                    "_value_1": book_reservation_request.quoteInfo.pickUpLoacation.countryName.value,
+                    "Code": book_reservation_request.quoteInfo.pickUpLoacation.countryName.stateCode,
+                },
+                "LocationType": "address",
+            },
+        )
+        dropOff = {}
+        if book_reservation_request.quoteInfo.dropOffLocation.airport:
+            dropOff = GroundLocationType(
+                AirportInfo={
+                    "Departure": GroundAirportType(
+                        AirportName=book_reservation_request.quoteInfo.dropOffLocation.locationName,
+                        LocationCode=book_reservation_request.quoteInfo.dropOffLocation.airportCode,
+                    )
+                }
+            )
+        else:
+            dropOff = GroundLocationType(
+                Address={
+                    "LocationName": book_reservation_request.quoteInfo.dropOffLocation.locationName,
+                    "AddressLine": book_reservation_request.quoteInfo.dropOffLocation.addressLine,
+                    "CityName": book_reservation_request.quoteInfo.dropOffLocation.cityName,
+                    "PostalCode": book_reservation_request.quoteInfo.dropOffLocation.postalCode,
+                    "StateProv": {
+                        "_value_1": book_reservation_request.quoteInfo.dropOffLocation.stateProv["value"],
+                        "StateCode": book_reservation_request.quoteInfo.dropOffLocation.stateProv["StateCode"],
+                    },
+                    "CountryName": {
+                        "_value_1": book_reservation_request.quoteInfo.dropOffLocation.countryName.value,
+                        "Code": book_reservation_request.quoteInfo.dropOffLocation.countryName.stateCode,
+                    },
+                    "LocationType": "address",
+                }
+            )
+
+        location = GroundLocationsType(Pickup=pickUp, Dropoff=dropOff)
+        passenger = GroundPrimaryAdditionalPassengerType(
+            Primary={
+                "PersonName": {"GivenName": "Ming", "Surname": "Song"},
+                "Telephone": "1234567890",
+                "Email": ["test@gmail.com"],
+            }
+        )
+        service = GroundServiceDetailType()
+        payment = PaymentFormType()
+        return self.client.service.rateInquiry(
+            Version="1.0",
+            POS=pos,
+            GroundReservation={
+                "Location": location,
+            },
+            Passenger=passenger,
+            Service=service,
+            Payment=payment,
+        )
 
     def get_modify_reservation(self, modify_reservation_request: Request):
         request = self._build_request(modify_reservation_request)
@@ -26,8 +190,8 @@ class CareyAdapter:
         request = self._build_request(find_reservation_request)
         return self.client.service.findReservation(**request)
 
-    def get_cancel_reservation(self, cancel_reservation_request: Request):
-        request = self._build_request(cancel_reservation_request)
+    def get_cancel_reservation(self, cancel_reservation_request: FindReservationRequest):
+        request = self._build_cancel_request(cancel_reservation_request)
         return self.client.service.cancelReservation(**request)
 
     @cached_property
@@ -41,8 +205,8 @@ class CareyAdapter:
         self.app_key = self.config["app_key"]
         headers = {
             "Content-Type": "text/xml",
-            "api_-id": self.app_id,
-            "x-api-key": self.app_key,
+            "app_id": self.app_id,
+            "app_key": self.app_key,
         }
         session.headers.update(headers)
 
@@ -59,150 +223,6 @@ class CareyAdapter:
     def _get_wsdl_path():
         wsdl_path = "https://sandbox.carey.com/CSIOTAProxy_v2/CareyReservationService?wsdl"
         return wsdl_path
-
-    @staticmethod
-    def _build_request(request: RateInquiryRequest):
-        build_request: Dict[Any, Any] = {
-            "Version": "1.0",
-            "POS": {
-                "Source": {
-                    "BookingChannel": {
-                        "Type": "TA",
-                        "CompanyName": {
-                            "_value_1": "CSI - SimpleNight",
-                            "Code": "",
-                            "CodeContext": "52969",
-                            "CompanyShortName": "PM744",
-                        },
-                    }
-                }
-            },
-            "Service": {"Pickup": {}, "Dropoff": {}},
-            "ServiceType": {"Code": request.tripType, "Description": "ALL"},
-            "PassengerPrefs": {
-                "MaximumBaggage": request.bags,
-                "MaximumPassengers": request.passengers,
-                "GreetingSignInd": False,
-            },
-        }
-        if request.pickUpLoacation.airport:
-            build_request["Service"]["Pickup"].update(
-                {
-                    "DateTime": request.dateTime,
-                    "AirportInfo": {
-                        "Departure": {
-                            "AirportName": request.pickUpLoacation.locationName,
-                            "LocationCode": request.pickUpLoacation.airportCode,
-                        }
-                    },
-                    "Airline": {
-                        "FlightDateTime": request.flightInfo.flightDate,
-                        "FlightNumber": request.flightInfo.flightNum,
-                        "Code": request.flightInfo.flightCode,
-                    },
-                }
-            )
-        else:
-            if request.pickUpLoacation.trainStation:
-                build_request["Service"]["Pickup"].update(
-                    {
-                        "DateTime": request.dateTime,
-                        "Address": {
-                            "LocationName": request.pickUpLoacation.locationName,
-                            "AddressLine": request.pickUpLoacation.addressLine,
-                            "CityName": request.pickUpLoacation.cityName,
-                            "PostalCode": request.pickUpLoacation.postalCode,
-                            "StateProv": {
-                                "_value_1": request.pickUpLoacation.stateProv["value"],
-                                "StateCode": request.pickUpLoacation.stateProv["StateCode"],
-                            },
-                            "CountryName": {
-                                "_value_1": request.pickUpLoacation.countryName.value,
-                                "Code": request.pickUpLoacation.countryName.stateCode,
-                            },
-                            "LocationType": xsd.SkipValue,
-                        },
-                    }
-                )
-            else:
-                build_request["Service"]["Pickup"].update(
-                    {
-                        "DateTime": request.dateTime,
-                        "Address": {
-                            "LocationName": request.pickUpLoacation.locationName,
-                            "AddressLine": request.pickUpLoacation.addressLine,
-                            "CityName": request.pickUpLoacation.cityName,
-                            "PostalCode": request.pickUpLoacation.postalCode,
-                            "StateProv": {
-                                "_value_1": request.pickUpLoacation.stateProv["value"],
-                                "StateCode": request.pickUpLoacation.stateProv["StateCode"],
-                            },
-                            "CountryName": {
-                                "_value_1": request.pickUpLoacation.countryName.value,
-                                "Code": request.pickUpLoacation.countryName.stateCode,
-                            },
-                            "LocationType": xsd.SkipValue,
-                        },
-                    }
-                )
-
-        if request.dropOffLocation.airport:
-            build_request["Service"]["Pickup"].update(
-                {
-                    "DateTime": request.dateTime,
-                    "AirportInfo": {
-                        "Departure": {
-                            "AirportName": request.dropOffLocation.locationName,
-                            "LocationCode": request.dropOffLocation.airportCode,
-                        }
-                    },
-                    "Airline": {"FlightDateTime": "", "FlightNumber": "", "Code": ""},
-                }
-            )
-        else:
-            if request.dropOffLocation.trainStation:
-                build_request["Service"]["Pickup"].update(
-                    {
-                        "DateTime": request.dateTime,
-                        "Address": {
-                            "LocationName": request.dropOffLocation.locationName,
-                            "AddressLine": request.dropOffLocation.addressLine,
-                            "CityName": request.dropOffLocation.cityName,
-                            "PostalCode": request.dropOffLocation.postalCode,
-                            "StateProv": {
-                                "_value_1": request.dropOffLocation.stateProv["value"],
-                                "StateCode": request.dropOffLocation.stateProv["StateCode"],
-                            },
-                            "CountryName": {
-                                "_value_1": request.dropOffLocation.countryName.value,
-                                "Code": request.dropOffLocation.countryName.stateCode,
-                            },
-                            "LocationType": xsd.SkipValue,
-                        },
-                    }
-                )
-            else:
-                build_request["Service"]["Pickup"].update(
-                    {
-                        "DateTime": request.dateTime,
-                        "Address": {
-                            "LocationName": request.dropOffLocation.locationName,
-                            "AddressLine": request.dropOffLocation.addressLine,
-                            "CityName": request.dropOffLocation.cityName,
-                            "PostalCode": request.dropOffLocation.postalCode,
-                            "StateProv": {
-                                "_value_1": request.dropOffLocation.stateProv["value"],
-                                "StateCode": request.dropOffLocation.stateProv["StateCode"],
-                            },
-                            "CountryName": {
-                                "_value_1": request.dropOffLocation.countryName.value,
-                                "Code": request.dropOffLocation.countryName.stateCode,
-                            },
-                            "LocationType": xsd.SkipValue,
-                        },
-                    }
-                )
-        return build_request
 
     @staticmethod
     def _build_book_request(request: BookReservationRequest):
@@ -419,6 +439,29 @@ class CareyAdapter:
         #             }
         #         )
         return build_book_request
+
+    @staticmethod
+    def _build_cancel_request(request: FindReservationRequest):
+        build_cancel_request: Dict[Any, Any] = {
+            "Version": "2",
+            "SequenceNmbr": 2000015,
+            "POS": {
+                "Source": {
+                    "RequestorID": {"ID": "testarranger@testnone.com", "MessagePassword": "carey123", "Type": "TA"},
+                    "BookingChannel": {
+                        "Type": "TA",
+                        "CompanyName": {
+                            "Code": "",
+                            "CodeContext": "52969",
+                            "CompanyShortName": "PM744",
+                            "_value_1": "CSI - SimpleNight",
+                        },
+                    },
+                }
+            },
+            "Reservation": {"UniqueID": {"ID": request.reservation_id}},
+        }
+        return build_cancel_request
 
     def __init__(self):
         self.session = self._create_wsdl_session()
