@@ -248,7 +248,6 @@ CACHE_TIMEOUT = 3600
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
-APPEND_SLASH = False
 TOKEN_EXPIRES_IN = 200000  # 2hours
 
 environment = "production"
