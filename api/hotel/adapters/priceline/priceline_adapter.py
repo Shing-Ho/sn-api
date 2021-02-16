@@ -614,13 +614,17 @@ class PricelineAdapter(HotelAdapter):
         room_types = []
         for room in hotel_response["room_data"]:
             rate_data = room["rate_data"][0]
+            adults = rate_data["occupancy_limit"]
+            if not adults:
+                adults = 2
+
             room_type = RoomType(
                 code=room["id"],
                 name=rate_data["title"],
                 description=rate_data["description"],
                 amenities=[],
                 photos=[],
-                capacity=RoomOccupancy(adults=rate_data["occupancy_limit"]),
+                capacity=RoomOccupancy(adults=adults),
                 bed_types=None,
             )
 
