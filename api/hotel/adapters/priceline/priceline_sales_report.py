@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from api.common.common_models import SimplenightModel
+from api.common.request_context import get_test_mode
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
 from api.hotel.adapters.priceline.priceline_transport import PricelineTransport
 from api.models.models import HotelBooking
@@ -23,7 +24,7 @@ class UnmatchedPricelineBooking(SimplenightModel):
 
 class PricelineSalesReport:
     def __init__(self):
-        self.transport = PricelineTransport()
+        self.transport = PricelineTransport(test_mode=get_test_mode())
 
     def find_unmatched_bookings(self):
         def create_item(data):
