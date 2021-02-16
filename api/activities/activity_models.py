@@ -10,9 +10,9 @@ from api.hotel.models.hotel_common_models import Money
 
 
 class ActivityLocation(SimplenightModel):
-    address: str
-    latitude: Decimal
-    longitude: Decimal
+    address: Optional[str]
+    latitude: Optional[Decimal]
+    longitude: Optional[Decimal]
 
 
 class SimplenightActivity(SimplenightModel):

@@ -117,9 +117,12 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
     @staticmethod
     def _parse_location(locations) -> Optional[ActivityLocation]:
         try:
-            return ActivityLocation(
-                address=locations[0]["address"], latitude=locations[0]["latitude"], longitude=locations[0]["longitude"],
-            )
+            if len(locations) > 0:
+                return ActivityLocation(
+                    address=locations[0]["address"], latitude=locations[0]["latitude"], longitude=locations[0]["longitude"],
+                )
+            else:
+                return {}
         except KeyError:
             return None
 
