@@ -472,13 +472,21 @@ class PricelineAdapter(HotelAdapter):
             code=rate_code,
             room_type_code=room_id,
             rate_plan_code=rate_plan.code,
-            maximum_allowed_occupancy=RoomOccupancy(adults=rate_data["occupancy_limit"]),
+            maximum_allowed_occupancy=self._get_room_capacity(rate_data),
             total_base_rate=Money(amount=Decimal(price_details["display_sub_total"]), currency=display_currency,),
             total_tax_rate=Money(amount=Decimal(price_details["display_taxes"]), currency=display_currency,),
             total=Money(amount=Decimal(price_details["display_total"]), currency=display_currency,),
             rate_type=RateType.BOOKABLE,
             postpaid_fees=self._parse_postpaid_fees_from_priceline_rate(rate_data),
         )
+
+    @staticmethod
+    def _get_room_capacity(rate_data: Dict[Any, Any]) -> RoomOccupancy:
+        adults = rate_data["occupancy_limit"]
+        if not adults:
+            adults = 2
+
+        return RoomOccupancy(adults=adults)
 
     @staticmethod
     def get_ppn_bundle_code(rate_data):
@@ -598,8 +606,7 @@ class PricelineAdapter(HotelAdapter):
             unstructured_policy=most_lenient_policy.description,
         )
 
-    @staticmethod
-    def _create_room_types(hotel_response):
+    def _create_room_types(self, hotel_response):
         """
         RoomTypes and Rate Plans, and Rates are returned together by Priceline.
         Priceline supports an alternative format, where room types are grouped together.
@@ -614,17 +621,13 @@ class PricelineAdapter(HotelAdapter):
         room_types = []
         for room in hotel_response["room_data"]:
             rate_data = room["rate_data"][0]
-            adults = rate_data["occupancy_limit"]
-            if not adults:
-                adults = 2
-
             room_type = RoomType(
                 code=room["id"],
                 name=rate_data["title"],
                 description=rate_data["description"],
                 amenities=[],
                 photos=[],
-                capacity=RoomOccupancy(adults=adults),
+                capacity=self._get_room_capacity(rate_data),
                 bed_types=None,
             )
 
