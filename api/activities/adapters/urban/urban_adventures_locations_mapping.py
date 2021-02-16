@@ -101,21 +101,26 @@ urban_adventures_simplenight_city_map = {
 }
 
 
-def remove_old_mappings():
-    provider = Provider.objects.filter(name="urban_adventures")
-    if provider:
-        CityMap.objects.filter(provider=provider).delete()
-        ProviderCity.objects.filter(provider=provider).delete()
+def remove_old_mappings(provider):
+    provider_city_mappings = CityMap.objects.filter(provider=provider)
+    if provider_city_mappings:
+        provider_city_mappings.delete()
 
-    provider.delete()
+    provider_cities = ProviderCity.objects.filter(provider=provider)
+    if provider_cities:
+        provider_cities.delete()
 
 
 def insert_mappings(*_):
-    remove_old_mappings()
-    provider = Provider.objects.get_or_create(name="urban")[0]
+    # Cleanup an old migration
+    old_provider = Provider.objects.filter(name="urban_adventures")
+    if old_provider:
+        remove_old_mappings(old_provider[0])
 
-    CityMap.objects.filter(provider=provider).delete()
-    ProviderCity.objects.filter(provider=provider).delete()
+    new_provider = Provider.objects.get_or_create(name="urban")[0]
+    remove_old_mappings(new_provider)
+
+    old_provider.delete()
 
     try:
         for dest_id in urban_adventures_simplenight_city_map:
@@ -123,7 +128,7 @@ def insert_mappings(*_):
             sn_city = Geoname.objects.get(geoname_id=geoname_id)
 
             ua_city = ProviderCity.objects.get_or_create(
-                provider=provider,
+                provider=new_provider,
                 location_name=urban_adventures_simplenight_city_map[dest_id]["ua_name"],
                 provider_code=dest_id,
                 country_code=sn_city.iso_country_code,
