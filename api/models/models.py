@@ -623,9 +623,8 @@ class VenueDetail(models.Model):
     logitude = models.CharField(max_length=10, null=True, blank=True)
     latitude = models.CharField(max_length=200, null=True, blank=True)
     capacity = models.IntegerField(null=True, blank=True)
-    PAYMENT_METHOD_CHOICE = (("Paypal", "Paypal"), ("Applepay", "Applepay"))
 
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICE, null=True, blank=True)
+    payment_method = jsonfield.JSONField(default={})
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="details")
     availability = jsonfield.JSONField()
     holidays = jsonfield.JSONField()
