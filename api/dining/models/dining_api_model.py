@@ -1,6 +1,6 @@
 import decimal
 from datetime import date, datetime
-from typing import List, Optional
+from typing import List, Dict, Any, Optional
 from pydantic import Field
 
 from api.common.common_models import SimplenightModel, BusinessLocation
@@ -41,13 +41,27 @@ class AdapterOpening(SimplenightModel):
     times: List[str] = Field(default_factory=list)
 
 
+class DiningHour(SimplenightModel):
+    start: str
+    end: str
+    day: int
+
+
+class DiningHours(SimplenightModel):
+    __root__: Dict[str, Any]
+
+
 class DiningDetail(SimplenightModel):
-    dining_id: str
+    dining_id: Optional[str]
     name: str
     rating: float
     phone: str
-    images: List[str] = Field(default_factory=list)
-    location: BusinessLocation
+    images: Optional[List[str]] = Field(default_factory=list)
+    location: Optional[BusinessLocation]
+    is_closed: bool
+    display_phone: str
+    categories: Optional[List[str]] = Field(default_factory=list)
+    hours: List[DiningHours] = Field(default_factory=list)
 
 
 class DiningUser(SimplenightModel):
