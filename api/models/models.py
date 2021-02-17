@@ -623,9 +623,9 @@ class VenueDetail(models.Model):
     logitude = models.CharField(max_length=10, null=True, blank=True)
     latitude = models.CharField(max_length=200, null=True, blank=True)
     capacity = models.IntegerField(null=True, blank=True)
-    payment_method = models.ForeignKey(
-        PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_requests_modified"
-    )
+    PAYMENT_METHOD_CHOICE = (("Paypal", "Paypal"), ("Applepay", "Applepay"))
+
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICE, null=True, blank=True)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name="details")
     availability = jsonfield.JSONField()
     holidays = jsonfield.JSONField()
@@ -800,7 +800,11 @@ class ActivityBookingModel(models.Model):
     activity_time = models.TextField(null=True)
     thumbnail = models.TextField(null=True)
     total_price = models.DecimalField(max_digits=7, decimal_places=2)
+    total_taxes = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+    total_base = models.DecimalField(max_digits=7, decimal_places=2, null=True)
     provider_price = models.DecimalField(max_digits=7, decimal_places=2)
+    provider_taxes = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+    provider_base = models.DecimalField(max_digits=7, decimal_places=2, null=True)
     currency = models.CharField(max_length=3)
 
 
