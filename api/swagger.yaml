@@ -4678,10 +4678,6 @@ components:
                 type: integer
                 description: The number of tickets of this type to purchase
                 example: 2
-              price:
-                type: number
-                description: The echoed price from the variants response
-                example: 25.98
 
     MultiProductActivityBookingResponse:
       type: object

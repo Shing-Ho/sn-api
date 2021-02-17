@@ -15,10 +15,6 @@ class CareyService:
         response = self.carey.get_book_reservation(request)
         return response
 
-    def get_modify_reservation(self, request):
-        response = self.carey.get_modify_reservation(request)
-        return response
-
     def get_find_reservation(self, request):
         response = self.carey.get_find_reservation(request)
         return response

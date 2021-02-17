@@ -17,8 +17,6 @@ class AdapterActivity(SimplenightModel):
     description: str
     activity_date: date
     total_price: Money
-    total_base: Money
-    total_taxes: Money
     location: Optional[ActivityLocation]
     categories: Optional[List[str]]
     images: List[Image]
@@ -36,6 +34,7 @@ class AdapterActivitySearch(SimplenightModel):
 
 class AdapterActivityLocationSearch(AdapterActivitySearch):
     location: Location
+    provider_location_code: Optional[str]
 
 
 class AdapterActivitySpecificSearch(AdapterActivitySearch):

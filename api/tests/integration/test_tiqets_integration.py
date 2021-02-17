@@ -41,10 +41,10 @@ class TestTiqets(SimplenightTestCase):
         self.assertEqual("974626", results[0].code)
         self.assertEqual("San Francisco Museum of Modern Art (SFMOMA)", results[0].name)
         self.assertIn("Not just one of the largest museums", results[0].description)
-        self.assertEqual(Decimal("20.69"), results[0].total_price.amount)
+        self.assertEqual(Decimal("20.61"), results[0].total_price.amount)
         self.assertEqual("EUR", results[0].total_price.currency)
         self.assertEqual(["ATTRACTION"], results[0].categories)
-        self.assertEqual(3, len(results[0].images))
+        self.assertEqual(5, len(results[0].images))
 
     def test_details(self):
         adapter = TiqetsActivityAdapter(TiqetsTransport(test_mode=True))

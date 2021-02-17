@@ -4,7 +4,7 @@ from typing import List, Optional, Union, Dict
 
 from pydantic import Field
 
-from api.common.common_models import SimplenightModel, BusinessContact, BusinessLocation
+from api.common.common_models import SimplenightModel, BusinessContact
 from api.hotel.models.hotel_api_model import Image
 from api.hotel.models.hotel_common_models import Money
 
@@ -21,8 +21,6 @@ class SimplenightActivity(SimplenightModel):
     description: str
     activity_date: date
     total_price: Money
-    total_base: Money
-    total_taxes: Money
     location: Optional[ActivityLocation]
     categories: Optional[List[str]]
     images: List[Image]
@@ -53,6 +51,9 @@ class ActivityItem(SimplenightModel):
 
 
 class ActivityVariant(SimplenightModel):
+    def __hash__(self):  # make hashable for use in a set
+        return hash((self.code, self.name, self.price))
+
     code: str
     name: str
     description: str
@@ -83,7 +84,7 @@ class SimplenightActivityDetailResponse(SimplenightModel):
     timezone: str
     images: List[Image]
     contact: BusinessContact
-    locations: List[BusinessLocation]
+    locations: Optional[ActivityLocation]
     availabilities: List[date]
     policies: List[str]
     cancellations: List[ActivityCancellation]
