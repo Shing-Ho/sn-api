@@ -10,6 +10,7 @@ from api.dining.models.dining_api_model import (
     AdapterOpening,
     DiningSearch,
     OpeningSearch,
+    DiningHours,
     DiningDetail,
     DiningReview,
     DiningReservationRequest,
@@ -66,6 +67,10 @@ class YelpAdapter(DiningAdapter):
                 **response["coordinates"],
                 "address": ", ".join(str(x) for x in response["location"]["display_address"]),
             },
+            is_closed=response["is_closed"],
+            display_phone=response["display_phone"],
+            categories=(x["title"] for x in response["categories"]),
+            hours=(DiningHours(__root__=x) for x in response["hours"]),
         )
 
         return dining_detail
