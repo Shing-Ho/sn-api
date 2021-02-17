@@ -9,8 +9,8 @@ class StateProvType(SimplenightModel):
 
 
 class CountryNameType(SimplenightModel):
-    value: str
-    stateCode: str
+    value: Optional[str]
+    stateCode: Optional[str]
 
 
 class FlightInfo(SimplenightModel):
@@ -20,13 +20,13 @@ class FlightInfo(SimplenightModel):
 
 
 class Location(SimplenightModel):
-    latitude: Decimal
-    longitude: Decimal
-    locationName: str
+    latitude: Optional[Decimal]
+    longitude: Optional[Decimal]
+    locationName: Optional[str]
     addressLine: Optional[str]
     cityName: Optional[str]
     postalCode: Optional[str]
-    stateProv: object
+    stateProv: Optional[CountryNameType]
     countryName: Optional[CountryNameType]
     airport: Optional[bool]
     airportCode: Optional[str]
@@ -105,6 +105,7 @@ class PassengerInfo(SimplenightModel):
     firstName: str
     lastName: str
     phoneNum: str
+    email: str
 
 
 class PaymentInfo(SimplenightModel):
@@ -122,6 +123,60 @@ class BookReservationRequest(SimplenightModel):
     quoteInfo: QuoteResponse
 
 
+class NameType(SimplenightModel):
+    firstName: Optional[str]
+    lastName: Optional[str]
+
+
+class TotalChargeType(SimplenightModel):
+    total: Optional[str]
+    currency: Optional[str]
+
+
+class Airport(SimplenightModel):
+    airportName: Optional[str]
+    airportCode: Optional[str]
+
+
+class Airline(SimplenightModel):
+    countryCode: Optional[str]
+    FlightNumber: Optional[str]
+    FlightDateTime: Optional[str]
+
+
+class BookingResponseLocation(SimplenightModel):
+    address: Optional[Location]
+    airport: Optional[Airport]
+    airline: Optional[Airline]
+
+
+class BookResponse(SimplenightModel):
+    confirm_id: str
+    email: Optional[str]
+    name: Optional[NameType]
+    pickupDate: str
+    pickUpLocation: BookingResponseLocation
+    dropOffLocation: BookingResponseLocation
+    total: Optional[TotalChargeType]
+    sequenceNmbr: Optional[str]
+    version: Optional[Decimal]
+
+
 class FindReservationRequest(SimplenightModel):
     reservation_id: str
-    lastname: str
+    lastName: str
+
+
+class CancelReservationRequest(SimplenightModel):
+    reservation_id: str
+    sequenceNmbr: str
+    email: str
+    version: Decimal
+
+
+class CancelResponse(SimplenightModel):
+    cancel_id: str
+    reservation_id: str
+    name: Optional[NameType]
+    pickUpdate: str
+    pickUpLocation: BookingResponseLocation

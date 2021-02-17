@@ -10,7 +10,12 @@ from api.carey.carey_service import CareyService
 from api.carey.carey_search import CareySearch
 from api.common.common_models import from_json
 
-from api.carey.models.carey_api_model import RateInquiryRequest, BookReservationRequest, FindReservationRequest
+from api.carey.models.carey_api_model import (
+    RateInquiryRequest,
+    BookReservationRequest,
+    FindReservationRequest,
+    CancelReservationRequest,
+)
 from api.carey.parsers.carey_parser import CareyParser
 from api.view.default_view import _response
 
@@ -47,51 +52,38 @@ class CareyViewSet(viewsets.ViewSet):
     def get_add_reservation(self, request: Request):
         book_reservation_request = from_json(request.data, BookReservationRequest)
         book_response = carey_service.get_book_reservation(book_reservation_request)
-        return _response(book_response)
-
-    @action(detail=False, url_path="modify-reservation", methods=["POST"], name="Modify a reservation")
-    def get_modify_reservation(self, request: Request):
-        _response = carey_service.get_modify_reservation(request.data)
-        if _response["Errors"]:
-            jsondata = helpers.serialize_object(_response["Errors"]["Error"][0]["_value_1"])
+        print("book_response===================", book_response)
+        if book_response["Errors"]:
+            jsondata = helpers.serialize_object(book_response["Errors"]["Error"][0]["_value_1"])
             error_message = {"message": jsondata}
             return HttpResponse(json.dumps(error_message), content_type="application/json", status=404)
         else:
-            jsondata = helpers.serialize_object(_response)
-            response = json.dumps(jsondata, cls=DecimalEncoder)
-            return HttpResponse(response, content_type="application/json")
+            parse_quote_data = CareyParser()
+            response_data = parse_quote_data.parse_booking_response(book_response)
+            return _response(response_data)
 
     @action(detail=False, url_path="find-reservation", methods=["POST"], name="Find a reservation")
     def get_find_reservation(self, request: Request):
-        _response = carey_service.get_find_reservation(request.data)
-        if _response["Errors"]:
-            jsondata = helpers.serialize_object(_response["Errors"]["Error"][0]["_value_1"])
+        find_reservation_request = from_json(request.data, FindReservationRequest)
+        find_response = carey_service.get_find_reservation(find_reservation_request)
+        if find_response["Errors"]:
+            jsondata = helpers.serialize_object(find_response["Errors"]["Error"][0]["_value_1"])
             error_message = {"message": jsondata}
             return HttpResponse(json.dumps(error_message), content_type="application/json", status=404)
         else:
-            jsondata = helpers.serialize_object(_response)
-            response = json.dumps(jsondata, cls=DecimalEncoder)
-            return HttpResponse(response, content_type="application/json")
+            parse_quote_data = CareyParser()
+            response_data = parse_quote_data.parse_find_response(find_response)
+            return _response(response_data)
 
     @action(detail=False, url_path="cancel-reservation", methods=["POST"], name="Cancel a reservation")
     def get_cancel_reservation(self, request: Request):
-        cancel_reservation_request = from_json(request.data, FindReservationRequest)
+        cancel_reservation_request = from_json(request.data, CancelReservationRequest)
         cancel_response = carey_service.get_cancel_reservation(cancel_reservation_request)
-        print("cancel_response=============", cancel_response)
-        if _response["Errors"]:
-            jsondata = helpers.serialize_object(_response["Errors"]["Error"][0]["_value_1"])
+        if cancel_response["Errors"]:
+            jsondata = helpers.serialize_object(cancel_response["Errors"]["Error"][0]["_value_1"])
             error_message = {"message": jsondata}
             return HttpResponse(json.dumps(error_message), content_type="application/json", status=404)
         else:
-            print(cancel_response)
-            # jsondata = helpers.serialize_object(quote_response["GroundServices"])
-            # parse_quote_data = CareyParser()
-            # quote_data = list(
-            #     parse_quote_data.parse_quotes(quote_response["GroundServices"]["GroundService"], rate_inquiry_request)
-            # )
-            # return _response(quote_data)
-
-    @action(detail=False, url_path="search-reservation", methods=["POST"], name="Search a reservation")
-    def search_reservation(self, request: Request):
-        response = carey_search.search_reservation(request)
-        return HttpResponse(response, content_type="application/json")
+            parse_quote_data = CareyParser()
+            response_data = parse_quote_data.parse_cancel_response(cancel_response)
+            return _response(response_data)
