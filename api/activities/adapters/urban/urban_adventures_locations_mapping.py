@@ -137,7 +137,7 @@ def insert_mappings(*_):
             )[0]
 
             CityMap.objects.get_or_create(
-                provider=provider, provider_city=ua_city, simplenight_city=sn_city,
+                provider=new_provider, provider_city=ua_city, simplenight_city=sn_city,
             )
     except (Geoname.DoesNotExist, CityMap.DoesNotExist):
         pass
