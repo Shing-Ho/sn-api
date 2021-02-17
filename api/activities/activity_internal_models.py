@@ -19,7 +19,7 @@ class AdapterActivity(SimplenightModel):
     total_price: Money
     total_base: Money
     total_taxes: Money
-    location: ActivityLocation
+    location: Optional[ActivityLocation]
     categories: Optional[List[str]]
     images: List[Image]
     rating: Optional[Decimal]

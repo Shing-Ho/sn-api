@@ -7,7 +7,7 @@ from typing import Dict, List
 import requests
 
 from api import logger
-from api.hotel.adapters.transport import Transport
+from api.common.transport import Transport
 
 
 class SuppliersApiTransport(Transport, abc.ABC):
@@ -20,7 +20,7 @@ class SuppliersApiTransport(Transport, abc.ABC):
         DETAILS = "details"
         VARIANTS = "variants"
         BOOK = "book"
-        CANCEL = "CANCEL"
+        CANCEL = "cancel"
         ACTIVITIES = "activities"
 
     def _get_headers(self, **kwargs):
@@ -35,7 +35,7 @@ class SuppliersApiTransport(Transport, abc.ABC):
         query_params = {"date_from": str(date_from), "date_to": str(date_to)}
         path_params = [product_id]
 
-        return self.get(self.Endpoint.DETAILS, path_params=path_params, query_params=query_params)
+        return self.get(self.Endpoint.ACTIVITIES, path_params=path_params, query_params=query_params)
 
     def variants(self, product_id, activity_date):
         path_params = [product_id, "date", str(activity_date)]
