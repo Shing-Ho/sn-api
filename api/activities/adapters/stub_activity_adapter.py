@@ -50,8 +50,6 @@ class StubActivityAdapter(ActivityAdapter):
             description=description,
             activity_date=datetime.now(),
             total_price=total_price,
-            total_base=total_base,
-            total_taxes=total_taxes,
             images=[],
             location=ActivityLocation(address="123 Foo Bar", latitude=Decimal(50.0), longitude=Decimal(-50.0),),
         )

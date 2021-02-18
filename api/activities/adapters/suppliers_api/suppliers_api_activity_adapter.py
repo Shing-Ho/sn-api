@@ -138,6 +138,7 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
         )
 
     def _create_details(self, detail):
+        logger.info("Found activity details: ", detail)
         availabilities = map(lambda x: date.fromisoformat(x), detail["availabilities"])
 
         return SimplenightActivityDetailResponse(
@@ -153,7 +154,7 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
                 address=detail["contact"]["address"],
                 phones=detail["contact"]["phones"],
             ),
-            locations=list(map(self._parse_location, detail["locations"])),
+            locations=self._parse_location(detail["locations"]),
             availabilities=list(availabilities),
             policies=detail["policies"],
             cancellations=list(map(self._parse_cancellation_policy, detail["cancellations"])),
@@ -175,8 +176,6 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
             description=activity["description"],
             activity_date=activity_date,
             total_price=Money(amount=activity["price"], currency=activity["currency"]),
-            total_base=Money(amount=Decimal(0), currency=activity["currency"]),
-            total_taxes=Money(amount=Decimal(0), currency=activity["currency"]),
             categories=activity["categories"],
             images=list(self._parse_image(image, idx) for idx, image in enumerate(activity["images"])),
             reviews=reviews,

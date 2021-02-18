@@ -8,10 +8,11 @@ from rest_framework.response import Response
 
 from api import logger
 from api.auth.authentication import HasOrganizationAPIKey, OrganizationApiDailyThrottle, OrganizationApiBurstThrottle
+from api.booking import booking_service
 from api.common.common_models import from_json
 from api.common.request_cache import get_request_cache
 from api.hotel import hotel_service, google_hotel_service
-from api.booking import booking_service
+from api.hotel.adapters.priceline.priceline_sales_report import PricelineSalesReport
 from api.hotel.converter.google_models import GoogleHotelSearchRequest, GoogleBookingSubmitRequest
 from api.hotel.google_pricing import google_pricing_api
 from api.hotel.models.booking_model import HotelBookingRequest
@@ -104,7 +105,10 @@ class HotelViewSet(viewsets.ViewSet):
         return HttpResponse(results, content_type="text/xml")
 
     @action(
-        detail=False, url_path="google/properties/hotel-codes", methods=["POST"], name="Property API by Hotel Code",
+        detail=False,
+        url_path="google/properties/hotel-codes",
+        methods=["POST"],
+        name="Property API by Hotel Code",
     )
     def properties_hotel_codes(self, request):
         hotel_codes = request.data
@@ -120,6 +124,11 @@ class HotelViewSet(viewsets.ViewSet):
 
         results = google_reconciliation.get_report(organization, start_date, end_date)
         return HttpResponse(google_reconciliation.format_report_csv(results), content_type="text/plain")
+
+    @action(detail=False, url_path="priceline/ghost-booking", methods=["GET"], name="Priceline Ghost Bookings Report")
+    def reconciliation(self, *_):
+        report = PricelineSalesReport()
+        return _response(report.find_unmatched_bookings())
 
     @action(detail=False, url_path="status", methods=["GET"], name="Health Check")
     def status(self, _):

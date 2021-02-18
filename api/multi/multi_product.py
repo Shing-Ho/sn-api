@@ -27,6 +27,7 @@ from api.multi.multi_product_models import (
 )
 from api.restaurants import restaurant_search
 from api.restaurants.restaurant_models import SimplenightRestaurant
+from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
 
 search_map: Dict[Type, Callable] = {
     HotelLocationSearch: hotel_service.search_by_location,
@@ -72,11 +73,19 @@ def search_request(search: SearchRequest):
 
 
 def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDetailResponse:
-    return activity_service.details(request)
+    try:
+        return activity_service.details(request)
+    except Exception as e:
+        logger.exception("Error while searching activity details")
+        raise AvailabilityException(detail=str(e), error_type=AvailabilityErrorCode.PROVIDER_ERROR)
 
 
 def variants(request: SimplenightActivityVariantRequest) -> List[ActivityVariants]:
-    return activity_service.variants(request)
+    try:
+        return activity_service.variants(request)
+    except Exception as e:
+        logger.exception("Error while searching activity variants")
+        raise AvailabilityException(detail=str(e), error_type=AvailabilityErrorCode.PROVIDER_ERROR)
 
 
 def _set_result_on_response(response, result):
