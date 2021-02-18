@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from zeep import helpers
 import json
 import decimal
+from xml.dom.minidom import parseString
 
 from api.carey.carey_service import CareyService
 from api.carey.carey_search import CareySearch
@@ -52,15 +53,16 @@ class CareyViewSet(viewsets.ViewSet):
     def get_add_reservation(self, request: Request):
         book_reservation_request = from_json(request.data, BookReservationRequest)
         book_response = carey_service.get_book_reservation(book_reservation_request)
-        print("book_response===================", book_response)
-        if book_response["Errors"]:
-            jsondata = helpers.serialize_object(book_response["Errors"]["Error"][0]["_value_1"])
-            error_message = {"message": jsondata}
-            return HttpResponse(json.dumps(error_message), content_type="application/json", status=404)
+        doc = parseString(book_response)
+        errors = doc.getElementsByTagName("Error")
+        if not errors:
+            confirmation_id = doc.getElementsByTagName("Confirmation")[0]
+            email = doc.getElementsByTagName("Email")[0]
+            response = {"confirmation_id": confirmation_id.getAttribute("ID"), "email": email.firstChild.nodeValue}
+            return HttpResponse(json.dumps(response), content_type="application/json")
         else:
-            parse_quote_data = CareyParser()
-            response_data = parse_quote_data.parse_booking_response(book_response)
-            return _response(response_data)
+            error_message = {"message": errors[0].firstChild.nodeValue}
+            return HttpResponse(json.dumps(error_message), content_type="application/json", status=404)
 
     @action(detail=False, url_path="find-reservation", methods=["POST"], name="Find a reservation")
     def get_find_reservation(self, request: Request):
