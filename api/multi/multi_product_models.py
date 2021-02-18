@@ -4,6 +4,7 @@ from typing import List, Optional, Union
 
 from api.activities.activity_models import SimplenightActivity
 from api.common.common_models import SimplenightModel
+from api.events.events_models import SimplenightEvent
 from api.hotel.models.hotel_api_model import SimplenightHotel, HotelLocationSearch, HotelSpecificSearch
 from api.restaurants.restaurant_models import SimplenightRestaurant
 
@@ -40,10 +41,18 @@ class ActivitySpecificSearch(ActivitySearch):
     activity_id: str
 
 
+class EventLocationSearch(SimplenightModel):
+    begin_date: date
+    end_date: date
+    location_id: str
+    provider: Optional[str]
+
+
 class SearchRequest(SimplenightModel):
     product_types: List[Products]
     hotel_search: Optional[Union[HotelLocationSearch, HotelSpecificSearch]]
     activity_search: Optional[Union[ActivitySpecificSearch, ActivityLocationSearch]]
+    event_search: Optional[EventLocationSearch]
     restaurant_search: Optional[RestaurantSearch]
 
 
@@ -51,3 +60,4 @@ class SearchResponse(SimplenightModel):
     hotel_results: Optional[Union[SimplenightHotel, List[SimplenightHotel]]]
     restaurant_results: Optional[List[SimplenightRestaurant]]
     activity_results: Optional[Union[SimplenightActivity, List[SimplenightActivity]]]
+    event_results: Optional[Union[SimplenightEvent, List[SimplenightEvent]]]

@@ -5,6 +5,7 @@ from typing import List
 from api.activities.activity_internal_models import AdapterActivity, ActivityDataCachePayload
 from api.activities.activity_models import SimplenightActivity, ActivityVariant, UrbanDeparture
 from api.common import cache_storage
+from api.events.events_models import AdapterEvent, SimplenightEvent, EventDataCachePayload
 from api.hotel.models.hotel_api_model import RoomDataCachePayload, AdapterHotel
 from api.hotel.models.hotel_common_models import RoomRate
 
@@ -81,6 +82,17 @@ def get_simplenight_rate(provider_rate_code) -> RoomDataCachePayload:
         raise RuntimeError("Could not find Simplenight Rate ID with Provider Rate ID: " + provider_rate_code)
 
     return get_cached_room_data(simplenight_rate_id)
+
+
+def save_provider_event(adapter_event: AdapterEvent, simplenight_event: SimplenightEvent):
+    payload = EventDataCachePayload(
+        code=adapter_event.code,
+        provider=adapter_event.provider,
+        adapter_activity=adapter_event,
+        simplenight_activity=simplenight_event,
+    )
+
+    cache_storage.set(_get_cache_key(simplenight_event.code), payload)
 
 
 def _get_cache_key(key) -> str:

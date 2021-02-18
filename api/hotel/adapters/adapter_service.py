@@ -5,11 +5,13 @@ from api.activities.activity_adapter import ActivityAdapter
 from api.activities.adapters.muse.muse_activity_adapter import MuseActivityAdapter
 from api.activities.adapters.stub_activity_adapter import StubActivityAdapter
 from api.activities.adapters.tiqets.tiqets_activity_adapter import TiqetsActivityAdapter
-from api.activities.adapters.tourcms.tourcms_activity_adapter import TourCmsActivityAdapter
+from api.activities.adapters.tourcms.tourcms_activity_adapter import TourCmsTransportSimplenightCore
 from api.activities.adapters.travelcurious.travelcurious_activity_adapter import TravelcuriousActivityAdapter
 from api.activities.adapters.urban.urban_activity_adapter import UrbanActivityAdapter
 from api.common.common_exceptions import FeatureNotFoundException
 from api.common.request_context import get_config_bool, get_config
+from api.events.adapters.ticket_evolution.ticket_evolution_event_adapter import TicketEvolutionEventAdapter
+from api.events.event_adapter import EventAdapter
 from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.priceline.priceline_adapter import PricelineAdapter
@@ -17,7 +19,7 @@ from api.hotel.adapters.stub.stub import StubHotelAdapter
 from api.hotel.adapters.travelport.travelport import TravelportHotelAdapter
 from api.hotel.models.hotel_api_model import HotelSearch
 from api.models.models import Feature
-from api.multi.multi_product_models import RestaurantSearch, ActivitySearch
+from api.multi.multi_product_models import RestaurantSearch, ActivitySearch, EventLocationSearch
 from api.restaurants.adapters.stub_restaurant_adapter import StubRestaurantAdapter
 from api.restaurants.restaurant_adapter import RestaurantAdapter
 from api.view.exceptions import AvailabilityException, AvailabilityErrorCode
@@ -27,6 +29,7 @@ class AdapterType(Enum):
     HOTEL = "hotel"
     ACTIVITY = "activity"
     RESTAURANT = "restaurant"
+    EVENT = "events"
 
 
 ADAPTERS = {
@@ -42,8 +45,9 @@ ADAPTERS = {
         "travelcurious": TravelcuriousActivityAdapter,
         "musement": MuseActivityAdapter,
         "urban": UrbanActivityAdapter,
-        "tourcms": TourCmsActivityAdapter,
+        "tourcms": TourCmsTransportSimplenightCore,
     },
+    AdapterType.EVENT: {"ticket_evolution": TicketEvolutionEventAdapter},
     AdapterType.RESTAURANT: {"stub_restaurant": StubRestaurantAdapter},
 }
 
@@ -69,6 +73,10 @@ def get_activity_adapters_to_search(search_request: ActivitySearch) -> List[Acti
     return get_adapters_for_type(search_request, adapter_type=AdapterType.ACTIVITY)
 
 
+def get_event_adapters_to_search(search_request: EventLocationSearch) -> List[EventAdapter]:
+    return get_adapters_for_type(search_request, adapter_type=AdapterType.EVENT)
+
+
 def get_restaurant_adapters_to_search(search_request: RestaurantSearch) -> List[RestaurantAdapter]:
     return get_adapters_for_type(search_request, adapter_type=AdapterType.RESTAURANT)
 
@@ -79,7 +87,7 @@ def get_activity_adapter(adapter_name: str) -> ActivityAdapter:
 
 def get_adapters_for_type(
     search_request, adapter_type=None
-) -> List[Union[HotelAdapter, ActivityAdapter, RestaurantAdapter]]:
+) -> List[Union[HotelAdapter, ActivityAdapter, RestaurantAdapter, EventAdapter]]:
     """
     Returns a list of adapters to search, identified by their string name.
     If an adapter is explicitly specified in the request, return that.

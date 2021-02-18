@@ -6,7 +6,7 @@ from typing import Dict, List
 from api.activities.adapters.suppliers_api.suppliers_api_transport import SuppliersApiTransport
 
 
-class LegacyBaseTransport(SuppliersApiTransport, abc.ABC):
+class SimplenightCoreLegacyTransport(SuppliersApiTransport, abc.ABC):
     class Endpoint(Enum):
         SEARCH = "search"
         DETAILS = "details"
