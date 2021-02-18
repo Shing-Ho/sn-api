@@ -1,7 +1,7 @@
-from api.activities.adapters.legacy_base_adapter.legacy_base_transport import LegacyBaseTransport
+from api.common.simplenight_core_legacy_transport import SimplenightCoreLegacyTransport
 
 
-class TourCmsTransport(LegacyBaseTransport):
+class TourCmsTransport(SimplenightCoreLegacyTransport):
     @staticmethod
     def get_supplier_name():
         return "grayline-lasvegas"

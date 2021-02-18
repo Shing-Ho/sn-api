@@ -11,14 +11,14 @@ from api.activities.activity_internal_models import (
     AdapterActivityLocationSearch,
 )
 from api.activities.activity_models import ActivityVariants, SimplenightActivityDetailResponse
-from api.activities.adapters.legacy_base_adapter.legacy_base_transport import LegacyBaseTransport
+from api.common.simplenight_core_legacy_transport import SimplenightCoreLegacyTransport
 from api.hotel.models.booking_model import AdapterActivityBookingRequest, Customer
 from api.hotel.models.hotel_api_model import Image
 from api.hotel.models.hotel_common_models import Money
 
 
-class LegacyActivityAdapter(ActivityAdapter, abc.ABC):
-    def __init__(self, transport: LegacyBaseTransport):
+class SimplenightCoreLegacyBaseAdapter(ActivityAdapter, abc.ABC):
+    def __init__(self, transport: SimplenightCoreLegacyTransport):
         self.transport = transport
 
     async def search_by_location(self, search: AdapterActivityLocationSearch) -> List[AdapterActivity]:

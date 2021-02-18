@@ -1,6 +1,6 @@
 from concurrent.futures.thread import ThreadPoolExecutor
 from threading import currentThread
-from typing import Dict, Type, Callable, List
+from typing import Dict, Type, Callable
 
 from django.db import connection
 
@@ -15,6 +15,8 @@ from api.activities.activity_models import (
 )
 from api.common import request_cache
 from api.common.request_context import get_config
+from api.events import events_service
+from api.events.events_models import SimplenightEvent
 from api.hotel import hotel_service
 from api.hotel.models.hotel_api_model import HotelLocationSearch, HotelSpecificSearch, SimplenightHotel
 from api.models.models import Feature
@@ -24,6 +26,7 @@ from api.multi.multi_product_models import (
     SearchResponse,
     ActivityLocationSearch,
     ActivitySpecificSearch,
+    EventLocationSearch,
 )
 from api.restaurants import restaurant_search
 from api.restaurants.restaurant_models import SimplenightRestaurant
@@ -35,11 +38,14 @@ search_map: Dict[Type, Callable] = {
     ActivityLocationSearch: activity_service.search_by_location,
     ActivitySpecificSearch: activity_service.search_by_id,
     RestaurantSearch: restaurant_search.search,
+    EventLocationSearch: events_service.search_by_location,
 }
 
 
 def search_request(search: SearchRequest):
-    searches = filter(None, [search.hotel_search, search.activity_search, search.restaurant_search])
+    searches = filter(
+        None, [search.hotel_search, search.activity_search, search.restaurant_search, search.event_search]
+    )
 
     response = SearchResponse()
     parent_thread_name = currentThread()
@@ -58,8 +64,8 @@ def search_request(search: SearchRequest):
     get_config(Feature.TEST_MODE)  # TODO: HACK to make sure feature is in cache
     with ThreadPoolExecutor(max_workers=5, initializer=thread_initializer) as executor:
         futures = []
-        for search in searches:
-            futures.append(executor.submit(search_fn, search))
+        for product_search in searches:
+            futures.append(executor.submit(search_fn, product_search))
 
         for future in futures:
             try:
@@ -80,7 +86,7 @@ def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDet
         raise AvailabilityException(detail=str(e), error_type=AvailabilityErrorCode.PROVIDER_ERROR)
 
 
-def variants(request: SimplenightActivityVariantRequest) -> List[ActivityVariants]:
+def variants(request: SimplenightActivityVariantRequest) -> ActivityVariants:
     try:
         return activity_service.variants(request)
     except Exception as e:
@@ -102,3 +108,5 @@ def _set_result_on_response(response, result):
         response.activity_results = result
     elif isinstance(result_for_test, SimplenightRestaurant):
         response.restaurant_results = result
+    elif isinstance(result_for_test, SimplenightEvent):
+        response.event_results = result
