@@ -691,6 +691,7 @@ class ActivityBookingProcessor(BookingProcessor):
             misc=self.booking_request.activity_booking.misc,
             supplier_date=self.booking_request.activity_booking.supplier_date,
             items=self._get_adapter_booking_items(),
+            traveler=self.booking_request.traveler,
         )
 
         return adapter_booking_request

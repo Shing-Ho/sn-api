@@ -16,6 +16,7 @@ from api.activities.activity_models import (
     SimplenightActivityDetailResponse,
     SimplenightActivityVariantRequest,
     ActivityVariants,
+    ActivityVariant,
 )
 from api.hotel import provider_cache_service
 from api.hotel.adapters import adapter_service
@@ -44,6 +45,9 @@ def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDet
         adapter.details(payload.code, request.date_from, request.date_to)
     )
 
+    if activity_details.provider_data and len(activity_details.provider_data) > 0:
+        provider_cache_service.save_activity_provider_data(request.code, activity_details.provider_data)
+
     # Reset to
     activity_details.code = request.code
     return activity_details
@@ -52,6 +56,27 @@ def details(request: SimplenightActivityDetailRequest) -> SimplenightActivityDet
 def variants(request: SimplenightActivityVariantRequest) -> ActivityVariants:
     payload = provider_cache_service.get_cached_activity(request.code)
     adapter = adapter_service.get_activity_adapter(payload.provider)
+    provider_data = provider_cache_service.get_activity_provider_data(request.code)
+    variants = []
+    if provider_data and len(provider_data) > 0:
+        for departure in provider_data:
+            variant = ActivityVariant(
+                code=departure.id,
+                name=departure.dep_min,
+                description=departure.dep_min,
+                price=payload.price,
+                capacity=0,
+                additional={}
+            )
+            variants.append(variant)
+            provider_cache_service.save_activity_variant(request.code, request.activity_date, variant)
+
+        return ActivityVariants(
+            variants = {
+                "whole_day": variants
+            }
+        )
+
     activity_variants: ActivityVariants = asyncio.run(adapter.variants(payload.code, request.activity_date))
 
     # Variants are returned as a map keyed by time, with the value as a list of variants available at that time

@@ -10,10 +10,16 @@ from api.hotel.models.hotel_common_models import Money
 
 
 class ActivityLocation(SimplenightModel):
-    address: str
-    latitude: Decimal
-    longitude: Decimal
+    address: Optional[str]
+    latitude: Optional[Decimal]
+    longitude: Optional[Decimal]
 
+class UrbanDeparture(SimplenightModel):
+    id: str
+    dep_min: str
+    dep_max: str
+    end_min: str
+    end_max: str
 
 class SimplenightActivity(SimplenightModel):
     name: str
@@ -26,6 +32,7 @@ class SimplenightActivity(SimplenightModel):
     images: List[Image]
     rating: Optional[Decimal]
     reviews: Optional[int]
+    provider_data: Optional[List[UrbanDeparture]]
 
 
 class ActivityAvailabilityTime(SimplenightModel):
@@ -76,7 +83,6 @@ class SimplenightActivityDetailRequest(SimplenightModel):
     date_from: date
     date_to: date
 
-
 class SimplenightActivityDetailResponse(SimplenightModel):
     code: str
     type: str
@@ -88,3 +94,4 @@ class SimplenightActivityDetailResponse(SimplenightModel):
     availabilities: List[date]
     policies: List[str]
     cancellations: List[ActivityCancellation]
+    provider_data: Optional[List[UrbanDeparture]]

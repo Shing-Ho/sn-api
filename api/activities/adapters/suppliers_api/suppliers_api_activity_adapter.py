@@ -57,6 +57,10 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
                     "locale": request.language_code,
                 }
             },
+            "traveler": {
+                "adults": request.traveler.occupancy.adults,
+                "children": request.traveler.occupancy.children,
+            },
             "items": [
                 {
                     "code": request.items[0].code,
@@ -117,9 +121,12 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
     @staticmethod
     def _parse_location(locations) -> Optional[ActivityLocation]:
         try:
-            return ActivityLocation(
-                address=locations[0]["address"], latitude=locations[0]["latitude"], longitude=locations[0]["longitude"],
-            )
+            if len(locations) > 0:
+                return ActivityLocation(
+                    address=locations[0]["address"], latitude=locations[0]["latitude"], longitude=locations[0]["longitude"],
+                )
+            else:
+                return {}
         except KeyError:
             return None
 
@@ -141,6 +148,10 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
         logger.info("Found activity details: ", detail)
         availabilities = map(lambda x: date.fromisoformat(x), detail["availabilities"])
 
+        provider_data = []
+        if "provider_data" in detail and detail["provider_data"]:
+            provider_data = detail["provider_data"]
+
         return SimplenightActivityDetailResponse(
             code=detail["code"],
             type=detail["type"],
@@ -158,6 +169,7 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
             availabilities=list(availabilities),
             policies=detail["policies"],
             cancellations=list(map(self._parse_cancellation_policy, detail["cancellations"])),
+            provider_data=list(provider_data)
         )
 
     def _create_activity(self, activity, activity_date: date):
