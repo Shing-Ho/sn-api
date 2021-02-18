@@ -57,20 +57,24 @@ class YelpAdapter(DiningAdapter):
 
     def details(self, search) -> DiningDetail:
         response = self.transport.business_details(id=search.dining_id, params={})
+        result = self._check_operation_response_and_get_results(response, "")
+
+        print(result)
+
         dining_detail = DiningDetail(
             dining_id=search.dining_id,
-            name=response["name"],
-            rating=response["rating"],
-            phone=response["phone"],
-            images=response["photos"],
+            name=result["name"],
+            rating=result["rating"],
+            phone=result["phone"],
+            images=result["photos"],
             location={
-                **response["coordinates"],
-                "address": ", ".join(str(x) for x in response["location"]["display_address"]),
+                **result["coordinates"],
+                "address": ", ".join(str(x) for x in result["location"]["display_address"]),
             },
-            is_closed=response["is_closed"],
-            display_phone=response["display_phone"],
-            categories=(x["title"] for x in response["categories"]),
-            hours=(DiningHours(__root__=x) for x in response["hours"]),
+            is_closed=result["is_closed"],
+            display_phone=result["display_phone"],
+            categories=(x["title"] for x in result["categories"]),
+            hours=(DiningHours(__root__=x) for x in result["hours"]),
         )
 
         return dining_detail
