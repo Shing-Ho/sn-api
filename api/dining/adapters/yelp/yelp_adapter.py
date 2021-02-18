@@ -59,8 +59,6 @@ class YelpAdapter(DiningAdapter):
         response = self.transport.business_details(id=search.dining_id, params={})
         result = self._check_operation_response_and_get_results(response, "")
 
-        print(result)
-
         dining_detail = DiningDetail(
             dining_id=search.dining_id,
             name=result["name"],
