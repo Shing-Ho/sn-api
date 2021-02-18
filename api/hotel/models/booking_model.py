@@ -190,6 +190,7 @@ class AdapterActivityBookingRequest(SimplenightModel):
     misc: Optional[str]
     supplier_date: Optional[str]
     items: List[AdapterActivityBookingItem]
+    traveler: Optional[Traveler]
 
 
 class AdapterActivityBookingResponse(SimplenightModel):
@@ -203,6 +204,7 @@ class MultiProductBookingRequest(SimplenightModel):
     language: str
     customer: Customer
     payment: Payment
+    traveler: Optional[Traveler]
     hotel_booking: Optional[MultiProductHotelBookingRequest]
     activity_booking: Optional[ActivityBookingRequest]
 
