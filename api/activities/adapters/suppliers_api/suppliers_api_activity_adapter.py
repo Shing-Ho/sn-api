@@ -55,6 +55,8 @@ class SuppliersApiActivityAdapter(ActivityAdapter, abc.ABC):
                     "email": customer.email,
                     "phone": customer.phone_number,
                     "locale": request.language_code,
+                    "country": customer.country,
+                    "salutation": customer.salutation,
                 }
             },
             "traveler": {
