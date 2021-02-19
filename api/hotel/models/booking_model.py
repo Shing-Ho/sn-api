@@ -49,6 +49,7 @@ class Customer(SimplenightModel):
     phone_number: str
     email: str
     country: str
+    salutation: Optional[str]
 
 
 class Traveler(SimplenightModel):
