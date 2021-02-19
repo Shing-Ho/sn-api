@@ -3327,6 +3327,11 @@ components:
           $ref: '#/components/schemas/Traveler'
         payment:
           $ref: '#/components/schemas/Payment'
+        additional_info:
+          type: string
+          example:
+            Twin bed please
+          description: Additional information for hotel booking request
 
     Tracking:
       description: Campaign tracking information
@@ -4714,6 +4719,10 @@ components:
           $ref: '#/components/schemas/MultiProductHotelBookingRequest'
         activity_booking:
           $ref: '#/components/schemas/MultiProductActivityBookingRequest'
+        additional_info:
+          type: string
+          description: Additional information for booking request
+          example: Twin bed please
 
     MultiProductBookingResponse:
       type: object

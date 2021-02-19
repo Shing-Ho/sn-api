@@ -98,6 +98,7 @@ class HotelBookingRequest(SimplenightModel):
     customer: Customer
     traveler: Traveler
     payment: Optional[Payment] = None
+    additional_info: Optional[str] = None
 
 
 class AdapterHotelBookingRequest(SimplenightModel):
@@ -107,6 +108,7 @@ class AdapterHotelBookingRequest(SimplenightModel):
     language: str
     customer: Customer
     traveler: Traveler
+    additional_info: Optional[str] = None
 
 
 class MultiProductHotelBookingRequest(SimplenightModel):
@@ -206,6 +208,7 @@ class MultiProductBookingRequest(SimplenightModel):
     customer: Customer
     payment: Payment
     traveler: Optional[Traveler]
+    additional_info: Optional[str] = None
     hotel_booking: Optional[MultiProductHotelBookingRequest]
     activity_booking: Optional[ActivityBookingRequest]
 

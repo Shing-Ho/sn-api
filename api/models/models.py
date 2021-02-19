@@ -320,6 +320,7 @@ class ProviderImages(models.Model):
     type = models.TextField()
     display_order = models.IntegerField()
     image_url = models.TextField()
+    meta_info=jsonfield.JSONField()
 
 
 class ProviderHotel(models.Model):

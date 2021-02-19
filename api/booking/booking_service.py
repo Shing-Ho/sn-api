@@ -73,6 +73,7 @@ def book_hotel(booking_request: HotelBookingRequest) -> HotelBookingResponse:
         payment=booking_request.payment,
         hotel_booking=hotel_booking_request,
         activity_booking=None,
+        additional_info=booking_request.additional_info,
     )
 
     booking_response = book(multi_booking_request)
@@ -785,6 +786,7 @@ class HotelBookingProcessor(BookingProcessor):
             language=self.booking_request.language,
             customer=self.booking_request.customer,
             traveler=self.booking_request.traveler,
+            additional_info=self.booking_request.additional_info,
         )
 
     def _persist_hotel(self, reservation):
@@ -846,6 +848,7 @@ class HotelBookingProcessor(BookingProcessor):
                 customer=booking_request.customer,
                 traveler=booking_request.hotel_booking.traveler,
                 payment=booking_request.payment,
+                additional_info=booking_request.additional_info,
             )
 
         return None
