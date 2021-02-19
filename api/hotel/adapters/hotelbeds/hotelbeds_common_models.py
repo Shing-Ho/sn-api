@@ -135,3 +135,12 @@ HOTELBEDS_STAR_RATING_MAP = {
 
 def get_star_rating(category_code):
     return HOTELBEDS_STAR_RATING_MAP.get(category_code, None)
+
+
+def safeget(dct, *keys):
+    for key in keys:
+        try:
+            dct = dct[key]
+        except KeyError:
+            return None
+    return dct

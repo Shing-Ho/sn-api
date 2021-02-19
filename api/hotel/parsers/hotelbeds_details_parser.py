@@ -2,7 +2,7 @@ import json
 from api import logger
 from api.hotel.adapters.hotelbeds.hotelbeds_adapter import HotelbedsAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
-from api.hotel.adapters.hotelbeds.hotelbeds_common_models import HOTELBEDS_LANGUAGE_MAP, get_language_mapping, get_thumbnail_url, get_image_url, get_star_rating, get_image_type
+from api.hotel.adapters.hotelbeds.hotelbeds_common_models import HOTELBEDS_LANGUAGE_MAP, get_language_mapping, get_thumbnail_url, get_image_url, get_star_rating, safeget
 from api.hotel.adapters.hotelbeds.hotelbeds_amenity_mappings import get_simplenight_amenity_mappings
 from api.hotel.parsers import hotelbeds_loader
 from api.models.models import ProviderHotel, ProviderCity, ProviderImages, ProviderChain
@@ -21,15 +21,6 @@ def get_state_by_code(country_code, state_code):
     if not state:
         return (country["isoCode"], state_code)
     return (country["isoCode"], state["name"])
-
-
-def safeget(dct, *keys):
-    for key in keys:
-        try:
-            dct = dct[key]
-        except KeyError:
-            return None
-    return dct
 
 
 class HotelbedsDetailsParser:
@@ -115,9 +106,13 @@ class HotelbedsDetailsParser:
             ProviderImages(
                 provider=self.provider,
                 provider_code=hotel_data["code"],
-                type=get_image_type(image["imageTypeCode"]),
+                type=image["imageTypeCode"],
                 display_order=image["visualOrder"],
                 image_url=get_image_url(image["path"]),
+                meta_info={
+                    "room_code": image.get("roomCode", None),
+                    "room_type": image.get("roomType", None),
+                }
             ) for image in hotel_data["images"]
         ]
 

@@ -3,13 +3,14 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List, Any, Dict
 
+import json
 import pytz
 from dateutil.relativedelta import relativedelta
 
 from api import logger
 from api.hotel.adapters.hotel_adapter import HotelAdapter
 from api.hotel.adapters.hotelbeds.hotelbeds_amenity_mappings import get_simplenight_amenity_mappings
-from api.hotel.adapters.hotelbeds.hotelbeds_common_models import get_language_mapping
+from api.hotel.adapters.hotelbeds.hotelbeds_common_models import get_language_mapping, safeget, get_image_type
 from api.hotel.adapters.hotelbeds.hotelbeds_info import HotelbedsInfo
 from api.hotel.adapters.hotelbeds.hotelbeds_transport import HotelbedsTransport
 from api.hotel.models.adapter_models import (
@@ -166,12 +167,12 @@ class HotelbedsAdapter(HotelAdapter):
                 continue
 
             hotel_detail_model = hotel_details_map[hotel_code]
-            photos = list(map(self._get_image, hotel_images_by_id.get(hotel_code) or []))
+            photos = hotel_images_by_id.get(hotel_code) or []
             if not photos or len(photos) == 0:
                 continue
             hotel_details = self._create_hotel_details(hotel, hotel_detail_model, photos)
 
-            room_types = self._create_room_types(hotel)
+            room_types = self._create_room_types(hotel, photos)
             rate_plans = self._create_rate_plans(hotel)
             room_rates = self._create_room_rates(hotel)
 
@@ -266,18 +267,21 @@ class HotelbedsAdapter(HotelAdapter):
         return HotelbedsInfo.name
 
     @staticmethod
-    def _create_room_types(hotel_response):
+    def _create_room_types(hotel_response, photos):
         room_types = []
         for room in hotel_response["rooms"]:
             adults = max(x.get("adults", 0) for x in room["rates"])
             children = max(x.get("children", 0) for x in room["rates"])
             occupancy = RoomOccupancy(adults=adults, children=children)
+            room_photos = list(filter(lambda image: room["code"] == json.loads(
+                image.meta_info).get("room_code", None), photos))
+
             room_type = RoomType(
                 code=room["code"],
                 name=room["name"],
                 description=room["name"],
                 amenities=[],
-                photos=[],
+                photos=list(map(HotelbedsAdapter._get_image, room_photos)),
                 capacity=occupancy,
                 bed_types=None,
             )
@@ -451,6 +455,7 @@ class HotelbedsAdapter(HotelAdapter):
                 }
             ],
             "tolerance": 2,
+            "remark": book_request.additional_info or "",
         }
 
     @staticmethod
@@ -470,7 +475,11 @@ class HotelbedsAdapter(HotelAdapter):
 
     @staticmethod
     def _get_image(provider_image: ProviderImages):
-        return Image(url=provider_image.image_url, type=ImageType.UNKNOWN, display_order=provider_image.display_order)
+        return Image(
+            url=provider_image.image_url,
+            type=get_image_type(provider_image.type),
+            display_order=provider_image.display_order,
+        )
 
     @staticmethod
     def _create_hotel_details(hotel, hotel_detail_model: ProviderHotel, photos):
@@ -484,7 +493,7 @@ class HotelbedsAdapter(HotelAdapter):
             hotel_code=str(hotel["code"]),
             checkin_time=None,
             checkout_time=None,
-            photos=photos,
+            photos=list(map(HotelbedsAdapter._get_image, photos)),
             thumbnail_url=hotel_detail_model.thumbnail_url,
             amenities=get_simplenight_amenity_mappings(hotel_detail_model.amenities),
             geolocation=GeoLocation(latitude=hotel["latitude"], longitude=hotel["longitude"]),
