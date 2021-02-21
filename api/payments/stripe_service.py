@@ -8,7 +8,7 @@ from api.models.models import PaymentTransaction, TransactionType, Feature
 from api.view.exceptions import PaymentException
 from common import utils
 
-STRIPE_TEST_API_KEY = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
+STRIPE_TEST_API_KEY = "sk_test_dCwkIQsjHBI9XBnQggDP5R2v"
 
 STRIPE_ERROR_CODE_MAPPING = {
     "card_declined": SubmitErrorType.PAYMENT_DECLINED,
