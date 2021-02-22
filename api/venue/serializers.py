@@ -191,7 +191,7 @@ class ProductsHotelRoomPricingSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def to_representation(self, instance):
-        rep = super(VenueDetailSerializer, self).to_representation(instance)
+        rep = super(ProductsHotelRoomPricingSerializer, self).to_representation(instance)
         if is_json(rep["rate"]):
             rep["rate"] = json.loads(rep["rate"])
         if is_json(rep["taxes"]):
